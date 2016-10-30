@@ -1,15 +1,11 @@
 package com.alfray.conductor;
 
 public class EntryPoint {
-    private JmriProvider mJmriProvider;
-    private ThrottleAdapter mThrottle;
+    private IJmriProvider mJmriProvider;
+    private IJmriThrottle mThrottle;
 
-    public void setup(JmriProvider jmriProvider) {
+    public void setup(IJmriProvider jmriProvider) {
         System.out.println("Setup");
-        this.mJmriProvider = jmriProvider;
-        mThrottle = jmriProvider.getThrotlle(42);
-        mThrottle.setSpeed(10);
-        mThrottle.setSpeed(2*mThrottle.getSpeed());
     }
 
     public boolean handle() {

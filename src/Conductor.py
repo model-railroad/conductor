@@ -9,32 +9,29 @@ import java
 import javax.swing
 from javax.swing import *
 
-import com.alfray.conductor.JmriProvider as JmriProvider
-import com.alfray.conductor.ThrottleAdapter as ThrottleAdapter
+import com.alfray.conductor.IJmriProvider as IJmriProvider
+import com.alfray.conductor.IJmriThrottle as IJmriThrottle
 import com.alfray.conductor.EntryPoint as ConductorEntryPoint
 
 
-class MyThrottleAdapter(ThrottleAdapter):
+class JmriThrottleAdapter(IJmriThrottle):
     def __init__(self):
-        self._speed = 0
-
-    def setDccAddress(self, dccAddress):
-        """In: int dccAddress; Out: void"""
-        print "setDccAddress", dccAddress
+        pass
 
     def setSpeed(self, speed):
         """In: int speed; Out: void"""
-        self._speed = speed
         print "setSpeed", speed
 
-    def getSpeed(self):
-        """In: void; Out: int"""
-        print "getSpeed", self._speed
-        return self._speed
+    def setSound(self, on):
+        """In: boolean on; Out: void"""
+        print "setSound", speed
+
+    def setLight(self, on):
+        """In: boolean on; Out: void"""
+        print "setLight", speed
 
 
-
-class MyJmriProvider(JmriProvider):
+class MyJmriProvider(IJmriProvider):
     def getThrotlle(self, dccAddress):
         """In: int dccAddress; Out: ThrottleAdapter"""
         return MyThrottleAdapter()
