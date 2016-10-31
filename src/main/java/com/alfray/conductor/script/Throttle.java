@@ -15,7 +15,11 @@ public class Throttle {
         mJmriThrottle = provider.getThrotlle(dccAddress);
     }
 
-    private void setSpeed(int speed) {
+    public int getSpeed() {
+        return mSpeed;
+    }
+
+    public void setSpeed(int speed) {
         mSpeed = speed;
         if (mJmriThrottle != null) {
             mJmriThrottle.setSpeed(speed);

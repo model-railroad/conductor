@@ -3,6 +3,7 @@ package com.alfray.conductor.script;
 import com.alfray.conductor.IJmriProvider;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -68,6 +69,12 @@ public class Script {
         return new ArrayList<>(mVars.keySet());
     }
 
+    /**
+     * Initializes throttle and sensors before executing the script.
+     *
+     * @param provider A non-null JMRI provider.
+     * @return An error if there's no DCC variable for the throttle DCC address.
+     */
     public boolean setup(IJmriProvider provider) {
         Var dccVar = mVars.get("dcc");
         if (dccVar == null) {
@@ -85,13 +92,32 @@ public class Script {
         return true;
     }
 
+    /**
+     * Handles one execution of events.
+     * <p/>
+     * This first checks ALL the events, and then applies activated actions.
+     * Because some actions influence conditions (e.g. throttle stop/forward), all conditions
+     * are evaluated first. Actions are only executed after all conditions have been checked.
+     * <p/>
+     * Each event is only activated once when the condition becomes true (e.g. on a raising
+     * edge in electronics terms). Next time the event is evaluated, it is not executed again
+     * unless the condition was first evaluated to false.
+     */
     public void handle() {
+        mActivatedEvents.clear();
         for (Event event : mEvents) {
             if (event.evalConditions()) {
-                event.performActions();
+                mActivatedEvents.add(event);
+            } else {
+                event.resetExecuted();
             }
         }
+        for (Event event : mActivatedEvents) {
+            event.execute();
+        }
     }
+
+    private final List<Event> mActivatedEvents = new LinkedList<>();
 
     private static class Action {
         private final IFunction.Int mFunction;
@@ -128,6 +154,7 @@ public class Script {
     public static class Event {
         private final List<Cond> mConditions = new ArrayList<>();
         private final List<Action> mActions = new ArrayList<>();
+        private boolean mExecuted;
 
         public void addConditional(IConditional condition, boolean negated) {
             mConditions.add(new Cond(condition, negated));
@@ -151,15 +178,23 @@ public class Script {
             return true;
         }
 
-        public void performActions() {
-            for (Action action : mActions) {
-                try {
-                    action.execute();
+        public void execute() {
+            if (!mExecuted) {
+                for (Action action : mActions) {
+                    try {
+                        action.execute();
 
-                } catch (Exception e) {
-                    System.out.println("Action failed [" + action + "]: " + e);
+                    } catch (Exception e) {
+                        System.out.println("Action failed [" + action + "]: " + e);
+                    }
                 }
+
+                mExecuted = true;
             }
+        }
+
+        public void resetExecuted() {
+            mExecuted = false;
         }
     }
 }

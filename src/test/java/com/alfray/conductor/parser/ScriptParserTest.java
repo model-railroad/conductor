@@ -1,6 +1,7 @@
 package com.alfray.conductor.parser;
 
 import com.alfray.conductor.IJmriProvider;
+import com.alfray.conductor.IJmriSensor;
 import com.alfray.conductor.IJmriThrottle;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Timer;
@@ -11,7 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,7 +28,7 @@ public class ScriptParserTest {
     }
 
     @Test
-    public void testVar() throws Exception {
+    public void testDefineVar() throws Exception {
         String source = "  Var DCC    = 1201 ";
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -37,7 +41,7 @@ public class ScriptParserTest {
     }
 
     @Test
-    public void testSensor() throws Exception {
+    public void testDefineSensor() throws Exception {
         String source = "  Sensor Alias   = NS784 ";
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -48,7 +52,7 @@ public class ScriptParserTest {
     }
 
     @Test
-    public void testTimer() throws Exception {
+    public void testDefineTimer() throws Exception {
         String source = "  Timer Timer-1 = 5 ";
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -61,8 +65,18 @@ public class ScriptParserTest {
     }
 
     @Test
-    public void testStopForward() throws Exception {
-        String source = "var dcc = 42 \n var speed = 5 \n stopped -> forward = speed";
+    public void testStopForwardParallel() throws Exception {
+        // This starts with a throttle in the stopped state (speed == 0).
+        // Note the possible ambiguity: checking for "stopped" sets the throttle to forward
+        // then checing for forward sets it to stop. The script is set in such a way that
+        // all conditions are checked first, so the throttle will always be in either the
+        // forward or stopped condition and only one of the two actions can be executed but
+        // never both.
+        String source = "" +
+                "var dcc = 42 \n " +
+                "var speed = 5 \n " +
+                "stopped -> forward = speed \n" +
+                "forward -> stop";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -76,8 +90,235 @@ public class ScriptParserTest {
         script.setup(provider);
         verify(provider).getThrotlle(42);
 
+        // Execute with throttle defaulting to speed 0 (stopped)
         script.handle();
         verify(throttle).setSpeed(5);
+        verify(throttle, never()).setSpeed(0);
+        assertThat(script.getThrottle().getSpeed()).isEqualTo(5);
+
+        // Execute with throttle at speed 5
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setSpeed(5);
+        verify(throttle).setSpeed(0);
+        assertThat(script.getThrottle().getSpeed()).isEqualTo(0);
+    }
+
+    @Test
+    public void testStopForwardSequence() throws Exception {
+        String source = "" +
+                "var dcc = 42 \n " +
+                "var speed = 5 \n " +
+                "stopped -> forward = speed ; stop \n" +
+                "forward -> stop ; forward = speed ";
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
+        script.handle();
+        verify(throttle).setSpeed(0);
+        verify(throttle).setSpeed(5);
+        assertThat(script.getThrottle().getSpeed()).isEqualTo(0);
+
+        // Execute with throttle at speed 5
+        script.getThrottle().setSpeed(5);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setSpeed(0);
+        verify(throttle).setSpeed(5);
+        assertThat(script.getThrottle().getSpeed()).isEqualTo(5);
+    }
+
+    @Test
+    public void testActionVar() throws Exception {
+
+        String source = "" +
+                "var dcc=42\n " +
+                "var myVar=5\n " +
+                "stopped->myVar=0\n" +
+                "forward->myVar=1 ";
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        assertThat(script.getVar("myvar").getValue()).isEqualTo(5);
+
+        // Execute with throttle defaulting to speed 0 (stopped).
+        script.handle();
+        assertThat(script.getVar("myvar").getValue()).isEqualTo(0);
+
+        // Execute with throttle at speed 5
+        script.getThrottle().setSpeed(5);
+        script.handle();
+        assertThat(script.getVar("myvar").getValue()).isEqualTo(1);
+    }
+
+    @Test
+    public void testActionSound() throws Exception {
+        String source = "" +
+                "var dcc = 42 \n " +
+                "stopped -> Sound=0 \n" +
+                "forward -> Sound=1";
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).setSound(false);
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle().setSpeed(5);
+        script.handle();
+        verify(throttle).setSound(true);
+    }
+
+    @Test
+    public void testActionLight() throws Exception {
+        String source = "" +
+                "var dcc = 42 \n " +
+                "stopped -> Light=0 \n" +
+                "forward -> Light=1";
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).setLight(false);
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle().setSpeed(5);
+        script.handle();
+        verify(throttle).setLight(true);
+    }
+
+    @Test
+    public void testActionHorn() throws Exception {
+        String source = "" +
+                "var dcc = 42 \n " +
+                "stopped -> Horn \n" +
+                "forward -> Horn=1";
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).horn();
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle().setSpeed(5);
+        script.handle();
+        verify(throttle).horn();
+    }
+
+    @Test
+    public void testActionSensor() throws Exception {
+        String source = "" +
+                "var dcc = 42 \n " +
+                "sensor b1  = NS42 \n" +
+                "sensor b777= NS7805 \n" +
+                "!b1         -> Light=0 \n" +
+                " b1         -> Light=1 \n" +
+                " b1 + !b777 -> Sound=0 \n" +
+                " b1 +  b777 -> Sound=1 \n" ;
+
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriSensor sensor1 = mock(IJmriSensor.class);
+        IJmriSensor sensor2 = mock(IJmriSensor.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getSensor("ns42")).thenReturn(sensor1);
+        when(provider.getSensor("ns7805")).thenReturn(sensor2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getSensor("ns42");
+        verify(provider).getSensor("ns7805");
+
+        when(sensor1.isActive()).thenReturn(false);
+        when(sensor2.isActive()).thenReturn(false);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setLight(false);
+        verify(throttle, never()).setSound(anyBoolean());
+
+        when(sensor1.isActive()).thenReturn(false);
+        when(sensor2.isActive()).thenReturn(true);
+        reset(throttle);
+        script.handle();
+        // Note: event !b1 is not executed a second time till the condition gets invalidated
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        when(sensor1.isActive()).thenReturn(true);
+        when(sensor2.isActive()).thenReturn(false);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setLight(true);
+        verify(throttle).setSound(false);
+
+        when(sensor1.isActive()).thenReturn(true);
+        when(sensor2.isActive()).thenReturn(true);
+        reset(throttle);
+        script.handle();
+        // Note: event b1 is not executed a second time till the condition gets invalidated
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle).setSound(true);
     }
 
     @Test

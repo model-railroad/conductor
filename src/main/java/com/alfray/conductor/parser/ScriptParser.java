@@ -23,6 +23,7 @@ import java.util.TreeMap;
 
 public class ScriptParser {
 
+    private static final char[] ActionToken = new char[] { '-', '>' };
     private static final String CharTokens = ":=;!";
 
     private enum ThrottleCondition {
@@ -156,6 +157,13 @@ public class ScriptParser {
             // Skip whitespace
             if (Character.isWhitespace(c)) { continue; }
 
+            // Special -> token
+            if (c == ActionToken[0] && (i+1) < length && line.charAt(i+1) == ActionToken[1]) {
+                tokens.add(line.substring(i, i+2));
+                i++;
+                continue;
+            }
+
             // Special characters are full tokens
             if (CharTokens.indexOf(c) != -1) {
                 tokens.add(Character.toString(c));
@@ -171,7 +179,9 @@ public class ScriptParser {
                     break;
                 } else {
                     char c1 = line.charAt(i1);
-                    if (Character.isWhitespace(c1) || CharTokens.indexOf(c1) != -1) {
+                    if (Character.isWhitespace(c1)
+                            || CharTokens.indexOf(c1) != -1
+                            || (c1 == ActionToken[0] && (i1+1) < length && line.charAt(i1+1) == ActionToken[1])) {
                         break;
                     } else {
                         c = c1;
@@ -251,7 +261,7 @@ public class ScriptParser {
         }
 
         int n = tokens.size() - sep - 2; // num tokens after index i
-        for (int i = sep + 1; n > 0; ) {
+        for (int i = sep + 1; n >= 0; ) {
             // Expected forms:
             // Function|VarId = Value [;]
             // Function [;]
