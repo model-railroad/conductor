@@ -8,7 +8,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class TimerTest {
     @Test
     public void testTimer() throws Exception {
-        NowTimer timer = new NowTimer("name", 42, 100*1000);
+        NowTimer timer = new NowTimer(42, 100*1000);
 
         assertThat(timer.isActive()).isFalse();
 
@@ -32,8 +32,8 @@ public class TimerTest {
     private static class NowTimer extends Timer {
         private long mNow;
 
-        public NowTimer(String name, int durationSec, long now) {
-            super(name, durationSec);
+        public NowTimer(int durationSec, long now) {
+            super(durationSec);
             mNow = now;
         }
 

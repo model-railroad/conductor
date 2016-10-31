@@ -1,12 +1,10 @@
 package com.alfray.conductor.script;
 
-public class Var implements IConditional {
+public class Var implements IConditional, IFunction.Int, IValue.Int {
 
-    private final String mName;
     private int mValue;
 
-    public Var(String name, int value) {
-        mName = name;
+    public Var(int value) {
         mValue = value;
     }
 
@@ -15,11 +13,13 @@ public class Var implements IConditional {
         return mValue != 0;
     }
 
-    public int getValue() {
+    @Override
+    public Integer getValue() {
         return mValue;
     }
 
-    public void setValue(int value) {
+    @Override
+    public void setValue(Integer value) {
         mValue = value;
     }
 }

@@ -1,5 +1,6 @@
 package com.alfray.conductor.script;
 
+import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 import org.junit.After;
 import org.junit.Before;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class ThrottleTest {
     private IJmriThrottle mJmriThrottle;
@@ -28,7 +30,15 @@ public class ThrottleTest {
     @Before
     public void setUp() throws Exception {
         mJmriThrottle = mock(IJmriThrottle.class);
-        mThrottle = new Throttle(mJmriThrottle);
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        when(provider.getThrotlle(42)).thenReturn(mJmriThrottle);
+
+        mThrottle = new Throttle();
+
+        mThrottle.init(provider, 42);
+        verify(provider).getThrotlle(42);
+
         fwd = mThrottle.createFunctionForward();
         rev = mThrottle.createFunctionReverse();
         stop = mThrottle.createFunctionStop();

@@ -1,0 +1,20 @@
+# Comment
+Var DCC         = 1201
+Var Var-1       = 1
+Var Half-Speed  = 4
+Var Full-Speed  = 8
+
+# define alias for sensors
+Sensor Alias   = NS784
+
+# define timers and their default value in seconds
+Timer Timer-1 = 5
+
+# events
+Alias + Var-1 -> Forward = Half-Speed ; Var-1 = 0 ; Sound = 1; Light = 1 ; Horn
+Alias + !Var-1 -> Forward = Full-Speed ; Start = Timer-1
+Forward -> Forward = Full-Speed
+Reverse -> Reverse = Half-Speed
+Stopped -> Stop
+Timer-1 -> End = Timer-1 ; Sound = 0; Horn ; Var-1 = 1 ; Reverse = Half-Speed
+!Timer-1 -> Stop

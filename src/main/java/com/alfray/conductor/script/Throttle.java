@@ -1,20 +1,25 @@
 package com.alfray.conductor.script;
 
+import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 
 public class Throttle {
-    private final IJmriThrottle mJmriThrottle;
+    private IJmriThrottle mJmriThrottle;
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
 
-    public Throttle(IJmriThrottle jmriThrottle) {
-        mJmriThrottle = jmriThrottle;
+    public Throttle() {}
+
+    public void init(IJmriProvider provider, int dccAddress) {
+        mJmriThrottle = provider.getThrotlle(dccAddress);
     }
 
     private void setSpeed(int speed) {
         mSpeed = speed;
-        mJmriThrottle.setSpeed(speed);
+        if (mJmriThrottle != null) {
+            mJmriThrottle.setSpeed(speed);
+        }
     }
 
     public IFunction.Int createFunctionStop() {
@@ -49,7 +54,9 @@ public class Throttle {
             @Override
             public void setValue(Integer on) {
                 mSound = on != 0;
-                mJmriThrottle.setSound(mSound);
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.setSound(mSound);
+                }
             }
         };
     }
@@ -59,7 +66,9 @@ public class Throttle {
             @Override
             public void setValue(Integer on) {
                 mLight = on != 0;
-                mJmriThrottle.setLight(mLight);
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.setLight(mLight);
+                }
             }
         };
     }
@@ -68,7 +77,9 @@ public class Throttle {
         return new IFunction.Int() {
             @Override
             public void setValue(Integer on) {
-                mJmriThrottle.horn();
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.horn();
+                }
             }
         };
     }

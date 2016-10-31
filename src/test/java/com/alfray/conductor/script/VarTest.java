@@ -7,7 +7,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class VarTest {
     @Test
     public void testGetSetValue() throws Exception {
-        Var var = new Var("name", 42);
+        Var var = new Var(42);
         assertThat(var.getValue()).isEqualTo(42);
 
         var.setValue(-32);
@@ -16,7 +16,7 @@ public class VarTest {
 
     @Test
     public void testIsActive() throws Exception {
-        Var var = new Var("name", 42);
+        Var var = new Var(42);
         assertThat(var.isActive()).isTrue();
 
         var.setValue(0);

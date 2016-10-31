@@ -1,11 +1,13 @@
 package com.alfray.conductor.script;
 
+import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriSensor;
 import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SensorTest {
@@ -16,7 +18,14 @@ public class SensorTest {
     @Before
     public void setUp() throws Exception {
         mJmriSensor = mock(IJmriSensor.class);
-        mSensor = new Sensor("name", mJmriSensor);
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        when(provider.getSensor("name")).thenReturn(mJmriSensor);
+
+        mSensor = new Sensor("name");
+
+        mSensor.init(provider);
+        verify(provider).getSensor("name");
     }
 
     @Test

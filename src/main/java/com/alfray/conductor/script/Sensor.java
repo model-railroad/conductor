@@ -1,19 +1,23 @@
 package com.alfray.conductor.script;
 
+import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriSensor;
 
 public class Sensor implements IConditional {
 
-    private final String mName;
-    private final IJmriSensor mSensor;
+    private final String mJmriName;
+    private IJmriSensor mSensor;
 
-    public Sensor(String scriptName, IJmriSensor sensor) {
-        mName = scriptName;
-        mSensor = sensor;
+    public Sensor(String jmriName) {
+        mJmriName = jmriName;
+    }
+
+    public void init(IJmriProvider provider) {
+        mSensor = provider.getSensor(mJmriName);
     }
 
     @Override
     public boolean isActive() {
-        return mSensor.isActive();
+        return mSensor != null && mSensor.isActive();
     }
 }

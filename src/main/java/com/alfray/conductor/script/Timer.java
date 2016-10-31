@@ -2,14 +2,16 @@ package com.alfray.conductor.script;
 
 public class Timer implements IConditional {
 
-    private final String mName;
     private final int mDurationSec;
     private long mEndTS;
 
-    public Timer(String name, int durationSec) {
-        mName = name;
+    public Timer(int durationSec) {
         mDurationSec = durationSec;
         mEndTS = 0;
+    }
+
+    public int getDurationSec() {
+        return mDurationSec;
     }
 
     public IFunction.Int createFunctionStart() {
