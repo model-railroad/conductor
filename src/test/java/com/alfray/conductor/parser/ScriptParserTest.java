@@ -323,8 +323,21 @@ public class ScriptParserTest {
 
     @Test
     public void testScript1() throws Exception {
-        String script1 = Resources.toString(Resources.getResource("script1.txt"), Charsets.UTF_8);
-        assertThat(script1).isNotNull();
+        String source = Resources.toString(Resources.getResource("script1.txt"), Charsets.UTF_8);
+        assertThat(source).isNotNull();
+        Script script = ScriptParser.parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testScript2() throws Exception {
+        String source = Resources.toString(Resources.getResource("script2.txt"), Charsets.UTF_8);
+        assertThat(source).isNotNull();
+        Script script = ScriptParser.parse(source, mReporter);
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
     }
 
     public static class TestReporter extends ScriptParser.Reporter {

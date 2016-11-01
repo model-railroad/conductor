@@ -71,7 +71,7 @@ public class ScriptParser {
 
             int comment = line.indexOf('#');
             if (comment >= 0) {
-                line = line.substring(comment);
+                line = line.substring(0, comment);
             }
 
             line = line.trim();
