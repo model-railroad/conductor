@@ -34,9 +34,9 @@ public class ThrottleTest {
         IJmriProvider provider = mock(IJmriProvider.class);
         when(provider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
-        mThrottle = new Throttle();
+        mThrottle = new Throttle(42);
 
-        mThrottle.init(provider, 42);
+        mThrottle.init(provider);
         verify(provider).getThrotlle(42);
 
         fwd = mThrottle.createFunctionForward();

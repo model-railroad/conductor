@@ -29,14 +29,14 @@ public class ScriptParserTest {
 
     @Test
     public void testDefineVar() throws Exception {
-        String source = "  Var DCC    = 1201 ";
+        String source = "  Var VALUE    = 1201 ";
         Script script = ScriptParser.parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("dcc")).isNotNull();
-        Var var = script.getVar("DCC");
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
         assertThat(var.getValue()).isEqualTo(1201);
     }
 
@@ -68,15 +68,15 @@ public class ScriptParserTest {
     public void testStopForwardParallel() throws Exception {
         // This starts with a throttle in the stopped state (speed == 0).
         // Note the possible ambiguity: checking for "stopped" sets the throttle to forward
-        // then checing for forward sets it to stop. The script is set in such a way that
+        // then checking for forward sets it to stop. The script is set in such a way that
         // all conditions are checked first, so the throttle will always be in either the
         // forward or stopped condition and only one of the two actions can be executed but
         // never both.
         String source = "" +
-                "var dcc = 42 \n " +
+                "throttle T1 = 42 \n " +
                 "var speed = 5 \n " +
-                "stopped -> forward = speed \n" +
-                "forward -> stop";
+                "t1 stopped -> t1 forward = speed \n" +
+                "t1 forward -> t1 stop";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -94,23 +94,23 @@ public class ScriptParserTest {
         script.handle();
         verify(throttle).setSpeed(5);
         verify(throttle, never()).setSpeed(0);
-        assertThat(script.getThrottle().getSpeed()).isEqualTo(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
 
         // Execute with throttle at speed 5
         reset(throttle);
         script.handle();
         verify(throttle, never()).setSpeed(5);
         verify(throttle).setSpeed(0);
-        assertThat(script.getThrottle().getSpeed()).isEqualTo(0);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
     }
 
     @Test
     public void testStopForwardSequence() throws Exception {
         String source = "" +
-                "var dcc = 42 \n " +
+                "throttle T1 = 42 \n " +
                 "var speed = 5 \n " +
-                "stopped -> forward = speed ; stop \n" +
-                "forward -> stop ; forward = speed ";
+                "t1 stopped -> t1 forward = speed ; t1 stop \n" +
+                "t1 forward -> t1 stop ; t1 forward = speed ";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -128,25 +128,25 @@ public class ScriptParserTest {
         script.handle();
         verify(throttle).setSpeed(0);
         verify(throttle).setSpeed(5);
-        assertThat(script.getThrottle().getSpeed()).isEqualTo(0);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
 
         // Execute with throttle at speed 5
-        script.getThrottle().setSpeed(5);
+        script.getThrottle("t1").setSpeed(5);
         reset(throttle);
         script.handle();
         verify(throttle).setSpeed(0);
         verify(throttle).setSpeed(5);
-        assertThat(script.getThrottle().getSpeed()).isEqualTo(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
     }
 
     @Test
     public void testActionVar() throws Exception {
 
         String source = "" +
-                "var dcc=42\n " +
+                "throttle T1=42\n " +
                 "var myVar=5\n " +
-                "stopped->myVar=0\n" +
-                "forward->myVar=1 ";
+                "t1 stopped->myVar=0\n" +
+                "t1 forward->myVar=1 ";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -166,7 +166,7 @@ public class ScriptParserTest {
         assertThat(script.getVar("myvar").getValue()).isEqualTo(0);
 
         // Execute with throttle at speed 5
-        script.getThrottle().setSpeed(5);
+        script.getThrottle("t1").setSpeed(5);
         script.handle();
         assertThat(script.getVar("myvar").getValue()).isEqualTo(1);
     }
@@ -174,9 +174,9 @@ public class ScriptParserTest {
     @Test
     public void testActionSound() throws Exception {
         String source = "" +
-                "var dcc = 42 \n " +
-                "stopped -> Sound=0 \n" +
-                "forward -> Sound=1";
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Sound=0 \n" +
+                "t1 forward -> t1 Sound=1";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -196,7 +196,7 @@ public class ScriptParserTest {
 
         // Execute with throttle at forward speed
         reset(throttle);
-        script.getThrottle().setSpeed(5);
+        script.getThrottle("t1").setSpeed(5);
         script.handle();
         verify(throttle).setSound(true);
     }
@@ -204,9 +204,9 @@ public class ScriptParserTest {
     @Test
     public void testActionLight() throws Exception {
         String source = "" +
-                "var dcc = 42 \n " +
-                "stopped -> Light=0 \n" +
-                "forward -> Light=1";
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Light=0 \n" +
+                "t1 forward -> t1 Light=1";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -226,7 +226,7 @@ public class ScriptParserTest {
 
         // Execute with throttle at forward speed
         reset(throttle);
-        script.getThrottle().setSpeed(5);
+        script.getThrottle("t1").setSpeed(5);
         script.handle();
         verify(throttle).setLight(true);
     }
@@ -234,9 +234,9 @@ public class ScriptParserTest {
     @Test
     public void testActionHorn() throws Exception {
         String source = "" +
-                "var dcc = 42 \n " +
-                "stopped -> Horn \n" +
-                "forward -> Horn=1";
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Horn \n" +
+                "t1 forward -> t1 Horn=1";
 
         Script script = ScriptParser.parse(source, mReporter);
 
@@ -256,7 +256,7 @@ public class ScriptParserTest {
 
         // Execute with throttle at forward speed
         reset(throttle);
-        script.getThrottle().setSpeed(5);
+        script.getThrottle("t1").setSpeed(5);
         script.handle();
         verify(throttle).horn();
     }
@@ -264,13 +264,13 @@ public class ScriptParserTest {
     @Test
     public void testActionSensor() throws Exception {
         String source = "" +
-                "var dcc = 42 \n " +
+                "throttle T1 = 42 \n " +
                 "sensor b1  = NS42 \n" +
                 "sensor b777= NS7805 \n" +
-                "!b1         -> Light=0 \n" +
-                " b1         -> Light=1 \n" +
-                " b1 + !b777 -> Sound=0 \n" +
-                " b1 +  b777 -> Sound=1 \n" ;
+                "!b1         -> t1 Light=0 \n" +
+                " b1         -> t1 Light=1 \n" +
+                " b1 + !b777 -> t1 Sound=0 \n" +
+                " b1 +  b777 -> t1 Sound=1 \n" ;
 
         Script script = ScriptParser.parse(source, mReporter);
 

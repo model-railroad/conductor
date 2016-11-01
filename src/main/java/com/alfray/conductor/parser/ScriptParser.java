@@ -94,32 +94,35 @@ public class ScriptParser {
             return null;
         }
 
-        // Initializations for var, sensor and timer
+        // Initializations for throttle, var, sensor and timer
         if (tokens.size() == 4 && tokens.get(2).equals("=")) {
+            String type = tokens.get(0);
             String name = tokens.get(1);
-            if (tokens.get(0).equals("var")) {
+
+            if (script.getThrottle(name) != null || script.getConditional(name) != null) {
+                return "Name " + name + " is already defined.";
+            }
+
+            if (type.equals("throttle")) {
+                Throttle throttle = new Throttle(Integer.parseInt(tokens.get(3)));
+                script.addThrottle(name, throttle);
+                return null;
+            }
+
+            if (type.equals("var")) {
                 Var var = new Var(Integer.parseInt(tokens.get(3)));
-                if (script.getVar(name) != null) {
-                    return "Var " + name + " is already defined.";
-                }
                 script.addVar(name, var);
                 return null;
             }
 
-            if (tokens.get(0).equals("sensor")) {
+            if (type.equals("sensor")) {
                 Sensor sensor = new Sensor(tokens.get(3));
-                if (script.getSensor(name) != null) {
-                    return "Sensor " + name + " is already defined.";
-                }
                 script.addSensor(name, sensor);
                 return null;
             }
 
-            if (tokens.get(0).equals("timer")) {
+            if (type.equals("timer")) {
                 Timer timer = new Timer(Integer.parseInt(tokens.get(3)));
-                if (script.getTimer(name) != null) {
-                    return "Timer " + name + " is already defined.";
-                }
                 script.addTimer(name, timer);
                 return null;
             }
@@ -202,16 +205,25 @@ public class ScriptParser {
             List<String> tokens,
             int sep) {
 
-        Throttle throttle = script.getThrottle();
-        EnumMap<ThrottleCondition, IConditional> throttleCondEnumMap =
-                new EnumMap<>(ThrottleCondition.class);
-        throttleCondEnumMap.put(ThrottleCondition.FORWARD, throttle.createIsForward());
-        throttleCondEnumMap.put(ThrottleCondition.REVERSE, throttle.createIsReverse());
-        throttleCondEnumMap.put(ThrottleCondition.STOPPED, throttle.createIsStopped());
+        TreeMap<String, IConditional> throttleMap = new TreeMap<>();
+        for (String name : script.getThrottleNames()) {
+            name = name.toLowerCase(Locale.US);
+            Throttle throttle = script.getThrottle(name);
+            throttleMap.put(
+                    name + "!" + ThrottleCondition.FORWARD.toString().toLowerCase(Locale.US),
+                    throttle.createIsForward());
+            throttleMap.put(
+                    name + "!" + ThrottleCondition.REVERSE.toString().toLowerCase(Locale.US),
+                    throttle.createIsReverse());
+            throttleMap.put(
+                    name + "!" + ThrottleCondition.STOPPED.toString().toLowerCase(Locale.US),
+                    throttle.createIsStopped());
+        }
+
 
         boolean negated = false;
         for (int i = 0; i < sep; i++) {
-            String token = tokens.get(i);
+            String token = tokens.get(i).toLowerCase(Locale.US);
             if (token.equals("+")) {
                 // no-op, skip
                 continue;
@@ -226,10 +238,19 @@ public class ScriptParser {
             IConditional cond = script.getConditional(token);
             // Might be a throttle state
             if (cond == null) {
-                try {
-                    ThrottleCondition value = ThrottleCondition.valueOf(token.toUpperCase(Locale.US));
-                    cond = throttleCondEnumMap.get(value);
-                } catch (IllegalArgumentException ignore) {} // enum not found
+                Throttle throttle = script.getThrottle(token);
+                if (throttle != null) {
+                    i++;
+                    if (i >= sep) {
+                        return String.format("Expected throttle condition after %s", token);
+                    }
+                    String condName = tokens.get(i).toLowerCase(Locale.US);
+                    cond = throttleMap.get(token + "!" + condName);
+                    if (cond == null) {
+                        return String.format("Expected throttle condition after %s but found %s",
+                                token, condName);
+                    }
+                }
             }
             if (cond != null) {
                 event.addConditional(cond, negated);
@@ -248,31 +269,48 @@ public class ScriptParser {
             List<String> tokens,
             int sep) {
 
-        Throttle throttle = script.getThrottle();
-        TreeMap<String, IFunction.Int> funcMap = new TreeMap<>();
-        funcMap.put("forward", throttle.createFunctionForward());
-        funcMap.put("reverse", throttle.createFunctionReverse());
-        funcMap.put("stop", throttle.createFunctionStop());
-        funcMap.put("light", throttle.createFunctionLight());
-        funcMap.put("sound", throttle.createFunctionSound());
-        funcMap.put("horn", throttle.createFunctionHorn());
-        for (String varName : script.getVarNames()) {
-            funcMap.put(varName, script.getVar(varName));
+        TreeMap<String, IFunction.Int> throttleMap = new TreeMap<>();
+        for (String name : script.getThrottleNames()) {
+            name = name.toLowerCase(Locale.US);
+            Throttle throttle = script.getThrottle(name);
+            throttleMap.put(name + "!forward", throttle.createFunctionForward());
+            throttleMap.put(name + "!reverse", throttle.createFunctionReverse());
+            throttleMap.put(name + "!stop", throttle.createFunctionStop());
+            throttleMap.put(name + "!light", throttle.createFunctionLight());
+            throttleMap.put(name + "!sound", throttle.createFunctionSound());
+            throttleMap.put(name + "!horn", throttle.createFunctionHorn());
         }
 
-        int n = tokens.size() - sep - 2; // num tokens after index i
-        for (int i = sep + 1; n >= 0; ) {
+        int n = tokens.size() - sep - 1; // num tokens including index i
+        for (int i = sep + 1; n > 0; ) {
             // Expected forms:
-            // Function|VarId = Value [;]
-            // Function [;]
+            // [Throttle] Function|VarId = Value|Timer [;]
+            // [Throttle] Function [;]
             // The ; is optional for the last action.
-            String i0 = tokens.get(i);
+            String i0 = tokens.get(i).toLowerCase(Locale.US);
 
-            // n is the number of tokens *after* i0; it can be zero
-            // when using the "function ; " form with the last ; not present
+            IFunction.Int function = null;
+            IValue.Int value = null;
 
-            // First token should be followed by either = or ; or nothing
-            String i1 = n < 1 ? null : tokens.get(i+1);
+            Throttle throttle = script.getThrottle(i0);
+
+            if (throttle != null) {
+                i++; n--;
+                if (n <= 0) {
+                    return String.format("Expected throttle action after %s", i0);
+                }
+                String i1 = tokens.get(i).toLowerCase(Locale.US);
+
+                function = throttleMap.get(i0 + "!" + i1);
+                if (function == null) {
+                    return String.format("Expected throttle action after %s but found %s", i0, i1);
+                }
+
+                i0 = i1;
+            }
+
+            // Initial token should be followed by either = or ; or nothing
+            String i1 = n <= 1 ? null : tokens.get(i+1);
             if (!(i1 == null || i1.equals(";") || i1.equals("="))) {
                 return String.format("Expected ; or = after %s but found %s", i0, i1);
             }
@@ -281,8 +319,8 @@ public class ScriptParser {
 
             String i2 = "0";
             if (!shortForm) {
-                i2 = n < 2 ? null : tokens.get(i+2);
-                String i3 = n < 3 ? null : tokens.get(i+3);
+                i2 = n <= 2 ? null : tokens.get(i+2);
+                String i3 = n <= 3 ? null : tokens.get(i+3);
 
                 if (!i1.equals("=") || i2 == null || !(i3 == null || i3.equals(";"))) {
                     return String.format("Expected '= value ;' after %s", i0);
@@ -290,33 +328,40 @@ public class ScriptParser {
             }
 
             // i2 should be:
+            // - a throttle action (already found)
             // - a variable name or an integer
             // - a timer name, as a special case for timers
-
-            IFunction.Int function = null;
-            IValue.Int value = null;
-            try {
-                TimerAction timerAction = TimerAction.valueOf(i0.toUpperCase(Locale.US));
-                Timer timer = script.getTimer(i2);
-                if (timer == null) {
-                    return String.format("Expected timer name after %s but found %s", i0, i2);
-                }
-                switch (timerAction) {
-                case START:
-                    function = timer.createFunctionStart();
-                    break;
-                case END:
-                    function = timer.createFunctionEnd();
-                    break;
-                }
-            } catch (IllegalArgumentException ignore) {} // enum not found
+            boolean isTimer = false;
+            if (function == null) {
+                try {
+                    TimerAction timerAction = TimerAction.valueOf(i0.toUpperCase(Locale.US));
+                    Timer timer = script.getTimer(i2);
+                    if (timer == null) {
+                        return String.format("Expected timer name after %s but found %s", i0, i2);
+                    }
+                    switch (timerAction) {
+                    case START:
+                        function = timer.createFunctionStart();
+                        isTimer = true;
+                        break;
+                    case END:
+                        function = timer.createFunctionEnd();
+                        isTimer = true;
+                        break;
+                    }
+                } catch (IllegalArgumentException ignore) {
+                } // enum not found
+            }
 
             if (function == null) {
-                function = funcMap.get(i0);
-                if (function == null) {
-                    return String.format("Expected action but got %s", i0);
-                }
+                // Function is not a timer or a throttle, must be a variable name
+                function = script.getVar(i0);
+            }
+            if (function == null) {
+                return String.format("Expected timer or throttle or variable but found %s", i0);
+            }
 
+            if (!isTimer && !shortForm) {
                 // Value is either a variable or a literal number
                 value = script.getVar(i2);
                 if (value == null) {

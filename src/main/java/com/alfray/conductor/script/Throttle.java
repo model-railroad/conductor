@@ -4,15 +4,18 @@ import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 
 public class Throttle {
+    private final int mDccAddress;
     private IJmriThrottle mJmriThrottle;
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
 
-    public Throttle() {}
+    public Throttle(int dccAddress) {
+        mDccAddress = dccAddress;
+    }
 
-    public void init(IJmriProvider provider, int dccAddress) {
-        mJmriThrottle = provider.getThrotlle(dccAddress);
+    public void init(IJmriProvider provider) {
+        mJmriThrottle = provider.getThrotlle(mDccAddress);
     }
 
     public int getSpeed() {

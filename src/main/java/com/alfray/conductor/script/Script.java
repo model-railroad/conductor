@@ -10,13 +10,17 @@ import java.util.TreeMap;
 
 public class Script {
 
-    private final Throttle mThrottle = new Throttle();
+    private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
 
     public Script() {}
+
+    public void addThrottle(String name, Throttle throttle) {
+        mThrottles.put(name.toLowerCase(Locale.US), throttle);
+    }
 
     public void addVar(String name, Var var) {
         mVars.put(name.toLowerCase(Locale.US), var);
@@ -34,6 +38,10 @@ public class Script {
         mEvents.add(event);
     }
 
+    public Throttle getThrottle(String name) {
+        return mThrottles.get(name.toLowerCase(Locale.US));
+    }
+
     public Var getVar(String name) {
         return mVars.get(name.toLowerCase(Locale.US));
     }
@@ -44,10 +52,6 @@ public class Script {
 
     public Timer getTimer(String name) {
         return mTimers.get(name.toLowerCase(Locale.US));
-    }
-
-    public Throttle getThrottle() {
-        return mThrottle;
     }
 
     public IConditional getConditional(String name) {
@@ -69,6 +73,10 @@ public class Script {
         return new ArrayList<>(mVars.keySet());
     }
 
+    public ArrayList<String> getThrottleNames() {
+        return new ArrayList<>(mThrottles.keySet());
+    }
+
     /**
      * Initializes throttle and sensors before executing the script.
      *
@@ -76,14 +84,9 @@ public class Script {
      * @return An error if there's no DCC variable for the throttle DCC address.
      */
     public boolean setup(IJmriProvider provider) {
-        Var dccVar = mVars.get("dcc");
-        if (dccVar == null) {
-            System.out.println("Script Error: DCC variable is not defined");
-            return false;
+        for (Throttle throttle : mThrottles.values()) {
+            throttle.init(provider);
         }
-        int dccAddress = dccVar.getValue();
-
-        mThrottle.init(provider, dccAddress);
 
         for (Sensor sensor : mSensors.values()) {
             sensor.init(provider);
