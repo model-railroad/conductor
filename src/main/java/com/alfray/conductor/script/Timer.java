@@ -1,12 +1,23 @@
 package com.alfray.conductor.script;
 
+import com.alfray.conductor.util.NowProvider;
+
+/**
+ * A timer defined by a script.
+ * <p/>
+ * Timers are initialized with a specific duration. Scripts only start or end the timer.
+ * A timer is active once it has reached its expiration time and remains active until it
+ * is either restart or ended.
+ */
 public class Timer implements IConditional {
 
+    private final NowProvider mNowProvider;
     private final int mDurationSec;
     private long mEndTS;
 
-    public Timer(int durationSec) {
+    public Timer(int durationSec, NowProvider nowProvider) {
         mDurationSec = durationSec;
+        mNowProvider = nowProvider;
         mEndTS = 0;
     }
 
@@ -15,21 +26,11 @@ public class Timer implements IConditional {
     }
 
     public IFunction.Int createFunctionStart() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer ignored) {
-                mEndTS = now() + mDurationSec * 1000;
-            }
-        };
+        return ignored -> mEndTS = now() + mDurationSec * 1000;
     }
 
     public IFunction.Int createFunctionEnd() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer ignored) {
-                mEndTS = 0;
-            }
-        };
+        return ignored -> mEndTS = 0;
     }
 
     @Override
@@ -38,6 +39,6 @@ public class Timer implements IConditional {
     }
 
     public long now() {
-        return System.currentTimeMillis();
+        return mNowProvider.now();
     }
 }

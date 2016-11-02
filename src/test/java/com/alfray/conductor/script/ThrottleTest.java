@@ -36,7 +36,7 @@ public class ThrottleTest {
 
         mThrottle = new Throttle(42);
 
-        mThrottle.init(provider);
+        mThrottle.setup(provider);
         verify(provider).getThrotlle(42);
 
         fwd = mThrottle.createFunctionForward();

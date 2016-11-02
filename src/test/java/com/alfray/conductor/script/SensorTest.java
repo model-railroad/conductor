@@ -24,7 +24,7 @@ public class SensorTest {
 
         mSensor = new Sensor("name");
 
-        mSensor.init(provider);
+        mSensor.setup(provider);
         verify(provider).getSensor("name");
     }
 

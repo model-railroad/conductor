@@ -3,6 +3,14 @@ package com.alfray.conductor.script;
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 
+/**
+ * A throttle defined by a script.
+ * <p/>
+ * The actual JMRI sensor is only assigned via the {@link #setup(IJmriProvider)} method.
+ * <p/>
+ * This throttle object keeps track of its state (speed, light/sound state) and only
+ * uses its internal state to when providing values. JMRI is only used as a setter.
+ */
 public class Throttle {
     private final int mDccAddress;
     private IJmriThrottle mJmriThrottle;
@@ -10,11 +18,13 @@ public class Throttle {
     private boolean mSound;
     private boolean mLight;
 
+    /** Creates a new throttle for the given JMRI dcc address. */
     public Throttle(int dccAddress) {
         mDccAddress = dccAddress;
     }
 
-    public void init(IJmriProvider provider) {
+    /** Initializes the underlying JMRI sensor. */
+    public void setup(IJmriProvider provider) {
         mJmriThrottle = provider.getThrotlle(mDccAddress);
     }
 
@@ -30,110 +40,61 @@ public class Throttle {
     }
 
     public IFunction.Int createFunctionStop() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer speed) {
-                setSpeed(0);
-            }
-        };
+        return speed -> setSpeed(0);
     }
 
     public IFunction.Int createFunctionForward() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer speed) {
-                setSpeed(Math.max(0, speed));
-            }
-        };
+        return speed -> setSpeed(Math.max(0, speed));
     }
 
     public IFunction.Int createFunctionReverse() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer speed) {
-                setSpeed(-1 * Math.max(0, speed));
-            }
-        };
+        return speed -> setSpeed(-1 * Math.max(0, speed));
     }
 
     public IFunction.Int createFunctionSound() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer on) {
-                mSound = on != 0;
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.setSound(mSound);
-                }
+        return on -> {
+            mSound = on != 0;
+            if (mJmriThrottle != null) {
+                mJmriThrottle.setSound(mSound);
             }
         };
     }
 
     public IFunction.Int createFunctionLight() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer on) {
-                mLight = on != 0;
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.setLight(mLight);
-                }
+        return on -> {
+            mLight = on != 0;
+            if (mJmriThrottle != null) {
+                mJmriThrottle.setLight(mLight);
             }
         };
     }
 
     public IFunction.Int createFunctionHorn() {
-        return new IFunction.Int() {
-            @Override
-            public void setValue(Integer on) {
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.horn();
-                }
+        return on -> {
+            if (mJmriThrottle != null) {
+                mJmriThrottle.horn();
             }
         };
     }
 
     public IConditional createIsStopped() {
-        return new IConditional() {
-            @Override
-            public boolean isActive() {
-                return mSpeed == 0;
-            }
-        };
+        return () -> mSpeed == 0;
     }
 
     public IConditional createIsForward() {
-        return new IConditional() {
-            @Override
-            public boolean isActive() {
-                return mSpeed > 0;
-            }
-        };
+        return () -> mSpeed > 0;
     }
 
     public IConditional createIsReverse() {
-        return new IConditional() {
-            @Override
-            public boolean isActive() {
-                return mSpeed < 0;
-            }
-        };
+        return () -> mSpeed < 0;
     }
 
     public IConditional createIsSound() {
-        return new IConditional() {
-            @Override
-            public boolean isActive() {
-                return mSound;
-            }
-        };
+        return () -> mSound;
     }
 
     public IConditional createIsLight() {
-        return new IConditional() {
-            @Override
-            public boolean isActive() {
-                return mLight;
-            }
-        };
+        return () -> mLight;
     }
 
 }

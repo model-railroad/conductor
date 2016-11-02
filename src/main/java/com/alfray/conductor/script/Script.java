@@ -1,6 +1,7 @@
 package com.alfray.conductor.script;
 
 import com.alfray.conductor.IJmriProvider;
+import com.alfray.conductor.util.NowProvider;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -8,13 +9,31 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
-public class Script {
+/**
+ * A script with all its state as well as its "execution engine".
+ * <p/>
+ * A script is composed of typed variables (throttles, timers, sensors and integer
+ * variables) and a series of events.
+ * Each event is a combination of boolean conditions (acting as AND, all must be active)
+ * and a sequence of actions. Events fire on a "raising edge" means only when their condition
+ * switches from false to true. Once fire, the event will not be executed again till the condition
+ * first becomes false.
+ * <p/>
+ * The script follows the setup/handle format of a JMRI Jython script. A script must be first
+ * {@link #setup(IJmriProvider)} to link to the underlying JMRI throttles and sensors, then
+ * {@link #handle()} is called repeatedly to evaluate all conditions and execute all fired events.
+ * <p/>
+ * Implementation wise, the "execution engine" is so simple that it is integrated here instead
+ * of being factored out.
+ */
+public class Script extends NowProvider {
 
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
+    private final List<Event> mActivatedEvents = new LinkedList<>();
 
     public Script() {}
 
@@ -85,11 +104,11 @@ public class Script {
      */
     public boolean setup(IJmriProvider provider) {
         for (Throttle throttle : mThrottles.values()) {
-            throttle.init(provider);
+            throttle.setup(provider);
         }
 
         for (Sensor sensor : mSensors.values()) {
-            sensor.init(provider);
+            sensor.setup(provider);
         }
 
         return true;
@@ -120,22 +139,7 @@ public class Script {
         }
     }
 
-    private final List<Event> mActivatedEvents = new LinkedList<>();
-
-    private static class Action {
-        private final IFunction.Int mFunction;
-        private final IValue.Int mValue;
-
-        public Action(IFunction.Int function, IValue.Int value) {
-            mFunction = function;
-            mValue = value;
-        }
-
-        public void execute() {
-            mFunction.setValue(mValue.getValue());
-        }
-    }
-
+    /** Represents one event condition, which is composed of a conditional and can be negated. */
     private static class Cond {
         private final IConditional mConditional;
         private final boolean mNegated;
@@ -154,6 +158,22 @@ public class Script {
         }
     }
 
+    /** Represents one action, which is composed of a function (setter) and value (getter). */
+    private static class Action {
+        private final IFunction.Int mFunction;
+        private final IValue.Int mValue;
+
+        public Action(IFunction.Int function, IValue.Int value) {
+            mFunction = function;
+            mValue = value;
+        }
+
+        public void execute() {
+            mFunction.setValue(mValue.getValue());
+        }
+    }
+
+    /** Represents one event with its condition list, its action list and an "execution engine". */
     public static class Event {
         private final List<Cond> mConditions = new ArrayList<>();
         private final List<Action> mActions = new ArrayList<>();

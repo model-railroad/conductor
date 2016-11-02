@@ -8,6 +8,7 @@ import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Var;
+import com.alfray.conductor.util.NowProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
@@ -16,27 +17,43 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
+/**
+ * Parses a script and produces a new {@link Script}.
+ */
 public class ScriptParser {
 
+    /** The "->" symbol. */
     private static final char[] ActionToken = new char[] { '-', '>' };
+    /** Possible keyword delimiters, excluding the -> symbol and whitespace. */
     private static final String CharTokens = ":=;!";
 
+    /**
+     * Possible keywords for a throttle action.
+     * Must match IFunction.Int in the {@link Throttle} implementation.
+     */
     private enum ThrottleCondition {
         FORWARD,
         REVERSE,
         STOPPED
     }
 
+    /**
+     * Possible keywords for a timer action.
+     * Must match IFunction.Int in the {@link Timer} implementation.
+     */
     private enum TimerAction {
         START,
         END
     }
 
+    /**
+     * Helper to output an error message. <br/>
+     * This default implementation outputs to {@link System#out}.
+     */
     public static class Reporter {
         public void report(String line, int lineCount, String error) {
             System.out.println(String.format("Error at line %d: %s\n  Line: '%s'",
@@ -44,13 +61,35 @@ public class ScriptParser {
         }
     }
 
-    public static Script parse(File filepath, Reporter reporter) throws IOException {
+    /** Helper to create a timer, used to be overriden in tests. */
+    Timer createTimer(int durationSec, NowProvider nowProvider) {
+        return new Timer(durationSec, nowProvider);
+    }
+
+    /**
+     * Parses a script file.
+     *
+     * @param filepath The path of the file to be parsed.
+     * @param reporter A non-null reporter to report errors.
+     * @return A new {@link Script}.
+     * @throws IOException if the file is not found or can't be read from.
+     */
+    public Script parse(File filepath, Reporter reporter) throws IOException {
         try (BufferedReader reader = Files.newReader(filepath, Charsets.UTF_8)) {
             return parse(reader, reporter);
         }
     }
 
-    public static Script parse(String source, Reporter reporter) throws IOException {
+    /**
+     * Parses a script file.
+     *
+     *
+     * @param source The content of the file to be parsed.
+     * @param reporter A non-null reporter to report errors.
+     * @return A new {@link Script}.
+     * @throws IOException if the file is not found or can't be read from.
+     */
+    public Script parse(String source, Reporter reporter) throws IOException {
         try (StringReader sr = new StringReader(source)) {
             try (BufferedReader reader = new BufferedReader(sr)) {
                 return parse(reader, reporter);
@@ -58,7 +97,7 @@ public class ScriptParser {
         }
     }
 
-    private static Script parse(BufferedReader reader, Reporter reporter) throws IOException {
+    private Script parse(BufferedReader reader, Reporter reporter) throws IOException {
         Script script = new Script();
         int counter = 0;
         for (;;) {
@@ -87,7 +126,7 @@ public class ScriptParser {
         return script;
     }
 
-    private static String parseLine(Script script, String line) {
+    private String parseLine(Script script, String line) {
         line = line.toLowerCase(Locale.US);
         List<String> tokens = splitLine(line);
         if (tokens.isEmpty()) {
@@ -122,7 +161,8 @@ public class ScriptParser {
             }
 
             if (type.equals("timer")) {
-                Timer timer = new Timer(Integer.parseInt(tokens.get(3)));
+                int durationSec = Integer.parseInt(tokens.get(3));
+                Timer timer = createTimer(durationSec, script);
                 script.addTimer(name, timer);
                 return null;
             }
@@ -149,7 +189,7 @@ public class ScriptParser {
         return null;
     }
 
-    private static List<String> splitLine(String line) {
+    private List<String> splitLine(String line) {
         ArrayList<String> tokens = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
 
@@ -199,7 +239,7 @@ public class ScriptParser {
     }
 
     // Parse conditions : ([ cond | ! cond] +? ...)
-    private static String parseConditions(
+    private String parseConditions(
             Script.Event event,
             Script script,
             List<String> tokens,
@@ -263,7 +303,7 @@ public class ScriptParser {
         return null;
     }
 
-    private static String parseAction(
+    private String parseAction(
             Script.Event event,
             Script script,
             List<String> tokens,
@@ -383,7 +423,7 @@ public class ScriptParser {
     }
 
 
-    private static int indexOf(List<String> tokens, String search) {
+    private int indexOf(List<String> tokens, String search) {
         for (int i = 0; i < tokens.size(); i++) {
             if (tokens.get(i).equals(search)) {
                 return i;

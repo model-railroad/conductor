@@ -6,6 +6,7 @@ import com.alfray.conductor.IJmriThrottle;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Var;
+import com.alfray.conductor.util.NowProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -29,21 +31,21 @@ public class ScriptParserTest {
 
     @Test
     public void testDefineVar() throws Exception {
-        String source = "  Var VALUE    = 1201 ";
-        Script script = ScriptParser.parse(source, mReporter);
+        String source = "  Var VALUE    = 5201 # d&rgw ";
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
-        assertThat(var.getValue()).isEqualTo(1201);
+        assertThat(var.getValue()).isEqualTo(5201);
     }
 
     @Test
     public void testDefineSensor() throws Exception {
         String source = "  Sensor Alias   = NS784 ";
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -54,7 +56,7 @@ public class ScriptParserTest {
     @Test
     public void testDefineTimer() throws Exception {
         String source = "  Timer Timer-1 = 5 ";
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -78,7 +80,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 forward = speed \n" +
                 "t1 forward -> t1 stop";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -112,7 +114,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -148,7 +150,7 @@ public class ScriptParserTest {
                 "t1 stopped->myVar=0\n" +
                 "t1 forward->myVar=1 ";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -178,7 +180,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 Sound=0 \n" +
                 "t1 forward -> t1 Sound=1";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -208,7 +210,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 Light=0 \n" +
                 "t1 forward -> t1 Light=1";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -238,7 +240,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 Horn \n" +
                 "t1 forward -> t1 Horn=1";
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -272,7 +274,7 @@ public class ScriptParserTest {
                 " b1 + !b777 -> t1 Sound=0 \n" +
                 " b1 +  b777 -> t1 Sound=1 \n" ;
 
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -322,10 +324,58 @@ public class ScriptParserTest {
     }
 
     @Test
+    public void testTimer() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer t1  = 5 # seconds \n" +
+                "timer t2  = 2 \n" +
+                "th stopped -> start = t1\n" +
+                "t1         -> th horn ; start = t2 \n" +
+                "t2         -> end = t1 ; end = t2 ; th forward = 1 \n" ;
+
+        TestableNowProvider nowProvider = new TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser(nowProvider).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t1
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+        script.handle();
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+
+        // t1 is active 5 seconds later
+        nowProvider.add(5*1000 - 1);
+        script.handle();
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+
+        // Note: timer is still active because the "t1 ->" does not reset it with end yet.
+        // A timer remain active till it is either restarted or ended.
+        nowProvider.add(1);
+        script.handle();
+        verify(throttle).horn();
+        verify(throttle, never()).setSpeed(anyInt());
+        assertThat(script.getTimer("t1").isActive()).isTrue();
+
+        // t2 is active 2 seconds later. Both t1 and t2 get reset as soon as t2 becomes active.
+        nowProvider.add(2*1000);
+        script.handle();
+        verify(throttle).setSpeed(anyInt());
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+    }
+
+    @Test
     public void testScript1() throws Exception {
         String source = Resources.toString(Resources.getResource("script1.txt"), Charsets.UTF_8);
         assertThat(source).isNotNull();
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -335,12 +385,12 @@ public class ScriptParserTest {
     public void testScript2() throws Exception {
         String source = Resources.toString(Resources.getResource("script2.txt"), Charsets.UTF_8);
         assertThat(source).isNotNull();
-        Script script = ScriptParser.parse(source, mReporter);
+        Script script = new ScriptParser().parse(source, mReporter);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
 
-    public static class TestReporter extends ScriptParser.Reporter {
+    private static class TestReporter extends ScriptParser.Reporter {
         private String report = "";
 
         @Override
@@ -351,6 +401,36 @@ public class ScriptParserTest {
         @Override
         public String toString() {
             return report;
+        }
+    }
+
+    private static class TestableScriptParser extends ScriptParser {
+        private final NowProvider mNowProvider;
+
+        public TestableScriptParser(NowProvider nowProvider) {
+            mNowProvider = nowProvider;
+        }
+
+        @Override
+        Timer createTimer(int durationSec, NowProvider nowProvider) {
+            return super.createTimer(durationSec, mNowProvider);
+        }
+    }
+
+    private static class TestableNowProvider extends NowProvider {
+        private long mNow;
+
+        public TestableNowProvider(long now) {
+            mNow = now;
+        }
+
+        public void add(long now) {
+            mNow += now;
+        }
+
+        @Override
+        public long now() {
+            return mNow;
         }
     }
 }
