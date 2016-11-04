@@ -26,3 +26,5 @@ Timer-1 -> End = Timer-1 ; T1 Sound = 0; T1 Horn ; Var-1 = 1 ; T1 Reverse = Half
 !Timer-1 -> T1 Stop
 Block1 -> T42 = Normal
 !Block1 -> T42 = Reverse
+T42 -> T1 Forward = Half-Speed
+!T42 -> T1 Reverse = Half-Speed

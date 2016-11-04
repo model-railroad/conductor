@@ -8,12 +8,17 @@ import com.alfray.conductor.IJmriTurnout;
  * <p/>
  * The actual JMRI turnout is only assigned via the {@link #setup(IJmriProvider)} method.
  * <p/>
- * JMRI is only used as a setter. We don't use the internal turnout state.
+ * JMRI is only used as a setter. We don't use the JMRI turnout state and instead cache
+ * the last state set. The default state is normal.
+ * <p/>
+ * When used as a conditional, a turnout is true in its "normal" state and false
+ * in reverse.
  */
-public class Turnout {
+public class Turnout implements IConditional {
 
     private final String mJmriName;
     private IJmriTurnout mTurnout;
+    private boolean mIsNormal = true;
 
     /** Creates a new turnout for the given JMRI system name. */
     public Turnout(String jmriName) {
@@ -26,10 +31,22 @@ public class Turnout {
     }
 
     public IFunction.Int createFunctionNormal() {
-        return ignored -> mTurnout.setTurnout(IJmriTurnout.NORMAL);
+        return ignored -> setTurnout(IJmriTurnout.NORMAL);
     }
 
     public IFunction.Int createFunctionReverse() {
-        return ignored -> mTurnout.setTurnout(IJmriTurnout.REVERSE);
+        return ignored -> setTurnout(IJmriTurnout.REVERSE);
+    }
+
+    private void setTurnout(boolean normal) {
+        mIsNormal = normal;
+        if (mTurnout != null) {
+            mTurnout.setTurnout(normal);
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        return mIsNormal;
     }
 }

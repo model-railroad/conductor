@@ -2,10 +2,12 @@ package com.alfray.conductor.script;
 
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriTurnout;
+import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.google.common.truth.Truth.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -27,6 +29,8 @@ public class TurnoutTest {
 
         mTurnout.setup(provider);
         verify(provider).getTurnout("name");
+
+        assertThat(mTurnout.isActive()).isTrue();
     }
 
     @After
@@ -39,6 +43,8 @@ public class TurnoutTest {
         mTurnout.createFunctionNormal().setValue(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
+
+        assertThat(mTurnout.isActive()).isTrue();
     }
 
     @Test
@@ -46,5 +52,7 @@ public class TurnoutTest {
         mTurnout.createFunctionReverse().setValue(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
+
+        assertThat(mTurnout.isActive()).isFalse();
     }
 }

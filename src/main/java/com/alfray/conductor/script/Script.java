@@ -90,6 +90,9 @@ public class Script extends NowProvider {
         } else if (mSensors.containsKey(name)) {
             return mSensors.get(name);
 
+        } else if (mTurnouts.containsKey(name)) {
+            return mTurnouts.get(name);
+
         } else if (mTimers.containsKey(name)) {
             return mTimers.get(name);
         }
@@ -109,7 +112,6 @@ public class Script extends NowProvider {
         name = name.toLowerCase(Locale.US);
         return mThrottles.containsKey(name)
                 || mVars.containsKey(name)
-                || mTurnouts.containsKey(name)
                 || getConditional(name) != null;
     }
 

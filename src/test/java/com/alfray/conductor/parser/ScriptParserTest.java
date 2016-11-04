@@ -339,13 +339,15 @@ public class ScriptParserTest {
     }
 
     @Test
-    public void testTurnout() throws Exception {
+    public void testActionTurnout() throws Exception {
         String source = "" +
                 "throttle th = 42 \n " +
                 "turnout t1  = NT42 \n" +
                 "turnout t2  = NT43 \n" +
                 "th stopped -> t1 = normal ; t2 = reverse\n" +
-                "th forward -> t1 = reverse ; t2 = normal \n" ;
+                "th forward -> t1 = reverse ; t2 = normal \n" +
+                " t1        -> th sound = 0 \n" +
+                "!t2        -> th sound = 1 \n" ;
 
         Script script = new ScriptParser().parse(source, mReporter);
 
@@ -368,6 +370,13 @@ public class ScriptParserTest {
         script.handle();
         verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
         verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+        verify(throttle).setSound(false);
+        // Note: line "!t2->..." is not invoked at first because t2 was true in this handle call.
+        // The "t2 = reverse" action will only be noticed at the next handle call.
+        verify(throttle, never()).setSound(true);
+
+        script.handle();
+        verify(throttle).setSound(true);
 
         reset(turnout1);
         reset(turnout2);
