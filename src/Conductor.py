@@ -4,17 +4,20 @@
 import sys
 print "Jython Path:", sys.path      # debug
 
-import java
-import javax.swing
-from javax.swing import *
-
+# noinspection PyUnresolvedReferences
 import jmri
+# noinspection PyUnresolvedReferences
 import jmri.jmrit.automat.AbstractAutomaton as AbstractAutomaton
 
+# noinspection PyUnresolvedReferences
 import com.alfray.conductor.IJmriProvider as IJmriProvider
+# noinspection PyUnresolvedReferences
 import com.alfray.conductor.IJmriThrottle as IJmriThrottle
+# noinspection PyUnresolvedReferences
 import com.alfray.conductor.IJmriTurnout as IJmriTurnout
+# noinspection PyUnresolvedReferences
 import com.alfray.conductor.IJmriSensor as IJmriSensor
+# noinspection PyUnresolvedReferences
 import com.alfray.conductor.EntryPoint as ConductorEntryPoint
 
 
@@ -31,12 +34,16 @@ class JmriThrottleAdapter(IJmriThrottle):
         absv28 = speed28
         if absv28 < 0:
             absv28 = -absv28
+        # Script uses 0..28 steps; setSpeedSetting takes a float 0..1
         self._throttle.setSpeedSetting(absv28 / 28.)
 
     def setSound(self, on):
         """In: boolean on; Out: void"""
         print "[", self._address, "] Sound", on
-        self._throttle.setF8(not on)  # F8 true to mute
+        if self._address == 537:
+            self._throttle.setF1(not on)  # F1 true to mute this LokSound decoder
+        else:
+            self._throttle.setF8(not on)  # F8 true to mute all others
         self._provider.waitMsec(100)
 
     def setLight(self, on):
@@ -101,20 +108,25 @@ class JmriProvider(IJmriProvider):
 
 class Automation(AbstractAutomaton):
     def __init__(self):
-        print "AutomationPhase0 __init"
+        print "Conductor Automation __init"
 
-    # routine to show the panel, starting the whole process
+    # Setup the automation instance, call at end of script.
+    # noinspection PyAttributeOutsideInit
     def setup(self):
-        print "AutomationPhase0 SETUP"
-        self._provider = JmriProvider()
+        print "Conductor Automation SETUP"
+        self._provider = JmriProvider(self)
         self._entry = ConductorEntryPoint()
-        self._entry.setup(self._provider)
+        if self._entry.setup(self._provider, "events.txt"):
+            self.start()
 
-    # handle() will only execute once here, to run a single test
+    # handle() is called repeatedly as long as it returns true.
     def handle(self):
         # invoked after self.start ; stopped with self.stop
-        print "AutomationPhase0 HANDLE"
-        return self._entry.handle()
+        print "Conductor Automation HANDLE"
+        result = self._entry.handle()
+        if not result:
+            self.stop()
+        return result
 
 # create one of these
 a = Automation()
