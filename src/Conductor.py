@@ -13,6 +13,7 @@ import jmri.jmrit.automat.AbstractAutomaton as AbstractAutomaton
 
 import com.alfray.conductor.IJmriProvider as IJmriProvider
 import com.alfray.conductor.IJmriThrottle as IJmriThrottle
+import com.alfray.conductor.IJmriTurnout as IJmriTurnout
 import com.alfray.conductor.IJmriSensor as IJmriSensor
 import com.alfray.conductor.EntryPoint as ConductorEntryPoint
 
@@ -62,6 +63,19 @@ class JmriSensorAdapter(IJmriSensor):
         return self._sensor.knownState == jmri.Sensor.ACTIVE
 
 
+class JmriTurnoutAdapter(IJmriTurnout):
+    def __init__(self, name, turnout):
+        self._name = name
+        self._turnout = turnout
+
+    def setTurnout(self, normal):
+        """In: boolean normal; Out: void"""
+        if normal:
+            self._turnout.commandedState = jmri.Turnout.CLOSED
+        else:
+            self._turnout.commandedState = jmri.Turnout.THROWN
+
+
 class JmriProvider(IJmriProvider):
     def __init__(self, provider):
         self._provider = provider
@@ -78,6 +92,11 @@ class JmriProvider(IJmriProvider):
         """In: String systemName; Out: IJmriSensor"""
         sensor = self._provider.provideSensor(systemName)
         return JmriSensorAdapter(systemName, sensor)
+
+    def getTurnout(self, systemName):
+        """In: String systemName; Out: IJmriTurnout"""
+        turnout = self._provider.provideTurnout(systemName)
+        return JmriTurnoutAdapter(systemName, turnout)
 
 
 class Automation(AbstractAutomaton):
