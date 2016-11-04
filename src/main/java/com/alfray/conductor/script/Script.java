@@ -31,6 +31,7 @@ public class Script extends NowProvider {
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
+    private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
     private final List<Event> mActivatedEvents = new LinkedList<>();
@@ -47,6 +48,10 @@ public class Script extends NowProvider {
 
     public void addSensor(String name, Sensor sensor) {
         mSensors.put(name.toLowerCase(Locale.US), sensor);
+    }
+
+    public void addTurnout(String name, Turnout turnout) {
+        mTurnouts.put(name.toLowerCase(Locale.US), turnout);
     }
 
     public void addTimer(String name, Timer timer) {
@@ -69,6 +74,10 @@ public class Script extends NowProvider {
         return mSensors.get(name.toLowerCase(Locale.US));
     }
 
+    public Turnout getTurnout(String name) {
+        return mTurnouts.get(name.toLowerCase(Locale.US));
+    }
+
     public Timer getTimer(String name) {
         return mTimers.get(name.toLowerCase(Locale.US));
     }
@@ -88,12 +97,20 @@ public class Script extends NowProvider {
         return null;
     }
 
-    public ArrayList<String> getVarNames() {
-        return new ArrayList<>(mVars.keySet());
-    }
-
     public ArrayList<String> getThrottleNames() {
         return new ArrayList<>(mThrottles.keySet());
+    }
+
+    public ArrayList<String> getTurnoutNames() {
+        return new ArrayList<>(mTurnouts.keySet());
+    }
+
+    public boolean isExistingName(String name) {
+        name = name.toLowerCase(Locale.US);
+        return mThrottles.containsKey(name)
+                || mVars.containsKey(name)
+                || mTurnouts.containsKey(name)
+                || getConditional(name) != null;
     }
 
     /**
@@ -105,6 +122,10 @@ public class Script extends NowProvider {
     public boolean setup(IJmriProvider provider) {
         for (Throttle throttle : mThrottles.values()) {
             throttle.setup(provider);
+        }
+
+        for (Turnout turnout : mTurnouts.values()) {
+            turnout.setup(provider);
         }
 
         for (Sensor sensor : mSensors.values()) {

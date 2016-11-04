@@ -7,6 +7,7 @@ import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
 import com.alfray.conductor.script.Timer;
+import com.alfray.conductor.script.Turnout;
 import com.alfray.conductor.script.Var;
 import com.alfray.conductor.util.NowProvider;
 import com.google.common.base.Charsets;
@@ -48,6 +49,15 @@ public class ScriptParser {
     private enum TimerAction {
         START,
         END
+    }
+
+    /**
+     * Possible keywords for a turnout action.
+     * Must match IFunction.Int in the {@link Turnout} implementation.
+     */
+    private enum TurnoutAction {
+        NORMAL,
+        REVERSE
     }
 
     /**
@@ -138,7 +148,7 @@ public class ScriptParser {
             String type = tokens.get(0);
             String name = tokens.get(1);
 
-            if (script.getThrottle(name) != null || script.getConditional(name) != null) {
+            if (script.isExistingName(name)) {
                 return "Name " + name + " is already defined.";
             }
 
@@ -157,6 +167,12 @@ public class ScriptParser {
             if (type.equals("sensor")) {
                 Sensor sensor = new Sensor(tokens.get(3));
                 script.addSensor(name, sensor);
+                return null;
+            }
+
+            if (type.equals("turnout")) {
+                Turnout turnout = new Turnout(tokens.get(3));
+                script.addTurnout(name, turnout);
                 return null;
             }
 
@@ -311,7 +327,6 @@ public class ScriptParser {
 
         TreeMap<String, IFunction.Int> throttleMap = new TreeMap<>();
         for (String name : script.getThrottleNames()) {
-            name = name.toLowerCase(Locale.US);
             Throttle throttle = script.getThrottle(name);
             throttleMap.put(name + "!forward", throttle.createFunctionForward());
             throttleMap.put(name + "!reverse", throttle.createFunctionReverse());
@@ -321,10 +336,17 @@ public class ScriptParser {
             throttleMap.put(name + "!horn", throttle.createFunctionHorn());
         }
 
+        TreeMap<String, IFunction.Int> turnoutMap = new TreeMap<>();
+        for (String name : script.getTurnoutNames()) {
+            Turnout turnout = script.getTurnout(name);
+            turnoutMap.put(name + "!normal", turnout.createFunctionNormal());
+            turnoutMap.put(name + "!reverse", turnout.createFunctionReverse());
+        }
+
         int n = tokens.size() - sep - 1; // num tokens including index i
         for (int i = sep + 1; n > 0; ) {
             // Expected forms:
-            // [Throttle] Function|VarId = Value|Timer [;]
+            // [Throttle] Function|VarId = Value|Timer|TurnoutAction [;]
             // [Throttle] Function [;]
             // The ; is optional for the last action.
             String i0 = tokens.get(i).toLowerCase(Locale.US);
@@ -335,6 +357,8 @@ public class ScriptParser {
             Throttle throttle = script.getThrottle(i0);
 
             if (throttle != null) {
+                // Throttles have 2 leading words (throttle name + action) before =
+                // so capture the second action word.
                 i++; n--;
                 if (n <= 0) {
                     return String.format("Expected throttle action after %s", i0);
@@ -371,6 +395,7 @@ public class ScriptParser {
             // - a throttle action (already found)
             // - a variable name or an integer
             // - a timer name, as a special case for timers
+            // - a turnout action
             boolean isTimer = false;
             if (function == null) {
                 try {
@@ -393,15 +418,38 @@ public class ScriptParser {
                 } // enum not found
             }
 
+            boolean isTurnout = false;
+            if (function == null) {
+                try {
+                    TurnoutAction turnoutAction = TurnoutAction.valueOf(i2.toUpperCase(Locale.US));
+                    Turnout turnout = script.getTurnout(i0);
+                    if (turnout == null) {
+                        return String.format("Expected turnout name before %s but found %s", i2, i0);
+                    }
+                    switch (turnoutAction) {
+                    case NORMAL:
+                        function = turnout.createFunctionNormal();
+                        isTurnout = true;
+                        break;
+                    case REVERSE:
+                        function = turnout.createFunctionReverse();
+                        isTurnout = true;
+                        break;
+                    }
+                } catch (IllegalArgumentException ignore) {
+                } // enum not found
+            }
+
             if (function == null) {
                 // Function is not a timer or a throttle, must be a variable name
                 function = script.getVar(i0);
             }
+
             if (function == null) {
-                return String.format("Expected timer or throttle or variable but found %s", i0);
+                return String.format("Expected timer, turnout, throttle, or variable but found %s", i0);
             }
 
-            if (!isTimer && !shortForm) {
+            if (!isTurnout && !isTimer && !shortForm) {
                 // Value is either a variable or a literal number
                 value = script.getVar(i2);
                 if (value == null) {

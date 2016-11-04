@@ -6,7 +6,7 @@ import com.alfray.conductor.IJmriThrottle;
 /**
  * A throttle defined by a script.
  * <p/>
- * The actual JMRI sensor is only assigned via the {@link #setup(IJmriProvider)} method.
+ * The actual JMRI throttle is only assigned via the {@link #setup(IJmriProvider)} method.
  * <p/>
  * This throttle object keeps track of its state (speed, light/sound state) and only
  * uses its internal state to when providing values. JMRI is only used as a setter.

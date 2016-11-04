@@ -3,6 +3,7 @@ package com.alfray.conductor.parser;
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriSensor;
 import com.alfray.conductor.IJmriThrottle;
+import com.alfray.conductor.IJmriTurnout;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Var;
@@ -21,6 +22,9 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Tests for both {@link ScriptParser} *and* {@link Script} execution engine.
+ */
 public class ScriptParserTest {
     private TestReporter mReporter;
 
@@ -51,6 +55,17 @@ public class ScriptParserTest {
         assertThat(script).isNotNull();
 
         assertThat(script.getSensor("alias")).isNotNull();
+    }
+
+    @Test
+    public void testDefineTurnout() throws Exception {
+        String source = "  Turnout TT   = NS784 ";
+        Script script = new ScriptParser().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getTurnout("tt")).isNotNull();
     }
 
     @Test
@@ -324,6 +339,45 @@ public class ScriptParserTest {
     }
 
     @Test
+    public void testTurnout() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "turnout t1  = NT42 \n" +
+                "turnout t2  = NT43 \n" +
+                "th stopped -> t1 = normal ; t2 = reverse\n" +
+                "th forward -> t1 = reverse ; t2 = normal \n" ;
+
+        Script script = new ScriptParser().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriTurnout turnout1 = mock(IJmriTurnout.class);
+        IJmriTurnout turnout2 = mock(IJmriTurnout.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getTurnout("nt42")).thenReturn(turnout1);
+        when(provider.getTurnout("nt43")).thenReturn(turnout2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getTurnout("nt42");
+        verify(provider).getTurnout("nt43");
+
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
+        verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+
+        reset(turnout1);
+        reset(turnout2);
+        script.getThrottle("th").setSpeed(5);
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
+        verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
+    }
+
+    @Test
     public void testTimer() throws Exception {
         String source = "" +
                 "throttle th = 42 \n " +
@@ -376,7 +430,6 @@ public class ScriptParserTest {
         String source = Resources.toString(Resources.getResource("script1.txt"), Charsets.UTF_8);
         assertThat(source).isNotNull();
         Script script = new ScriptParser().parse(source, mReporter);
-
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }

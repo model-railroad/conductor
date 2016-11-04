@@ -1,12 +1,17 @@
 # Comment
 Throttle T1 = 1201
 Throttle T2 = 1202
+
 Var Var-1       = 1
 Var Half-Speed  = 4
 Var Full-Speed  = 8
 
 # define alias for sensors
 Sensor Alias   = NS784
+Sensor Block1 = NS785
+
+# define alias for turnouts
+Turnout T42 = NT420
 
 # define timers and their default value in seconds
 Timer Timer-1 = 5
@@ -19,3 +24,5 @@ T1 Reverse -> T1 Reverse = Half-Speed
 T1 Stopped -> T1 Stop
 Timer-1 -> End = Timer-1 ; T1 Sound = 0; T1 Horn ; Var-1 = 1 ; T1 Reverse = Half-Speed
 !Timer-1 -> T1 Stop
+Block1 -> T42 = Normal
+!Block1 -> T42 = Reverse

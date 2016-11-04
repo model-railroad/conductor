@@ -1,10 +1,17 @@
+# throttles
+
 Throttle PA = 1201
 Throttle BL = 1202
+
+# states
+
 Var PA-Enable       = 1
 Var PA-Half-Speed   = 4
 Var PA-Full-Speed   = 8
 Var BL-Half-Speed   = 4
 Var BL-Full-Speed   = 12
+
+# sensors
 
 Sensor BL-Toggle    = NS752      # 48:1
 Sensor BL-Run       = NS753      # 48:2
@@ -21,15 +28,25 @@ Sensor PA-Run3      = NS785      # 50:2
 Sensor P3.1         = NS788      # 50:3, B503a
 Sensor P3.2         = NS789      # 50:4, B503b
 
+# turnouts
+
+Turnout T503        = NT503
+Turnout T504        = NT504
+Turnout T311        = NT311
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T324        = NT324
+Turnout T330        = NT330
+Turnout T370        = NT370
 
 # define timers and their default value in seconds
 
 Timer PA-Timer-370    = 8
 Timer PA-Timer-Summit = 5
-Timer PA-Timer-P3.2     = 8
+Timer PA-Timer-P3.2   = 8
 Timer PA-Timer-Enable = 3
 
-Timer BL-Timer-Pause = 5
+Timer BL-Timer-Pause  = 5
 
 
 # ---------
@@ -37,8 +54,11 @@ Timer BL-Timer-Pause = 5
 # ---------
 
 # Setup
- PA-Toggle                            -> PA Sound = 1; PA Light = 1
+ PA-Toggle                            -> PA Sound = 1; PA Light = 1; PA-Enable = 1
  PA-Toggle + !PA-Enable  + PA-Run3    -> PA Horn
+
+PA-Toggle   -> T503 = Normal;  T504 = Normal; T311 = Reverse; T321 = Normal; T322 = Normal;
+PA-Toggle   -> T330 = Reverse; T370 = Normal
 
 # Departure
  P3.2 + PA Stopped + PA-Toggle + PA-Enable + PA-Run3 -> PA-Enable = 0; PA Horn; PA Forward = PA-Half-Speed
@@ -67,7 +87,7 @@ Timer BL-Timer-Pause = 5
 
 
 # Setup
- BL-Toggle                  -> BL Sound = 1; BL Light = 1
+ BL-Toggle                  -> BL Sound = 1; BL Light = 1; T324 = Normal
  BL-Toggle + !BL Stopped    -> BL Horn
 
 # Departure
