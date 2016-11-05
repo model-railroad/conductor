@@ -299,13 +299,13 @@ public class ScriptParserTest {
         IJmriSensor sensor1 = mock(IJmriSensor.class);
         IJmriSensor sensor2 = mock(IJmriSensor.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
-        when(provider.getSensor("ns42")).thenReturn(sensor1);
-        when(provider.getSensor("ns7805")).thenReturn(sensor2);
+        when(provider.getSensor("NS42")).thenReturn(sensor1);
+        when(provider.getSensor("NS7805")).thenReturn(sensor2);
 
         script.setup(provider);
         verify(provider).getThrotlle(42);
-        verify(provider).getSensor("ns42");
-        verify(provider).getSensor("ns7805");
+        verify(provider).getSensor("NS42");
+        verify(provider).getSensor("NS7805");
 
         when(sensor1.isActive()).thenReturn(false);
         when(sensor2.isActive()).thenReturn(false);
@@ -455,9 +455,18 @@ public class ScriptParserTest {
     private static class TestReporter extends ScriptParser.Reporter {
         private String report = "";
 
+        public TestReporter() {
+            super(null);
+        }
+
         @Override
         public void report(String line, int lineCount, String error) {
-            report += String.format("Error at line %d: %s\n", lineCount, error);
+            log(String.format("Error at line %d: %s\n", lineCount, error));
+        }
+
+        @Override
+        public void log(String msg) {
+            report += msg;
         }
 
         @Override

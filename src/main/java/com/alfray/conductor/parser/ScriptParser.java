@@ -9,6 +9,7 @@ import com.alfray.conductor.script.Throttle;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Turnout;
 import com.alfray.conductor.script.Var;
+import com.alfray.conductor.util.Logger;
 import com.alfray.conductor.util.NowProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -64,10 +65,25 @@ public class ScriptParser {
      * Helper to output an error message. <br/>
      * This default implementation outputs to {@link System#out}.
      */
-    public static class Reporter {
+    public static class Reporter implements Logger {
+        private Logger mLogger;
+
+        public Reporter(Logger logger) {
+            mLogger = logger;
+        }
+
         public void report(String line, int lineCount, String error) {
-            System.out.println(String.format("Error at line %d: %s\n  Line: '%s'",
-                    lineCount, error, line));
+            log(String.format("Error at line %d: %s\n  Line: '%s'", lineCount, error, line));
+        }
+
+        @Override
+        public void log(String msg) {
+            if (mLogger != null) {
+                if (msg.length() > 0 && !msg.endsWith("\n")) {
+                    msg = msg + "\n";
+                }
+                mLogger.log(msg);
+            }
         }
     }
 
@@ -108,7 +124,7 @@ public class ScriptParser {
     }
 
     private Script parse(BufferedReader reader, Reporter reporter) throws IOException {
-        Script script = new Script();
+        Script script = new Script(reporter);
         int counter = 0;
         for (;;) {
             String line = reader.readLine();
@@ -137,7 +153,6 @@ public class ScriptParser {
     }
 
     private String parseLine(Script script, String line) {
-        line = line.toLowerCase(Locale.US);
         List<String> tokens = splitLine(line);
         if (tokens.isEmpty()) {
             return null;
@@ -145,7 +160,7 @@ public class ScriptParser {
 
         // Initializations for throttle, var, sensor and timer
         if (tokens.size() == 4 && tokens.get(2).equals("=")) {
-            String type = tokens.get(0);
+            String type = tokens.get(0).toLowerCase(Locale.US);
             String name = tokens.get(1);
 
             if (script.isExistingName(name)) {
@@ -190,7 +205,7 @@ public class ScriptParser {
             return "Missing ->";
         }
 
-        Script.Event event = new Script.Event();
+        Script.Event event = new Script.Event(script.getLogger(), line);
         String error = parseConditions(event, script, tokens, sep);
         if (error != null) {
             return error;

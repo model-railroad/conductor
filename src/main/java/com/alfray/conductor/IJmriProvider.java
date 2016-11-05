@@ -1,9 +1,11 @@
 package com.alfray.conductor;
 
+import com.alfray.conductor.util.Logger;
+
 /**
  * Interface to JMRI to provide JMRI adapter objects.
  */
-public interface IJmriProvider {
+public interface IJmriProvider extends Logger {
     /** Returns a new JMRI throttle adapter for the given DCC long address. */
     IJmriThrottle getThrotlle(int dccAddress);
 

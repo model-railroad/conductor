@@ -1,0 +1,44 @@
+# throttles
+
+Throttle TGV = 537
+
+# states
+
+Var TGV-Half-Speed   =  4
+Var TGV-Full-Speed   = 12
+
+# sensors
+
+Sensor Prepare = NS48      # 48:1
+Sensor Start   = NS49      # 48:2
+
+# turnouts
+
+# Turnout T1 = TT1
+# Turnout T2 = TT2
+Turnout T3 = NT3
+Turnout T4 = NT4
+
+# define timers and their default value in seconds
+
+Timer TGV-Start =  5
+Timer TGV-Half  = 11
+Timer TGV-Full  = 12
+Timer TGV-Stop  = 11
+
+# ------
+# Events
+# ------
+
+# Setup
+
+Prepare -> TGV Light = 1
+Prepare -> T3 = Reverse; T4 = Reverse
+
+# Departure
+
+Start       -> TGV Light = 1; TGV Sound = 1; TGV Horn; Start = TGV-Start
+TGV-Start   -> End = TGV-Start; TGV Forward = TGV-Half-Speed; Start = TGV-Half; TGV Horn
+TGV-Half    -> End = TGV-Half;  TGV Forward = TGV-Full-Speed; Start = TGV-Full; TGV Horn
+TGV-Full    -> End = TGV-Full;  TGV Forward = 0;              Start = TGV-Stop; TGV Horn
+TGV-Stop    -> End = TGV-Stop;  TGV Horn; TGV Light = 0; TGV Sound = 0

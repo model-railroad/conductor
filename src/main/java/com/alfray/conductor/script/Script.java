@@ -1,6 +1,7 @@
 package com.alfray.conductor.script;
 
 import com.alfray.conductor.IJmriProvider;
+import com.alfray.conductor.util.Logger;
 import com.alfray.conductor.util.NowProvider;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import java.util.TreeMap;
  */
 public class Script extends NowProvider {
 
+    private final Logger mLogger;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
@@ -36,7 +38,13 @@ public class Script extends NowProvider {
     private final List<Event> mEvents = new ArrayList<>();
     private final List<Event> mActivatedEvents = new LinkedList<>();
 
-    public Script() {}
+    public Script(Logger logger) {
+        mLogger = logger;
+    }
+
+    public Logger getLogger() {
+        return mLogger;
+    }
 
     public void addThrottle(String name, Throttle throttle) {
         mThrottles.put(name.toLowerCase(Locale.US), throttle);
@@ -200,7 +208,14 @@ public class Script extends NowProvider {
     public static class Event {
         private final List<Cond> mConditions = new ArrayList<>();
         private final List<Action> mActions = new ArrayList<>();
+        private final Logger mLogger;
+        private final String mSrcLine;
         private boolean mExecuted;
+
+        public Event(Logger logger, String srcLine) {
+            mLogger = logger;
+            mSrcLine = srcLine;
+        }
 
         public void addConditional(IConditional condition, boolean negated) {
             mConditions.add(new Cond(condition, negated));
@@ -228,10 +243,11 @@ public class Script extends NowProvider {
             if (!mExecuted) {
                 for (Action action : mActions) {
                     try {
+                        mLogger.log("[Conductor] Exec: " + mSrcLine);
                         action.execute();
 
                     } catch (Exception e) {
-                        System.out.println("Action failed [" + action + "]: " + e);
+                        mLogger.log("[Conductor] Action failed [" + action + "]: " + e);
                     }
                 }
 

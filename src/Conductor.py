@@ -22,14 +22,15 @@ import com.alfray.conductor.EntryPoint as ConductorEntryPoint
 
 
 class JmriThrottleAdapter(IJmriThrottle):
-    def __init__(self, address, throttle):
+    def __init__(self, address, throttle, provider):
         self._address = address
         self._throttle = throttle
+        self._provider = provider
         self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
 
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
-        print "[", self._address, "] Speed", speed28
+        print "[Conductor", self._address, "] Speed", speed28
         self._throttle.setIsForward(speed28 >= 0)
         absv28 = speed28
         if absv28 < 0:
@@ -39,21 +40,21 @@ class JmriThrottleAdapter(IJmriThrottle):
 
     def setSound(self, on):
         """In: boolean on; Out: void"""
-        print "[", self._address, "] Sound", on
+        print "[Conductor", self._address, "] Sound", on
         if self._address == 537:
-            self._throttle.setF1(not on)  # F1 true to mute this LokSound decoder
+            self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
         else:
             self._throttle.setF8(not on)  # F8 true to mute all others
         self._provider.waitMsec(100)
 
     def setLight(self, on):
         """In: boolean on; Out: void"""
-        print "[", self._address, "] Light", on
+        print "[Conductor", self._address, "] Light", on
         self._throttle.setF0(on)
 
     def horn(self):
         """In: void; Out: void"""
-        print "[", self._address, "] Horn"
+        print "[Conductor", self._address, "] Horn"
         self._throttle.setF2(True)
         self._provider.waitMsec(100)
         self._throttle.setF2(False)
@@ -77,6 +78,7 @@ class JmriTurnoutAdapter(IJmriTurnout):
 
     def setTurnout(self, normal):
         """In: boolean normal; Out: void"""
+        print "[Conductor Turnout", self._name, "] set to ", normal
         if normal:
             self._turnout.commandedState = jmri.Turnout.CLOSED
         else:
@@ -90,41 +92,50 @@ class JmriProvider(IJmriProvider):
     def waitMsec(self, delayMs):
         self._provider.waitMsec(delayMs)
 
+    def log(self, msg):
+        """In: String msg; Out: void"""
+        print msg
+
     def getThrotlle(self, dccAddress):
         """In: int dccAddress; Out: IJmriThrottle"""
         throttle = self._provider.getThrottle(dccAddress, True) #isLong
-        return JmriThrottleAdapter(dccAddress, throttle)
+        print "[Conductor] Get Throttle", dccAddress, throttle
+        return JmriThrottleAdapter(dccAddress, throttle, self)
 
     def getSensor(self, systemName):
         """In: String systemName; Out: IJmriSensor"""
-        sensor = self._provider.provideSensor(systemName)
+        sensor = sensors.provideSensor(systemName)
+        print "[Conductor] Get Sensor", systemName, sensor
         return JmriSensorAdapter(systemName, sensor)
 
     def getTurnout(self, systemName):
         """In: String systemName; Out: IJmriTurnout"""
-        turnout = self._provider.provideTurnout(systemName)
+        turnout = turnouts.provideTurnout(systemName)
+        print "[Conductor] Get Turnout", systemName, turnout
         return JmriTurnoutAdapter(systemName, turnout)
 
 
 class Automation(AbstractAutomaton):
     def __init__(self):
-        print "Conductor Automation __init"
+        print "[Conductor] Automation __init"
 
     # Setup the automation instance, call at end of script.
     # noinspection PyAttributeOutsideInit
     def setup(self):
-        print "Conductor Automation SETUP"
+        print "[Conductor] Automation SETUP"
         self._provider = JmriProvider(self)
         self._entry = ConductorEntryPoint()
         if self._entry.setup(self._provider, "events.txt"):
+            print "[Conductor] Automation START"
             self.start()
 
     # handle() is called repeatedly as long as it returns true.
+    # Invoked after self.start; stopped with self.stop.
     def handle(self):
-        # invoked after self.start ; stopped with self.stop
-        print "Conductor Automation HANDLE"
+        # print "Conductor Automation HANDLE"
         result = self._entry.handle()
         if not result:
+            print "[Conductor] Automation STOP"
             self.stop()
         return result
 
@@ -132,7 +143,7 @@ class Automation(AbstractAutomaton):
 a = Automation()
 
 # set the name, as a example of configuring it
-a.setName("Conductor Test 0")
+a.setName("Conductor Automation")
 
 # and show the initial panel
 a.setup()

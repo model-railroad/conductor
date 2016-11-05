@@ -14,7 +14,7 @@ public class StatusWnd {
     private JButton mButtonChangeDcc1;
     private JButton mButtonChangeDcc2;
 
-    public StatusWnd() {
+    public void init() {
         mButtonReload.addActionListener(actionEvent -> {
 
         });
@@ -27,12 +27,13 @@ public class StatusWnd {
     }
 
     public static StatusWnd open() {
-        JFrame frame =new JFrame("Some Title");
+        JFrame frame = new JFrame("Some Title");
         StatusWnd statusWnd = new StatusWnd();
         frame.setContentPane(statusWnd.mPanel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+        statusWnd.init();
         return statusWnd;
     }
 }
