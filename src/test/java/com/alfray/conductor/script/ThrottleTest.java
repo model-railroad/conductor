@@ -35,6 +35,7 @@ public class ThrottleTest {
         when(provider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
         mThrottle = new Throttle(42);
+        assertThat(mThrottle.getDccAddress()).isEqualTo(42);
 
         mThrottle.setup(provider);
         verify(provider).getThrotlle(42);

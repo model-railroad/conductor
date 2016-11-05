@@ -5,16 +5,17 @@ import com.alfray.conductor.script.Script;
 import com.alfray.conductor.ui.StatusWnd;
 import com.alfray.conductor.util.LogException;
 import com.alfray.conductor.util.Logger;
+import javafx.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
     private IJmriProvider mJmriProvider;
     private IJmriThrottle mThrottle;
     private Script mScript;
+    private boolean mStopRequested;
 
     /**
      * Invoked when the JMRI automation is being setup, from the Jython script.
@@ -25,31 +26,22 @@ public class EntryPoint {
         Logger logger = jmriProvider;
         logger.log("Conductor: Setup");
         File filepath = new File(scriptFile);
-        final AtomicBoolean errorReported = new AtomicBoolean(false);
-        try {
-            mScript = new ScriptParser().parse(filepath, new ScriptParser.Reporter(logger) {
-                @Override
-                public void report(String line, int lineCount, String error) {
-                    super.report(line, lineCount, error);
-                    errorReported.set(true);
-                }
-            });
-            mScript.setup(jmriProvider);
-        } catch (IOException e) {
-            errorReported.set(true);
-            logger.log("[Conductor] Script Path: " + scriptFile);
-            logger.log("[Conductor] Full Path: " + filepath.getAbsolutePath());
-            logger.log("[Conductor] failed to load event script with the following exception:");
-            LogException.logException(logger, e);
-        }
-        if (errorReported.get()) {
+
+        if (loadScript(jmriProvider, scriptFile, logger, filepath).length() > 0) {
             return false;
         }
 
         // Open the window if a GUI is possible. This can fail.
         try {
             StatusWnd wnd = StatusWnd.open();
-            // TODO associate listener to mScript
+            wnd.init(
+                    filepath,
+                    mScript,
+                    () -> {
+                        String error = loadScript(jmriProvider, scriptFile, logger, filepath);
+                        return new Pair<>(mScript, error);
+                    },
+                    () -> mStopRequested = true);
 
         } catch (Exception e) {
             // Ignore. continue.
@@ -60,6 +52,41 @@ public class EntryPoint {
         return true;
     }
 
+    private String loadScript(IJmriProvider jmriProvider, String scriptFile, final Logger logger, File filepath) {
+        StringBuilder error = new StringBuilder();
+        ScriptParser.Reporter reporter = new ScriptParser.Reporter(logger) {
+            private boolean mIsReport;
+
+            @Override
+            public void report(String line, int lineCount, String error) {
+                mIsReport = true;
+                super.report(line, lineCount, error);
+                mIsReport = false;
+            }
+
+            @Override
+            public void log(String msg) {
+                super.log(msg);
+                if (mIsReport) {
+                    error.append(msg);
+                    if (msg.length() > 0 && !msg.endsWith("\n")) {
+                        error.append('\n');
+                    }
+                }
+            }
+        };
+        try {
+            mScript = new ScriptParser().parse(filepath, reporter);
+            mScript.setup(jmriProvider);
+        } catch (IOException e) {
+            logger.log("[Conductor] Script Path: " + scriptFile);
+            logger.log("[Conductor] Full Path: " + filepath.getAbsolutePath());
+            logger.log("[Conductor] failed to load event script with the following exception:");
+            LogException.logException(logger, e);
+        }
+        return error.toString();
+    }
+
     /**
      * Invoked repeatedly by the automation Jython handler if {@link #setup(IJmriProvider, String)}
      * returned true.
@@ -68,7 +95,9 @@ public class EntryPoint {
      */
     public boolean handle() {
         System.out.println("Conductor: Handle");
-        // TODO: if wnd != null && wnd.mMustStop then { wnd.close; wnd = null; return false; }
+        if (mStopRequested) {
+            return false;
+        }
         if (mScript != null) {
             mScript.handle();
             return true;

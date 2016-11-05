@@ -108,11 +108,11 @@ public class Script extends NowProvider {
         return null;
     }
 
-    public ArrayList<String> getThrottleNames() {
+    public List<String> getThrottleNames() {
         return new ArrayList<>(mThrottles.keySet());
     }
 
-    public ArrayList<String> getTurnoutNames() {
+    public List<String> getTurnoutNames() {
         return new ArrayList<>(mTurnouts.keySet());
     }
 

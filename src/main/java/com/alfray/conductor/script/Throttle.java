@@ -28,6 +28,10 @@ public class Throttle {
         mJmriThrottle = provider.getThrotlle(mDccAddress);
     }
 
+    public int getDccAddress() {
+        return mDccAddress;
+    }
+
     public int getSpeed() {
         return mSpeed;
     }
