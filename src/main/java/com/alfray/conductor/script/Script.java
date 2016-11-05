@@ -229,16 +229,16 @@ public class Script extends NowProvider {
 
     /** Represents one action, which is composed of a function (setter) and value (getter). */
     private static class Action {
-        private final IFunction.Int mFunction;
-        private final IValue.Int mValue;
+        private final IIntFunction mFunction;
+        private final IIntValue mValue;
 
-        public Action(IFunction.Int function, IValue.Int value) {
+        public Action(IIntFunction function, IIntValue value) {
             mFunction = function;
             mValue = value;
         }
 
         public void execute() {
-            mFunction.setValue(mValue.getValue());
+            mFunction.accept(mValue.getAsInt());
         }
     }
 
@@ -259,7 +259,7 @@ public class Script extends NowProvider {
             mConditions.add(new Cond(condition, negated));
         }
 
-        public void addAction(IFunction.Int function, IValue.Int value) {
+        public void addAction(IIntFunction function, IIntValue value) {
             mActions.add(new Action(function, value));
         }
 

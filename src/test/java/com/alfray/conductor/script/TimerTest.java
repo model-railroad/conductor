@@ -13,7 +13,7 @@ public class TimerTest {
 
         assertThat(timer.isActive()).isFalse();
 
-        timer.createFunctionStart().setValue(1);
+        timer.createFunctionStart().accept(1);
         assertThat(timer.isActive()).isFalse();
 
         provider.setNow(141*1000);
@@ -26,7 +26,7 @@ public class TimerTest {
         provider.setNow(200*1000);
         assertThat(timer.isActive()).isTrue();
 
-        timer.createFunctionEnd().setValue(1);
+        timer.createFunctionEnd().accept(1);
         assertThat(timer.isActive()).isFalse();
     }
 

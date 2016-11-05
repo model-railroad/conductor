@@ -1,6 +1,6 @@
 package com.alfray.conductor.script;
 
-public class Var implements IConditional, IFunction.Int, IValue.Int {
+public class Var implements IConditional, IIntFunction, IIntValue {
 
     private int mValue;
 
@@ -14,12 +14,12 @@ public class Var implements IConditional, IFunction.Int, IValue.Int {
     }
 
     @Override
-    public Integer getValue() {
+    public int getAsInt() {
         return mValue;
     }
 
     @Override
-    public void setValue(Integer value) {
+    public void accept(int value) {
         mValue = value;
     }
 }

@@ -2,7 +2,6 @@ package com.alfray.conductor.script;
 
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriTurnout;
-import com.google.common.truth.Truth;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +39,7 @@ public class TurnoutTest {
 
     @Test
     public void testNormal() throws Exception {
-        mTurnout.createFunctionNormal().setValue(0);
+        mTurnout.createFunctionNormal().accept(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
 
@@ -49,7 +48,7 @@ public class TurnoutTest {
 
     @Test
     public void testReverse() throws Exception {
-        mTurnout.createFunctionReverse().setValue(0);
+        mTurnout.createFunctionReverse().accept(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
 

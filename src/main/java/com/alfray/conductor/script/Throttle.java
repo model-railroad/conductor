@@ -3,8 +3,6 @@ package com.alfray.conductor.script;
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 
-import java.util.function.IntConsumer;
-
 /**
  * A throttle defined by a script.
  * <p/>
@@ -19,7 +17,7 @@ public class Throttle {
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
-    private IntConsumer mSpeedListener;
+    private IIntFunction mSpeedListener;
 
     /** Creates a new throttle for the given JMRI dcc address. */
     public Throttle(int dccAddress) {
@@ -51,23 +49,23 @@ public class Throttle {
         }
     }
 
-    public void setSpeedListener(IntConsumer speedListener) {
+    public void setSpeedListener(IIntFunction speedListener) {
         mSpeedListener = speedListener;
     }
 
-    public IFunction.Int createFunctionStop() {
+    public IIntFunction createFunctionStop() {
         return speed -> setSpeed(0);
     }
 
-    public IFunction.Int createFunctionForward() {
+    public IIntFunction createFunctionForward() {
         return speed -> setSpeed(Math.max(0, speed));
     }
 
-    public IFunction.Int createFunctionReverse() {
+    public IIntFunction createFunctionReverse() {
         return speed -> setSpeed(-1 * Math.max(0, speed));
     }
 
-    public IFunction.Int createFunctionSound() {
+    public IIntFunction createFunctionSound() {
         return on -> {
             mSound = on != 0;
             if (mJmriThrottle != null) {
@@ -76,7 +74,7 @@ public class Throttle {
         };
     }
 
-    public IFunction.Int createFunctionLight() {
+    public IIntFunction createFunctionLight() {
         return on -> {
             mLight = on != 0;
             if (mJmriThrottle != null) {
@@ -85,7 +83,7 @@ public class Throttle {
         };
     }
 
-    public IFunction.Int createFunctionHorn() {
+    public IIntFunction createFunctionHorn() {
         return on -> {
             if (mJmriThrottle != null) {
                 mJmriThrottle.horn();

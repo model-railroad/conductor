@@ -16,11 +16,11 @@ import static org.mockito.Mockito.when;
 public class ThrottleTest {
     private IJmriThrottle mJmriThrottle;
     private Throttle mThrottle;
-    private IFunction.Int fwd;
-    private IFunction.Int rev;
-    private IFunction.Int stop;
-    private IFunction.Int sound;
-    private IFunction.Int light;
+    private IIntFunction fwd;
+    private IIntFunction rev;
+    private IIntFunction stop;
+    private IIntFunction sound;
+    private IIntFunction light;
     private IConditional isFwd;
     private IConditional isRev;
     private IConditional isStop;
@@ -66,14 +66,14 @@ public class ThrottleTest {
 
     @Test
     public void testForward() throws Exception {
-        fwd.setValue(42);
+        fwd.accept(42);
         verify(mJmriThrottle).setSpeed(42);
 
         assertThat(isFwd.isActive()).isTrue();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isFalse();
 
-        fwd.setValue(-42);
+        fwd.accept(-42);
         verify(mJmriThrottle).setSpeed(0);
 
         assertThat(isFwd.isActive()).isFalse();
@@ -83,14 +83,14 @@ public class ThrottleTest {
 
     @Test
     public void testReverse() throws Exception {
-        rev.setValue(42);
+        rev.accept(42);
         verify(mJmriThrottle).setSpeed(-42);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isTrue();
         assertThat(isStop.isActive()).isFalse();
 
-        rev.setValue(-42);
+        rev.accept(-42);
         verify(mJmriThrottle).setSpeed(0);
 
         assertThat(isFwd.isActive()).isFalse();
@@ -100,10 +100,10 @@ public class ThrottleTest {
 
     @Test
     public void testStop() throws Exception {
-        fwd.setValue(42);
+        fwd.accept(42);
         verify(mJmriThrottle).setSpeed(42);
 
-        stop.setValue(0); // value is irrelevant
+        stop.accept(0); // value is irrelevant
         verify(mJmriThrottle).setSpeed(0);
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -114,16 +114,16 @@ public class ThrottleTest {
     public void testSound() throws Exception {
         assertThat(isSound.isActive()).isFalse();
 
-        sound.setValue(0);
+        sound.accept(0);
         assertThat(isSound.isActive()).isFalse();
         verify(mJmriThrottle).setSound(false);
 
-        sound.setValue(1);
+        sound.accept(1);
         assertThat(isSound.isActive()).isTrue();
         verify(mJmriThrottle).setSound(true);
         reset(mJmriThrottle);
 
-        sound.setValue(0);
+        sound.accept(0);
         assertThat(isSound.isActive()).isFalse();
         verify(mJmriThrottle).setSound(false);
     }
@@ -132,16 +132,16 @@ public class ThrottleTest {
     public void testLight() throws Exception {
         assertThat(isLight.isActive()).isFalse();
 
-        light.setValue(0);
+        light.accept(0);
         assertThat(isLight.isActive()).isFalse();
         verify(mJmriThrottle).setLight(false);
 
-        light.setValue(1);
+        light.accept(1);
         assertThat(isLight.isActive()).isTrue();
         verify(mJmriThrottle).setLight(true);
         reset(mJmriThrottle);
 
-        light.setValue(0);
+        light.accept(0);
         assertThat(isLight.isActive()).isFalse();
         verify(mJmriThrottle).setLight(false);
     }

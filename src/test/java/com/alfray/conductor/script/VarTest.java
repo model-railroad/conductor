@@ -8,10 +8,10 @@ public class VarTest {
     @Test
     public void testGetSetValue() throws Exception {
         Var var = new Var(42);
-        assertThat(var.getValue()).isEqualTo(42);
+        assertThat(var.getAsInt()).isEqualTo(42);
 
-        var.setValue(-32);
-        assertThat(var.getValue()).isEqualTo(-32);
+        var.accept(-32);
+        assertThat(var.getAsInt()).isEqualTo(-32);
     }
 
     @Test
@@ -19,10 +19,10 @@ public class VarTest {
         Var var = new Var(42);
         assertThat(var.isActive()).isTrue();
 
-        var.setValue(0);
+        var.accept(0);
         assertThat(var.isActive()).isFalse();
 
-        var.setValue(-12);
+        var.accept(-12);
         assertThat(var.isActive()).isTrue();
     }
 }

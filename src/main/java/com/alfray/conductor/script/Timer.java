@@ -25,11 +25,11 @@ public class Timer implements IConditional {
         return mDurationSec;
     }
 
-    public IFunction.Int createFunctionStart() {
+    public IIntFunction createFunctionStart() {
         return ignored -> mEndTS = now() + mDurationSec * 1000;
     }
 
-    public IFunction.Int createFunctionEnd() {
+    public IIntFunction createFunctionEnd() {
         return ignored -> mEndTS = 0;
     }
 

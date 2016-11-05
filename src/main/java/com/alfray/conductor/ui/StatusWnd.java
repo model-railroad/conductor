@@ -12,8 +12,6 @@ import com.intellij.uiDesigner.core.Spacer;
 
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -151,7 +149,7 @@ public class StatusWnd {
         i = 0;
         for (String name : script.getVarNames()) {
             Var var = script.getVar(name);
-            mStatus.append(name).append(':').append(var.getValue());
+            mStatus.append(name).append(':').append(var.getAsInt());
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
 

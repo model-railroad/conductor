@@ -43,7 +43,7 @@ public class ScriptParserTest {
 
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
-        assertThat(var.getValue()).isEqualTo(5201);
+        assertThat(var.getAsInt()).isEqualTo(5201);
     }
 
     @Test
@@ -176,16 +176,16 @@ public class ScriptParserTest {
 
         script.setup(provider);
         verify(provider).getThrotlle(42);
-        assertThat(script.getVar("myvar").getValue()).isEqualTo(5);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
 
         // Execute with throttle defaulting to speed 0 (stopped).
         script.handle();
-        assertThat(script.getVar("myvar").getValue()).isEqualTo(0);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
 
         // Execute with throttle at speed 5
         script.getThrottle("t1").setSpeed(5);
         script.handle();
-        assertThat(script.getVar("myvar").getValue()).isEqualTo(1);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
     }
 
     @Test

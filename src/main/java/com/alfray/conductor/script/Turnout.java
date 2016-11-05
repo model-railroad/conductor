@@ -30,11 +30,11 @@ public class Turnout implements IConditional {
         mTurnout = provider.getTurnout(mJmriName);
     }
 
-    public IFunction.Int createFunctionNormal() {
+    public IIntFunction createFunctionNormal() {
         return ignored -> setTurnout(IJmriTurnout.NORMAL);
     }
 
-    public IFunction.Int createFunctionReverse() {
+    public IIntFunction createFunctionReverse() {
         return ignored -> setTurnout(IJmriTurnout.REVERSE);
     }
 

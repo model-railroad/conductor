@@ -1,8 +1,8 @@
 package com.alfray.conductor.parser;
 
 import com.alfray.conductor.script.IConditional;
-import com.alfray.conductor.script.IFunction;
-import com.alfray.conductor.script.IValue;
+import com.alfray.conductor.script.IIntFunction;
+import com.alfray.conductor.script.IIntValue;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
@@ -35,7 +35,7 @@ public class ScriptParser {
 
     /**
      * Possible keywords for a throttle action.
-     * Must match IFunction.Int in the {@link Throttle} implementation.
+     * Must match IIntFunction in the {@link Throttle} implementation.
      */
     private enum ThrottleCondition {
         FORWARD,
@@ -45,7 +45,7 @@ public class ScriptParser {
 
     /**
      * Possible keywords for a timer action.
-     * Must match IFunction.Int in the {@link Timer} implementation.
+     * Must match IIntFunction in the {@link Timer} implementation.
      */
     private enum TimerAction {
         START,
@@ -54,7 +54,7 @@ public class ScriptParser {
 
     /**
      * Possible keywords for a turnout action.
-     * Must match IFunction.Int in the {@link Turnout} implementation.
+     * Must match IIntFunction in the {@link Turnout} implementation.
      */
     private enum TurnoutAction {
         NORMAL,
@@ -340,7 +340,7 @@ public class ScriptParser {
             List<String> tokens,
             int sep) {
 
-        TreeMap<String, IFunction.Int> throttleMap = new TreeMap<>();
+        TreeMap<String, IIntFunction> throttleMap = new TreeMap<>();
         for (String name : script.getThrottleNames()) {
             Throttle throttle = script.getThrottle(name);
             throttleMap.put(name + "!forward", throttle.createFunctionForward());
@@ -351,7 +351,7 @@ public class ScriptParser {
             throttleMap.put(name + "!horn", throttle.createFunctionHorn());
         }
 
-        TreeMap<String, IFunction.Int> turnoutMap = new TreeMap<>();
+        TreeMap<String, IIntFunction> turnoutMap = new TreeMap<>();
         for (String name : script.getTurnoutNames()) {
             Turnout turnout = script.getTurnout(name);
             turnoutMap.put(name + "!normal", turnout.createFunctionNormal());
@@ -366,8 +366,8 @@ public class ScriptParser {
             // The ; is optional for the last action.
             String i0 = tokens.get(i).toLowerCase(Locale.US);
 
-            IFunction.Int function = null;
-            IValue.Int value = null;
+            IIntFunction function = null;
+            IIntValue value = null;
 
             Throttle throttle = script.getThrottle(i0);
 
@@ -495,7 +495,7 @@ public class ScriptParser {
         return -1;
     }
 
-    private static class LiteralInt implements IValue.Int {
+    private static class LiteralInt implements IIntValue {
         private final int mValue;
 
         public LiteralInt(int value) {
@@ -503,7 +503,7 @@ public class ScriptParser {
         }
 
         @Override
-        public Integer getValue() {
+        public int getAsInt() {
             return mValue;
         }
     }
