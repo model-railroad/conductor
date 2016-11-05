@@ -169,7 +169,7 @@ public class Script extends NowProvider {
      */
     public void handle() {
         long now = now();
-        mLastHandleDeltaMs = mLastHandleMs == 0 ? 0 : mLastHandleMs - now;
+        mLastHandleDeltaMs = mLastHandleMs == 0 ? 0 : (now - mLastHandleMs);
         mLastHandleMs = now;
 
         mActivatedEvents.clear();
@@ -188,6 +188,15 @@ public class Script extends NowProvider {
             try {
                 mHandleListener.run();
             } catch (Throwable ignore) {}
+        }
+
+        // Rate limiter... TODO quick n' dirty / move this elsewhere & add control
+        now = now() - now; // exec time
+        final long idealMs = 1000 / 30 - now;  // 30 Hz
+        if (mLastHandleDeltaMs < idealMs) {
+            try {
+                Thread.sleep(idealMs - mLastHandleDeltaMs);
+            } catch (InterruptedException ignore) {}
         }
     }
 

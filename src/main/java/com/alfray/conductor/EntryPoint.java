@@ -5,15 +5,13 @@ import com.alfray.conductor.script.Script;
 import com.alfray.conductor.ui.StatusWnd;
 import com.alfray.conductor.util.LogException;
 import com.alfray.conductor.util.Logger;
-import javafx.util.Pair;
+import com.alfray.conductor.util.Pair;
 
 import java.io.File;
 import java.io.IOException;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
-    private IJmriProvider mJmriProvider;
-    private IJmriThrottle mThrottle;
     private Script mScript;
     private boolean mStopRequested;
 
@@ -24,7 +22,7 @@ public class EntryPoint {
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
         Logger logger = jmriProvider;
-        logger.log("Conductor: Setup");
+        logger.log("[Conductor] Setup");
         File filepath = new File(scriptFile);
 
         if (loadScript(jmriProvider, scriptFile, logger, filepath).length() > 0) {
@@ -39,13 +37,13 @@ public class EntryPoint {
                     mScript,
                     () -> {
                         String error = loadScript(jmriProvider, scriptFile, logger, filepath);
-                        return new Pair<>(mScript, error);
+                        return Pair.of(mScript, error);
                     },
                     () -> mStopRequested = true);
 
         } catch (Exception e) {
             // Ignore. continue.
-            logger.log("Conductor UI not enabled: ");
+            logger.log("[Conductor] UI not enabled: ");
             LogException.logException(logger, e);
         }
 
@@ -93,15 +91,18 @@ public class EntryPoint {
      *
      * @return Will keep being called as long as it returns true.
      */
+    @SuppressWarnings("unused")
     public boolean handle() {
-        System.out.println("Conductor: Handle");
+        // DEBUG ONLY: mScript.getLogger().log("[Conductor] Handle");
         if (mStopRequested) {
+            mScript.getLogger().log("[Conductor] Stop Requested");
             return false;
         }
         if (mScript != null) {
             mScript.handle();
             return true;
         } else {
+            mScript.getLogger().log("[Conductor] Script.Handle returned false");
             return false;
         }
     }

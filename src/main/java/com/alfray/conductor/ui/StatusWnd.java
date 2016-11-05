@@ -5,12 +5,11 @@ import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
 import com.alfray.conductor.script.Turnout;
 import com.alfray.conductor.script.Var;
+import com.alfray.conductor.util.Pair;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import javafx.util.Pair;
 
-import javax.swing.*;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -18,8 +17,16 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.function.Supplier;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 public class StatusWnd {
     private final JFrame mFrame;
@@ -59,19 +66,16 @@ public class StatusWnd {
 
         mButtonReload.addActionListener(actionEvent -> {
             Pair<Script, String> pair = reloader.get();
-            if (pair.getKey() != null) {
-                initScript(pair.getKey());
-            } else if (pair.getValue() != null) {
-                showError(pair.getValue());
+            if (pair.mFirst != null) {
+                initScript(pair.mFirst);
+            } else if (pair.mSecond != null) {
+                showError(pair.mSecond);
             }
         });
 
-        mButtonStop.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                stopper.run();
-                mFrame.dispose();
-            }
+        mButtonStop.addActionListener(actionEvent -> {
+            stopper.run();
+            mFrame.dispose();
         });
 
     }
@@ -123,6 +127,8 @@ public class StatusWnd {
         long delayMs = script.getLastHandleDeltaMs();
         if (delayMs > 0) {
             mStatus.append(String.format("%.1f Hz\n", 1000.0f / delayMs));
+        } else {
+            mStatus.append("--.- Hz\n");
         }
 
         mStatus.append("\n");
@@ -137,7 +143,7 @@ public class StatusWnd {
         i = 0;
         for (String name : script.getSensorNames()) {
             Sensor sensor = script.getSensor(name);
-            mStatus.append(name).append(':').append(sensor.isActive() ? 'N' : 'R');
+            mStatus.append(name).append(':').append(sensor.isActive() ? '1' : '0');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
 
@@ -145,7 +151,7 @@ public class StatusWnd {
         i = 0;
         for (String name : script.getVarNames()) {
             Var var = script.getVar(name);
-            mStatus.append(name).append(':').append(var.isActive() ? 'N' : 'R');
+            mStatus.append(name).append(':').append(var.getValue());
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
 
