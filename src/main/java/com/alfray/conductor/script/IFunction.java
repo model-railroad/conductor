@@ -8,5 +8,5 @@ public interface IFunction <T> {
     void setValue(T value);
 
     /** A script function-like item that can receive an int value. */
-    public interface Int extends IFunction<Integer> {}
+    interface Int extends IFunction<Integer> {}
 }

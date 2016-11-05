@@ -37,6 +37,9 @@ public class Script extends NowProvider {
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
     private final List<Event> mActivatedEvents = new LinkedList<>();
+    private long mLastHandleDeltaMs;
+    private long mLastHandleMs;
+    private Runnable mHandleListener;
 
     public Script(Logger logger) {
         mLogger = logger;
@@ -115,6 +118,14 @@ public class Script extends NowProvider {
     public List<String> getTurnoutNames() {
         return new ArrayList<>(mTurnouts.keySet());
     }
+    
+    public List<String> getSensorNames() {
+        return new ArrayList<>(mSensors.keySet());
+    }
+
+    public List<String> getVarNames() {
+        return new ArrayList<>(mVars.keySet());
+    }
 
     public boolean isExistingName(String name) {
         name = name.toLowerCase(Locale.US);
@@ -157,6 +168,10 @@ public class Script extends NowProvider {
      * unless the condition was first evaluated to false.
      */
     public void handle() {
+        long now = now();
+        mLastHandleDeltaMs = mLastHandleMs == 0 ? 0 : mLastHandleMs - now;
+        mLastHandleMs = now;
+
         mActivatedEvents.clear();
         for (Event event : mEvents) {
             if (event.evalConditions()) {
@@ -168,6 +183,20 @@ public class Script extends NowProvider {
         for (Event event : mActivatedEvents) {
             event.execute();
         }
+
+        if (mHandleListener != null) {
+            try {
+                mHandleListener.run();
+            } catch (Throwable ignore) {}
+        }
+    }
+
+    public long getLastHandleDeltaMs() {
+        return mLastHandleDeltaMs;
+    }
+
+    public void setHandleListener(Runnable handleListener) {
+        mHandleListener = handleListener;
     }
 
     /** Represents one event condition, which is composed of a conditional and can be negated. */

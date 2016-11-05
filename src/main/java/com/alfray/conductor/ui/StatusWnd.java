@@ -1,7 +1,10 @@
 package com.alfray.conductor.ui;
 
 import com.alfray.conductor.script.Script;
+import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
+import com.alfray.conductor.script.Turnout;
+import com.alfray.conductor.script.Var;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -15,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.function.Supplier;
 
 public class StatusWnd {
@@ -93,6 +97,8 @@ public class StatusWnd {
             throttles[i] = throttle;
             labelDcc[i].setText(Integer.toString(throttle.getDccAddress()));
 
+            JLabel label = labelSpeed[i];
+            throttle.setSpeedListener(speed -> label.setText(Integer.toString(speed)));
         }
 
         for (int i = 0; i < numThrottles; i++) {
@@ -105,6 +111,45 @@ public class StatusWnd {
                 });
             }
         }
+
+        script.setHandleListener(() -> mAreaStatus.setText(generateVarStatus(script)));
+    }
+
+    private StringBuilder mStatus = new StringBuilder();
+    private String generateVarStatus(Script script) {
+        mStatus.setLength(0);
+
+        mStatus.append("Freq: ");
+        long delayMs = script.getLastHandleDeltaMs();
+        if (delayMs > 0) {
+            mStatus.append(String.format("%.1f Hz\n", 1000.0f / delayMs));
+        }
+
+        mStatus.append("\n");
+        int i = 0;
+        for (String name : script.getTurnoutNames()) {
+            Turnout turnout = script.getTurnout(name);
+            mStatus.append(name).append(':').append(turnout.isActive() ? 'N' : 'R');
+            mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+
+        mStatus.append("\n\n");
+        i = 0;
+        for (String name : script.getSensorNames()) {
+            Sensor sensor = script.getSensor(name);
+            mStatus.append(name).append(':').append(sensor.isActive() ? 'N' : 'R');
+            mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+
+        mStatus.append("\n\n");
+        i = 0;
+        for (String name : script.getVarNames()) {
+            Var var = script.getVar(name);
+            mStatus.append(name).append(':').append(var.isActive() ? 'N' : 'R');
+            mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+
+        return mStatus.toString();
     }
 
     {

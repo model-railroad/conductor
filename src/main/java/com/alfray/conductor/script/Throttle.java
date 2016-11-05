@@ -3,6 +3,8 @@ package com.alfray.conductor.script;
 import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.IJmriThrottle;
 
+import java.util.function.IntConsumer;
+
 /**
  * A throttle defined by a script.
  * <p/>
@@ -17,6 +19,7 @@ public class Throttle {
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
+    private IntConsumer mSpeedListener;
 
     /** Creates a new throttle for the given JMRI dcc address. */
     public Throttle(int dccAddress) {
@@ -41,6 +44,15 @@ public class Throttle {
         if (mJmriThrottle != null) {
             mJmriThrottle.setSpeed(speed);
         }
+        if (mSpeedListener != null) {
+            try {
+                mSpeedListener.accept(mSpeed);
+            } catch (Throwable ignore) {}
+        }
+    }
+
+    public void setSpeedListener(IntConsumer speedListener) {
+        mSpeedListener = speedListener;
     }
 
     public IFunction.Int createFunctionStop() {

@@ -8,5 +8,5 @@ public interface IValue<T> {
     T getValue();
 
     /** A script item that can produce an int value. */
-    public interface Int extends IValue<Integer> {}
+    interface Int extends IValue<Integer> {}
 }

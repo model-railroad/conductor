@@ -252,8 +252,8 @@ public class ScriptParserTest {
     public void testActionHorn() throws Exception {
         String source = "" +
                 "throttle T1 = 42 \n " +
-                "t1 stopped -> t1 Horn \n" +
-                "t1 forward -> t1 Horn=1";
+                "t1 stopped -> T1 Horn \n" +
+                "t1 forward -> T1 Horn=1";
 
         Script script = new ScriptParser().parse(source, mReporter);
 
@@ -284,10 +284,10 @@ public class ScriptParserTest {
                 "throttle T1 = 42 \n " +
                 "sensor b1  = NS42 \n" +
                 "sensor b777= NS7805 \n" +
-                "!b1         -> t1 Light=0 \n" +
-                " b1         -> t1 Light=1 \n" +
+                "!b1         -> T1 Light=0 \n" +
+                " B1         -> t1 Light=1 \n" +
                 " b1 + !b777 -> t1 Sound=0 \n" +
-                " b1 +  b777 -> t1 Sound=1 \n" ;
+                " B1 +  B777 -> T1 Sound=1 \n" ;
 
         Script script = new ScriptParser().parse(source, mReporter);
 
@@ -342,11 +342,11 @@ public class ScriptParserTest {
     public void testActionTurnout() throws Exception {
         String source = "" +
                 "throttle th = 42 \n " +
-                "turnout t1  = NT42 \n" +
+                "turnout T1  = NT42 \n" +
                 "turnout t2  = NT43 \n" +
-                "th stopped -> t1 = normal ; t2 = reverse\n" +
+                "th stopped -> T1 = normal ; t2 = reverse\n" +
                 "th forward -> t1 = reverse ; t2 = normal \n" +
-                " t1        -> th sound = 0 \n" +
+                " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 
         Script script = new ScriptParser().parse(source, mReporter);
@@ -359,13 +359,13 @@ public class ScriptParserTest {
         IJmriTurnout turnout1 = mock(IJmriTurnout.class);
         IJmriTurnout turnout2 = mock(IJmriTurnout.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
-        when(provider.getTurnout("nt42")).thenReturn(turnout1);
-        when(provider.getTurnout("nt43")).thenReturn(turnout2);
+        when(provider.getTurnout("NT42")).thenReturn(turnout1);
+        when(provider.getTurnout("NT43")).thenReturn(turnout2);
 
         script.setup(provider);
         verify(provider).getThrotlle(42);
-        verify(provider).getTurnout("nt42");
-        verify(provider).getTurnout("nt43");
+        verify(provider).getTurnout("NT42");
+        verify(provider).getTurnout("NT43");
 
         script.handle();
         verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
@@ -390,11 +390,11 @@ public class ScriptParserTest {
     public void testTimer() throws Exception {
         String source = "" +
                 "throttle th = 42 \n " +
-                "timer t1  = 5 # seconds \n" +
+                "timer T1  = 5 # seconds \n" +
                 "timer t2  = 2 \n" +
-                "th stopped -> start = t1\n" +
-                "t1         -> th horn ; start = t2 \n" +
-                "t2         -> end = t1 ; end = t2 ; th forward = 1 \n" ;
+                "th stopped -> start = T1\n" +
+                "T1         -> th horn ; start = t2 \n" +
+                "t2         -> end = T1 ; end = t2 ; th forward = 1 \n" ;
 
         TestableNowProvider nowProvider = new TestableNowProvider(1000);
 
