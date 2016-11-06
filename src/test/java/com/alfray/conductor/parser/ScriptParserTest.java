@@ -8,6 +8,7 @@ import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Var;
 import com.alfray.conductor.util.NowProvider;
+import com.alfray.conductor.util.NowProviderTest;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -396,9 +397,10 @@ public class ScriptParserTest {
                 "T1         -> th horn ; start = t2 \n" +
                 "t2         -> end = T1 ; end = t2 ; th forward = 1 \n" ;
 
-        TestableNowProvider nowProvider = new TestableNowProvider(1000);
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
 
-        Script script = new TestableScriptParser(nowProvider).parse(source, mReporter);
+        Script script = new TestableScriptParser(now).parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -414,20 +416,20 @@ public class ScriptParserTest {
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // t1 is active 5 seconds later
-        nowProvider.add(5*1000 - 1);
+        now.add(5*1000 - 1);
         script.handle();
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // Note: timer is still active because the "t1 ->" does not reset it with end yet.
         // A timer remain active till it is either restarted or ended.
-        nowProvider.add(1);
+        now.add(1);
         script.handle();
         verify(throttle).horn();
         verify(throttle, never()).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isTrue();
 
         // t2 is active 2 seconds later. Both t1 and t2 get reset as soon as t2 becomes active.
-        nowProvider.add(2*1000);
+        now.add(2*1000);
         script.handle();
         verify(throttle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
@@ -485,23 +487,6 @@ public class ScriptParserTest {
         @Override
         Timer createTimer(int durationSec, NowProvider nowProvider) {
             return super.createTimer(durationSec, mNowProvider);
-        }
-    }
-
-    private static class TestableNowProvider extends NowProvider {
-        private long mNow;
-
-        public TestableNowProvider(long now) {
-            mNow = now;
-        }
-
-        public void add(long now) {
-            mNow += now;
-        }
-
-        @Override
-        public long now() {
-            return mNow;
         }
     }
 }

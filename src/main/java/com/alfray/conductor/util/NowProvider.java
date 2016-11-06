@@ -9,4 +9,14 @@ public class NowProvider {
     public long now() {
         return System.currentTimeMillis();
     }
+
+    /** Sleeps for the requested time in milliseconds if > 0. */
+    public void sleep(long sleepTimeMs) {
+        if (sleepTimeMs > 0) {
+            try {
+                Thread.sleep(sleepTimeMs);
+            } catch (InterruptedException ignore) {}
+        }
+    }
+
 }

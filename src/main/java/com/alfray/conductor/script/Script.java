@@ -1,8 +1,10 @@
 package com.alfray.conductor.script;
 
 import com.alfray.conductor.IJmriProvider;
+import com.alfray.conductor.util.FrequencyMeasurer;
 import com.alfray.conductor.util.Logger;
 import com.alfray.conductor.util.NowProvider;
+import com.alfray.conductor.util.RateLimiter;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -37,8 +39,8 @@ public class Script extends NowProvider {
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
     private final List<Event> mActivatedEvents = new LinkedList<>();
-    private long mLastHandleDeltaMs;
-    private long mLastHandleMs;
+    private final FrequencyMeasurer mHandleFrequency = new FrequencyMeasurer(this);
+    private final RateLimiter mHandleRateLimiter = new RateLimiter(30.0f, this);
     private Runnable mHandleListener;
 
     public Script(Logger logger) {
@@ -119,6 +121,10 @@ public class Script extends NowProvider {
         return new ArrayList<>(mTurnouts.keySet());
     }
     
+    public List<String> getTimerNames() {
+        return new ArrayList<>(mTimers.keySet());
+    }
+
     public List<String> getSensorNames() {
         return new ArrayList<>(mSensors.keySet());
     }
@@ -168,9 +174,7 @@ public class Script extends NowProvider {
      * unless the condition was first evaluated to false.
      */
     public void handle() {
-        long now = now();
-        mLastHandleDeltaMs = mLastHandleMs == 0 ? 0 : (now - mLastHandleMs);
-        mLastHandleMs = now;
+        mHandleFrequency.ping();
 
         mActivatedEvents.clear();
         for (Event event : mEvents) {
@@ -190,18 +194,11 @@ public class Script extends NowProvider {
             } catch (Throwable ignore) {}
         }
 
-        // Rate limiter... TODO quick n' dirty / move this elsewhere & add control
-        now = now() - now; // exec time
-        final long idealMs = 1000 / 30 - now;  // 30 Hz
-        if (mLastHandleDeltaMs < idealMs) {
-            try {
-                Thread.sleep(idealMs - mLastHandleDeltaMs);
-            } catch (InterruptedException ignore) {}
-        }
+        mHandleRateLimiter.limit();
     }
 
-    public long getLastHandleDeltaMs() {
-        return mLastHandleDeltaMs;
+    public float getHandleFrequency() {
+        return mHandleFrequency.getFrequency();
     }
 
     public void setHandleListener(Runnable handleListener) {

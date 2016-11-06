@@ -3,6 +3,7 @@ package com.alfray.conductor.ui;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
+import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Turnout;
 import com.alfray.conductor.script.Var;
 import com.alfray.conductor.util.Pair;
@@ -122,36 +123,40 @@ public class StatusWnd {
         mStatus.setLength(0);
 
         mStatus.append("Freq: ");
-        long delayMs = script.getLastHandleDeltaMs();
-        if (delayMs > 0) {
-            mStatus.append(String.format("%.1f Hz\n", 1000.0f / delayMs));
-        } else {
-            mStatus.append("--.- Hz\n");
-        }
+        float freq = script.getHandleFrequency();
+        mStatus.append(String.format("%.1f Hz\n\n", freq));
 
-        mStatus.append("\n");
         int i = 0;
         for (String name : script.getTurnoutNames()) {
             Turnout turnout = script.getTurnout(name);
             mStatus.append(name).append(':').append(turnout.isActive() ? 'N' : 'R');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-
-        mStatus.append("\n\n");
+        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
+        
         i = 0;
         for (String name : script.getSensorNames()) {
             Sensor sensor = script.getSensor(name);
             mStatus.append(name).append(':').append(sensor.isActive() ? '1' : '0');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
+        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
 
-        mStatus.append("\n\n");
+        i = 0;
+        for (String name : script.getTimerNames()) {
+            Timer timer = script.getTimer(name);
+            mStatus.append(name).append(':').append(timer.isActive() ? '1' : '0');
+            mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
+
         i = 0;
         for (String name : script.getVarNames()) {
             Var var = script.getVar(name);
             mStatus.append(name).append(':').append(var.getAsInt());
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
+        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
 
         return mStatus.toString();
     }
