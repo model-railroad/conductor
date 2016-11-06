@@ -4,6 +4,7 @@ Throttle TGV = 537
 
 # states
 
+Var Enable           =  1
 Var TGV-Half-Speed   =  4
 Var TGV-Full-Speed   = 12
 
@@ -23,7 +24,7 @@ Turnout T4 = NT4
 
 Timer TGV-Start =  5
 Timer TGV-Half  = 11
-Timer TGV-Full  = 12
+Timer TGV-Full  = 13
 Timer TGV-Stop  = 11
 
 # ------
@@ -32,13 +33,14 @@ Timer TGV-Stop  = 11
 
 # Setup
 
-Prepare -> TGV Light = 1
-Prepare -> T3 = Reverse; T4 = Reverse
+Prepare + Enable -> TGV Light = 1
+Prepare + Enable -> T3 = Reverse; T4 = Reverse
 
 # Departure
 
-Start       -> TGV Light = 1; TGV Sound = 1; TGV Horn; Start = TGV-Start
-TGV-Start   -> End = TGV-Start; TGV Forward = TGV-Half-Speed; Start = TGV-Half; TGV Horn
-TGV-Half    -> End = TGV-Half;  TGV Forward = TGV-Full-Speed; Start = TGV-Full; TGV Horn
-TGV-Full    -> End = TGV-Full;  TGV Forward = 0;              Start = TGV-Stop; TGV Horn
-TGV-Stop    -> End = TGV-Stop;  TGV Horn; TGV Light = 0; TGV Sound = 0
+Start + Enable  -> Enable = 0; TGV Light = 1; TGV Sound = 1; TGV Horn; Start = TGV-Start
+TGV-Start       -> End = TGV-Start; TGV Forward = TGV-Half-Speed; Start = TGV-Half; TGV Horn
+TGV-Half        -> End = TGV-Half;  TGV Forward = TGV-Full-Speed; Start = TGV-Full; TGV Horn
+TGV-Full        -> End = TGV-Full;  TGV Forward = 0;              Start = TGV-Stop; TGV Horn
+TGV-Stop        -> End = TGV-Stop;  TGV Horn; TGV Light = 0; TGV Sound = 0; Enable = 1
+
