@@ -1,11 +1,13 @@
 package com.alfray.conductor.ui;
 
+import com.alfray.conductor.IJmriProvider;
 import com.alfray.conductor.script.Script;
 import com.alfray.conductor.script.Sensor;
 import com.alfray.conductor.script.Throttle;
 import com.alfray.conductor.script.Timer;
 import com.alfray.conductor.script.Turnout;
 import com.alfray.conductor.script.Var;
+import com.alfray.conductor.util.LogException;
 import com.alfray.conductor.util.Pair;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
@@ -22,6 +24,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
@@ -41,8 +44,12 @@ public class StatusWnd {
     private JButton mButtonChangeDcc2;
     private JButton mButtonStop;
 
-    public StatusWnd(JFrame frame) {
+    private StatusWnd(JFrame frame) {
         mFrame = frame;
+
+        // Fix the missing border on the JTextArea to match a JTextField border
+        // (c.f. http://stackoverflow.com/questions/2654948)
+        mAreaStatus.setBorder(mTextScriptName.getBorder());
     }
 
     public static StatusWnd open() {
@@ -58,15 +65,16 @@ public class StatusWnd {
     public void init(
             File scriptName,
             Script script,
+            IJmriProvider jmriProvider,
             Supplier<Pair<Script, String>> reloader,
             Runnable stopper) {
         mTextScriptName.setText(scriptName.getAbsolutePath());
-        initScript(script);
+        initScript(script, jmriProvider);
 
         mButtonReload.addActionListener(actionEvent -> {
             Pair<Script, String> pair = reloader.get();
             if (pair.mFirst != null) {
-                initScript(pair.mFirst);
+                initScript(pair.mFirst, jmriProvider);
             } else if (pair.mSecond != null) {
                 showError(pair.mSecond);
             }
@@ -87,7 +95,7 @@ public class StatusWnd {
         mLabelDcc2.setText("");
     }
 
-    private void initScript(Script script) {
+    private void initScript(Script script, IJmriProvider jmriProvider) {
         final int numThrottles = 2; // TODO hack for quick test
         JLabel[] labelSpeed = new JLabel[]{mLabelSpeed1, mLabelSpeed2};
         JLabel[] labelDcc = new JLabel[]{mLabelDcc1, mLabelDcc2};
@@ -106,11 +114,14 @@ public class StatusWnd {
 
         for (int i = 0; i < numThrottles; i++) {
             JButton button = buttonChangeDcc[i];
-            button.setEnabled(false); // TODO implement changing address later, if relevant
+            button.setEnabled(false);
             Arrays.stream(button.getActionListeners()).forEach(button::removeActionListener);
             if (i < throttleNames.size()) {
+                Throttle throttle = throttles[i];
+                JLabel label = labelDcc[i];
+                button.setEnabled(true);
                 button.addActionListener(actionEvent -> {
-                    // throttles[i].setDccAddress(provider, newDccAddress);
+                    askNewDccAddress(throttle, jmriProvider, label);
                 });
             }
         }
@@ -118,7 +129,28 @@ public class StatusWnd {
         script.setHandleListener(() -> mAreaStatus.setText(generateVarStatus(script)));
     }
 
+    private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {
+        String address = Integer.toString(throttle.getDccAddress());
+        Object result = JOptionPane.showInputDialog(mFrame,
+                "New DCC Address to replace " + address,
+                "New DCC Address",
+                JOptionPane.PLAIN_MESSAGE,
+                null,  // icon
+                null,  // possibilities
+                address);
+        if (result instanceof String) {
+            try {
+                int newAddress = Integer.parseInt((String) result);
+                throttle.setDccAddress(newAddress, jmriProvider);
+                label.setText(Integer.toString(newAddress));
+            } catch (Exception e) {
+                LogException.logException(jmriProvider, e);
+            }
+        }
+    }
+
     private StringBuilder mStatus = new StringBuilder();
+
     private String generateVarStatus(Script script) {
         mStatus.setLength(0);
 
@@ -132,15 +164,19 @@ public class StatusWnd {
             mStatus.append(name).append(':').append(turnout.isActive() ? 'N' : 'R');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
-        
+        if (mStatus.charAt(mStatus.length() - 1) != '\n') {
+            mStatus.append('\n');
+        }
+
         i = 0;
         for (String name : script.getSensorNames()) {
             Sensor sensor = script.getSensor(name);
             mStatus.append(name).append(':').append(sensor.isActive() ? '1' : '0');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
+        if (mStatus.charAt(mStatus.length() - 1) != '\n') {
+            mStatus.append('\n');
+        }
 
         i = 0;
         for (String name : script.getTimerNames()) {
@@ -148,7 +184,9 @@ public class StatusWnd {
             mStatus.append(name).append(':').append(timer.isActive() ? '1' : '0');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
+        if (mStatus.charAt(mStatus.length() - 1) != '\n') {
+            mStatus.append('\n');
+        }
 
         i = 0;
         for (String name : script.getVarNames()) {
@@ -156,7 +194,9 @@ public class StatusWnd {
             mStatus.append(name).append(':').append(var.getAsInt());
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-        if (mStatus.charAt(mStatus.length() -1 ) != '\n') { mStatus.append('\n'); }
+        if (mStatus.charAt(mStatus.length() - 1) != '\n') {
+            mStatus.append('\n');
+        }
 
         return mStatus.toString();
     }
@@ -177,11 +217,12 @@ public class StatusWnd {
      */
     private void $$$setupUI$$$() {
         mPanel1 = new JPanel();
-        mPanel1.setLayout(new GridLayoutManager(8, 7, new Insets(5, 5, 5, 5), -1, -1));
+        mPanel1.setLayout(new GridLayoutManager(8, 7, new Insets(10, 10, 10, 10), -1, -1));
         final JLabel label1 = new JLabel();
         label1.setText("Script");
         mPanel1.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mTextScriptName = new JTextField();
+        mTextScriptName.setEditable(false);
         mPanel1.add(mTextScriptName, new GridConstraints(0, 1, 1, 6, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label2 = new JLabel();
         label2.setText("Throttles");

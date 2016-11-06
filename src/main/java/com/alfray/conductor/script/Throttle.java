@@ -12,7 +12,7 @@ import com.alfray.conductor.IJmriThrottle;
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
 public class Throttle {
-    private final int mDccAddress;
+    private int mDccAddress;
     private IJmriThrottle mJmriThrottle;
     private int mSpeed;
     private boolean mSound;
@@ -27,6 +27,11 @@ public class Throttle {
     /** Initializes the underlying JMRI sensor. */
     public void setup(IJmriProvider provider) {
         mJmriThrottle = provider.getThrotlle(mDccAddress);
+    }
+
+    public void setDccAddress(int dccAddress, IJmriProvider provider) {
+        mDccAddress = dccAddress;
+        setup(provider);
     }
 
     public int getDccAddress() {

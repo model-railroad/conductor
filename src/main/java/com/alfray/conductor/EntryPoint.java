@@ -35,6 +35,7 @@ public class EntryPoint {
             wnd.init(
                     filepath,
                     mScript,
+                    jmriProvider,
                     () -> {
                         String error = loadScript(jmriProvider, scriptFile, logger, filepath);
                         return Pair.of(mScript, error);
