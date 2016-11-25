@@ -29,10 +29,18 @@ timerOp:    KW_START;
 
 funcValue:  '=' ( NUM | ID ) ;
 
-WS: [ \t\u000C]+ -> skip ;   // from https://github.com/antlr/grammars-v4/blob/master/java/Java.g4
-EOL:    [\r\n]+ ;
+
+WS:  [ \t\u000C]+ -> skip ;   // from https://github.com/antlr/grammars-v4/blob/master/java/Java.g4
+EOL: [\r\n]+ ;
 
 SB_COMMENT: '#' ~[\r\n]*;
+
+KW_ARROW:   '->';
+KW_EQUAL:   '=';
+KW_AND:     '&';
+KW_NOT:     '!';
+KW_PLUS:    '+';
+KW_SEMI:    ';';
 
 // Keywords... defining them here mean they are not part of "ID" anymore.
 // (ANTLR uses the grammar order... ID matches everything not defined here.)
@@ -55,23 +63,19 @@ KW_STOPPED: 'stopped';
 KW_START:   'start';
 KW_FN:      'f' [0-9] [0-9]? ;
 
-KW_ARROW:   '->';
-KW_EQUAL:   '=';
-KW_AND:     '&';
-KW_NOT:     '!';
-KW_PLUS:    '+';
-KW_SEMI:    ';';
-
-ID:       IdCharStart IdCharFull* | IdNum IdCharFull* IdCharStart IdCharFull* ;
+ID:       IdCharStart IdCharFull* ;
 NUM:      IdNum+ ;      // An int literal
-RESERVED: [=&!+;# ] ;   // Reserve these so that they don't match below
+
+fragment IdCharStart: IdUnreserved | IdLetter ;
+fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDash ;
 
 // Unreserved characters can be used to start an ID or even be the whole 1-char ID
 fragment IdUnreserved: [$?_:*/,.%^()\[\]{}\"\'`~] ;
 fragment IdNum:        [0-9] ;
 // Letter covers all unicode characters above 0xFF which are not a surrogate
-fragment IdLetter:     [a-zA-Z] ~[\u0000-\u00FF\uD800-\uDBFF] ;
-
-fragment IdCharStart: IdUnreserved | [a-zA-Z_] ;
-fragment IdCharFull:  IdUnreserved | [a-zA-Z_] | IdNum | [-] ;
-
+// (syntax doesn't seem right so for now just accepting the tradional A-Z)
+fragment IdLetter:     [a-zA-Z] ; // ~[\u0000-\u00FF\uD800-\uDBFF] ;
+// Semantic Predicate in ANTLR4. '-' is OK in an ID if not followed by a chevron.
+// fragment IdDash: {_input.LA(1) != '-' }? '-' ;
+// But that doesn't seem to work so for now -> needs a space before to resolve ambiguity.
+fragment IdDash: '-' ;

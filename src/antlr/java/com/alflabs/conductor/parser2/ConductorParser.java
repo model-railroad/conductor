@@ -17,11 +17,11 @@ public class ConductorParser extends Parser {
 	protected static final PredictionContextCache _sharedContextCache =
 		new PredictionContextCache();
 	public static final int
-		WS=1, EOL=2, SB_COMMENT=3, KW_VAR=4, KW_THROTTLE=5, KW_SENSOR=6, KW_TURNOUT=7, 
-		KW_TIMER=8, KW_FORWARD=9, KW_REVERSE=10, KW_NORMAL=11, KW_SOUND=12, KW_LIGHT=13, 
-		KW_HORN=14, KW_STOP=15, KW_STOPPED=16, KW_START=17, KW_FN=18, KW_ARROW=19, 
-		KW_EQUAL=20, KW_AND=21, KW_NOT=22, KW_PLUS=23, KW_SEMI=24, ID=25, NUM=26, 
-		RESERVED=27;
+		WS=1, EOL=2, SB_COMMENT=3, KW_ARROW=4, KW_EQUAL=5, KW_AND=6, KW_NOT=7, 
+		KW_PLUS=8, KW_SEMI=9, KW_VAR=10, KW_THROTTLE=11, KW_SENSOR=12, KW_TURNOUT=13, 
+		KW_TIMER=14, KW_FORWARD=15, KW_REVERSE=16, KW_NORMAL=17, KW_SOUND=18, 
+		KW_LIGHT=19, KW_HORN=20, KW_STOP=21, KW_STOPPED=22, KW_START=23, KW_FN=24, 
+		ID=25, NUM=26;
 	public static final int
 		RULE_script = 0, RULE_scriptLine = 1, RULE_defLine = 2, RULE_defStrLine = 3, 
 		RULE_defStrType = 4, RULE_defIntLine = 5, RULE_defIntType = 6, RULE_eventLine = 7, 
@@ -36,16 +36,15 @@ public class ConductorParser extends Parser {
 	};
 
 	private static final String[] _LITERAL_NAMES = {
-		null, null, null, null, "'var'", "'throttle'", "'sensor'", "'turnout'", 
-		"'timer'", "'forward'", "'reverse'", "'normal'", "'sound'", "'light'", 
-		"'horn'", "'stop'", "'stopped'", "'start'", null, "'->'", "'='", "'&'", 
-		"'!'", "'+'", "';'"
+		null, null, null, null, "'->'", "'='", "'&'", "'!'", "'+'", "';'", "'var'", 
+		"'throttle'", "'sensor'", "'turnout'", "'timer'", "'forward'", "'reverse'", 
+		"'normal'", "'sound'", "'light'", "'horn'", "'stop'", "'stopped'", "'start'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
-		null, "WS", "EOL", "SB_COMMENT", "KW_VAR", "KW_THROTTLE", "KW_SENSOR", 
-		"KW_TURNOUT", "KW_TIMER", "KW_FORWARD", "KW_REVERSE", "KW_NORMAL", "KW_SOUND", 
-		"KW_LIGHT", "KW_HORN", "KW_STOP", "KW_STOPPED", "KW_START", "KW_FN", "KW_ARROW", 
-		"KW_EQUAL", "KW_AND", "KW_NOT", "KW_PLUS", "KW_SEMI", "ID", "NUM", "RESERVED"
+		null, "WS", "EOL", "SB_COMMENT", "KW_ARROW", "KW_EQUAL", "KW_AND", "KW_NOT", 
+		"KW_PLUS", "KW_SEMI", "KW_VAR", "KW_THROTTLE", "KW_SENSOR", "KW_TURNOUT", 
+		"KW_TIMER", "KW_FORWARD", "KW_REVERSE", "KW_NORMAL", "KW_SOUND", "KW_LIGHT", 
+		"KW_HORN", "KW_STOP", "KW_STOPPED", "KW_START", "KW_FN", "ID", "NUM"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -1137,7 +1136,7 @@ public class ConductorParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35\u0087\4\2\t\2"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\34\u0087\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13\2\3\2\5\2\62\n"+
@@ -1147,29 +1146,29 @@ public class ConductorParser extends Parser {
 		"\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17m\n\17\f\17\16\17p\13"+
 		"\17\3\17\5\17s\n\17\3\20\3\20\3\20\3\20\5\20y\n\20\3\20\5\20|\n\20\3\21"+
 		"\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\24\3\24\2\2\25\2\4\6\b\n\f\16\20"+
-		"\22\24\26\30\32\34\36 \"$&\2\7\3\2\b\t\4\2\6\7\n\n\5\2\13\f\16\17\22\22"+
-		"\5\2\13\f\16\21\24\24\3\2\33\34\u0083\2(\3\2\2\2\4\67\3\2\2\2\6>\3\2\2"+
-		"\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22R\3\2\2"+
-		"\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34i\3\2\2\2\36t\3\2"+
-		"\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3\2\2\2(-\5\4\3\2)"+
-		"*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2"+
-		"\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63"+
-		"\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67\65\3\2\2\2\67\66"+
-		"\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;\3\2\2\2;\5\3\2\2"+
-		"\2<?\5\b\5\2=?\5\f\7\2><\3\2\2\2>=\3\2\2\2?\7\3\2\2\2@A\5\n\6\2AB\7\33"+
-		"\2\2BC\7\26\2\2CD\7\33\2\2D\t\3\2\2\2EF\t\2\2\2F\13\3\2\2\2GH\5\16\b\2"+
-		"HI\7\33\2\2IJ\7\26\2\2JK\7\34\2\2K\r\3\2\2\2LM\t\3\2\2M\17\3\2\2\2NO\5"+
-		"\22\n\2OP\7\25\2\2PQ\5\34\17\2Q\21\3\2\2\2RW\5\24\13\2ST\7\27\2\2TV\5"+
-		"\24\13\2US\3\2\2\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2X\23\3\2\2\2YW\3\2\2\2"+
-		"Z\\\5\26\f\2[Z\3\2\2\2[\\\3\2\2\2\\]\3\2\2\2]`\7\33\2\2^a\5\30\r\2_a\5"+
-		"\32\16\2`^\3\2\2\2`_\3\2\2\2`a\3\2\2\2a\25\3\2\2\2bc\7\30\2\2c\27\3\2"+
-		"\2\2de\7\31\2\2ef\7\34\2\2f\31\3\2\2\2gh\t\4\2\2h\33\3\2\2\2in\5\36\20"+
-		"\2jk\7\32\2\2km\5\36\20\2lj\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2or\3"+
-		"\2\2\2pn\3\2\2\2qs\7\32\2\2rq\3\2\2\2rs\3\2\2\2s\35\3\2\2\2tx\7\33\2\2"+
+		"\22\24\26\30\32\34\36 \"$&\2\7\3\2\16\17\4\2\f\r\20\20\5\2\21\22\24\25"+
+		"\30\30\5\2\21\22\24\27\32\32\3\2\33\34\u0083\2(\3\2\2\2\4\67\3\2\2\2\6"+
+		">\3\2\2\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22"+
+		"R\3\2\2\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34i\3\2\2\2"+
+		"\36t\3\2\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3\2\2\2(-\5"+
+		"\4\3\2)*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61"+
+		"\3\2\2\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2\62\63\3\2"+
+		"\2\2\63\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67\65\3\2\2\2"+
+		"\67\66\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;\3\2\2\2;\5"+
+		"\3\2\2\2<?\5\b\5\2=?\5\f\7\2><\3\2\2\2>=\3\2\2\2?\7\3\2\2\2@A\5\n\6\2"+
+		"AB\7\33\2\2BC\7\7\2\2CD\7\33\2\2D\t\3\2\2\2EF\t\2\2\2F\13\3\2\2\2GH\5"+
+		"\16\b\2HI\7\33\2\2IJ\7\7\2\2JK\7\34\2\2K\r\3\2\2\2LM\t\3\2\2M\17\3\2\2"+
+		"\2NO\5\22\n\2OP\7\6\2\2PQ\5\34\17\2Q\21\3\2\2\2RW\5\24\13\2ST\7\b\2\2"+
+		"TV\5\24\13\2US\3\2\2\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2X\23\3\2\2\2YW\3\2"+
+		"\2\2Z\\\5\26\f\2[Z\3\2\2\2[\\\3\2\2\2\\]\3\2\2\2]`\7\33\2\2^a\5\30\r\2"+
+		"_a\5\32\16\2`^\3\2\2\2`_\3\2\2\2`a\3\2\2\2a\25\3\2\2\2bc\7\t\2\2c\27\3"+
+		"\2\2\2de\7\n\2\2ef\7\34\2\2f\31\3\2\2\2gh\t\4\2\2h\33\3\2\2\2in\5\36\20"+
+		"\2jk\7\13\2\2km\5\36\20\2lj\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2or\3"+
+		"\2\2\2pn\3\2\2\2qs\7\13\2\2rq\3\2\2\2rs\3\2\2\2s\35\3\2\2\2tx\7\33\2\2"+
 		"uy\5 \21\2vy\5\"\22\2wy\5$\23\2xu\3\2\2\2xv\3\2\2\2xw\3\2\2\2xy\3\2\2"+
 		"\2y{\3\2\2\2z|\5&\24\2{z\3\2\2\2{|\3\2\2\2|\37\3\2\2\2}~\t\5\2\2~!\3\2"+
-		"\2\2\177\u0080\7\r\2\2\u0080#\3\2\2\2\u0081\u0082\7\23\2\2\u0082%\3\2"+
-		"\2\2\u0083\u0084\7\26\2\2\u0084\u0085\t\6\2\2\u0085\'\3\2\2\2\16-\61\67"+
+		"\2\2\177\u0080\7\23\2\2\u0080#\3\2\2\2\u0081\u0082\7\31\2\2\u0082%\3\2"+
+		"\2\2\u0083\u0084\7\7\2\2\u0084\u0085\t\6\2\2\u0085\'\3\2\2\2\16-\61\67"+
 		":>W[`nrx{";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());

@@ -31,6 +31,26 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testValidId() throws Exception {
+        String source = "" +
+                "Var id = 1\n" +
+                "Var _  = 2\n" +
+                "Var My-Var = 3\n" +
+                "var id2=4\n" +
+                "var __id3__=5\n";
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("id").getAsInt()).isEqualTo(1);
+        assertThat(script.getVar("_").getAsInt()).isEqualTo(2);
+        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(3);
+        assertThat(script.getVar("id2").getAsInt()).isEqualTo(4);
+        assertThat(script.getVar("__id3__").getAsInt()).isEqualTo(5);
+    }
+
+    @Test
     public void testDefineVar() throws Exception {
         String source = "  Var VALUE    = 5201 # d&rgw ";
         Script script = new ScriptParser2().parse(source, mReporter);
@@ -136,6 +156,21 @@ public class ScriptParser2Test {
         assertThat(script.getTimer("TIMER-1")).isNotNull();
         Timer timer = script.getTimer("timer-1");
         assertThat(timer.getDurationSec()).isEqualTo(5);
+    }
+
+    @Test
+    public void testActionSpacing() throws Exception {
+        // Note that IDs can use "-" and "-" can also be part of "->".
+        // "->" needs a space before otherwise the "-" is parsed as part of the previous ID.
+        String source = "" +
+                "Var My-Var=1\n" +
+                "my-var ->my-var=2\n";
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(1);
     }
 
     @Test
@@ -277,8 +312,8 @@ public class ScriptParser2Test {
         String source = "" +
                 "throttle T1=42\n " +
                 "var myVar=5\n " +
-                "t1 stopped->myVar=0\n" +
-                "t1 forward->myVar=1 ";
+                "t1 stopped ->myVar=0\n" +
+                "t1 forward ->myVar=1 ";
 
         Script script = new ScriptParser2().parse(source, mReporter);
 
