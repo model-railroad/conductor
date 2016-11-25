@@ -14,6 +14,10 @@ import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -24,9 +28,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for both {@link ScriptParser} *and* {@link Script} execution engine.
+ * Tests for both {@link ScriptParser1} *and* {@link Script} execution engine.
  */
-public class ScriptParserTest {
+public class ScriptParser1Test {
     private TestReporter mReporter;
 
     @Before
@@ -37,7 +41,7 @@ public class ScriptParserTest {
     @Test
     public void testDefineVar() throws Exception {
         String source = "  Var VALUE    = 5201 # d&rgw ";
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -50,7 +54,7 @@ public class ScriptParserTest {
     @Test
     public void testDefineSensor() throws Exception {
         String source = "  Sensor Alias   = NS784 ";
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -61,7 +65,7 @@ public class ScriptParserTest {
     @Test
     public void testDefineTurnout() throws Exception {
         String source = "  Turnout TT   = NS784 ";
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -72,7 +76,7 @@ public class ScriptParserTest {
     @Test
     public void testDefineTimer() throws Exception {
         String source = "  Timer Timer-1 = 5 ";
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -96,7 +100,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 forward = speed \n" +
                 "t1 forward -> t1 stop";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -130,7 +134,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -166,7 +170,7 @@ public class ScriptParserTest {
                 "t1 stopped->myVar=0\n" +
                 "t1 forward->myVar=1 ";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -196,7 +200,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 Sound=0 \n" +
                 "t1 forward -> t1 Sound=1";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -226,7 +230,7 @@ public class ScriptParserTest {
                 "t1 stopped -> t1 Light=0 \n" +
                 "t1 forward -> t1 Light=1";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -256,7 +260,7 @@ public class ScriptParserTest {
                 "t1 stopped -> T1 Horn \n" +
                 "t1 forward -> T1 Horn=1";
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -290,7 +294,7 @@ public class ScriptParserTest {
                 " b1 + !b777 -> t1 Sound=0 \n" +
                 " B1 +  B777 -> T1 Sound=1 \n" ;
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -350,7 +354,7 @@ public class ScriptParserTest {
                 " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -400,7 +404,7 @@ public class ScriptParserTest {
         NowProviderTest.TestableNowProvider now =
                 new NowProviderTest.TestableNowProvider(1000);
 
-        Script script = new TestableScriptParser(now).parse(source, mReporter);
+        Script script = new TestableScriptParser1(now).parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -438,26 +442,31 @@ public class ScriptParserTest {
 
     @Test
     public void testScript1() throws Exception {
-        String source = Resources.toString(Resources.getResource("script1.txt"), Charsets.UTF_8);
+        String source = getFileSource("script1.txt");
         assertThat(source).isNotNull();
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
 
     @Test
     public void testScript2() throws Exception {
-        String source = Resources.toString(Resources.getResource("script2.txt"), Charsets.UTF_8);
+        String source = getFileSource("script2.txt");
         assertThat(source).isNotNull();
-        Script script = new ScriptParser().parse(source, mReporter);
+        Script script = new ScriptParser1().parse(source, mReporter);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
 
-    private static class TestableScriptParser extends ScriptParser {
+    private String getFileSource(String fileName) throws IOException {
+        String path = new File("v1", fileName).getPath();
+        return Resources.toString(Resources.getResource(path), Charsets.UTF_8);
+    }
+
+    private static class TestableScriptParser1 extends ScriptParser1 {
         private final NowProvider mNowProvider;
 
-        public TestableScriptParser(NowProvider nowProvider) {
+        public TestableScriptParser1(NowProvider nowProvider) {
             mNowProvider = nowProvider;
         }
 

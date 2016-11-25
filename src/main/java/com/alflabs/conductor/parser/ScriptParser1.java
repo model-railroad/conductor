@@ -25,7 +25,7 @@ import java.util.TreeMap;
 /**
  * Parses a script and produces a new {@link Script}.
  */
-public class ScriptParser {
+public class ScriptParser1 {
 
     /** The "->" symbol. */
     private static final char[] ActionToken = new char[] { '-', '>' };

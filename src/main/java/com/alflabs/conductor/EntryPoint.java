@@ -1,7 +1,7 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.parser.Reporter;
-import com.alflabs.conductor.parser.ScriptParser;
+import com.alflabs.conductor.parser.ScriptParser1;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
@@ -76,7 +76,7 @@ public class EntryPoint {
             }
         };
         try {
-            mScript = new ScriptParser().parse(filepath, reporter);
+            mScript = new ScriptParser1().parse(filepath, reporter);
             mScript.setup(jmriProvider);
         } catch (IOException e) {
             logger.log("[Conductor] Script Path: " + scriptFile);
