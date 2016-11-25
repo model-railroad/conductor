@@ -401,8 +401,8 @@ public class ScriptParser2Test {
                 "sensor b777= NS7805 \n" +
                 "!b1         -> T1 Light=0 \n" +
                 " B1         -> t1 Light=1 \n" +
-                " b1 + !b777 -> t1 Sound=0 \n" +
-                " B1 +  B777 -> T1 Sound=1 \n" ;
+                " b1 & !b777 -> t1 Sound=0 \n" +
+                " B1 &  B777 -> T1 Sound=1 \n" ;
 
         Script script = new ScriptParser2().parse(source, mReporter);
 
