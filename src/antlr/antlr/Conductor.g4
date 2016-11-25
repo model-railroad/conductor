@@ -1,13 +1,16 @@
 grammar Conductor;
 
-script     : scriptLine* EOF ;
-scriptLine : ( defLine | eventLine )? eol ;
+script     : scriptLine ( EOL scriptLine )* EOL? EOF ;
+scriptLine : ( defLine | eventLine )? SB_COMMENT? ;
 
-eol         : comment? EOL ;
-comment     : SB_COMMENT ;
+defLine: defStrLine | defIntLine ;
 
-defLine: defType ID '=' NUM ;
-defType: KW_VAR | KW_THROTTLE | KW_SENSOR | KW_TURNOUT | KW_TIMER ;
+defStrLine: defStrType ID '=' ID ;
+defStrType: KW_SENSOR | KW_TURNOUT ;
+
+defIntLine: defIntType ID '=' NUM;
+defIntType: KW_THROTTLE | KW_VAR  | KW_TIMER ;
+
 
 eventLine: condList '->' instList;
 
@@ -25,22 +28,26 @@ EOL:    [\r\n]+ ;
 
 SB_COMMENT: '#' ~[\r\n]*;
 
-// keywords... defining them here mean they are not part of "ID" anymore.
-KW_VAR:     'Var';
-KW_THROTTLE:'Throttle';
-KW_SENSOR:  'Sensor';
-KW_TURNOUT: 'Turnout';
-KW_TIMER:   'Timer';
-KW_FORWARD: 'Forward';
-KW_REVERSE: 'Reverse';
-KW_NORMAL:  'Normal';
-KW_SOUND:   'Sound';
-KW_LIGHT:   'Light';
-KW_HORN:    'Horn';
-KW_STOP:    'Stop';
-KW_STOPPED: 'Stopped';
-KW_START:   'Start';
-KW_FN:      'F' [0-9] [0-9]? ;
+// Keywords... defining them here mean they are not part of "ID" anymore.
+// (ANTLR uses the grammar order... ID matches everything not defined here.)
+// Note: we use a case-insensitive input stream which works by converting the input to
+// lowercase so all the keywords here need to be lower case. However when the visitor
+// uses ctx.getText(), it will get the original case of the source file.
+KW_VAR:     'var';
+KW_THROTTLE:'throttle';
+KW_SENSOR:  'sensor';
+KW_TURNOUT: 'turnout';
+KW_TIMER:   'timer';
+KW_FORWARD: 'forward';
+KW_REVERSE: 'reverse';
+KW_NORMAL:  'normal';
+KW_SOUND:   'sound';
+KW_LIGHT:   'light';
+KW_HORN:    'horn';
+KW_STOP:    'stop';
+KW_STOPPED: 'stopped';
+KW_START:   'start';
+KW_FN:      'f' [0-9] [0-9]? ;
 
 KW_ARROW:   '->';
 KW_EQUAL:   '=';
@@ -50,10 +57,11 @@ KW_PLUS:    '+';
 KW_SEMI:    ';';
 
 ID:       IdCharStart IdCharFull* | IdNum IdCharFull* IdCharStart IdCharFull* ;
-NUM:      IdNum+;
-RESERVED: [:#+-*/,.%^()\[\]{}\"\'`~ ] ;
+NUM:      IdNum+ ;      // An int literal
+RESERVED: [=&!+;# ] ;   // Reserve these so that they don't match below
 
-fragment IdUnreserved: [!$&?_] ;
+// Unreserved characters can be used to start an ID or even be the whole 1-char ID
+fragment IdUnreserved: [$?_:*/,.%^()\[\]{}\"\'`~] ;
 fragment IdNum:        [0-9] ;
 // Letter covers all unicode characters above 0xFF which are not a surrogate
 fragment IdLetter:     [a-zA-Z] ~[\u0000-\u00FF\uD800-\uDBFF] ;

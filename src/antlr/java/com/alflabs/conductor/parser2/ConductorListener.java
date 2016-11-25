@@ -28,26 +28,6 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitScriptLine(ConductorParser.ScriptLineContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#eol}.
-	 * @param ctx the parse tree
-	 */
-	void enterEol(ConductorParser.EolContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ConductorParser#eol}.
-	 * @param ctx the parse tree
-	 */
-	void exitEol(ConductorParser.EolContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ConductorParser#comment}.
-	 * @param ctx the parse tree
-	 */
-	void enterComment(ConductorParser.CommentContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ConductorParser#comment}.
-	 * @param ctx the parse tree
-	 */
-	void exitComment(ConductorParser.CommentContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link ConductorParser#defLine}.
 	 * @param ctx the parse tree
 	 */
@@ -58,15 +38,45 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitDefLine(ConductorParser.DefLineContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#defType}.
+	 * Enter a parse tree produced by {@link ConductorParser#defStrLine}.
 	 * @param ctx the parse tree
 	 */
-	void enterDefType(ConductorParser.DefTypeContext ctx);
+	void enterDefStrLine(ConductorParser.DefStrLineContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#defType}.
+	 * Exit a parse tree produced by {@link ConductorParser#defStrLine}.
 	 * @param ctx the parse tree
 	 */
-	void exitDefType(ConductorParser.DefTypeContext ctx);
+	void exitDefStrLine(ConductorParser.DefStrLineContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defStrType}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefStrType(ConductorParser.DefStrTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defStrType}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefStrType(ConductorParser.DefStrTypeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defIntLine}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefIntLine(ConductorParser.DefIntLineContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defIntLine}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefIntLine(ConductorParser.DefIntLineContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defIntType}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefIntType(ConductorParser.DefIntTypeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defIntType}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefIntType(ConductorParser.DefIntTypeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree

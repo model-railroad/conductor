@@ -8,13 +8,23 @@ import com.alflabs.conductor.util.Logger;
  */
 public class Reporter implements Logger {
     private Logger mLogger;
+    private int mLastReportLine;
 
     public Reporter(Logger logger) {
         mLogger = logger;
     }
 
+    public int getLastReportLine() {
+        return mLastReportLine;
+    }
+
     public void report(String line, int lineCount, String error) {
-        log(String.format("Error at line %d: %s\n  Line: '%s'", lineCount, error, line));
+        mLastReportLine = lineCount;
+        if (line != null && !line.isEmpty()) {
+            log(String.format("Error at line %d: %s\n  Line: '%s'", lineCount, error, line));
+        } else {
+            log(String.format("Error at line %d: %s", lineCount, error));
+        }
     }
 
     @Override

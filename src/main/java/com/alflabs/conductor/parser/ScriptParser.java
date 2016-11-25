@@ -60,7 +60,7 @@ public class ScriptParser {
         REVERSE
     }
 
-    /** Helper to create a timer, used to be overriden in tests. */
+    /** Helper to create a timer, used to be overridden in tests. */
     Timer createTimer(int durationSec, NowProvider nowProvider) {
         return new Timer(durationSec, nowProvider);
     }

@@ -454,29 +454,6 @@ public class ScriptParserTest {
         assertThat(script).isNotNull();
     }
 
-    private static class TestReporter extends Reporter {
-        private String report = "";
-
-        public TestReporter() {
-            super(null);
-        }
-
-        @Override
-        public void report(String line, int lineCount, String error) {
-            log(String.format("Error at line %d: %s\n", lineCount, error));
-        }
-
-        @Override
-        public void log(String msg) {
-            report += msg;
-        }
-
-        @Override
-        public String toString() {
-            return report;
-        }
-    }
-
     private static class TestableScriptParser extends ScriptParser {
         private final NowProvider mNowProvider;
 
