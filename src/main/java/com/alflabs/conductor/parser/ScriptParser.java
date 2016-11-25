@@ -306,7 +306,7 @@ public class ScriptParser {
         int n = tokens.size() - sep - 1; // num tokens including index i
         for (int i = sep + 1; n > 0; ) {
             // Expected forms:
-            // [Throttle] Function|VarId = Value|Timer|TurnoutAction [;]
+            // [Throttle] Function|VarId = Value|Timer|TurnoutFunction [;]
             // [Throttle] Function [;]
             // The ; is optional for the last action.
             String i0 = tokens.get(i).toLowerCase(Locale.US);
@@ -359,12 +359,12 @@ public class ScriptParser {
             boolean isTimer = false;
             if (function == null) {
                 try {
-                    Timer.TimerAction timerAction = Timer.TimerAction.valueOf(i0.toUpperCase(Locale.US));
+                    Timer.TimerFunction timerFunction = Timer.TimerFunction.valueOf(i0.toUpperCase(Locale.US));
                     Timer timer = script.getTimer(i2);
                     if (timer == null) {
                         return String.format("Expected timer name after %s but found %s", i0, i2);
                     }
-                    switch (timerAction) {
+                    switch (timerFunction) {
                     case START:
                         function = timer.createFunctionStart();
                         isTimer = true;
@@ -381,12 +381,12 @@ public class ScriptParser {
             boolean isTurnout = false;
             if (function == null) {
                 try {
-                    Turnout.TurnoutAction turnoutAction = Turnout.TurnoutAction.valueOf(i2.toUpperCase(Locale.US));
+                    Turnout.TurnoutFunction turnoutFunction = Turnout.TurnoutFunction.valueOf(i2.toUpperCase(Locale.US));
                     Turnout turnout = script.getTurnout(i0);
                     if (turnout == null) {
                         return String.format("Expected turnout name before %s but found %s", i2, i0);
                     }
-                    switch (turnoutAction) {
+                    switch (turnoutFunction) {
                     case NORMAL:
                         function = turnout.createFunctionNormal();
                         isTurnout = true;

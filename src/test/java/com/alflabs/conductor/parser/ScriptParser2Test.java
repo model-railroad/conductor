@@ -1,7 +1,9 @@
 package com.alflabs.conductor.parser;
 
 import com.alflabs.conductor.IJmriProvider;
+import com.alflabs.conductor.IJmriSensor;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.IJmriTurnout;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
@@ -10,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -183,11 +186,11 @@ public class ScriptParser2Test {
                 "Error at line 4: no viable alternative at input 'stopped'.\n" +
                 "Error at line 8: token recognition error at: '-1'.\n" +
                 "Error at line 3: Unexpected symbol: 'stopped'.\n" +
-                "Error at line 3: Failed to parse action for 't1'\n" +
+                "Error at line 3: Expected var ID but found 't1'.\n" +
                 "Error at line 4: Unexpected symbol: '!'.\n" +
-                "Error at line 4: Failed to parse action for 't1'\n" +
-                "Error at line 5: Failed to parse action for 't1'\n" +
-                "Error at line 7: Failed to parse action for 't1'\n" +
+                "Error at line 4: Expected var ID but found 't1'.\n" +
+                "Error at line 5: Expected turnout ID for 'normal' but found 't1'.\n" +
+                "Error at line 7: Expected timer ID for 'start' but found 't1'.\n" +
                 "Error at line 9: Expected NUM or ID argument for 't1' but found 'B42'.\n" +
                 "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.");
         assertThat(script).isNotNull();
@@ -268,236 +271,236 @@ public class ScriptParser2Test {
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
     }
 
-//    @Test
-//    public void testActionVar() throws Exception {
-//
-//        String source = "" +
-//                "throttle T1=42\n " +
-//                "var myVar=5\n " +
-//                "t1 stopped->myVar=0\n" +
-//                "t1 forward->myVar=1 ";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped).
-//        script.handle();
-//        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
-//
-//        // Execute with throttle at speed 5
-//        script.getThrottle("t1").setSpeed(5);
-//        script.handle();
-//        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
-//    }
-//
-//    @Test
-//    public void testActionSound() throws Exception {
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "t1 stopped -> t1 Sound=0 \n" +
-//                "t1 forward -> t1 Sound=1";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped)
-//        script.handle();
-//        verify(throttle).setSound(false);
-//
-//        // Execute with throttle at forward speed
-//        reset(throttle);
-//        script.getThrottle("t1").setSpeed(5);
-//        script.handle();
-//        verify(throttle).setSound(true);
-//    }
-//
-//    @Test
-//    public void testActionLight() throws Exception {
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "t1 stopped -> t1 Light=0 \n" +
-//                "t1 forward -> t1 Light=1";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped)
-//        script.handle();
-//        verify(throttle).setLight(false);
-//
-//        // Execute with throttle at forward speed
-//        reset(throttle);
-//        script.getThrottle("t1").setSpeed(5);
-//        script.handle();
-//        verify(throttle).setLight(true);
-//    }
-//
-//    @Test
-//    public void testActionHorn() throws Exception {
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "t1 stopped -> T1 Horn \n" +
-//                "t1 forward -> T1 Horn=1";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped)
-//        script.handle();
-//        verify(throttle).horn();
-//
-//        // Execute with throttle at forward speed
-//        reset(throttle);
-//        script.getThrottle("t1").setSpeed(5);
-//        script.handle();
-//        verify(throttle).horn();
-//    }
-//
-//    @Test
-//    public void testActionSensor() throws Exception {
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "sensor b1  = NS42 \n" +
-//                "sensor b777= NS7805 \n" +
-//                "!b1         -> T1 Light=0 \n" +
-//                " B1         -> t1 Light=1 \n" +
-//                " b1 + !b777 -> t1 Sound=0 \n" +
-//                " B1 +  B777 -> T1 Sound=1 \n" ;
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        IJmriSensor sensor1 = mock(IJmriSensor.class);
-//        IJmriSensor sensor2 = mock(IJmriSensor.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//        when(provider.getSensor("NS42")).thenReturn(sensor1);
-//        when(provider.getSensor("NS7805")).thenReturn(sensor2);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//        verify(provider).getSensor("NS42");
-//        verify(provider).getSensor("NS7805");
-//
-//        when(sensor1.isActive()).thenReturn(false);
-//        when(sensor2.isActive()).thenReturn(false);
-//        reset(throttle);
-//        script.handle();
-//        verify(throttle).setLight(false);
-//        verify(throttle, never()).setSound(anyBoolean());
-//
-//        when(sensor1.isActive()).thenReturn(false);
-//        when(sensor2.isActive()).thenReturn(true);
-//        reset(throttle);
-//        script.handle();
-//        // Note: event !b1 is not executed a second time till the condition gets invalidated
-//        verify(throttle, never()).setLight(anyBoolean());
-//        verify(throttle, never()).setSound(anyBoolean());
-//
-//        when(sensor1.isActive()).thenReturn(true);
-//        when(sensor2.isActive()).thenReturn(false);
-//        reset(throttle);
-//        script.handle();
-//        verify(throttle).setLight(true);
-//        verify(throttle).setSound(false);
-//
-//        when(sensor1.isActive()).thenReturn(true);
-//        when(sensor2.isActive()).thenReturn(true);
-//        reset(throttle);
-//        script.handle();
-//        // Note: event b1 is not executed a second time till the condition gets invalidated
-//        verify(throttle, never()).setLight(anyBoolean());
-//        verify(throttle).setSound(true);
-//    }
-//
-//    @Test
-//    public void testActionTurnout() throws Exception {
-//        String source = "" +
-//                "throttle th = 42 \n " +
-//                "turnout T1  = NT42 \n" +
-//                "turnout t2  = NT43 \n" +
-//                "th stopped -> T1 = normal ; t2 = reverse\n" +
-//                "th forward -> t1 = reverse ; t2 = normal \n" +
-//                " T1        -> th sound = 0 \n" +
-//                "!t2        -> th sound = 1 \n" ;
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        IJmriTurnout turnout1 = mock(IJmriTurnout.class);
-//        IJmriTurnout turnout2 = mock(IJmriTurnout.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//        when(provider.getTurnout("NT42")).thenReturn(turnout1);
-//        when(provider.getTurnout("NT43")).thenReturn(turnout2);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//        verify(provider).getTurnout("NT42");
-//        verify(provider).getTurnout("NT43");
-//
-//        script.handle();
-//        verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
-//        verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
-//        verify(throttle).setSound(false);
-//        // Note: line "!t2->..." is not invoked at first because t2 was true in this handle call.
-//        // The "t2 = reverse" action will only be noticed at the next handle call.
-//        verify(throttle, never()).setSound(true);
-//
-//        script.handle();
-//        verify(throttle).setSound(true);
-//
-//        reset(turnout1);
-//        reset(turnout2);
-//        script.getThrottle("th").setSpeed(5);
-//        script.handle();
-//        verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
-//        verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
-//    }
-//
+    @Test
+    public void testActionVar() throws Exception {
+
+        String source = "" +
+                "throttle T1=42\n " +
+                "var myVar=5\n " +
+                "t1 stopped->myVar=0\n" +
+                "t1 forward->myVar=1 ";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
+
+        // Execute with throttle defaulting to speed 0 (stopped).
+        script.handle();
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
+
+        // Execute with throttle at speed 5
+        script.getThrottle("t1").setSpeed(5);
+        script.handle();
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
+    }
+
+    @Test
+    public void testActionSound() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Sound=0 \n" +
+                "t1 forward -> t1 Sound=1";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).setSound(false);
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle("t1").setSpeed(5);
+        script.handle();
+        verify(throttle).setSound(true);
+    }
+
+    @Test
+    public void testActionLight() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Light=0 \n" +
+                "t1 forward -> t1 Light=1";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).setLight(false);
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle("t1").setSpeed(5);
+        script.handle();
+        verify(throttle).setLight(true);
+    }
+
+    @Test
+    public void testActionHorn() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> T1 Horn \n" +
+                "t1 forward -> T1 Horn=1";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).horn();
+
+        // Execute with throttle at forward speed
+        reset(throttle);
+        script.getThrottle("t1").setSpeed(5);
+        script.handle();
+        verify(throttle).horn();
+    }
+
+    @Test
+    public void testActionSensor() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "sensor b1  = NS42 \n" +
+                "sensor b777= NS7805 \n" +
+                "!b1         -> T1 Light=0 \n" +
+                " B1         -> t1 Light=1 \n" +
+                " b1 + !b777 -> t1 Sound=0 \n" +
+                " B1 +  B777 -> T1 Sound=1 \n" ;
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriSensor sensor1 = mock(IJmriSensor.class);
+        IJmriSensor sensor2 = mock(IJmriSensor.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getSensor("NS42")).thenReturn(sensor1);
+        when(provider.getSensor("NS7805")).thenReturn(sensor2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getSensor("NS42");
+        verify(provider).getSensor("NS7805");
+
+        when(sensor1.isActive()).thenReturn(false);
+        when(sensor2.isActive()).thenReturn(false);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setLight(false);
+        verify(throttle, never()).setSound(anyBoolean());
+
+        when(sensor1.isActive()).thenReturn(false);
+        when(sensor2.isActive()).thenReturn(true);
+        reset(throttle);
+        script.handle();
+        // Note: event !b1 is not executed a second time till the condition gets invalidated
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        when(sensor1.isActive()).thenReturn(true);
+        when(sensor2.isActive()).thenReturn(false);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setLight(true);
+        verify(throttle).setSound(false);
+
+        when(sensor1.isActive()).thenReturn(true);
+        when(sensor2.isActive()).thenReturn(true);
+        reset(throttle);
+        script.handle();
+        // Note: event b1 is not executed a second time till the condition gets invalidated
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle).setSound(true);
+    }
+
+    @Test
+    public void testActionTurnout() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "turnout T1  = NT42 \n" +
+                "turnout t2  = NT43 \n" +
+                "th stopped -> T1 = normal ; t2 = reverse\n" +
+                "th forward -> t1 = reverse ; t2 = normal \n" +
+                " T1        -> th sound = 0 \n" +
+                "!t2        -> th sound = 1 \n" ;
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriTurnout turnout1 = mock(IJmriTurnout.class);
+        IJmriTurnout turnout2 = mock(IJmriTurnout.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getTurnout("NT42")).thenReturn(turnout1);
+        when(provider.getTurnout("NT43")).thenReturn(turnout2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getTurnout("NT42");
+        verify(provider).getTurnout("NT43");
+
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
+        verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+        verify(throttle).setSound(false);
+        // Note: line "!t2->..." is not invoked at first because t2 was true in this handle call.
+        // The "t2 = reverse" action will only be noticed at the next handle call.
+        verify(throttle, never()).setSound(true);
+
+        script.handle();
+        verify(throttle).setSound(true);
+
+        reset(turnout1);
+        reset(turnout2);
+        script.getThrottle("th").setSpeed(5);
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
+        verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
+    }
+
 //    @Test
 //    public void testTimer() throws Exception {
 //        String source = "" +

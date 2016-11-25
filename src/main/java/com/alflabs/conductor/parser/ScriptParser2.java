@@ -217,7 +217,8 @@ public class ScriptParser2 {
                 return;
             }
             String id = ctx.ID().getText();
-            IIntFunction function = null;
+
+            // Parse optional value
             IIntValue value = null;
             if (ctx.funcValue() != null) {
                 TerminalNode node = ctx.funcValue().NUM();
@@ -239,16 +240,66 @@ public class ScriptParser2 {
                 value = new LiteralInt(0);
             }
 
+            // Parse optional operation, which gives a specific function if valid.
+            IIntFunction function = null;
             if (ctx.throttleOp() != null) {
                 String op = ctx.throttleOp().getText();
                 Throttle throttle = mScript.getThrottle(id);
-                if (throttle == null) {
+
+                // Note: KW_REVERSE is used for both throttle op and turnout op.
+                Throttle.ThrottleFunction fn = Throttle.ThrottleFunction.valueOf(op.toUpperCase(Locale.US));
+
+                if (throttle == null && fn != Throttle.ThrottleFunction.REVERSE) {
                     emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
                     return;
                 }
 
-                Throttle.ThrottleFunction fn = Throttle.ThrottleFunction.valueOf(op.toUpperCase(Locale.US));
-                function = throttle.createFunction(fn);
+                if (throttle != null) {
+                    function = throttle.createFunction(fn);
+                }
+            }
+
+            if (function == null && ctx.turnoutOp() != null) {
+                String op = ctx.turnoutOp().getText();
+                Turnout turnout = mScript.getTurnout(id);
+
+                Turnout.TurnoutFunction fn = Turnout.TurnoutFunction.valueOf(op.toUpperCase(Locale.US));
+
+                if (turnout == null) {
+                    if (fn == Turnout.TurnoutFunction.REVERSE) {
+                        emitError(ctx, "Expected throttle or turnout ID for '" + op + "' but found '" + id + "'.");
+                    } else {
+                        emitError(ctx, "Expected turnout ID for '" + op + "' but found '" + id + "'.");
+                    }
+                    return;
+                }
+
+                function = turnout.createFunction(fn);
+            }
+
+            if (function == null && ctx.timerOp() != null) {
+                String op = ctx.timerOp().getText();
+                Timer timer = mScript.getTimer(id);
+
+                Timer.TimerFunction fn = Timer.TimerFunction.valueOf(op.toUpperCase(Locale.US));
+
+                if (timer == null) {
+                    emitError(ctx, "Expected timer ID for '" + op + "' but found '" + id + "'.");
+                    return;
+                }
+
+                function = timer.createFunction(fn);
+            }
+
+            if (function == null) {
+                // If it's not an op for a throttle/turnout/timer, it must be a variable in the
+                // syntax of "var = value".
+                function = mScript.getVar(id);
+
+                if (function == null) {
+                    emitError(ctx, "Expected var ID but found '" + id + "'.");
+                    return;
+                }
             }
 
             // TODO : turnout, timer

@@ -16,10 +16,10 @@ public class Timer implements IConditional {
     private long mEndTS;
 
     /**
-     * Possible keywords for a timer action.
+     * Possible keywords for a timer function.
      * Must match IIntFunction in the {@link Timer} implementation.
      */
-    public enum TimerAction {
+    public enum TimerFunction {
         START,
         END
     }
@@ -34,8 +34,8 @@ public class Timer implements IConditional {
         return mDurationSec;
     }
 
-    public IIntFunction createFunction(TimerAction action) {
-        switch (action) {
+    public IIntFunction createFunction(TimerFunction function) {
+        switch (function) {
         case START:
             return createFunctionStart();
         case END:
