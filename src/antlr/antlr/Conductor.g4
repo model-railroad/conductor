@@ -24,8 +24,8 @@ actionList: action ( ';' action )* ';'? ;
 action:     ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
-turnoutOp:  KW_NORMAL;  // also KW_REVERSE as in throttleOp.
-timerOp:    KW_START;
+turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
+timerOp:    KW_START | KW_END;
 
 funcValue:  '=' ( NUM | ID ) ;
 
@@ -61,6 +61,7 @@ KW_HORN:    'horn';
 KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
 KW_START:   'start';
+KW_END:     'end';
 KW_FN:      'f' [0-9] [0-9]? ;
 
 ID:       IdCharStart IdCharFull* ;

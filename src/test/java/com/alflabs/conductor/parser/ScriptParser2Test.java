@@ -8,11 +8,13 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.NowProviderTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -538,54 +540,54 @@ public class ScriptParser2Test {
         verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
     }
 
-//    @Test
-//    public void testTimer() throws Exception {
-//        String source = "" +
-//                "throttle th = 42 \n " +
-//                "timer T1  = 5 # seconds \n" +
-//                "timer t2  = 2 \n" +
-//                "th stopped -> start = T1\n" +
-//                "T1         -> th horn ; start = t2 \n" +
-//                "t2         -> end = T1 ; end = t2 ; th forward = 1 \n" ;
-//
-//        NowProviderTest.TestableNowProvider now =
-//                new NowProviderTest.TestableNowProvider(1000);
-//
-//        Script script = new TestableScriptParser2(now).parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//        script.setup(provider);
-//
-//        // throttle is stopped, starts t1
-//        assertThat(script.getTimer("t1").isActive()).isFalse();
-//        script.handle();
-//        assertThat(script.getTimer("t1").isActive()).isFalse();
-//
-//        // t1 is active 5 seconds later
-//        now.add(5*1000 - 1);
-//        script.handle();
-//        assertThat(script.getTimer("t1").isActive()).isFalse();
-//
-//        // Note: timer is still active because the "t1 ->" does not reset it with end yet.
-//        // A timer remain active till it is either restarted or ended.
-//        now.add(1);
-//        script.handle();
-//        verify(throttle).horn();
-//        verify(throttle, never()).setSpeed(anyInt());
-//        assertThat(script.getTimer("t1").isActive()).isTrue();
-//
-//        // t2 is active 2 seconds later. Both t1 and t2 get reset as soon as t2 becomes active.
-//        now.add(2*1000);
-//        script.handle();
-//        verify(throttle).setSpeed(anyInt());
-//        assertThat(script.getTimer("t1").isActive()).isFalse();
-//        assertThat(script.getTimer("t2").isActive()).isFalse();
-//    }
+    @Test
+    public void testTimer() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer T1  = 5 # seconds \n" +
+                "timer t2  = 2 \n" +
+                "th stopped -> T1 start\n" +
+                "T1         -> th horn ; t2 start \n" +
+                "t2         -> t1 end ; th forward = 1 \n" ; // "Timer end" is optional
+
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t1
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+        script.handle();
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+
+        // t1 is active 5 seconds later
+        now.add(5*1000 - 1);
+        script.handle();
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+
+        // Note: timer is still active because the "t1 ->" does not reset it with end yet.
+        // A timer remain active till it is either restarted or ended.
+        now.add(1);
+        script.handle();
+        verify(throttle).horn();
+        verify(throttle, never()).setSpeed(anyInt());
+        assertThat(script.getTimer("t1").isActive()).isTrue();
+
+        // t2 is active 2 seconds later. Both t1 gets reset as soon as t2 becomes active.
+        now.add(2*1000);
+        script.handle();
+        verify(throttle).setSpeed(anyInt());
+        assertThat(script.getTimer("t1").isActive()).isFalse();
+        assertThat(script.getTimer("t2").isActive()).isTrue();
+    }
 //
 //    @Test
 //    public void testScript1() throws Exception {
