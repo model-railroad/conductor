@@ -84,12 +84,12 @@ public class ScriptParser2 {
 
         private final Script mScript;
         private final Reporter mReporter;
+        private Script.Event mEvent;
 
         ConductorListenerImpl(Script script, Reporter reporter) {
             mScript = script;
             mReporter = reporter;
         }
-
 
         @Override
         public void exitDefStrLine(ConductorParser.DefStrLineContext ctx) {
@@ -158,6 +158,22 @@ public class ScriptParser2 {
                 emitError(ctx, "Unsupported type '" + type + "'.");
                 break;
             }
+        }
+
+        @Override
+        public void enterEventLine(ConductorParser.EventLineContext ctx) {
+            mEvent = new Script.Event(mScript.getLogger(), ""); // TODO get line
+            super.enterEventLine(ctx);
+        }
+
+        @Override
+        public void exitCond(ConductorParser.CondContext ctx) {
+            super.exitCond(ctx);
+        }
+
+        @Override
+        public void exitAction(ConductorParser.ActionContext ctx) {
+            super.exitAction(ctx);
         }
 
         @Override

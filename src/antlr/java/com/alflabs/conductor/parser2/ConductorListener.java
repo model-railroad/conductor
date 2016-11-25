@@ -108,43 +108,93 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitCond(ConductorParser.CondContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#cond_op}.
+	 * Enter a parse tree produced by {@link ConductorParser#condNot}.
 	 * @param ctx the parse tree
 	 */
-	void enterCond_op(ConductorParser.Cond_opContext ctx);
+	void enterCondNot(ConductorParser.CondNotContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#cond_op}.
+	 * Exit a parse tree produced by {@link ConductorParser#condNot}.
 	 * @param ctx the parse tree
 	 */
-	void exitCond_op(ConductorParser.Cond_opContext ctx);
+	void exitCondNot(ConductorParser.CondNotContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#instList}.
+	 * Enter a parse tree produced by {@link ConductorParser#condTime}.
 	 * @param ctx the parse tree
 	 */
-	void enterInstList(ConductorParser.InstListContext ctx);
+	void enterCondTime(ConductorParser.CondTimeContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#instList}.
+	 * Exit a parse tree produced by {@link ConductorParser#condTime}.
 	 * @param ctx the parse tree
 	 */
-	void exitInstList(ConductorParser.InstListContext ctx);
+	void exitCondTime(ConductorParser.CondTimeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#inst}.
+	 * Enter a parse tree produced by {@link ConductorParser#condOp}.
 	 * @param ctx the parse tree
 	 */
-	void enterInst(ConductorParser.InstContext ctx);
+	void enterCondOp(ConductorParser.CondOpContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#inst}.
+	 * Exit a parse tree produced by {@link ConductorParser#condOp}.
 	 * @param ctx the parse tree
 	 */
-	void exitInst(ConductorParser.InstContext ctx);
+	void exitCondOp(ConductorParser.CondOpContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#op}.
+	 * Enter a parse tree produced by {@link ConductorParser#actionList}.
 	 * @param ctx the parse tree
 	 */
-	void enterOp(ConductorParser.OpContext ctx);
+	void enterActionList(ConductorParser.ActionListContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#op}.
+	 * Exit a parse tree produced by {@link ConductorParser#actionList}.
 	 * @param ctx the parse tree
 	 */
-	void exitOp(ConductorParser.OpContext ctx);
+	void exitActionList(ConductorParser.ActionListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#action}.
+	 * @param ctx the parse tree
+	 */
+	void enterAction(ConductorParser.ActionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#action}.
+	 * @param ctx the parse tree
+	 */
+	void exitAction(ConductorParser.ActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#throttleOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterThrottleOp(ConductorParser.ThrottleOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#throttleOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitThrottleOp(ConductorParser.ThrottleOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#turnoutOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterTurnoutOp(ConductorParser.TurnoutOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#turnoutOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitTurnoutOp(ConductorParser.TurnoutOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#timerOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterTimerOp(ConductorParser.TimerOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#timerOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitTimerOp(ConductorParser.TimerOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#funcValue}.
+	 * @param ctx the parse tree
+	 */
+	void enterFuncValue(ConductorParser.FuncValueContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#funcValue}.
+	 * @param ctx the parse tree
+	 */
+	void exitFuncValue(ConductorParser.FuncValueContext ctx);
 }

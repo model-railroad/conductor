@@ -25,12 +25,14 @@ public class ConductorParser extends Parser {
 	public static final int
 		RULE_script = 0, RULE_scriptLine = 1, RULE_defLine = 2, RULE_defStrLine = 3, 
 		RULE_defStrType = 4, RULE_defIntLine = 5, RULE_defIntType = 6, RULE_eventLine = 7, 
-		RULE_condList = 8, RULE_cond = 9, RULE_cond_op = 10, RULE_instList = 11, 
-		RULE_inst = 12, RULE_op = 13;
+		RULE_condList = 8, RULE_cond = 9, RULE_condNot = 10, RULE_condTime = 11, 
+		RULE_condOp = 12, RULE_actionList = 13, RULE_action = 14, RULE_throttleOp = 15, 
+		RULE_turnoutOp = 16, RULE_timerOp = 17, RULE_funcValue = 18;
 	public static final String[] ruleNames = {
 		"script", "scriptLine", "defLine", "defStrLine", "defStrType", "defIntLine", 
-		"defIntType", "eventLine", "condList", "cond", "cond_op", "instList", 
-		"inst", "op"
+		"defIntType", "eventLine", "condList", "cond", "condNot", "condTime", 
+		"condOp", "actionList", "action", "throttleOp", "turnoutOp", "timerOp", 
+		"funcValue"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
@@ -128,36 +130,36 @@ public class ConductorParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(28);
+			setState(38);
 			scriptLine();
-			setState(33);
+			setState(43);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,0,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(29);
+					setState(39);
 					match(EOL);
-					setState(30);
+					setState(40);
 					scriptLine();
 					}
 					} 
 				}
-				setState(35);
+				setState(45);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,0,_ctx);
 			}
-			setState(37);
+			setState(47);
 			_la = _input.LA(1);
 			if (_la==EOL) {
 				{
-				setState(36);
+				setState(46);
 				match(EOL);
 				}
 			}
 
-			setState(39);
+			setState(49);
 			match(EOF);
 			}
 		}
@@ -201,7 +203,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(43);
+			setState(53);
 			switch (_input.LA(1)) {
 			case KW_VAR:
 			case KW_THROTTLE:
@@ -209,14 +211,14 @@ public class ConductorParser extends Parser {
 			case KW_TURNOUT:
 			case KW_TIMER:
 				{
-				setState(41);
+				setState(51);
 				defLine();
 				}
 				break;
 			case KW_NOT:
 			case ID:
 				{
-				setState(42);
+				setState(52);
 				eventLine();
 				}
 				break;
@@ -227,11 +229,11 @@ public class ConductorParser extends Parser {
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(46);
+			setState(56);
 			_la = _input.LA(1);
 			if (_la==SB_COMMENT) {
 				{
-				setState(45);
+				setState(55);
 				match(SB_COMMENT);
 				}
 			}
@@ -274,13 +276,13 @@ public class ConductorParser extends Parser {
 		DefLineContext _localctx = new DefLineContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_defLine);
 		try {
-			setState(50);
+			setState(60);
 			switch (_input.LA(1)) {
 			case KW_SENSOR:
 			case KW_TURNOUT:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(48);
+				setState(58);
 				defStrLine();
 				}
 				break;
@@ -289,7 +291,7 @@ public class ConductorParser extends Parser {
 			case KW_TIMER:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(49);
+				setState(59);
 				defIntLine();
 				}
 				break;
@@ -336,13 +338,13 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(52);
+			setState(62);
 			defStrType();
-			setState(53);
+			setState(63);
 			match(ID);
-			setState(54);
+			setState(64);
 			match(KW_EQUAL);
-			setState(55);
+			setState(65);
 			match(ID);
 			}
 		}
@@ -381,7 +383,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(57);
+			setState(67);
 			_la = _input.LA(1);
 			if ( !(_la==KW_SENSOR || _la==KW_TURNOUT) ) {
 			_errHandler.recoverInline(this);
@@ -427,13 +429,13 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(59);
+			setState(69);
 			defIntType();
-			setState(60);
+			setState(70);
 			match(ID);
-			setState(61);
+			setState(71);
 			match(KW_EQUAL);
-			setState(62);
+			setState(72);
 			match(NUM);
 			}
 		}
@@ -473,7 +475,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(64);
+			setState(74);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_VAR) | (1L << KW_THROTTLE) | (1L << KW_TIMER))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -497,8 +499,8 @@ public class ConductorParser extends Parser {
 		public CondListContext condList() {
 			return getRuleContext(CondListContext.class,0);
 		}
-		public InstListContext instList() {
-			return getRuleContext(InstListContext.class,0);
+		public ActionListContext actionList() {
+			return getRuleContext(ActionListContext.class,0);
 		}
 		public EventLineContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -520,12 +522,12 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(66);
+			setState(76);
 			condList();
-			setState(67);
+			setState(77);
 			match(KW_ARROW);
-			setState(68);
-			instList();
+			setState(78);
+			actionList();
 			}
 		}
 		catch (RecognitionException re) {
@@ -567,21 +569,21 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(70);
+			setState(80);
 			cond();
-			setState(75);
+			setState(85);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==KW_AND) {
 				{
 				{
-				setState(71);
+				setState(81);
 				match(KW_AND);
-				setState(72);
+				setState(82);
 				cond();
 				}
 				}
-				setState(77);
+				setState(87);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -600,9 +602,14 @@ public class ConductorParser extends Parser {
 
 	public static class CondContext extends ParserRuleContext {
 		public TerminalNode ID() { return getToken(ConductorParser.ID, 0); }
-		public TerminalNode NUM() { return getToken(ConductorParser.NUM, 0); }
-		public Cond_opContext cond_op() {
-			return getRuleContext(Cond_opContext.class,0);
+		public CondNotContext condNot() {
+			return getRuleContext(CondNotContext.class,0);
+		}
+		public CondTimeContext condTime() {
+			return getRuleContext(CondTimeContext.class,0);
+		}
+		public CondOpContext condOp() {
+			return getRuleContext(CondOpContext.class,0);
 		}
 		public CondContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -625,33 +632,31 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(79);
+			setState(89);
 			_la = _input.LA(1);
 			if (_la==KW_NOT) {
 				{
-				setState(78);
-				match(KW_NOT);
+				setState(88);
+				condNot();
 				}
 			}
 
-			setState(81);
+			setState(91);
 			match(ID);
-			setState(85);
+			setState(94);
 			switch (_input.LA(1)) {
 			case KW_PLUS:
 				{
-				setState(82);
-				match(KW_PLUS);
-				setState(83);
-				match(NUM);
+				setState(92);
+				condTime();
 				}
 				break;
 			case KW_FORWARD:
 			case KW_REVERSE:
 			case KW_STOPPED:
 				{
-				setState(84);
-				cond_op();
+				setState(93);
+				condOp();
 				}
 				break;
 			case KW_ARROW:
@@ -673,32 +678,107 @@ public class ConductorParser extends Parser {
 		return _localctx;
 	}
 
-	public static class Cond_opContext extends ParserRuleContext {
-		public TerminalNode KW_FORWARD() { return getToken(ConductorParser.KW_FORWARD, 0); }
-		public TerminalNode KW_REVERSE() { return getToken(ConductorParser.KW_REVERSE, 0); }
-		public TerminalNode KW_STOPPED() { return getToken(ConductorParser.KW_STOPPED, 0); }
-		public Cond_opContext(ParserRuleContext parent, int invokingState) {
+	public static class CondNotContext extends ParserRuleContext {
+		public CondNotContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_cond_op; }
+		@Override public int getRuleIndex() { return RULE_condNot; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCond_op(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCondNot(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCond_op(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCondNot(this);
 		}
 	}
 
-	public final Cond_opContext cond_op() throws RecognitionException {
-		Cond_opContext _localctx = new Cond_opContext(_ctx, getState());
-		enterRule(_localctx, 20, RULE_cond_op);
+	public final CondNotContext condNot() throws RecognitionException {
+		CondNotContext _localctx = new CondNotContext(_ctx, getState());
+		enterRule(_localctx, 20, RULE_condNot);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(96);
+			match(KW_NOT);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class CondTimeContext extends ParserRuleContext {
+		public TerminalNode NUM() { return getToken(ConductorParser.NUM, 0); }
+		public CondTimeContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_condTime; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCondTime(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCondTime(this);
+		}
+	}
+
+	public final CondTimeContext condTime() throws RecognitionException {
+		CondTimeContext _localctx = new CondTimeContext(_ctx, getState());
+		enterRule(_localctx, 22, RULE_condTime);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(98);
+			match(KW_PLUS);
+			setState(99);
+			match(NUM);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class CondOpContext extends ParserRuleContext {
+		public TerminalNode KW_FORWARD() { return getToken(ConductorParser.KW_FORWARD, 0); }
+		public TerminalNode KW_REVERSE() { return getToken(ConductorParser.KW_REVERSE, 0); }
+		public TerminalNode KW_STOPPED() { return getToken(ConductorParser.KW_STOPPED, 0); }
+		public CondOpContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_condOp; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCondOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCondOp(this);
+		}
+	}
+
+	public final CondOpContext condOp() throws RecognitionException {
+		CondOpContext _localctx = new CondOpContext(_ctx, getState());
+		enterRule(_localctx, 24, RULE_condOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(87);
+			setState(101);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_STOPPED))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -718,60 +798,60 @@ public class ConductorParser extends Parser {
 		return _localctx;
 	}
 
-	public static class InstListContext extends ParserRuleContext {
-		public List<InstContext> inst() {
-			return getRuleContexts(InstContext.class);
+	public static class ActionListContext extends ParserRuleContext {
+		public List<ActionContext> action() {
+			return getRuleContexts(ActionContext.class);
 		}
-		public InstContext inst(int i) {
-			return getRuleContext(InstContext.class,i);
+		public ActionContext action(int i) {
+			return getRuleContext(ActionContext.class,i);
 		}
-		public InstListContext(ParserRuleContext parent, int invokingState) {
+		public ActionListContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_instList; }
+		@Override public int getRuleIndex() { return RULE_actionList; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterInstList(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterActionList(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitInstList(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitActionList(this);
 		}
 	}
 
-	public final InstListContext instList() throws RecognitionException {
-		InstListContext _localctx = new InstListContext(_ctx, getState());
-		enterRule(_localctx, 22, RULE_instList);
+	public final ActionListContext actionList() throws RecognitionException {
+		ActionListContext _localctx = new ActionListContext(_ctx, getState());
+		enterRule(_localctx, 26, RULE_actionList);
 		int _la;
 		try {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(89);
-			inst();
-			setState(94);
+			setState(103);
+			action();
+			setState(108);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(90);
+					setState(104);
 					match(KW_SEMI);
-					setState(91);
-					inst();
+					setState(105);
+					action();
 					}
 					} 
 				}
-				setState(96);
+				setState(110);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
 			}
-			setState(98);
+			setState(112);
 			_la = _input.LA(1);
 			if (_la==KW_SEMI) {
 				{
-				setState(97);
+				setState(111);
 				match(KW_SEMI);
 				}
 			}
@@ -789,60 +869,83 @@ public class ConductorParser extends Parser {
 		return _localctx;
 	}
 
-	public static class InstContext extends ParserRuleContext {
-		public List<TerminalNode> ID() { return getTokens(ConductorParser.ID); }
-		public TerminalNode ID(int i) {
-			return getToken(ConductorParser.ID, i);
+	public static class ActionContext extends ParserRuleContext {
+		public TerminalNode ID() { return getToken(ConductorParser.ID, 0); }
+		public ThrottleOpContext throttleOp() {
+			return getRuleContext(ThrottleOpContext.class,0);
 		}
-		public OpContext op() {
-			return getRuleContext(OpContext.class,0);
+		public TurnoutOpContext turnoutOp() {
+			return getRuleContext(TurnoutOpContext.class,0);
 		}
-		public TerminalNode NUM() { return getToken(ConductorParser.NUM, 0); }
-		public InstContext(ParserRuleContext parent, int invokingState) {
+		public TimerOpContext timerOp() {
+			return getRuleContext(TimerOpContext.class,0);
+		}
+		public FuncValueContext funcValue() {
+			return getRuleContext(FuncValueContext.class,0);
+		}
+		public ActionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_inst; }
+		@Override public int getRuleIndex() { return RULE_action; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterInst(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterAction(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitInst(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitAction(this);
 		}
 	}
 
-	public final InstContext inst() throws RecognitionException {
-		InstContext _localctx = new InstContext(_ctx, getState());
-		enterRule(_localctx, 24, RULE_inst);
+	public final ActionContext action() throws RecognitionException {
+		ActionContext _localctx = new ActionContext(_ctx, getState());
+		enterRule(_localctx, 28, RULE_action);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(100);
+			setState(114);
 			match(ID);
-			setState(102);
-			_la = _input.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_NORMAL) | (1L << KW_SOUND) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_START) | (1L << KW_FN))) != 0)) {
+			setState(118);
+			switch (_input.LA(1)) {
+			case KW_FORWARD:
+			case KW_REVERSE:
+			case KW_SOUND:
+			case KW_HORN:
+			case KW_STOP:
+			case KW_FN:
 				{
-				setState(101);
-				op();
+				setState(115);
+				throttleOp();
 				}
+				break;
+			case KW_NORMAL:
+				{
+				setState(116);
+				turnoutOp();
+				}
+				break;
+			case KW_START:
+				{
+				setState(117);
+				timerOp();
+				}
+				break;
+			case EOF:
+			case EOL:
+			case SB_COMMENT:
+			case KW_EQUAL:
+			case KW_SEMI:
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
-
-			setState(106);
+			setState(121);
 			_la = _input.LA(1);
 			if (_la==KW_EQUAL) {
 				{
-				setState(104);
-				match(KW_EQUAL);
-				setState(105);
-				_la = _input.LA(1);
-				if ( !(_la==ID || _la==NUM) ) {
-				_errHandler.recoverInline(this);
-				} else {
-					consume();
-				}
+				setState(120);
+				funcValue();
 				}
 			}
 
@@ -859,39 +962,157 @@ public class ConductorParser extends Parser {
 		return _localctx;
 	}
 
-	public static class OpContext extends ParserRuleContext {
+	public static class ThrottleOpContext extends ParserRuleContext {
 		public TerminalNode KW_FORWARD() { return getToken(ConductorParser.KW_FORWARD, 0); }
 		public TerminalNode KW_REVERSE() { return getToken(ConductorParser.KW_REVERSE, 0); }
-		public TerminalNode KW_NORMAL() { return getToken(ConductorParser.KW_NORMAL, 0); }
 		public TerminalNode KW_SOUND() { return getToken(ConductorParser.KW_SOUND, 0); }
 		public TerminalNode KW_HORN() { return getToken(ConductorParser.KW_HORN, 0); }
 		public TerminalNode KW_STOP() { return getToken(ConductorParser.KW_STOP, 0); }
-		public TerminalNode KW_START() { return getToken(ConductorParser.KW_START, 0); }
 		public TerminalNode KW_FN() { return getToken(ConductorParser.KW_FN, 0); }
-		public OpContext(ParserRuleContext parent, int invokingState) {
+		public ThrottleOpContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_op; }
+		@Override public int getRuleIndex() { return RULE_throttleOp; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterOp(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterThrottleOp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitOp(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitThrottleOp(this);
 		}
 	}
 
-	public final OpContext op() throws RecognitionException {
-		OpContext _localctx = new OpContext(_ctx, getState());
-		enterRule(_localctx, 26, RULE_op);
+	public final ThrottleOpContext throttleOp() throws RecognitionException {
+		ThrottleOpContext _localctx = new ThrottleOpContext(_ctx, getState());
+		enterRule(_localctx, 30, RULE_throttleOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(108);
+			setState(123);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_NORMAL) | (1L << KW_SOUND) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_START) | (1L << KW_FN))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_FN))) != 0)) ) {
+			_errHandler.recoverInline(this);
+			} else {
+				consume();
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class TurnoutOpContext extends ParserRuleContext {
+		public TerminalNode KW_NORMAL() { return getToken(ConductorParser.KW_NORMAL, 0); }
+		public TurnoutOpContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_turnoutOp; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterTurnoutOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitTurnoutOp(this);
+		}
+	}
+
+	public final TurnoutOpContext turnoutOp() throws RecognitionException {
+		TurnoutOpContext _localctx = new TurnoutOpContext(_ctx, getState());
+		enterRule(_localctx, 32, RULE_turnoutOp);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(125);
+			match(KW_NORMAL);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class TimerOpContext extends ParserRuleContext {
+		public TerminalNode KW_START() { return getToken(ConductorParser.KW_START, 0); }
+		public TimerOpContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_timerOp; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterTimerOp(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitTimerOp(this);
+		}
+	}
+
+	public final TimerOpContext timerOp() throws RecognitionException {
+		TimerOpContext _localctx = new TimerOpContext(_ctx, getState());
+		enterRule(_localctx, 34, RULE_timerOp);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(127);
+			match(KW_START);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class FuncValueContext extends ParserRuleContext {
+		public TerminalNode NUM() { return getToken(ConductorParser.NUM, 0); }
+		public TerminalNode ID() { return getToken(ConductorParser.ID, 0); }
+		public FuncValueContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_funcValue; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterFuncValue(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitFuncValue(this);
+		}
+	}
+
+	public final FuncValueContext funcValue() throws RecognitionException {
+		FuncValueContext _localctx = new FuncValueContext(_ctx, getState());
+		enterRule(_localctx, 36, RULE_funcValue);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(129);
+			match(KW_EQUAL);
+			setState(130);
+			_la = _input.LA(1);
+			if ( !(_la==ID || _la==NUM) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -910,34 +1131,40 @@ public class ConductorParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35q\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4"+
-		"\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\3\2\3\2\3\2\7\2\"\n\2\f\2\16\2%\13"+
-		"\2\3\2\5\2(\n\2\3\2\3\2\3\3\3\3\5\3.\n\3\3\3\5\3\61\n\3\3\4\3\4\5\4\65"+
-		"\n\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\t\3\t\3"+
-		"\t\3\t\3\n\3\n\3\n\7\nL\n\n\f\n\16\nO\13\n\3\13\5\13R\n\13\3\13\3\13\3"+
-		"\13\3\13\5\13X\n\13\3\f\3\f\3\r\3\r\3\r\7\r_\n\r\f\r\16\rb\13\r\3\r\5"+
-		"\re\n\r\3\16\3\16\5\16i\n\16\3\16\3\16\5\16m\n\16\3\17\3\17\3\17\2\2\20"+
-		"\2\4\6\b\n\f\16\20\22\24\26\30\32\34\2\7\3\2\b\t\4\2\6\7\n\n\4\2\13\f"+
-		"\22\22\3\2\33\34\5\2\13\16\20\21\23\24p\2\36\3\2\2\2\4-\3\2\2\2\6\64\3"+
-		"\2\2\2\b\66\3\2\2\2\n;\3\2\2\2\f=\3\2\2\2\16B\3\2\2\2\20D\3\2\2\2\22H"+
-		"\3\2\2\2\24Q\3\2\2\2\26Y\3\2\2\2\30[\3\2\2\2\32f\3\2\2\2\34n\3\2\2\2\36"+
-		"#\5\4\3\2\37 \7\4\2\2 \"\5\4\3\2!\37\3\2\2\2\"%\3\2\2\2#!\3\2\2\2#$\3"+
-		"\2\2\2$\'\3\2\2\2%#\3\2\2\2&(\7\4\2\2\'&\3\2\2\2\'(\3\2\2\2()\3\2\2\2"+
-		")*\7\2\2\3*\3\3\2\2\2+.\5\6\4\2,.\5\20\t\2-+\3\2\2\2-,\3\2\2\2-.\3\2\2"+
-		"\2.\60\3\2\2\2/\61\7\5\2\2\60/\3\2\2\2\60\61\3\2\2\2\61\5\3\2\2\2\62\65"+
-		"\5\b\5\2\63\65\5\f\7\2\64\62\3\2\2\2\64\63\3\2\2\2\65\7\3\2\2\2\66\67"+
-		"\5\n\6\2\678\7\33\2\289\7\26\2\29:\7\33\2\2:\t\3\2\2\2;<\t\2\2\2<\13\3"+
-		"\2\2\2=>\5\16\b\2>?\7\33\2\2?@\7\26\2\2@A\7\34\2\2A\r\3\2\2\2BC\t\3\2"+
-		"\2C\17\3\2\2\2DE\5\22\n\2EF\7\25\2\2FG\5\30\r\2G\21\3\2\2\2HM\5\24\13"+
-		"\2IJ\7\27\2\2JL\5\24\13\2KI\3\2\2\2LO\3\2\2\2MK\3\2\2\2MN\3\2\2\2N\23"+
-		"\3\2\2\2OM\3\2\2\2PR\7\30\2\2QP\3\2\2\2QR\3\2\2\2RS\3\2\2\2SW\7\33\2\2"+
-		"TU\7\31\2\2UX\7\34\2\2VX\5\26\f\2WT\3\2\2\2WV\3\2\2\2WX\3\2\2\2X\25\3"+
-		"\2\2\2YZ\t\4\2\2Z\27\3\2\2\2[`\5\32\16\2\\]\7\32\2\2]_\5\32\16\2^\\\3"+
-		"\2\2\2_b\3\2\2\2`^\3\2\2\2`a\3\2\2\2ad\3\2\2\2b`\3\2\2\2ce\7\32\2\2dc"+
-		"\3\2\2\2de\3\2\2\2e\31\3\2\2\2fh\7\33\2\2gi\5\34\17\2hg\3\2\2\2hi\3\2"+
-		"\2\2il\3\2\2\2jk\7\26\2\2km\t\5\2\2lj\3\2\2\2lm\3\2\2\2m\33\3\2\2\2no"+
-		"\t\6\2\2o\35\3\2\2\2\16#\'-\60\64MQW`dhl";
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35\u0087\4\2\t\2"+
+		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
+		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
+		"\4\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13\2\3\2\5\2\62\n"+
+		"\2\3\2\3\2\3\3\3\3\5\38\n\3\3\3\5\3;\n\3\3\4\3\4\5\4?\n\4\3\5\3\5\3\5"+
+		"\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\t\3\t\3\t\3\t\3\n\3\n\3"+
+		"\n\7\nV\n\n\f\n\16\nY\13\n\3\13\5\13\\\n\13\3\13\3\13\3\13\5\13a\n\13"+
+		"\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17m\n\17\f\17\16\17p\13"+
+		"\17\3\17\5\17s\n\17\3\20\3\20\3\20\3\20\5\20y\n\20\3\20\5\20|\n\20\3\21"+
+		"\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\24\3\24\2\2\25\2\4\6\b\n\f\16\20"+
+		"\22\24\26\30\32\34\36 \"$&\2\7\3\2\b\t\4\2\6\7\n\n\4\2\13\f\22\22\6\2"+
+		"\13\f\16\16\20\21\24\24\3\2\33\34\u0083\2(\3\2\2\2\4\67\3\2\2\2\6>\3\2"+
+		"\2\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22R\3\2"+
+		"\2\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34i\3\2\2\2\36t\3"+
+		"\2\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3\2\2\2(-\5\4\3\2"+
+		")*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2"+
+		"\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63"+
+		"\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67\65\3\2\2\2\67\66"+
+		"\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;\3\2\2\2;\5\3\2\2"+
+		"\2<?\5\b\5\2=?\5\f\7\2><\3\2\2\2>=\3\2\2\2?\7\3\2\2\2@A\5\n\6\2AB\7\33"+
+		"\2\2BC\7\26\2\2CD\7\33\2\2D\t\3\2\2\2EF\t\2\2\2F\13\3\2\2\2GH\5\16\b\2"+
+		"HI\7\33\2\2IJ\7\26\2\2JK\7\34\2\2K\r\3\2\2\2LM\t\3\2\2M\17\3\2\2\2NO\5"+
+		"\22\n\2OP\7\25\2\2PQ\5\34\17\2Q\21\3\2\2\2RW\5\24\13\2ST\7\27\2\2TV\5"+
+		"\24\13\2US\3\2\2\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2X\23\3\2\2\2YW\3\2\2\2"+
+		"Z\\\5\26\f\2[Z\3\2\2\2[\\\3\2\2\2\\]\3\2\2\2]`\7\33\2\2^a\5\30\r\2_a\5"+
+		"\32\16\2`^\3\2\2\2`_\3\2\2\2`a\3\2\2\2a\25\3\2\2\2bc\7\30\2\2c\27\3\2"+
+		"\2\2de\7\31\2\2ef\7\34\2\2f\31\3\2\2\2gh\t\4\2\2h\33\3\2\2\2in\5\36\20"+
+		"\2jk\7\32\2\2km\5\36\20\2lj\3\2\2\2mp\3\2\2\2nl\3\2\2\2no\3\2\2\2or\3"+
+		"\2\2\2pn\3\2\2\2qs\7\32\2\2rq\3\2\2\2rs\3\2\2\2s\35\3\2\2\2tx\7\33\2\2"+
+		"uy\5 \21\2vy\5\"\22\2wy\5$\23\2xu\3\2\2\2xv\3\2\2\2xw\3\2\2\2xy\3\2\2"+
+		"\2y{\3\2\2\2z|\5&\24\2{z\3\2\2\2{|\3\2\2\2|\37\3\2\2\2}~\t\5\2\2~!\3\2"+
+		"\2\2\177\u0080\7\r\2\2\u0080#\3\2\2\2\u0081\u0082\7\23\2\2\u0082%\3\2"+
+		"\2\2\u0083\u0084\7\26\2\2\u0084\u0085\t\6\2\2\u0085\'\3\2\2\2\16-\61\67"+
+		":>W[`nrx{";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

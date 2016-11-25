@@ -12,16 +12,22 @@ defIntLine: defIntType ID '=' NUM;
 defIntType: KW_THROTTLE | KW_VAR  | KW_TIMER ;
 
 
-eventLine: condList '->' instList;
+eventLine: condList '->' actionList;
 
-condList: cond ( '&' cond )* ;
-cond: '!'? ID ( '+' NUM | cond_op )? ;
-cond_op: KW_FORWARD | KW_REVERSE | KW_STOPPED ;
+condList:   cond ( '&' cond )* ;
+cond:       condNot? ID ( condTime | condOp )? ;
+condNot:    '!' ;
+condTime:   '+' NUM ;
+condOp:     KW_FORWARD | KW_REVERSE | KW_STOPPED ;
 
-instList: inst ( ';' inst )* ';'? ;
-inst: ID op? ( '=' ( NUM | ID ) )? ;
+actionList: action ( ';' action )* ';'? ;
+action:     ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
 
-op: KW_FORWARD | KW_REVERSE | KW_NORMAL | KW_SOUND | KW_HORN | KW_STOP | KW_START | KW_FN;
+throttleOp: KW_FORWARD | KW_REVERSE | KW_SOUND | KW_HORN | KW_STOP | KW_FN;
+turnoutOp:  KW_NORMAL;  // also KW_REVERSE as in throttleOp.
+timerOp:    KW_START;
+
+funcValue:  '=' ( NUM | ID ) ;
 
 WS: [ \t\u000C]+ -> skip ;   // from https://github.com/antlr/grammars-v4/blob/master/java/Java.g4
 EOL:    [\r\n]+ ;
