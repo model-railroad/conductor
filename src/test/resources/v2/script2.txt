@@ -1,0 +1,107 @@
+# throttles
+
+Throttle PA = 1201
+Throttle BL = 1202
+
+# states
+
+Var PA-Enable       = 1
+Var PA-Half-Speed   = 4
+Var PA-Full-Speed   = 8
+Var BL-Half-Speed   = 4
+Var BL-Full-Speed   = 12
+
+# sensors
+
+Sensor BL-Toggle    = NS752      # 48:1
+Sensor BL-Run       = NS753      # 48:2
+Sensor BL-Start1    = NS753      # 48:3 start point
+Sensor BL-Start2    = NS753      # 48:4
+Sensor BL-Rev1      = NS754      # 48:5
+Sensor BL-Rev2      = NS754      # 48:6 end point
+
+Sensor B360         = NS768      # 49:1
+Sensor B370         = NS769      # 49:2
+
+Sensor PA-Toggle    = NS784      # 50:1
+Sensor PA-Run3      = NS785      # 50:2
+Sensor P3.1         = NS788      # 50:3, B503a
+Sensor P3.2         = NS789      # 50:4, B503b
+
+# turnouts
+
+Turnout T503        = NT503
+Turnout T504        = NT504
+Turnout T311        = NT311
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T324        = NT324
+Turnout T330        = NT330
+Turnout T370        = NT370
+
+# define timers and their default value in seconds
+
+Timer PA-Timer-370    = 8
+Timer PA-Timer-Summit = 5
+Timer PA-Timer-P3.2   = 8
+Timer PA-Timer-Enable = 3
+
+Timer BL-Timer-Pause  = 5
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+ PA-Toggle                            -> PA Sound = 1; PA Light = 1; PA-Enable = 1
+ PA-Toggle & !PA-Enable  & PA-Run3    -> PA Horn
+
+PA-Toggle   -> T503 Normal;  T504 Normal; T311 Reverse; T321 Normal; T322 Normal;
+PA-Toggle   -> T330 Reverse; T370 Normal
+
+# Departure
+ P3.2 & PA Stopped & PA-Toggle & PA-Enable & PA-Run3 -> PA-Enable = 0; PA Horn; PA Forward = PA-Half-Speed
+ P3.1 & PA Forward                    -> PA Forward = PA-Full-Speed
+
+# Summit
+ B370 & PA Forward                    -> PA Forward = PA-Half-Speed ; PA-Timer-370 Start
+ PA-Timer-370                         -> PA Stop; PA Light = 0; PA-Timer-Summit Start; PA Horn
+ PA-Timer-Summit                      -> PA Horn; PA Light = 1; PA Reverse = PA-Half-Speed
+ B360 & PA Reverse                    -> PA Reverse = PA-Full-speed
+
+# Arrival
+ P3.1 & PA Reverse                    -> PA Reverse = PA-Half-speed
+ P3.2 & PA Reverse                    -> PA-Timer-P3.2 Start
+ PA-Timer-P3.2                        -> PA Stop ; PA Horn; PA Light = 0; PA-Timer-Enable Start # at station
+ PA-Timer-Enable                      -> PA-Enable = 1; PA Horn
+
+# Teardown
+!PA-Toggle & !PA Reverse & !P3.2      -> PA Reverse = PA-Full-Speed
+!PA-Toggle &  PA Stopped              -> PA Sound = 0
+
+
+# ---------
+# Events BL
+# ---------
+
+
+# Setup
+ BL-Toggle                  -> BL Sound = 1; BL Light = 1; T324 Normal
+ BL-Toggle & !BL Stopped    -> BL Horn
+
+# Departure
+BL-Toggle & BL-Run & BL-Start1 & BL Stopped -> BL Horn; BL Forward = BL-Full-Speed
+
+# Reversal
+BL-Rev1 & BL Forward        -> BL Forward = BL-Half-Speed
+BL-Rev2 & BL Forward        -> BL Stop ; BL Horn; BL-Timer-Pause Start
+BL-Timer-Pause              -> BL Horn; BL Reverse = BL-Full-Speed
+
+# Arrival
+BL-Start2 & BL Reverse      -> BL Reverse = BL-Half-Speed
+BL-Start1 & BL Reverse      -> BL Stop; BL Horn
+
+# Teardown
+!BL-Toggle & !BL Reverse & !BL-Start1 -> BL Reverse = BL-Full-Speed
+!BL-Toggle &  BL Stopped    -> BL Sound = 0
