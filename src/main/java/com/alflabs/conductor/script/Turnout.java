@@ -20,6 +20,15 @@ public class Turnout implements IConditional {
     private IJmriTurnout mTurnout;
     private boolean mIsNormal = true;
 
+    /**
+     * Possible keywords for a turnout action.
+     * Must match IIntFunction in the {@link Turnout} implementation.
+     */
+    public enum TurnoutAction {
+        NORMAL,
+        REVERSE
+    }
+
     /** Creates a new turnout for the given JMRI system name. */
     public Turnout(String jmriName) {
         mJmriName = jmriName;
@@ -28,6 +37,16 @@ public class Turnout implements IConditional {
     /** Initializes the underlying JMRI turnout. */
     public void setup(IJmriProvider provider) {
         mTurnout = provider.getTurnout(mJmriName);
+    }
+
+    public IIntFunction createFunction(TurnoutAction action) {
+        switch (action) {
+        case NORMAL:
+            return createFunctionNormal();
+        case REVERSE:
+            return createFunctionReverse();
+        }
+        throw new IllegalArgumentException();
     }
 
     public IIntFunction createFunctionNormal() {

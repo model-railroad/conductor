@@ -128,15 +128,15 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitCondTime(ConductorParser.CondTimeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#condOp}.
+	 * Enter a parse tree produced by {@link ConductorParser#condThrottleOp}.
 	 * @param ctx the parse tree
 	 */
-	void enterCondOp(ConductorParser.CondOpContext ctx);
+	void enterCondThrottleOp(ConductorParser.CondThrottleOpContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#condOp}.
+	 * Exit a parse tree produced by {@link ConductorParser#condThrottleOp}.
 	 * @param ctx the parse tree
 	 */
-	void exitCondOp(ConductorParser.CondOpContext ctx);
+	void exitCondThrottleOp(ConductorParser.CondThrottleOpContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ConductorParser#actionList}.
 	 * @param ctx the parse tree

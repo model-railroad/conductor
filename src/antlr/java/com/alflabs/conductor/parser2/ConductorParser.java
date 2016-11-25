@@ -26,12 +26,12 @@ public class ConductorParser extends Parser {
 		RULE_script = 0, RULE_scriptLine = 1, RULE_defLine = 2, RULE_defStrLine = 3, 
 		RULE_defStrType = 4, RULE_defIntLine = 5, RULE_defIntType = 6, RULE_eventLine = 7, 
 		RULE_condList = 8, RULE_cond = 9, RULE_condNot = 10, RULE_condTime = 11, 
-		RULE_condOp = 12, RULE_actionList = 13, RULE_action = 14, RULE_throttleOp = 15, 
+		RULE_condThrottleOp = 12, RULE_actionList = 13, RULE_action = 14, RULE_throttleOp = 15, 
 		RULE_turnoutOp = 16, RULE_timerOp = 17, RULE_funcValue = 18;
 	public static final String[] ruleNames = {
 		"script", "scriptLine", "defLine", "defStrLine", "defStrType", "defIntLine", 
 		"defIntType", "eventLine", "condList", "cond", "condNot", "condTime", 
-		"condOp", "actionList", "action", "throttleOp", "turnoutOp", "timerOp", 
+		"condThrottleOp", "actionList", "action", "throttleOp", "turnoutOp", "timerOp", 
 		"funcValue"
 	};
 
@@ -608,8 +608,8 @@ public class ConductorParser extends Parser {
 		public CondTimeContext condTime() {
 			return getRuleContext(CondTimeContext.class,0);
 		}
-		public CondOpContext condOp() {
-			return getRuleContext(CondOpContext.class,0);
+		public CondThrottleOpContext condThrottleOp() {
+			return getRuleContext(CondThrottleOpContext.class,0);
 		}
 		public CondContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -653,10 +653,12 @@ public class ConductorParser extends Parser {
 				break;
 			case KW_FORWARD:
 			case KW_REVERSE:
+			case KW_SOUND:
+			case KW_LIGHT:
 			case KW_STOPPED:
 				{
 				setState(93);
-				condOp();
+				condThrottleOp();
 				}
 				break;
 			case KW_ARROW:
@@ -753,34 +755,36 @@ public class ConductorParser extends Parser {
 		return _localctx;
 	}
 
-	public static class CondOpContext extends ParserRuleContext {
+	public static class CondThrottleOpContext extends ParserRuleContext {
 		public TerminalNode KW_FORWARD() { return getToken(ConductorParser.KW_FORWARD, 0); }
 		public TerminalNode KW_REVERSE() { return getToken(ConductorParser.KW_REVERSE, 0); }
 		public TerminalNode KW_STOPPED() { return getToken(ConductorParser.KW_STOPPED, 0); }
-		public CondOpContext(ParserRuleContext parent, int invokingState) {
+		public TerminalNode KW_SOUND() { return getToken(ConductorParser.KW_SOUND, 0); }
+		public TerminalNode KW_LIGHT() { return getToken(ConductorParser.KW_LIGHT, 0); }
+		public CondThrottleOpContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_condOp; }
+		@Override public int getRuleIndex() { return RULE_condThrottleOp; }
 		@Override
 		public void enterRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCondOp(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterCondThrottleOp(this);
 		}
 		@Override
 		public void exitRule(ParseTreeListener listener) {
-			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCondOp(this);
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitCondThrottleOp(this);
 		}
 	}
 
-	public final CondOpContext condOp() throws RecognitionException {
-		CondOpContext _localctx = new CondOpContext(_ctx, getState());
-		enterRule(_localctx, 24, RULE_condOp);
+	public final CondThrottleOpContext condThrottleOp() throws RecognitionException {
+		CondThrottleOpContext _localctx = new CondThrottleOpContext(_ctx, getState());
+		enterRule(_localctx, 24, RULE_condThrottleOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
 			setState(101);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_STOPPED))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_STOPPED))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -911,6 +915,7 @@ public class ConductorParser extends Parser {
 			case KW_FORWARD:
 			case KW_REVERSE:
 			case KW_SOUND:
+			case KW_LIGHT:
 			case KW_HORN:
 			case KW_STOP:
 			case KW_FN:
@@ -965,9 +970,10 @@ public class ConductorParser extends Parser {
 	public static class ThrottleOpContext extends ParserRuleContext {
 		public TerminalNode KW_FORWARD() { return getToken(ConductorParser.KW_FORWARD, 0); }
 		public TerminalNode KW_REVERSE() { return getToken(ConductorParser.KW_REVERSE, 0); }
-		public TerminalNode KW_SOUND() { return getToken(ConductorParser.KW_SOUND, 0); }
-		public TerminalNode KW_HORN() { return getToken(ConductorParser.KW_HORN, 0); }
 		public TerminalNode KW_STOP() { return getToken(ConductorParser.KW_STOP, 0); }
+		public TerminalNode KW_SOUND() { return getToken(ConductorParser.KW_SOUND, 0); }
+		public TerminalNode KW_LIGHT() { return getToken(ConductorParser.KW_LIGHT, 0); }
+		public TerminalNode KW_HORN() { return getToken(ConductorParser.KW_HORN, 0); }
 		public TerminalNode KW_FN() { return getToken(ConductorParser.KW_FN, 0); }
 		public ThrottleOpContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -992,7 +998,7 @@ public class ConductorParser extends Parser {
 			{
 			setState(123);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_FN))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_FN))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			} else {
 				consume();
@@ -1141,12 +1147,12 @@ public class ConductorParser extends Parser {
 		"\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17m\n\17\f\17\16\17p\13"+
 		"\17\3\17\5\17s\n\17\3\20\3\20\3\20\3\20\5\20y\n\20\3\20\5\20|\n\20\3\21"+
 		"\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\24\3\24\2\2\25\2\4\6\b\n\f\16\20"+
-		"\22\24\26\30\32\34\36 \"$&\2\7\3\2\b\t\4\2\6\7\n\n\4\2\13\f\22\22\6\2"+
-		"\13\f\16\16\20\21\24\24\3\2\33\34\u0083\2(\3\2\2\2\4\67\3\2\2\2\6>\3\2"+
-		"\2\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22R\3\2"+
-		"\2\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34i\3\2\2\2\36t\3"+
-		"\2\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3\2\2\2(-\5\4\3\2"+
-		")*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2"+
+		"\22\24\26\30\32\34\36 \"$&\2\7\3\2\b\t\4\2\6\7\n\n\5\2\13\f\16\17\22\22"+
+		"\5\2\13\f\16\21\24\24\3\2\33\34\u0083\2(\3\2\2\2\4\67\3\2\2\2\6>\3\2\2"+
+		"\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22R\3\2\2"+
+		"\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34i\3\2\2\2\36t\3\2"+
+		"\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3\2\2\2(-\5\4\3\2)"+
+		"*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2"+
 		"\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63"+
 		"\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67\65\3\2\2\2\67\66"+
 		"\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;\3\2\2\2;\5\3\2\2"+

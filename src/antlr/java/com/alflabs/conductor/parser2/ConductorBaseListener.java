@@ -160,13 +160,13 @@ public class ConductorBaseListener implements ConductorListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCondOp(ConductorParser.CondOpContext ctx) { }
+	@Override public void enterCondThrottleOp(ConductorParser.CondThrottleOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitCondOp(ConductorParser.CondOpContext ctx) { }
+	@Override public void exitCondThrottleOp(ConductorParser.CondThrottleOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -1,5 +1,7 @@
 package com.alflabs.conductor.parser;
 
+import com.alflabs.conductor.IJmriProvider;
+import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
@@ -9,7 +11,10 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 /**
  * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine.
@@ -130,81 +135,139 @@ public class ScriptParser2Test {
         assertThat(timer.getDurationSec()).isEqualTo(5);
     }
 
-//    @Test
-//    public void testStopForwardParallel() throws Exception {
-//        // This starts with a throttle in the stopped state (speed == 0).
-//        // Note the possible ambiguity: checking for "stopped" sets the throttle to forward
-//        // then checking for forward sets it to stop. The script is set in such a way that
-//        // all conditions are checked first, so the throttle will always be in either the
-//        // forward or stopped condition and only one of the two actions can be executed but
-//        // never both.
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "var speed = 5 \n " +
-//                "t1 stopped -> t1 forward = speed \n" +
-//                "t1 forward -> t1 stop";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped)
-//        script.handle();
-//        verify(throttle).setSpeed(5);
-//        verify(throttle, never()).setSpeed(0);
-//        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
-//
-//        // Execute with throttle at speed 5
-//        reset(throttle);
-//        script.handle();
-//        verify(throttle, never()).setSpeed(5);
-//        verify(throttle).setSpeed(0);
-//        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
-//    }
-//
-//    @Test
-//    public void testStopForwardSequence() throws Exception {
-//        String source = "" +
-//                "throttle T1 = 42 \n " +
-//                "var speed = 5 \n " +
-//                "t1 stopped -> t1 forward = speed ; t1 stop \n" +
-//                "t1 forward -> t1 stop ; t1 forward = speed ";
-//
-//        Script script = new ScriptParser2().parse(source, mReporter);
-//
-//        assertThat(mReporter.toString()).isEqualTo("");
-//        assertThat(script).isNotNull();
-//
-//        IJmriProvider provider = mock(IJmriProvider.class);
-//        IJmriThrottle throttle = mock(IJmriThrottle.class);
-//        when(provider.getThrotlle(42)).thenReturn(throttle);
-//
-//        script.setup(provider);
-//        verify(provider).getThrotlle(42);
-//
-//        // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
-//        script.handle();
-//        verify(throttle).setSpeed(0);
-//        verify(throttle).setSpeed(5);
-//        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
-//
-//        // Execute with throttle at speed 5
-//        script.getThrottle("t1").setSpeed(5);
-//        reset(throttle);
-//        script.handle();
-//        verify(throttle).setSpeed(0);
-//        verify(throttle).setSpeed(5);
-//        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
-//    }
-//
+    @Test
+    public void testThrottleConditionErrors() throws Exception {
+        String source = "" +
+                "throttle T1    = 42 \n" +
+                "sensor block   = B42 \n" +
+                "t1 stop        -> t1 stop \n" +    // condition is "stopped", action is "stop"
+                "t1             -> t1 stop \n" +    // throttle is not a condition without a keyword
+                "t1 !forward    -> t1 stop \n" +
+                "!forward       -> t1 stop\n" +
+                "block stopped  -> t1 stop";
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 3: no viable alternative at input 'stop'.\n" +
+                "Error at line 5: no viable alternative at input '!'.\n" +
+                "Error at line 6: missing ID at 'forward'.\n" +
+                "Error at line 3: Unexpected symbol: 'stop'.\n" +
+                "Error at line 3: Unknown event condition 't1'.\n" +
+                "Error at line 4: Unknown event condition 't1'.\n" +
+                "Error at line 5: Unexpected symbol: '!'.\n" +
+                "Error at line 5: Unknown event condition 't1'.\n" +
+                "Error at line 6: Unexpected symbol: '<missing ID>'.\n" +
+                "Error at line 6: Expected throttle ID for 'forward' but found '<missing ID>'.\n" +
+                "Error at line 7: Expected throttle ID for 'stopped' but found 'block'.");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testThrottleActionErrors() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n" +
+                "sensor block  = B42 \n" +
+                "t1 stopped -> t1 stopped \n" +     // condition is "stopped", action is "stop"
+                "t1 forward -> !t1 stopped \n" +    // no negation on actions
+                "t1 forward -> t1 normal\n" +       // turnout op instead of throttle op
+                "block      -> t1 stop = 5\n" +     // valid but ignored
+                "block      -> t1 start\n" +        // timer op instead of throttle op
+                "t1 forward -> t1 forward = -12\n" +
+                "t1 forward -> t1 forward = B42\n" +
+                "t1 forward -> t1 forward = block" ;
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 3: no viable alternative at input 'stopped'.\n" +
+                "Error at line 4: extraneous input '!' expecting ID.\n" +
+                "Error at line 4: no viable alternative at input 'stopped'.\n" +
+                "Error at line 8: token recognition error at: '-1'.\n" +
+                "Error at line 3: Unexpected symbol: 'stopped'.\n" +
+                "Error at line 3: Failed to parse action for 't1'\n" +
+                "Error at line 4: Unexpected symbol: '!'.\n" +
+                "Error at line 4: Failed to parse action for 't1'\n" +
+                "Error at line 5: Failed to parse action for 't1'\n" +
+                "Error at line 7: Failed to parse action for 't1'\n" +
+                "Error at line 9: Expected NUM or ID argument for 't1' but found 'B42'.\n" +
+                "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testStopForwardParallel() throws Exception {
+        // This starts with a throttle in the stopped state (speed == 0).
+        // Note the possible ambiguity: checking for "stopped" sets the throttle to forward
+        // then checking for forward sets it to stop. The script is set in such a way that
+        // all conditions are checked first, so the throttle will always be in either the
+        // forward or stopped condition and only one of the two actions can be executed but
+        // never both.
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "var speed = 5 \n " +
+                "t1 stopped -> t1 forward = speed \n" +
+                "t1 forward -> t1 stop";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped)
+        script.handle();
+        verify(throttle).setSpeed(5);
+        verify(throttle, never()).setSpeed(0);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
+
+        // Execute with throttle at speed 5
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setSpeed(5);
+        verify(throttle).setSpeed(0);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
+    }
+
+    @Test
+    public void testStopForwardSequence() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "var speed = 5 \n " +
+                "t1 stopped -> t1 forward = speed ; t1 stop \n" +
+                "t1 forward -> t1 stop ; t1 forward = speed ";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
+        script.handle();
+        verify(throttle).setSpeed(0);
+        verify(throttle).setSpeed(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
+
+        // Execute with throttle at speed 5
+        script.getThrottle("t1").setSpeed(5);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setSpeed(0);
+        verify(throttle).setSpeed(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
+    }
+
 //    @Test
 //    public void testActionVar() throws Exception {
 //

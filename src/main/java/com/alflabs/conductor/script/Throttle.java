@@ -19,6 +19,33 @@ public class Throttle {
     private boolean mLight;
     private IIntFunction mSpeedListener;
 
+    /**
+     * Possible keywords for a throttle condition.
+     * Must match IConditional in the {@link Throttle} implementation.
+     */
+    public enum ThrottleCondition {
+        FORWARD,
+        REVERSE,
+        STOPPED,
+        SOUND,
+        LIGHT,
+        // TODO support FN
+    }
+
+    /**
+     * Possible keywords for a throttle action.
+     * Must match IIntFunction in the {@link Throttle} implementation.
+     */
+    public enum ThrottleFunction {
+        FORWARD,
+        REVERSE,
+        STOP,
+        HORN,
+        SOUND,
+        LIGHT,
+        // TODO support FN
+    }
+
     /** Creates a new throttle for the given JMRI dcc address. */
     public Throttle(int dccAddress) {
         mDccAddress = dccAddress;
@@ -56,6 +83,24 @@ public class Throttle {
 
     public void setSpeedListener(IIntFunction speedListener) {
         mSpeedListener = speedListener;
+    }
+
+    public IIntFunction createFunction(ThrottleFunction function) {
+        switch (function) {
+        case FORWARD:
+            return createFunctionForward();
+        case REVERSE:
+            return createFunctionReverse();
+        case STOP:
+            return createFunctionStop();
+        case HORN:
+            return createFunctionHorn();
+        case SOUND:
+            return createFunctionSound();
+        case LIGHT:
+            return createFunctionLight();
+        }
+        throw new IllegalArgumentException();
     }
 
     public IIntFunction createFunctionStop() {
@@ -116,4 +161,20 @@ public class Throttle {
         return () -> mLight;
     }
 
+
+    public IConditional createCondition(ThrottleCondition condition) {
+        switch (condition) {
+        case FORWARD:
+            return createIsForward();
+        case REVERSE:
+            return createIsReverse();
+        case STOPPED:
+            return createIsStopped();
+        case SOUND:
+            return createIsSound();
+        case LIGHT:
+            return createIsLight();
+        }
+        throw new IllegalArgumentException();
+    }
 }

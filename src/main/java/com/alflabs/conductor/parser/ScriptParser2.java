@@ -2,8 +2,10 @@ package com.alflabs.conductor.parser;
 
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
-import com.alflabs.conductor.parser2.ConductorListener;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.script.IConditional;
+import com.alflabs.conductor.script.IIntFunction;
+import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
@@ -23,10 +25,8 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.Locale;
 
 /**
@@ -68,10 +68,13 @@ public class ScriptParser2 {
         CaseInsensitiveInputStream input = new CaseInsensitiveInputStream(source);
         ConductorLexer lexer = new ConductorLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-
         ConductorParser parser = new ConductorParser(tokenStream);
+
+        ReporterErrorListener errorListener = new ReporterErrorListener(reporter);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
         parser.removeErrorListeners();
-        parser.addErrorListener(new ReporterErrorListener(reporter));
+        parser.addErrorListener(errorListener);
 
         ConductorParser.ScriptContext tree = parser.script();  // parse a full script
         ConductorListenerImpl listener = new ConductorListenerImpl(script, reporter);
@@ -93,6 +96,9 @@ public class ScriptParser2 {
 
         @Override
         public void exitDefStrLine(ConductorParser.DefStrLineContext ctx) {
+            // Note: we don't need to log errors, that would have been done already by the parser.
+            // The tree walker will call every node even if it had parsing errors so we just need
+            // to be defensive and give up early.
             if (ctx.defStrType() == null || ctx.ID().size() != 2) {
                 return;
             }
@@ -162,18 +168,97 @@ public class ScriptParser2 {
 
         @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
-            mEvent = new Script.Event(mScript.getLogger(), ""); // TODO get line
-            super.enterEventLine(ctx);
+            mEvent = new Script.Event(mScript.getLogger(), getLine(ctx));
+        }
+
+        @Override
+        public void exitEventLine(ConductorParser.EventLineContext ctx) {
+            mScript.addEvent(mEvent);
+            mEvent = null;
         }
 
         @Override
         public void exitCond(ConductorParser.CondContext ctx) {
-            super.exitCond(ctx);
+            if (ctx.ID() == null) {
+                return;
+            }
+            boolean negated = ctx.condNot() != null;
+            String id = ctx.ID().getText();
+
+            if (ctx.condThrottleOp() != null) {
+                String op = ctx.condThrottleOp().getText();
+                Throttle throttle = mScript.getThrottle(id);
+                if (throttle == null) {
+                    emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
+                    return;
+                }
+
+                Throttle.ThrottleCondition condition = Throttle.ThrottleCondition.valueOf(op.toUpperCase(Locale.US));
+                IConditional cond = throttle.createCondition(condition);
+                mEvent.addConditional(cond, negated);
+                return;
+            }
+
+            if (ctx.condTime() != null) {
+                // TODO support event + time
+            }
+
+            IConditional cond = mScript.getConditional(id);
+            if (cond != null) {
+                mEvent.addConditional(cond, negated);
+            } else {
+                emitError(ctx, "Unknown event condition '" + id + "'.");
+            }
         }
 
         @Override
         public void exitAction(ConductorParser.ActionContext ctx) {
-            super.exitAction(ctx);
+            if (ctx.ID() == null) {
+                return;
+            }
+            String id = ctx.ID().getText();
+            IIntFunction function = null;
+            IIntValue value = null;
+            if (ctx.funcValue() != null) {
+                TerminalNode node = ctx.funcValue().NUM();
+                if (node != null) {
+                    value = new LiteralInt(Integer.parseInt(node.getText()));
+                } else {
+                    node = ctx.funcValue().ID();
+                    if (node != null) {
+                        value = mScript.getVar(node.getText());
+                    }
+                }
+                if (value == null) {
+                    String text = node != null ? node.getText() : ctx.funcValue().getText();
+                    emitError(ctx, "Expected NUM or ID argument for '" + id + "' but found '" + text + "'.");
+                    return;
+                }
+            }
+            if (value == null) {
+                value = new LiteralInt(0);
+            }
+
+            if (ctx.throttleOp() != null) {
+                String op = ctx.throttleOp().getText();
+                Throttle throttle = mScript.getThrottle(id);
+                if (throttle == null) {
+                    emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
+                    return;
+                }
+
+                Throttle.ThrottleFunction fn = Throttle.ThrottleFunction.valueOf(op.toUpperCase(Locale.US));
+                function = throttle.createFunction(fn);
+            }
+
+            // TODO : turnout, timer
+
+            if (function == null) {
+                emitError(ctx, "Failed to parse action for '" + id + "'");
+                return;
+            }
+
+            mEvent.addAction(function, value);
         }
 
         @Override
@@ -183,12 +268,36 @@ public class ScriptParser2 {
                 // Since this is a generic error, don't report if we have already
                 // something for the same line. This error isn't useful, the previous
                 // one is probably much better.
-                mReporter.report(node.getText(), lineCount, "Unexpected error.");
+                mReporter.report(getLine(node.getSymbol()), lineCount, "Unexpected symbol: '" + node.getText() + "'.");
             }
         }
 
         private void emitError(ParserRuleContext ctx, String message) {
-            mReporter.report("", ctx.getStart().getLine(), message);
+            mReporter.report(getLine(ctx), ctx.getStart().getLine(), message);
+        }
+
+        /**
+         * Hacky incorrect way to get the line.
+         * This only works when parsing rules and not when visiting an error node (which doesn't
+         * have a parse context).
+         * Different approach is map line numbers to the source input stream directly.
+         */
+        private String getLine(ParserRuleContext ctx) {
+            // TODO this work but doesn't recreate whitespace. Fix later.
+            /*
+            while (ctx != null && !(ctx instanceof ConductorParser.ScriptLineContext)) {
+                ctx = ctx.getParent();
+            }
+            if (ctx != null) {
+                return ctx.getText();
+            }
+            */
+            return "";
+        }
+
+        private String getLine(Token token) {
+            // TODO use token.getLine();
+            return "";
         }
     }
 

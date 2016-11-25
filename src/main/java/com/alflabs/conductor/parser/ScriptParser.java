@@ -32,34 +32,6 @@ public class ScriptParser {
     /** Possible keyword delimiters, excluding the -> symbol and whitespace. */
     private static final String CharTokens = ":=;!";
 
-    /**
-     * Possible keywords for a throttle action.
-     * Must match IIntFunction in the {@link Throttle} implementation.
-     */
-    private enum ThrottleCondition {
-        FORWARD,
-        REVERSE,
-        STOPPED
-    }
-
-    /**
-     * Possible keywords for a timer action.
-     * Must match IIntFunction in the {@link Timer} implementation.
-     */
-    private enum TimerAction {
-        START,
-        END
-    }
-
-    /**
-     * Possible keywords for a turnout action.
-     * Must match IIntFunction in the {@link Turnout} implementation.
-     */
-    private enum TurnoutAction {
-        NORMAL,
-        REVERSE
-    }
-
     /** Helper to create a timer, used to be overridden in tests. */
     Timer createTimer(int durationSec, NowProvider nowProvider) {
         return new Timer(durationSec, nowProvider);
@@ -254,13 +226,13 @@ public class ScriptParser {
             name = name.toLowerCase(Locale.US);
             Throttle throttle = script.getThrottle(name);
             throttleMap.put(
-                    name + "!" + ThrottleCondition.FORWARD.toString().toLowerCase(Locale.US),
+                    name + "!" + Throttle.ThrottleCondition.FORWARD.toString().toLowerCase(Locale.US),
                     throttle.createIsForward());
             throttleMap.put(
-                    name + "!" + ThrottleCondition.REVERSE.toString().toLowerCase(Locale.US),
+                    name + "!" + Throttle.ThrottleCondition.REVERSE.toString().toLowerCase(Locale.US),
                     throttle.createIsReverse());
             throttleMap.put(
-                    name + "!" + ThrottleCondition.STOPPED.toString().toLowerCase(Locale.US),
+                    name + "!" + Throttle.ThrottleCondition.STOPPED.toString().toLowerCase(Locale.US),
                     throttle.createIsStopped());
         }
 
@@ -387,7 +359,7 @@ public class ScriptParser {
             boolean isTimer = false;
             if (function == null) {
                 try {
-                    TimerAction timerAction = TimerAction.valueOf(i0.toUpperCase(Locale.US));
+                    Timer.TimerAction timerAction = Timer.TimerAction.valueOf(i0.toUpperCase(Locale.US));
                     Timer timer = script.getTimer(i2);
                     if (timer == null) {
                         return String.format("Expected timer name after %s but found %s", i0, i2);
@@ -409,7 +381,7 @@ public class ScriptParser {
             boolean isTurnout = false;
             if (function == null) {
                 try {
-                    TurnoutAction turnoutAction = TurnoutAction.valueOf(i2.toUpperCase(Locale.US));
+                    Turnout.TurnoutAction turnoutAction = Turnout.TurnoutAction.valueOf(i2.toUpperCase(Locale.US));
                     Turnout turnout = script.getTurnout(i0);
                     if (turnout == null) {
                         return String.format("Expected turnout name before %s but found %s", i2, i0);
@@ -468,16 +440,4 @@ public class ScriptParser {
         return -1;
     }
 
-    private static class LiteralInt implements IIntValue {
-        private final int mValue;
-
-        public LiteralInt(int value) {
-            mValue = value;
-        }
-
-        @Override
-        public int getAsInt() {
-            return mValue;
-        }
-    }
 }

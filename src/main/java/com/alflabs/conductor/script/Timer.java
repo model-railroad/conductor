@@ -15,6 +15,15 @@ public class Timer implements IConditional {
     private final int mDurationSec;
     private long mEndTS;
 
+    /**
+     * Possible keywords for a timer action.
+     * Must match IIntFunction in the {@link Timer} implementation.
+     */
+    public enum TimerAction {
+        START,
+        END
+    }
+
     public Timer(int durationSec, NowProvider nowProvider) {
         mDurationSec = durationSec;
         mNowProvider = nowProvider;
@@ -23,6 +32,16 @@ public class Timer implements IConditional {
 
     public int getDurationSec() {
         return mDurationSec;
+    }
+
+    public IIntFunction createFunction(TimerAction action) {
+        switch (action) {
+        case START:
+            return createFunctionStart();
+        case END:
+            return createFunctionEnd();
+        }
+        throw new IllegalArgumentException();
     }
 
     public IIntFunction createFunctionStart() {
@@ -41,4 +60,5 @@ public class Timer implements IConditional {
     public long now() {
         return mNowProvider.now();
     }
+
 }

@@ -1,7 +1,7 @@
 package com.alflabs.conductor.parser;
 
 class TestReporter extends Reporter {
-    private String report = "";
+    private String mReport = "";
 
     public TestReporter() {
         super(null);
@@ -9,11 +9,14 @@ class TestReporter extends Reporter {
 
     @Override
     public void log(String msg) {
-        report += msg;
+        if (!mReport.isEmpty() && !mReport.endsWith("\n")) {
+            mReport += "\n";
+        }
+        mReport += msg;
     }
 
     @Override
     public String toString() {
-        return report;
+        return mReport;
     }
 }

@@ -15,15 +15,15 @@ defIntType: KW_THROTTLE | KW_VAR  | KW_TIMER ;
 eventLine: condList '->' actionList;
 
 condList:   cond ( '&' cond )* ;
-cond:       condNot? ID ( condTime | condOp )? ;
+cond:       condNot? ID ( condTime | condThrottleOp )? ;
 condNot:    '!' ;
 condTime:   '+' NUM ;
-condOp:     KW_FORWARD | KW_REVERSE | KW_STOPPED ;
+condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT ;
 
 actionList: action ( ';' action )* ';'? ;
 action:     ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
 
-throttleOp: KW_FORWARD | KW_REVERSE | KW_SOUND | KW_HORN | KW_STOP | KW_FN;
+throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
 turnoutOp:  KW_NORMAL;  // also KW_REVERSE as in throttleOp.
 timerOp:    KW_START;
 
