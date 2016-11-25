@@ -454,7 +454,7 @@ public class ScriptParserTest {
         assertThat(script).isNotNull();
     }
 
-    private static class TestReporter extends ScriptParser.Reporter {
+    private static class TestReporter extends Reporter {
         private String report = "";
 
         public TestReporter() {

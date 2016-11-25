@@ -1,4 +1,4 @@
-package com.alflabs.conductor.parser2;
+package com.alflabs.conductor.parser;
 
 import com.alflabs.conductor.script.Script;
 

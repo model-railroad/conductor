@@ -9,7 +9,6 @@ import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.Logger;
 import com.alflabs.conductor.util.NowProvider;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -59,32 +58,6 @@ public class ScriptParser {
     private enum TurnoutAction {
         NORMAL,
         REVERSE
-    }
-
-    /**
-     * Helper to output an error message. <br/>
-     * This default implementation outputs to {@link System#out}.
-     */
-    public static class Reporter implements Logger {
-        private Logger mLogger;
-
-        public Reporter(Logger logger) {
-            mLogger = logger;
-        }
-
-        public void report(String line, int lineCount, String error) {
-            log(String.format("Error at line %d: %s\n  Line: '%s'", lineCount, error, line));
-        }
-
-        @Override
-        public void log(String msg) {
-            if (mLogger != null) {
-                if (msg.length() > 0 && !msg.endsWith("\n")) {
-                    msg = msg + "\n";
-                }
-                mLogger.log(msg);
-            }
-        }
     }
 
     /** Helper to create a timer, used to be overriden in tests. */

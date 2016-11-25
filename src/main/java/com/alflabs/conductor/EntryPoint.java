@@ -1,5 +1,6 @@
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.parser.Reporter;
 import com.alflabs.conductor.parser.ScriptParser;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.ui.StatusWnd;
@@ -53,7 +54,7 @@ public class EntryPoint {
 
     private String loadScript(IJmriProvider jmriProvider, String scriptFile, final Logger logger, File filepath) {
         StringBuilder error = new StringBuilder();
-        ScriptParser.Reporter reporter = new ScriptParser.Reporter(logger) {
+        Reporter reporter = new Reporter(logger) {
             private boolean mIsReport;
 
             @Override
