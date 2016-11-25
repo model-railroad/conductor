@@ -98,29 +98,28 @@ task adjustAntlrGenDir(dependsOn: genAntlrSources) << {
         logger.info("Checking file $f")
         def r = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"))
         ArrayList<String> lines = new ArrayList()
-        boolean rewrite = false
         r.eachLine { line ->
-            def m = pattern.matcher(line)
-            if (m.matches()) {
-                def line2 = m[0][1] + m[0][2]
+            def m1 = pattern.matcher(line)
+            if (m1.matches()) {
+                def line2 = m1[0][1] + m1[0][2]
                 if (line != line2) {
-                    rewrite = true;
-                    line = line2;
+                    line = line2
                 }
             }
+
             lines.add(line)
         }
         r.close()
 
-        if (rewrite) {
-            logger.info("Rewrite file $f")
+        logger.info("Rewrite file $f")
 
-            def w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8"))
-            lines.each { line ->
-                w.writeLine(line)
-            }
-            w.close()
+        // Force the file to use LF instead of CRLF on Windows
+        def w = new FileOutputStream(f)
+        lines.each { line ->
+            w.write(line.getBytes("UTF-8"))
+            w.write((byte)'\n')
         }
+        w.close()
     }
 }
 
