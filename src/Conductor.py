@@ -10,15 +10,15 @@ import jmri
 import jmri.jmrit.automat.AbstractAutomaton as AbstractAutomaton
 
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriProvider as IJmriProvider
+import com.alflabs.conductor.IJmriProvider as IJmriProvider
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriThrottle as IJmriThrottle
+import com.alflabs.conductor.IJmriThrottle as IJmriThrottle
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriTurnout as IJmriTurnout
+import com.alflabs.conductor.IJmriTurnout as IJmriTurnout
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriSensor as IJmriSensor
+import com.alflabs.conductor.IJmriSensor as IJmriSensor
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.EntryPoint as ConductorEntryPoint
+import com.alflabs.conductor.EntryPoint as ConductorEntryPoint
 
 
 class JmriThrottleAdapter(IJmriThrottle):

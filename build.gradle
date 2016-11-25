@@ -1,4 +1,4 @@
-group "com.alfray.conductor"
+group "com.alflabs.conductor"
 version "1.0-SNAPSHOT"
 
 apply plugin: "java"
@@ -14,7 +14,7 @@ configurations {
 }
 
 ext.antlr = [
-        antlrDestPkg: "com.alfray.conductor.parser2",
+        antlrDestPkg: "com.alflabs.conductor.parser2",
         antlrSrcDir : "src/antlr/antlr",
         antlrGenDir : "src/antlr/java"
 ]
@@ -40,7 +40,7 @@ dependencies {
 jar {
     manifest {
         attributes(
-            "Main-Class": "com.alfray.conductor.EntryPoint",
+            "Main-Class": "com.alflabs.conductor.EntryPoint",
         )
     }
 }
