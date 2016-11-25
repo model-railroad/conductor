@@ -455,12 +455,14 @@ public class ScriptParser2Test {
 
     @Test
     public void testActionTurnout() throws Exception {
+        // Note: syntax if parser one for turnouts was "-> t1 = normal"
+        // whereas new syntax is                       "-> t1 normal"
         String source = "" +
                 "throttle th = 42 \n " +
                 "turnout T1  = NT42 \n" +
                 "turnout t2  = NT43 \n" +
-                "th stopped -> T1 = normal ; t2 = reverse\n" +
-                "th forward -> t1 = reverse ; t2 = normal \n" +
+                "th stopped -> T1 normal ; t2 reverse\n" +
+                "th forward -> t1 reverse ; t2 normal \n" +
                 " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 

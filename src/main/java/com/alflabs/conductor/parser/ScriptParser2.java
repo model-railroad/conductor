@@ -242,14 +242,20 @@ public class ScriptParser2 {
 
             // Parse optional operation, which gives a specific function if valid.
             IIntFunction function = null;
+
+            // Note: KW_REVERSE is used for both throttle op and turnout op.
+            // When present, a throttle op gets evaluated first even though the id might be turnout.
+            boolean isKwReverse = false;
+
             if (ctx.throttleOp() != null) {
                 String op = ctx.throttleOp().getText();
                 Throttle throttle = mScript.getThrottle(id);
 
-                // Note: KW_REVERSE is used for both throttle op and turnout op.
                 Throttle.ThrottleFunction fn = Throttle.ThrottleFunction.valueOf(op.toUpperCase(Locale.US));
 
-                if (throttle == null && fn != Throttle.ThrottleFunction.REVERSE) {
+                isKwReverse = fn == Throttle.ThrottleFunction.REVERSE;
+
+                if (throttle == null && !isKwReverse) {
                     emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
                     return;
                 }
@@ -259,8 +265,8 @@ public class ScriptParser2 {
                 }
             }
 
-            if (function == null && ctx.turnoutOp() != null) {
-                String op = ctx.turnoutOp().getText();
+            if (function == null && (isKwReverse || ctx.turnoutOp() != null)) {
+                String op = isKwReverse ? Turnout.TurnoutFunction.REVERSE.toString() : ctx.turnoutOp().getText();
                 Turnout turnout = mScript.getTurnout(id);
 
                 Turnout.TurnoutFunction fn = Turnout.TurnoutFunction.valueOf(op.toUpperCase(Locale.US));
