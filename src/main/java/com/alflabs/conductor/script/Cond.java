@@ -12,8 +12,16 @@ class Cond {
         mNegated = negated;
     }
 
-    boolean eval() {
-        boolean status = mConditional.isActive();
+    boolean eval(CondCache cache) {
+        Boolean cached = cache.get(mConditional);
+        boolean status;
+        if (cached != null) {
+            status = cached;
+        } else {
+            status = mConditional.isActive();
+            cache.put(mConditional, status);
+        }
+
         if (mNegated) {
             status = !status;
         }

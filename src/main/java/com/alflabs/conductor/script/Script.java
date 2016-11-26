@@ -39,6 +39,7 @@ public class Script extends NowProvider {
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
     private final List<Event> mActivatedEvents = new LinkedList<>();
+    private final CondCache mCondCache = new CondCache();
     private final FrequencyMeasurer mHandleFrequency = new FrequencyMeasurer(this);
     private final RateLimiter mHandleRateLimiter = new RateLimiter(30.0f, this);
     private Runnable mHandleListener;
@@ -168,6 +169,8 @@ public class Script extends NowProvider {
      * This first checks ALL the events, and then applies activated actions.
      * Because some actions influence conditions (e.g. throttle stop/forward), all conditions
      * are evaluated first. Actions are only executed after all conditions have been checked.
+     * Conditions are checked only once per iteration to make sure that timers and sensors
+     * give a uniform view during the evaluation.
      * <p/>
      * Each event is only activated once when the condition becomes true (e.g. on a raising
      * edge in electronics terms). Next time the event is evaluated, it is not executed again
@@ -176,9 +179,10 @@ public class Script extends NowProvider {
     public void handle() {
         mHandleFrequency.ping();
 
+        mCondCache.clear();
         mActivatedEvents.clear();
         for (Event event : mEvents) {
-            if (event.evalConditions()) {
+            if (event.evalConditions(mCondCache)) {
                 if (!event.isExecuted()) {
                     mActivatedEvents.add(event);
                 }

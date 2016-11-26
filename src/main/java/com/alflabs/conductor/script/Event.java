@@ -28,13 +28,13 @@ public class Event {
         mActions.add(new Action(function, value));
     }
 
-    boolean evalConditions() {
+    boolean evalConditions(CondCache condCache) {
         if (mConditions.isEmpty()) {
             return false;
         }
 
         for (Cond condition : mConditions) {
-            if (!condition.eval()) {
+            if (!condition.eval(condCache)) {
                 return false;
             }
         }
