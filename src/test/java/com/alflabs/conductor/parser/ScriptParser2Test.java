@@ -193,13 +193,11 @@ public class ScriptParser2Test {
         Script script = new ScriptParser2().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("" +
-                "Error at line 3: no viable alternative at input 'stop'.\n" +
-                "Error at line 5: no viable alternative at input '!'.\n" +
+                "Error at line 3: extraneous input 'stop' expecting {'->', '&'}.\n" +
+                "Error at line 5: mismatched input '!' expecting {'->', '&'}.\n" +
                 "Error at line 6: missing ID at 'forward'.\n" +
-                "Error at line 3: Unexpected symbol: 'stop'.\n" +
                 "Error at line 3: Unknown event condition 't1'.\n" +
                 "Error at line 4: Unknown event condition 't1'.\n" +
-                "Error at line 5: Unexpected symbol: '!'.\n" +
                 "Error at line 5: Unknown event condition 't1'.\n" +
                 "Error at line 6: Unexpected symbol: '<missing ID>'.\n" +
                 "Error at line 6: Expected throttle ID for 'forward' but found '<missing ID>'.\n" +
@@ -626,6 +624,124 @@ public class ScriptParser2Test {
         verify(throttle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
         assertThat(script.getTimer("t2").isActive()).isTrue();
+    }
+
+    @SuppressWarnings("PointlessArithmeticExpression")
+    @Test
+    public void testDelayedCondition() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "sensor b1 = NS42 \n" +
+                "sensor b2 = NS7805 \n" +
+                "!b1 + 2            -> T1 Light=0 \n" +
+                " B1 + 3            -> t1 Light=1 \n" +
+                " b1     & !b2+4  -> t1 Sound=0 \n" +
+                " B1 + 5 &  b2+6  -> T1 Sound=1 ; $b1$5$ end ; \n" +
+                " B1 + 5 &  b2+7  -> T1 Sound=0 ; \n" ;
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriSensor sensor1 = mock(IJmriSensor.class);
+        IJmriSensor sensor2 = mock(IJmriSensor.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getSensor("NS42")).thenReturn(sensor1);
+        when(provider.getSensor("NS7805")).thenReturn(sensor2);
+
+        script.setup(provider);
+
+        verify(provider).getThrotlle(42);
+        verify(provider).getSensor("NS42");
+        verify(provider).getSensor("NS7805");
+
+        // check virtual timers have been created
+        assertThat(script.getTimer("$~b1$2$")).isNotNull();
+        assertThat(script.getTimer( "$b1$3$")).isNotNull();
+        assertThat(script.getTimer( "$b1$5$")).isNotNull();
+        assertThat(script.getTimer("$~b2$4$")).isNotNull();
+        assertThat(script.getTimer( "$b2$6$")).isNotNull();
+        assertThat(script.getTimer( "$b2$7$")).isNotNull();
+
+        // initial time ; !b1 and !b2 timers start counting from here unless reset.
+        when(sensor1.isActive()).thenReturn(false);
+        when(sensor2.isActive()).thenReturn(false);
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        // Line 1 : !b1 is active 2 seconds later
+        now.add(2*1000 - 1);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        now.add(1);
+        script.handle();
+        verify(throttle).setLight(false);
+        verify(throttle, never()).setSound(anyBoolean());
+
+
+        // Line 3 : !b2 is active 4 seconds after the start.
+        // However b1 is still negative so the line doesn't yet trigger.
+        now.add(2 * 1000);
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        // Trigger b1. Note this is now "!b2 + 5".
+        // The timer "!b2 + 4" is still active since it was not reset so line 3 is now valid.
+        when(sensor1.isActive()).thenReturn(true);
+        now.add(1 * 1000);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle).setSound(false);
+
+        // Line 2: b1 + 3 is now becoming active.
+        now.add(3 * 1000);
+        reset(throttle);
+        script.handle();
+        verify(throttle).setLight(true);
+        verify(throttle, never()).setSound(anyBoolean());
+
+        // Line 4: b1 + 5 becomes active. But b2 is still negative so the line doesn't trigger.
+        now.add(2 * 1000);
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        // Trigger b2
+        when(sensor2.isActive()).thenReturn(true);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
+
+        // Then skip 6 seconds. b2+6 becomes active. This is now 11 seconds after
+        // b1 became active and b1+5 is still active since the timer has not been reset.
+        now.add(6 * 1000);
+        assertThat(script.getTimer("$b1$5$").isActive()).isTrue();
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle).setSound(true);
+        // Timer b1+5 has now been reset.
+        assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
+
+        // Line 5: b2+7 becomes active.
+        // But since b1+5 has been reset 1 second ago it's not active yet.
+        now.add(1 * 1000);
+        reset(throttle);
+        script.handle();
+        verify(throttle, never()).setLight(anyBoolean());
+        verify(throttle, never()).setSound(anyBoolean());
     }
 
     @Test

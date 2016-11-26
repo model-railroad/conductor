@@ -41,9 +41,7 @@ Turnout T370        = NT370
 
 # define timers and their default value in seconds
 
-Timer PA-Timer-370    = 8
 Timer PA-Timer-Summit = 5
-Timer PA-Timer-P3.2   = 8
 Timer PA-Timer-Enable = 3
 
 Timer BL-Timer-Pause  = 5
@@ -65,15 +63,14 @@ PA-Toggle   -> T330 Reverse; T370 Normal
  P3.1 & PA Forward                    -> PA Forward = PA-Full-Speed
 
 # Summit
- B370 & PA Forward                    -> PA Forward = PA-Half-Speed ; PA-Timer-370 Start
- PA-Timer-370                         -> PA Stop; PA Light = 0; PA-Timer-Summit Start; PA Horn
+ B370     & PA Forward                -> PA Forward = PA-Half-Speed
+ B370 + 8 & PA Forward                -> PA Stop; PA Light = 0; PA-Timer-Summit Start; PA Horn
  PA-Timer-Summit                      -> PA Horn; PA Light = 1; PA Reverse = PA-Half-Speed
- B360 & PA Reverse                    -> PA Reverse = PA-Full-speed
+ B360 + 5 & PA Reverse                -> PA Reverse = PA-Full-speed
 
 # Arrival
- P3.1 & PA Reverse                    -> PA Reverse = PA-Half-speed
- P3.2 & PA Reverse                    -> PA-Timer-P3.2 Start
- PA-Timer-P3.2                        -> PA Stop ; PA Horn; PA Light = 0; PA-Timer-Enable Start # at station
+ P3.1     & PA Reverse                -> PA Reverse = PA-Half-speed
+ P3.2 + 8 & PA Reverse                -> PA Stop ; PA Horn; PA Light = 0; PA-Timer-Enable Start # at station
  PA-Timer-Enable                      -> PA-Enable = 1; PA Horn
 
 # Teardown

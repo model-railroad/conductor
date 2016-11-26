@@ -15,7 +15,7 @@ defIntType: KW_THROTTLE | KW_VAR  | KW_TIMER ;
 eventLine: condList '->' actionList;
 
 condList:   cond ( '&' cond )* ;
-cond:       condNot? ID ( condTime | condThrottleOp )? ;
+cond:       condNot? ID condThrottleOp? condTime? ;
 condNot:    '!' ;
 condTime:   '+' NUM ;
 condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT ;
@@ -72,6 +72,7 @@ NUM:      IdNum+ ;      // An int literal
 
 fragment IdCharStart: IdUnreserved | IdLetter ;
 fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDash ;
+// TODO fragment IdCharLast without IdDash.
 
 // Unreserved characters can be used to start an ID or even be the whole 1-char ID
 fragment IdUnreserved: [$?_:*/,.%^()\[\]{}\"\'`~] ;

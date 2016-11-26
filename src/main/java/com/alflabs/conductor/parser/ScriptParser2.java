@@ -168,7 +168,7 @@ public class ScriptParser2 {
 
         @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
-            mEvent = new Script.Event(mScript.getLogger(), getLine(ctx));
+            mEvent = new Script.Event(mScript.getLogger(), getLine__TodoMakeItBetter(ctx));
         }
 
         @Override
@@ -185,6 +185,8 @@ public class ScriptParser2 {
             boolean negated = ctx.condNot() != null;
             String id = ctx.ID().getText();
 
+            IConditional cond = null;
+
             if (ctx.condThrottleOp() != null) {
                 String op = ctx.condThrottleOp().getText();
                 Throttle throttle = mScript.getThrottle(id);
@@ -194,21 +196,30 @@ public class ScriptParser2 {
                 }
 
                 Throttle.Condition condition = Throttle.Condition.valueOf(op.toUpperCase(Locale.US));
-                IConditional cond = throttle.createCondition(condition);
-                mEvent.addConditional(cond, negated);
+                cond = throttle.createCondition(condition);
+
+            } else {
+                cond = mScript.getConditional(id);
+            }
+
+            if (cond == null) {
+                emitError(ctx, "Unknown event condition '" + id + "'.");
                 return;
             }
 
             if (ctx.condTime() != null) {
-                // TODO support event + time
+                // Creates a timer that starts on the given (negated) condition.
+                // Returns the new timer condition itself.
+                cond = createDelayedConditional(
+                        ctx.getText(),
+                        cond,
+                        negated,
+                        Integer.parseInt(ctx.condTime().NUM().getText()));
+                // The timer conditional is never negated.
+                negated = false;
             }
 
-            IConditional cond = mScript.getConditional(id);
-            if (cond != null) {
-                mEvent.addConditional(cond, negated);
-            } else {
-                emitError(ctx, "Unknown event condition '" + id + "'.");
-            }
+            mEvent.addConditional(cond, negated);
         }
 
         @Override
@@ -356,9 +367,65 @@ public class ScriptParser2 {
             return "";
         }
 
+        private String getLine__TodoMakeItBetter(ParserRuleContext ctx) {
+            // TODO this work as it doesn't recreate whitespace but use that for now.
+            while (ctx != null && !(ctx instanceof ConductorParser.ScriptLineContext)) {
+                ctx = ctx.getParent();
+            }
+            if (ctx != null) {
+                return ctx.getText();
+            }
+            return "";
+        }
+
         private String getLine(Token token) {
             // TODO use token.getLine();
             return "";
+        }
+
+        /**
+         * Creates a timer that starts on the given (negated) condition. <br/>
+         * Returns the new timer condition itself.
+         * <p/>
+         * "name" is the ANTLR4 text representation of the full condition without spaces
+         * e.g. "!My-Var+2". Convert it to "$~my-var$2$", which the script or test
+         * can then reference. The syntax is deemed part of the API.
+         * Both '~' and '$' are valid ID characters in a script.
+         * <pre>
+         * Example:
+         *   ! My-var + 2 -> actions...
+         * Internally this creates:
+         *   Timer $~my-var$2$ = 2
+         *   !my-var        -> $~my-var$2$ Start
+         *   $~my-var$2$    -> actions...
+         * </pre>
+         * Note that the created timer is never a negated condition.
+         * The syntax "!My-Var+2" is equivalent to "(!My-Var) + 2".
+         */
+        private IConditional createDelayedConditional(
+                String name,
+                IConditional cond,
+                boolean negated,
+                int delaySeconds) {
+            name = name.replace('!', '~').replace('+', '$');
+            name = "$" + name + "$";
+            name = name.toLowerCase(Locale.US);
+
+            Timer timer = mScript.getTimer(name);
+            if (timer == null) {
+                timer = createTimer(delaySeconds, mScript);
+                mScript.addTimer(name, timer);
+
+                // create an event that will trigger the timer
+                Script.Event timerEvent = new Script.Event(mScript.getLogger(), name);
+                timerEvent.addConditional(cond, negated);
+                timerEvent.addAction(
+                        timer.createFunction(Timer.Function.START),
+                        new LiteralInt(0));
+                mScript.addEvent(timerEvent);
+            }
+
+            return timer;
         }
     }
 

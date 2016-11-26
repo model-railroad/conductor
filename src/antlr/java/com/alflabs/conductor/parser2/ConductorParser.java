@@ -606,11 +606,11 @@ public class ConductorParser extends Parser {
 		public CondNotContext condNot() {
 			return getRuleContext(CondNotContext.class,0);
 		}
-		public CondTimeContext condTime() {
-			return getRuleContext(CondTimeContext.class,0);
-		}
 		public CondThrottleOpContext condThrottleOp() {
 			return getRuleContext(CondThrottleOpContext.class,0);
+		}
+		public CondTimeContext condTime() {
+			return getRuleContext(CondTimeContext.class,0);
 		}
 		public CondContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -644,30 +644,24 @@ public class ConductorParser extends Parser {
 
 			setState(91);
 			match(ID);
-			setState(94);
-			switch (_input.LA(1)) {
-			case KW_PLUS:
+			setState(93);
+			_la = _input.LA(1);
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_STOPPED))) != 0)) {
 				{
 				setState(92);
-				condTime();
-				}
-				break;
-			case KW_FORWARD:
-			case KW_REVERSE:
-			case KW_SOUND:
-			case KW_LIGHT:
-			case KW_STOPPED:
-				{
-				setState(93);
 				condThrottleOp();
 				}
-				break;
-			case KW_ARROW:
-			case KW_AND:
-				break;
-			default:
-				throw new NoViableAltException(this);
 			}
+
+			setState(96);
+			_la = _input.LA(1);
+			if (_la==KW_PLUS) {
+				{
+				setState(95);
+				condTime();
+				}
+			}
+
 			}
 		}
 		catch (RecognitionException re) {
@@ -702,7 +696,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(96);
+			setState(98);
 			match(KW_NOT);
 			}
 		}
@@ -739,9 +733,9 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(98);
+			setState(100);
 			match(KW_PLUS);
-			setState(99);
+			setState(101);
 			match(NUM);
 			}
 		}
@@ -783,7 +777,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(101);
+			setState(103);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_STOPPED))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -832,31 +826,31 @@ public class ConductorParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(103);
+			setState(105);
 			action();
-			setState(108);
+			setState(110);
 			_errHandler.sync(this);
-			_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
+			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(104);
+					setState(106);
 					match(KW_SEMI);
-					setState(105);
+					setState(107);
 					action();
 					}
 					} 
 				}
-				setState(110);
+				setState(112);
 				_errHandler.sync(this);
-				_alt = getInterpreter().adaptivePredict(_input,8,_ctx);
+				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
-			setState(112);
+			setState(114);
 			_la = _input.LA(1);
 			if (_la==KW_SEMI) {
 				{
-				setState(111);
+				setState(113);
 				match(KW_SEMI);
 				}
 			}
@@ -909,9 +903,9 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(114);
+			setState(116);
 			match(ID);
-			setState(118);
+			setState(120);
 			switch (_input.LA(1)) {
 			case KW_FORWARD:
 			case KW_REVERSE:
@@ -921,20 +915,20 @@ public class ConductorParser extends Parser {
 			case KW_STOP:
 			case KW_FN:
 				{
-				setState(115);
+				setState(117);
 				throttleOp();
 				}
 				break;
 			case KW_NORMAL:
 				{
-				setState(116);
+				setState(118);
 				turnoutOp();
 				}
 				break;
 			case KW_START:
 			case KW_END:
 				{
-				setState(117);
+				setState(119);
 				timerOp();
 				}
 				break;
@@ -947,11 +941,11 @@ public class ConductorParser extends Parser {
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(121);
+			setState(123);
 			_la = _input.LA(1);
 			if (_la==KW_EQUAL) {
 				{
-				setState(120);
+				setState(122);
 				funcValue();
 				}
 			}
@@ -998,7 +992,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(123);
+			setState(125);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_FN))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1040,7 +1034,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(125);
+			setState(127);
 			match(KW_NORMAL);
 			}
 		}
@@ -1079,7 +1073,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(127);
+			setState(129);
 			_la = _input.LA(1);
 			if ( !(_la==KW_START || _la==KW_END) ) {
 			_errHandler.recoverInline(this);
@@ -1123,9 +1117,9 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(129);
+			setState(131);
 			match(KW_EQUAL);
-			setState(130);
+			setState(132);
 			_la = _input.LA(1);
 			if ( !(_la==ID || _la==NUM) ) {
 			_errHandler.recoverInline(this);
@@ -1146,40 +1140,41 @@ public class ConductorParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35\u0087\4\2\t\2"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35\u0089\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13\2\3\2\5\2\62\n"+
 		"\2\3\2\3\2\3\3\3\3\5\38\n\3\3\3\5\3;\n\3\3\4\3\4\5\4?\n\4\3\5\3\5\3\5"+
 		"\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\t\3\t\3\t\3\t\3\n\3\n\3"+
-		"\n\7\nV\n\n\f\n\16\nY\13\n\3\13\5\13\\\n\13\3\13\3\13\3\13\5\13a\n\13"+
-		"\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17m\n\17\f\17\16\17p\13"+
-		"\17\3\17\5\17s\n\17\3\20\3\20\3\20\3\20\5\20y\n\20\3\20\5\20|\n\20\3\21"+
-		"\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\24\3\24\2\2\25\2\4\6\b\n\f\16\20"+
-		"\22\24\26\30\32\34\36 \"$&\2\b\3\2\16\17\4\2\f\r\20\20\5\2\21\22\24\25"+
-		"\30\30\5\2\21\22\24\27\33\33\3\2\31\32\3\2\34\35\u0083\2(\3\2\2\2\4\67"+
-		"\3\2\2\2\6>\3\2\2\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3"+
-		"\2\2\2\22R\3\2\2\2\24[\3\2\2\2\26b\3\2\2\2\30d\3\2\2\2\32g\3\2\2\2\34"+
-		"i\3\2\2\2\36t\3\2\2\2 }\3\2\2\2\"\177\3\2\2\2$\u0081\3\2\2\2&\u0083\3"+
-		"\2\2\2(-\5\4\3\2)*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3"+
-		"\2\2\2.\61\3\2\2\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2"+
-		"\62\63\3\2\2\2\63\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67"+
-		"\65\3\2\2\2\67\66\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;"+
-		"\3\2\2\2;\5\3\2\2\2<?\5\b\5\2=?\5\f\7\2><\3\2\2\2>=\3\2\2\2?\7\3\2\2\2"+
-		"@A\5\n\6\2AB\7\34\2\2BC\7\7\2\2CD\7\34\2\2D\t\3\2\2\2EF\t\2\2\2F\13\3"+
-		"\2\2\2GH\5\16\b\2HI\7\34\2\2IJ\7\7\2\2JK\7\35\2\2K\r\3\2\2\2LM\t\3\2\2"+
-		"M\17\3\2\2\2NO\5\22\n\2OP\7\6\2\2PQ\5\34\17\2Q\21\3\2\2\2RW\5\24\13\2"+
-		"ST\7\b\2\2TV\5\24\13\2US\3\2\2\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2X\23\3\2"+
-		"\2\2YW\3\2\2\2Z\\\5\26\f\2[Z\3\2\2\2[\\\3\2\2\2\\]\3\2\2\2]`\7\34\2\2"+
-		"^a\5\30\r\2_a\5\32\16\2`^\3\2\2\2`_\3\2\2\2`a\3\2\2\2a\25\3\2\2\2bc\7"+
-		"\t\2\2c\27\3\2\2\2de\7\n\2\2ef\7\35\2\2f\31\3\2\2\2gh\t\4\2\2h\33\3\2"+
-		"\2\2in\5\36\20\2jk\7\13\2\2km\5\36\20\2lj\3\2\2\2mp\3\2\2\2nl\3\2\2\2"+
-		"no\3\2\2\2or\3\2\2\2pn\3\2\2\2qs\7\13\2\2rq\3\2\2\2rs\3\2\2\2s\35\3\2"+
-		"\2\2tx\7\34\2\2uy\5 \21\2vy\5\"\22\2wy\5$\23\2xu\3\2\2\2xv\3\2\2\2xw\3"+
-		"\2\2\2xy\3\2\2\2y{\3\2\2\2z|\5&\24\2{z\3\2\2\2{|\3\2\2\2|\37\3\2\2\2}"+
-		"~\t\5\2\2~!\3\2\2\2\177\u0080\7\23\2\2\u0080#\3\2\2\2\u0081\u0082\t\6"+
-		"\2\2\u0082%\3\2\2\2\u0083\u0084\7\7\2\2\u0084\u0085\t\7\2\2\u0085\'\3"+
-		"\2\2\2\16-\61\67:>W[`nrx{";
+		"\n\7\nV\n\n\f\n\16\nY\13\n\3\13\5\13\\\n\13\3\13\3\13\5\13`\n\13\3\13"+
+		"\5\13c\n\13\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17o\n\17\f"+
+		"\17\16\17r\13\17\3\17\5\17u\n\17\3\20\3\20\3\20\3\20\5\20{\n\20\3\20\5"+
+		"\20~\n\20\3\21\3\21\3\22\3\22\3\23\3\23\3\24\3\24\3\24\3\24\2\2\25\2\4"+
+		"\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&\2\b\3\2\16\17\4\2\f\r\20\20\5"+
+		"\2\21\22\24\25\30\30\5\2\21\22\24\27\33\33\3\2\31\32\3\2\34\35\u0085\2"+
+		"(\3\2\2\2\4\67\3\2\2\2\6>\3\2\2\2\b@\3\2\2\2\nE\3\2\2\2\fG\3\2\2\2\16"+
+		"L\3\2\2\2\20N\3\2\2\2\22R\3\2\2\2\24[\3\2\2\2\26d\3\2\2\2\30f\3\2\2\2"+
+		"\32i\3\2\2\2\34k\3\2\2\2\36v\3\2\2\2 \177\3\2\2\2\"\u0081\3\2\2\2$\u0083"+
+		"\3\2\2\2&\u0085\3\2\2\2(-\5\4\3\2)*\7\4\2\2*,\5\4\3\2+)\3\2\2\2,/\3\2"+
+		"\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2\2/-\3\2\2\2\60\62\7\4\2\2\61\60\3\2"+
+		"\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63\64\7\2\2\3\64\3\3\2\2\2\658\5\6\4"+
+		"\2\668\5\20\t\2\67\65\3\2\2\2\67\66\3\2\2\2\678\3\2\2\28:\3\2\2\29;\7"+
+		"\5\2\2:9\3\2\2\2:;\3\2\2\2;\5\3\2\2\2<?\5\b\5\2=?\5\f\7\2><\3\2\2\2>="+
+		"\3\2\2\2?\7\3\2\2\2@A\5\n\6\2AB\7\34\2\2BC\7\7\2\2CD\7\34\2\2D\t\3\2\2"+
+		"\2EF\t\2\2\2F\13\3\2\2\2GH\5\16\b\2HI\7\34\2\2IJ\7\7\2\2JK\7\35\2\2K\r"+
+		"\3\2\2\2LM\t\3\2\2M\17\3\2\2\2NO\5\22\n\2OP\7\6\2\2PQ\5\34\17\2Q\21\3"+
+		"\2\2\2RW\5\24\13\2ST\7\b\2\2TV\5\24\13\2US\3\2\2\2VY\3\2\2\2WU\3\2\2\2"+
+		"WX\3\2\2\2X\23\3\2\2\2YW\3\2\2\2Z\\\5\26\f\2[Z\3\2\2\2[\\\3\2\2\2\\]\3"+
+		"\2\2\2]_\7\34\2\2^`\5\32\16\2_^\3\2\2\2_`\3\2\2\2`b\3\2\2\2ac\5\30\r\2"+
+		"ba\3\2\2\2bc\3\2\2\2c\25\3\2\2\2de\7\t\2\2e\27\3\2\2\2fg\7\n\2\2gh\7\35"+
+		"\2\2h\31\3\2\2\2ij\t\4\2\2j\33\3\2\2\2kp\5\36\20\2lm\7\13\2\2mo\5\36\20"+
+		"\2nl\3\2\2\2or\3\2\2\2pn\3\2\2\2pq\3\2\2\2qt\3\2\2\2rp\3\2\2\2su\7\13"+
+		"\2\2ts\3\2\2\2tu\3\2\2\2u\35\3\2\2\2vz\7\34\2\2w{\5 \21\2x{\5\"\22\2y"+
+		"{\5$\23\2zw\3\2\2\2zx\3\2\2\2zy\3\2\2\2z{\3\2\2\2{}\3\2\2\2|~\5&\24\2"+
+		"}|\3\2\2\2}~\3\2\2\2~\37\3\2\2\2\177\u0080\t\5\2\2\u0080!\3\2\2\2\u0081"+
+		"\u0082\7\23\2\2\u0082#\3\2\2\2\u0083\u0084\t\6\2\2\u0084%\3\2\2\2\u0085"+
+		"\u0086\7\7\2\2\u0086\u0087\t\7\2\2\u0087\'\3\2\2\2\17-\61\67:>W[_bptz"+
+		"}";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
