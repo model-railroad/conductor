@@ -171,7 +171,7 @@ public class ScriptParser2Test {
         // "->" needs a space before otherwise the "-" is parsed as part of the previous ID.
         String source = "" +
                 "Var My-Var=1\n" +
-                "my-var ->my-var=2\n";
+                "my-var->my-var=2\n";
         Script script = new ScriptParser2().parse(source, mReporter);
 
         assertThat(mReporter.toString()).isEqualTo("");

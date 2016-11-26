@@ -67,12 +67,14 @@ fragment KW_F0 :      'f'  [0-9] ;
 fragment KW_F10:      'f1' [0-9] ;
 fragment KW_F20:      'f2' [0-8] ;
 
-ID:       IdCharStart IdCharFull* ;
+// An ID. Can be 1 or more characters. Some specific non-alpha chars are accepted.
+// An ID can contain a dash in the middle but not start or end with one (to avoid conflict with ->).
+ID:       IdCharStart ( IdCharFull* IdCharLast )? ;
 NUM:      IdNum+ ;      // An int literal
 
 fragment IdCharStart: IdUnreserved | IdLetter ;
 fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDash ;
-// TODO fragment IdCharLast without IdDash.
+fragment IdCharLast:  IdUnreserved | IdLetter | IdNum ;
 
 // Unreserved characters can be used to start an ID or even be the whole 1-char ID
 fragment IdUnreserved: [$?_:*/,.%^()\[\]{}\"\'`~] ;
