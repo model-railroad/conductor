@@ -179,7 +179,9 @@ public class Script extends NowProvider {
         mActivatedEvents.clear();
         for (Event event : mEvents) {
             if (event.evalConditions()) {
-                mActivatedEvents.add(event);
+                if (!event.isExecuted()) {
+                    mActivatedEvents.add(event);
+                }
             } else {
                 event.resetExecuted();
             }
@@ -203,95 +205,5 @@ public class Script extends NowProvider {
 
     public void setHandleListener(Runnable handleListener) {
         mHandleListener = handleListener;
-    }
-
-    /** Represents one event condition, which is composed of a conditional and can be negated. */
-    private static class Cond {
-        private final IConditional mConditional;
-        private final boolean mNegated;
-
-        public Cond(IConditional conditional, boolean negated) {
-            mConditional = conditional;
-            mNegated = negated;
-        }
-
-        public boolean eval() {
-            boolean status = mConditional.isActive();
-            if (mNegated) {
-                status = !status;
-            }
-            return status;
-        }
-    }
-
-    /** Represents one action, which is composed of a function (setter) and value (getter). */
-    private static class Action {
-        private final IIntFunction mFunction;
-        private final IIntValue mValue;
-
-        public Action(IIntFunction function, IIntValue value) {
-            mFunction = function;
-            mValue = value;
-        }
-
-        public void execute() {
-            mFunction.accept(mValue.getAsInt());
-        }
-    }
-
-    /** Represents one event with its condition list, its action list and an "execution engine". */
-    public static class Event {
-        private final List<Cond> mConditions = new ArrayList<>();
-        private final List<Action> mActions = new ArrayList<>();
-        private final Logger mLogger;
-        private final String mSrcLine;
-        private boolean mExecuted;
-
-        public Event(Logger logger, String srcLine) {
-            mLogger = logger;
-            mSrcLine = srcLine;
-        }
-
-        public void addConditional(IConditional condition, boolean negated) {
-            mConditions.add(new Cond(condition, negated));
-        }
-
-        public void addAction(IIntFunction function, IIntValue value) {
-            mActions.add(new Action(function, value));
-        }
-
-        public boolean evalConditions() {
-            if (mConditions.isEmpty()) {
-                return false;
-            }
-
-            for (Cond condition : mConditions) {
-                if (!condition.eval()) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        public void execute() {
-            if (!mExecuted) {
-                for (Action action : mActions) {
-                    try {
-                        mLogger.log("[Conductor] Exec: " + mSrcLine);
-                        action.execute();
-
-                    } catch (Exception e) {
-                        mLogger.log("[Conductor] Action failed [" + action + "]: " + e);
-                    }
-                }
-
-                mExecuted = true;
-            }
-        }
-
-        public void resetExecuted() {
-            mExecuted = false;
-        }
     }
 }

@@ -3,6 +3,7 @@ package com.alflabs.conductor.parser;
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.script.Event;
 import com.alflabs.conductor.script.IConditional;
 import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
@@ -87,7 +88,7 @@ public class ScriptParser2 {
 
         private final Script mScript;
         private final Reporter mReporter;
-        private Script.Event mEvent;
+        private Event mEvent;
 
         ConductorListenerImpl(Script script, Reporter reporter) {
             mScript = script;
@@ -168,7 +169,7 @@ public class ScriptParser2 {
 
         @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
-            mEvent = new Script.Event(mScript.getLogger(), getLine__TodoMakeItBetter(ctx));
+            mEvent = new Event(mScript.getLogger(), getLine__TodoMakeItBetter(ctx));
         }
 
         @Override
@@ -417,7 +418,7 @@ public class ScriptParser2 {
                 mScript.addTimer(name, timer);
 
                 // create an event that will trigger the timer
-                Script.Event timerEvent = new Script.Event(mScript.getLogger(), name);
+                Event timerEvent = new Event(mScript.getLogger(), name);
                 timerEvent.addConditional(cond, negated);
                 timerEvent.addAction(
                         timer.createFunction(Timer.Function.START),
