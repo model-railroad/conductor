@@ -29,7 +29,6 @@ public class Throttle {
         STOPPED,
         SOUND,
         LIGHT,
-        // TODO support FN
     }
 
     /**
