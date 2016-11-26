@@ -266,13 +266,15 @@ public class ScriptParser2 {
             }
 
             if (function == null && (isKwReverse || ctx.turnoutOp() != null)) {
-                String op = isKwReverse ? Turnout.TurnoutFunction.REVERSE.toString() : ctx.turnoutOp().getText();
+                String op = isKwReverse ? null : ctx.turnoutOp().getText();
                 Turnout turnout = mScript.getTurnout(id);
 
-                Turnout.TurnoutFunction fn = Turnout.TurnoutFunction.valueOf(op.toUpperCase(Locale.US));
+                Turnout.TurnoutFunction fn = isKwReverse ?
+                        Turnout.TurnoutFunction.REVERSE :
+                        Turnout.TurnoutFunction.valueOf(op.toUpperCase(Locale.US));
 
                 if (turnout == null) {
-                    if (fn == Turnout.TurnoutFunction.REVERSE) {
+                    if (isKwReverse) {
                         emitError(ctx, "Expected throttle or turnout ID for '" + op + "' but found '" + id + "'.");
                     } else {
                         emitError(ctx, "Expected turnout ID for '" + op + "' but found '" + id + "'.");
