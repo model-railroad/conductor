@@ -193,7 +193,7 @@ public class ScriptParser2 {
                     return;
                 }
 
-                Throttle.ThrottleCondition condition = Throttle.ThrottleCondition.valueOf(op.toUpperCase(Locale.US));
+                Throttle.Condition condition = Throttle.Condition.valueOf(op.toUpperCase(Locale.US));
                 IConditional cond = throttle.createCondition(condition);
                 mEvent.addConditional(cond, negated);
                 return;
@@ -248,12 +248,12 @@ public class ScriptParser2 {
             boolean isKwReverse = false;
 
             if (ctx.throttleOp() != null) {
-                String op = ctx.throttleOp().getText();
                 Throttle throttle = mScript.getThrottle(id);
 
-                Throttle.ThrottleFunction fn = Throttle.ThrottleFunction.valueOf(op.toUpperCase(Locale.US));
+                String op = ctx.throttleOp().getText();
+                Throttle.Function fn = Throttle.Function.valueOf(op.toUpperCase(Locale.US));
 
-                isKwReverse = fn == Throttle.ThrottleFunction.REVERSE;
+                isKwReverse = fn == Throttle.Function.REVERSE;
 
                 if (throttle == null && !isKwReverse) {
                     emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
@@ -269,9 +269,9 @@ public class ScriptParser2 {
                 String op = isKwReverse ? null : ctx.turnoutOp().getText();
                 Turnout turnout = mScript.getTurnout(id);
 
-                Turnout.TurnoutFunction fn = isKwReverse ?
-                        Turnout.TurnoutFunction.REVERSE :
-                        Turnout.TurnoutFunction.valueOf(op.toUpperCase(Locale.US));
+                Turnout.Function fn = isKwReverse ?
+                        Turnout.Function.REVERSE :
+                        Turnout.Function.valueOf(op.toUpperCase(Locale.US));
 
                 if (turnout == null) {
                     if (isKwReverse) {
@@ -289,7 +289,7 @@ public class ScriptParser2 {
                 String op = ctx.timerOp().getText();
                 Timer timer = mScript.getTimer(id);
 
-                Timer.TimerFunction fn = Timer.TimerFunction.valueOf(op.toUpperCase(Locale.US));
+                Timer.Function fn = Timer.Function.valueOf(op.toUpperCase(Locale.US));
 
                 if (timer == null) {
                     emitError(ctx, "Expected timer ID for '" + op + "' but found '" + id + "'.");
@@ -308,13 +308,6 @@ public class ScriptParser2 {
                     emitError(ctx, "Expected var ID but found '" + id + "'.");
                     return;
                 }
-            }
-
-            // TODO : turnout, timer
-
-            if (function == null) {
-                emitError(ctx, "Failed to parse action for '" + id + "'");
-                return;
             }
 
             mEvent.addAction(function, value);

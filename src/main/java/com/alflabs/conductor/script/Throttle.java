@@ -23,7 +23,7 @@ public class Throttle {
      * Possible keywords for a throttle condition.
      * Must match IConditional in the {@link Throttle} implementation.
      */
-    public enum ThrottleCondition {
+    public enum Condition {
         FORWARD,
         REVERSE,
         STOPPED,
@@ -36,7 +36,7 @@ public class Throttle {
      * Possible keywords for a throttle action.
      * Must match IIntFunction in the {@link Throttle} implementation.
      */
-    public enum ThrottleFunction {
+    public enum Function {
         FORWARD,
         REVERSE,
         STOP,
@@ -84,7 +84,7 @@ public class Throttle {
         mSpeedListener = speedListener;
     }
 
-    public IIntFunction createFunction(ThrottleFunction function) {
+    public IIntFunction createFunction(Function function) {
         switch (function) {
         case FORWARD:
             return speed -> setSpeed(Math.max(0, speed));
@@ -116,7 +116,7 @@ public class Throttle {
         throw new IllegalArgumentException();
     }
 
-    public IConditional createCondition(ThrottleCondition condition) {
+    public IConditional createCondition(Condition condition) {
         switch (condition) {
         case FORWARD:
             return () -> mSpeed > 0;

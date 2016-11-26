@@ -19,7 +19,7 @@ public class Timer implements IConditional {
      * Possible keywords for a timer function.
      * Must match IIntFunction in the {@link Timer} implementation.
      */
-    public enum TimerFunction {
+    public enum Function {
         START,
         END
     }
@@ -34,7 +34,7 @@ public class Timer implements IConditional {
         return mDurationSec;
     }
 
-    public IIntFunction createFunction(TimerFunction function) {
+    public IIntFunction createFunction(Function function) {
         switch (function) {
         case START:
             return ignored -> mEndTS = now() + mDurationSec * 1000;

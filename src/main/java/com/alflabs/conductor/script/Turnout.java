@@ -24,7 +24,7 @@ public class Turnout implements IConditional {
      * Possible keywords for a turnout function.
      * Must match IIntFunction in the {@link Turnout} implementation.
      */
-    public enum TurnoutFunction {
+    public enum Function {
         NORMAL,
         REVERSE
     }
@@ -39,7 +39,7 @@ public class Turnout implements IConditional {
         mTurnout = provider.getTurnout(mJmriName);
     }
 
-    public IIntFunction createFunction(TurnoutFunction function) {
+    public IIntFunction createFunction(Function function) {
         switch (function) {
         case NORMAL:
             return ignored -> setTurnout(IJmriTurnout.NORMAL);

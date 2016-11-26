@@ -40,16 +40,16 @@ public class ThrottleTest {
         mThrottle.setup(provider);
         verify(provider).getThrotlle(42);
 
-        fwd = mThrottle.createFunction(Throttle.ThrottleFunction.FORWARD);
-        rev = mThrottle.createFunction(Throttle.ThrottleFunction.REVERSE);
-        stop = mThrottle.createFunction(Throttle.ThrottleFunction.STOP);
-        sound = mThrottle.createFunction(Throttle.ThrottleFunction.SOUND);
-        light = mThrottle.createFunction(Throttle.ThrottleFunction.LIGHT);
-        isFwd = mThrottle.createCondition(Throttle.ThrottleCondition.FORWARD);
-        isRev = mThrottle.createCondition(Throttle.ThrottleCondition.REVERSE);
-        isStop = mThrottle.createCondition(Throttle.ThrottleCondition.STOPPED);
-        isSound = mThrottle.createCondition(Throttle.ThrottleCondition.SOUND);
-        isLight = mThrottle.createCondition(Throttle.ThrottleCondition.LIGHT);
+        fwd = mThrottle.createFunction(Throttle.Function.FORWARD);
+        rev = mThrottle.createFunction(Throttle.Function.REVERSE);
+        stop = mThrottle.createFunction(Throttle.Function.STOP);
+        sound = mThrottle.createFunction(Throttle.Function.SOUND);
+        light = mThrottle.createFunction(Throttle.Function.LIGHT);
+        isFwd = mThrottle.createCondition(Throttle.Condition.FORWARD);
+        isRev = mThrottle.createCondition(Throttle.Condition.REVERSE);
+        isStop = mThrottle.createCondition(Throttle.Condition.STOPPED);
+        isSound = mThrottle.createCondition(Throttle.Condition.SOUND);
+        isLight = mThrottle.createCondition(Throttle.Condition.LIGHT);
     }
 
     @After

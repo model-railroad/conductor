@@ -39,7 +39,7 @@ public class TurnoutTest {
 
     @Test
     public void testNormal() throws Exception {
-        mTurnout.createFunction(Turnout.TurnoutFunction.NORMAL).accept(0);
+        mTurnout.createFunction(Turnout.Function.NORMAL).accept(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
 
@@ -48,7 +48,7 @@ public class TurnoutTest {
 
     @Test
     public void testReverse() throws Exception {
-        mTurnout.createFunction(Turnout.TurnoutFunction.REVERSE).accept(0);
+        mTurnout.createFunction(Turnout.Function.REVERSE).accept(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
 
