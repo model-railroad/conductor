@@ -251,9 +251,14 @@ public class ScriptParser2 {
                 Throttle throttle = mScript.getThrottle(id);
 
                 String op = ctx.throttleOp().getText();
-                Throttle.Function fn = Throttle.Function.valueOf(op.toUpperCase(Locale.US));
-
-                isKwReverse = fn == Throttle.Function.REVERSE;
+                int fnIndex = 0;
+                Throttle.Function opfn = null;
+                if (ctx.throttleOp().KW_FN() != null) {
+                    fnIndex = Integer.parseInt(op.substring(1));    // Skip "f" before index
+                } else {
+                    opfn = Throttle.Function.valueOf(op.toUpperCase(Locale.US));
+                    isKwReverse = opfn == Throttle.Function.REVERSE;
+                }
 
                 if (throttle == null && !isKwReverse) {
                     emitError(ctx, "Expected throttle ID for '" + op + "' but found '" + id + "'.");
@@ -261,7 +266,11 @@ public class ScriptParser2 {
                 }
 
                 if (throttle != null) {
-                    function = throttle.createFunction(fn);
+                    if (opfn != null) {
+                        function = throttle.createFunction(opfn);
+                    } else {
+                        function = throttle.createFnFunction(fnIndex);
+                    }
                 }
             }
 

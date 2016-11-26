@@ -48,13 +48,13 @@ public interface IJmriThrottle {
     /**
      * Triggers a FN function on that throttle.
      * <p/>
-     * The script value is optional. When omitted it defaults to zero.
+     * The script value is optional. When omitted it defaults to false.
      * <p/>
      * It's up to the Jython adapter to decide how the value is used. Typically:
      * - For a momentary function, the value would be ignored and an on/off would be triggered
      *   for a specific amount of time.
-     * - For a non-momentary function, the value would be 0 for off and 1 for on.
+     * - For a non-momentary function, false is FN off and true if FN on.
      * This is however not dictated by the script; the actual behavior depends on the adapter.
      */
-    void triggerFunction(int function, int value);
+    void triggerFunction(int function, boolean on);
 }

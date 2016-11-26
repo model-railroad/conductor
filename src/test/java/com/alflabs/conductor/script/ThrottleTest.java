@@ -145,4 +145,19 @@ public class ThrottleTest {
         assertThat(isLight.isActive()).isFalse();
         verify(mJmriThrottle).setLight(false);
     }
+
+    @Test
+    public void testFnFunction() throws Exception {
+        mThrottle.createFnFunction(3).accept(1);
+        verify(mJmriThrottle).triggerFunction(3, true);
+
+        mThrottle.createFnFunction(5).accept(0);
+        verify(mJmriThrottle).triggerFunction(5, false);
+
+        mThrottle.createFnFunction(12).accept(1);
+        verify(mJmriThrottle).triggerFunction(12, true);
+
+        mThrottle.createFnFunction(28).accept(0);
+        verify(mJmriThrottle).triggerFunction(28, false);
+    }
 }

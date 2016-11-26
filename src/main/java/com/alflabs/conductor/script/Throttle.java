@@ -116,6 +116,15 @@ public class Throttle {
         throw new IllegalArgumentException();
     }
 
+    public IIntFunction createFnFunction(int fn) {
+        return on -> {
+            boolean state = on != 0;
+            if (mJmriThrottle != null) {
+                mJmriThrottle.triggerFunction(fn, state);
+            }
+        };
+    }
+
     public IConditional createCondition(Condition condition) {
         switch (condition) {
         case FORWARD:

@@ -1,6 +1,6 @@
 # throttles
 
-Throttle PA = 1201
+Throttle PA = 204
 Throttle BL = 1202
 
 # states
@@ -55,7 +55,7 @@ Timer BL-Timer-Pause  = 5
 
 # Setup
  PA-Toggle                            -> PA Sound = 1; PA Light = 1; PA-Enable = 1
- PA-Toggle & !PA-Enable  & PA-Run3    -> PA Horn
+ PA-Toggle & !PA-Enable  & PA-Run3    -> PA F3 = 1 ; PA F3 = 0  # doppler sound
 
 PA-Toggle   -> T503 Normal;  T504 Normal; T311 Reverse; T321 Normal; T322 Normal;
 PA-Toggle   -> T330 Reverse; T370 Normal

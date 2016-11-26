@@ -314,6 +314,40 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testThrottleFn() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 f1 = 1 ; t1 f0     ; t1 f28 = 42 \n" +
+                "t1 forward -> t1 f1     ; t1 f0 = 0 ; t1 f28 = 0  ";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+
+        // Execute t1 stopped case
+        script.handle();
+        verify(throttle).triggerFunction(1, true);
+        verify(throttle).triggerFunction(0, false);
+        verify(throttle).triggerFunction(28, true);
+
+        // Execute t1 forward case
+        script.getThrottle("t1").setSpeed(5);
+        reset(throttle);
+        script.handle();
+        verify(throttle).triggerFunction(1, false);
+        verify(throttle).triggerFunction(0, false);
+        verify(throttle).triggerFunction(28, false);
+    }
+
+    @Test
     public void testActionVar() throws Exception {
 
         String source = "" +
