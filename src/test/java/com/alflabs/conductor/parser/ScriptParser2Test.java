@@ -86,7 +86,9 @@ public class ScriptParser2Test {
                 "var value = 42";
         Script script = new ScriptParser2().parse(source, mReporter);
 
-        assertThat(mReporter.toString()).isEqualTo("Error at line 2: Name 'value' is already defined.");
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'value' is already defined.\n" +
+                "  Line 2: 'var value = 42'");
         assertThat(script).isNotNull();
     }
 
@@ -108,7 +110,9 @@ public class ScriptParser2Test {
                 "sensor alias   = B42";
         Script script = new ScriptParser2().parse(source, mReporter);
 
-        assertThat(mReporter.toString()).isEqualTo("Error at line 2: Name 'alias' is already defined.");
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'alias' is already defined.\n" +
+                "  Line 2: 'sensor alias   = B42'");
         assertThat(script).isNotNull();
     }
 
@@ -197,11 +201,17 @@ public class ScriptParser2Test {
                 "Error at line 5: mismatched input '!' expecting {'->', '&'}.\n" +
                 "Error at line 6: missing ID at 'forward'.\n" +
                 "Error at line 3: Unknown event condition 't1'.\n" +
+                "  Line 3: 't1 stop        -> t1 stop'\n" +
                 "Error at line 4: Unknown event condition 't1'.\n" +
+                "  Line 4: 't1             -> t1 stop'\n" +
                 "Error at line 5: Unknown event condition 't1'.\n" +
+                "  Line 5: 't1 !forward    -> t1 stop'\n" +
                 "Error at line 6: Unexpected symbol: '<missing ID>'.\n" +
+                "  Line 6: '!forward       -> t1 stop'\n" +
                 "Error at line 6: Expected throttle ID for 'forward' but found '<missing ID>'.\n" +
-                "Error at line 7: Expected throttle ID for 'stopped' but found 'block'.");
+                "  Line 6: '!forward       -> t1 stop'\n" +
+                "Error at line 7: Expected throttle ID for 'stopped' but found 'block'.\n" +
+                "  Line 7: 'block stopped  -> t1 stop'");
         assertThat(script).isNotNull();
     }
 
@@ -226,13 +236,21 @@ public class ScriptParser2Test {
                 "Error at line 4: no viable alternative at input 'stopped'.\n" +
                 "Error at line 8: token recognition error at: '-1'.\n" +
                 "Error at line 3: Unexpected symbol: 'stopped'.\n" +
+                "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 3: Expected var ID but found 't1'.\n" +
+                "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 4: Unexpected symbol: '!'.\n" +
+                "  Line 4: 't1 forward -> !t1 stopped'\n" +
                 "Error at line 4: Expected var ID but found 't1'.\n" +
+                "  Line 4: 't1 forward -> !t1 stopped'\n" +
                 "Error at line 5: Expected turnout ID for 'normal' but found 't1'.\n" +
+                "  Line 5: 't1 forward -> t1 normal'\n" +
                 "Error at line 7: Expected timer ID for 'start' but found 't1'.\n" +
+                "  Line 7: 'block      -> t1 start'\n" +
                 "Error at line 9: Expected NUM or ID argument for 't1' but found 'B42'.\n" +
-                "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.");
+                "  Line 9: 't1 forward -> t1 forward = B42'\n" +
+                "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.\n" +
+                "  Line 10: 't1 forward -> t1 forward = block'");
         assertThat(script).isNotNull();
     }
 

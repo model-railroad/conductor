@@ -21,7 +21,7 @@ public class Reporter implements Logger {
     public void report(String line, int lineCount, String error) {
         mLastReportLine = lineCount;
         if (line != null && !line.isEmpty()) {
-            log(String.format("Error at line %d: %s\n  Line: '%s'", lineCount, error, line));
+            log(String.format("Error at line %d: %s\n  Line %d: '%s'", lineCount, error, lineCount, line));
         } else {
             log(String.format("Error at line %d: %s", lineCount, error));
         }

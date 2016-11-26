@@ -66,6 +66,7 @@ public class ScriptParser2 {
     public Script parse(String source, Reporter reporter) throws IOException {
         Script script = new Script(reporter);
 
+        LineCounter lineCounter = new LineCounter(source);
         CaseInsensitiveInputStream input = new CaseInsensitiveInputStream(source);
         ConductorLexer lexer = new ConductorLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -78,7 +79,7 @@ public class ScriptParser2 {
         parser.addErrorListener(errorListener);
 
         ConductorParser.ScriptContext tree = parser.script();  // parse a full script
-        ConductorListenerImpl listener = new ConductorListenerImpl(script, reporter);
+        ConductorListenerImpl listener = new ConductorListenerImpl(script, reporter, lineCounter);
         ParseTreeWalker.DEFAULT.walk(listener, tree);
 
         return script;
@@ -88,11 +89,13 @@ public class ScriptParser2 {
 
         private final Script mScript;
         private final Reporter mReporter;
+        private final LineCounter mLineCounter;
         private Event mEvent;
 
-        ConductorListenerImpl(Script script, Reporter reporter) {
+        ConductorListenerImpl(Script script, Reporter reporter, LineCounter lineCounter) {
             mScript = script;
             mReporter = reporter;
+            mLineCounter = lineCounter;
         }
 
         @Override
@@ -169,7 +172,7 @@ public class ScriptParser2 {
 
         @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
-            mEvent = new Event(mScript.getLogger(), getLine__TodoMakeItBetter(ctx));
+            mEvent = new Event(mScript.getLogger(), getLine(ctx));
         }
 
         @Override
@@ -349,39 +352,12 @@ public class ScriptParser2 {
             mReporter.report(getLine(ctx), ctx.getStart().getLine(), message);
         }
 
-        /**
-         * Hacky incorrect way to get the line.
-         * This only works when parsing rules and not when visiting an error node (which doesn't
-         * have a parse context).
-         * Different approach is map line numbers to the source input stream directly.
-         */
         private String getLine(ParserRuleContext ctx) {
-            // TODO this work but doesn't recreate whitespace. Fix later.
-            /*
-            while (ctx != null && !(ctx instanceof ConductorParser.ScriptLineContext)) {
-                ctx = ctx.getParent();
-            }
-            if (ctx != null) {
-                return ctx.getText();
-            }
-            */
-            return "";
-        }
-
-        private String getLine__TodoMakeItBetter(ParserRuleContext ctx) {
-            // TODO this work as it doesn't recreate whitespace but use that for now.
-            while (ctx != null && !(ctx instanceof ConductorParser.ScriptLineContext)) {
-                ctx = ctx.getParent();
-            }
-            if (ctx != null) {
-                return ctx.getText();
-            }
-            return "";
+            return getLine(ctx.getStart());
         }
 
         private String getLine(Token token) {
-            // TODO use token.getLine();
-            return "";
+            return mLineCounter.getLine(token.getLine()).trim();
         }
 
         /**
