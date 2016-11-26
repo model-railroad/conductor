@@ -23,7 +23,7 @@ public interface IJmriThrottle {
     /**
      * Sets the sound.  <br/>
      * Most decoders default to sound on and have a mute function (e.g. F8 on Digitrax/SoundTraxx
-     * or F1 on LokSound.) It's up to the Jython adapter to transform  this into the proper
+     * or F1 on LokSound.) It's up to the Jython adapter to transform this into the proper
      * throttle function toggle.
      */
     void setSound(boolean on);
@@ -44,4 +44,17 @@ public interface IJmriThrottle {
      * interprets the lack of argument as a silent zero value.
      */
     void horn();
+
+    /**
+     * Triggers a FN function on that throttle.
+     * <p/>
+     * The script value is optional. When omitted it defaults to zero.
+     * <p/>
+     * It's up to the Jython adapter to decide how the value is used. Typically:
+     * - For a momentary function, the value would be ignored and an on/off would be triggered
+     *   for a specific amount of time.
+     * - For a non-momentary function, the value would be 0 for off and 1 for on.
+     * This is however not dictated by the script; the actual behavior depends on the adapter.
+     */
+    void triggerFunction(int function, int value);
 }

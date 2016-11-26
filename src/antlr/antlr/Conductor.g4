@@ -62,7 +62,10 @@ KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
 KW_START:   'start';
 KW_END:     'end';
-KW_FN:      'f' [0-9] [0-9]? ;
+KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
+fragment KW_F0 :      'f'  [0-9] ;
+fragment KW_F10:      'f1' [0-9] ;
+fragment KW_F20:      'f2' [0-8] ;
 
 ID:       IdCharStart IdCharFull* ;
 NUM:      IdNum+ ;      // An int literal

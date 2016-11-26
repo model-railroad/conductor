@@ -43,7 +43,6 @@ public class Throttle {
         HORN,
         SOUND,
         LIGHT,
-        // TODO support FN
     }
 
     /** Creates a new throttle for the given JMRI dcc address. */
