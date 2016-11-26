@@ -87,92 +87,47 @@ public class Throttle {
     public IIntFunction createFunction(ThrottleFunction function) {
         switch (function) {
         case FORWARD:
-            return createFunctionForward();
+            return speed -> setSpeed(Math.max(0, speed));
         case REVERSE:
-            return createFunctionReverse();
+            return speed -> setSpeed(-1 * Math.max(0, speed));
         case STOP:
-            return createFunctionStop();
+            return speed -> setSpeed(0);
         case HORN:
-            return createFunctionHorn();
+            return on -> {
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.horn();
+                }
+            };
         case SOUND:
-            return createFunctionSound();
+            return on -> {
+                mSound = on != 0;
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.setSound(mSound);
+                }
+            };
         case LIGHT:
-            return createFunctionLight();
+            return on -> {
+                mLight = on != 0;
+                if (mJmriThrottle != null) {
+                    mJmriThrottle.setLight(mLight);
+                }
+            };
         }
         throw new IllegalArgumentException();
     }
 
-    public IIntFunction createFunctionStop() {
-        return speed -> setSpeed(0);
-    }
-
-    public IIntFunction createFunctionForward() {
-        return speed -> setSpeed(Math.max(0, speed));
-    }
-
-    public IIntFunction createFunctionReverse() {
-        return speed -> setSpeed(-1 * Math.max(0, speed));
-    }
-
-    public IIntFunction createFunctionSound() {
-        return on -> {
-            mSound = on != 0;
-            if (mJmriThrottle != null) {
-                mJmriThrottle.setSound(mSound);
-            }
-        };
-    }
-
-    public IIntFunction createFunctionLight() {
-        return on -> {
-            mLight = on != 0;
-            if (mJmriThrottle != null) {
-                mJmriThrottle.setLight(mLight);
-            }
-        };
-    }
-
-    public IIntFunction createFunctionHorn() {
-        return on -> {
-            if (mJmriThrottle != null) {
-                mJmriThrottle.horn();
-            }
-        };
-    }
-
-    public IConditional createIsStopped() {
-        return () -> mSpeed == 0;
-    }
-
-    public IConditional createIsForward() {
-        return () -> mSpeed > 0;
-    }
-
-    public IConditional createIsReverse() {
-        return () -> mSpeed < 0;
-    }
-
-    public IConditional createIsSound() {
-        return () -> mSound;
-    }
-
-    public IConditional createIsLight() {
-        return () -> mLight;
-    }
-
-
     public IConditional createCondition(ThrottleCondition condition) {
         switch (condition) {
         case FORWARD:
-            return createIsForward();
+            return () -> mSpeed > 0;
         case REVERSE:
-            return createIsReverse();
+            return () -> mSpeed < 0;
         case STOPPED:
-            return createIsStopped();
+            return () -> mSpeed == 0;
         case SOUND:
-            return createIsSound();
+            return () -> mSound;
         case LIGHT:
-            return createIsLight();
+            return () -> mLight;
         }
         throw new IllegalArgumentException();
     }

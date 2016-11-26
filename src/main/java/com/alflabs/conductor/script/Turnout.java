@@ -42,19 +42,11 @@ public class Turnout implements IConditional {
     public IIntFunction createFunction(TurnoutFunction function) {
         switch (function) {
         case NORMAL:
-            return createFunctionNormal();
+            return ignored -> setTurnout(IJmriTurnout.NORMAL);
         case REVERSE:
-            return createFunctionReverse();
+            return ignored -> setTurnout(IJmriTurnout.REVERSE);
         }
         throw new IllegalArgumentException();
-    }
-
-    public IIntFunction createFunctionNormal() {
-        return ignored -> setTurnout(IJmriTurnout.NORMAL);
-    }
-
-    public IIntFunction createFunctionReverse() {
-        return ignored -> setTurnout(IJmriTurnout.REVERSE);
     }
 
     private void setTurnout(boolean normal) {

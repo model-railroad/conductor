@@ -37,19 +37,11 @@ public class Timer implements IConditional {
     public IIntFunction createFunction(TimerFunction function) {
         switch (function) {
         case START:
-            return createFunctionStart();
+            return ignored -> mEndTS = now() + mDurationSec * 1000;
         case END:
-            return createFunctionEnd();
+            return ignored -> mEndTS = 0;
         }
         throw new IllegalArgumentException();
-    }
-
-    public IIntFunction createFunctionStart() {
-        return ignored -> mEndTS = now() + mDurationSec * 1000;
-    }
-
-    public IIntFunction createFunctionEnd() {
-        return ignored -> mEndTS = 0;
     }
 
     @Override
