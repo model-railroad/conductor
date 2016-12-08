@@ -20,6 +20,7 @@ import com.alfray.conductor.IJmriSensor as IJmriSensor
 # noinspection PyUnresolvedReferences
 import com.alfray.conductor.EntryPoint as ConductorEntryPoint
 
+REPEAT = range(0, 3)
 
 class JmriThrottleAdapter(IJmriThrottle):
     def __init__(self, address, throttle, provider):
@@ -42,7 +43,10 @@ class JmriThrottleAdapter(IJmriThrottle):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Sound", on
         if self._address == 537:
-            self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
+            for i in REPEAT:
+                self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
+        elif self._address == 204 or self._address == 209:
+            self._throttle.setF8(on)  # F8 true to sound
         else:
             self._throttle.setF8(not on)  # F8 true to mute all others
         self._provider.waitMsec(100)
@@ -50,14 +54,22 @@ class JmriThrottleAdapter(IJmriThrottle):
     def setLight(self, on):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Light", on
-        self._throttle.setF0(on)
+        r = [1]
+        if self._address == 537:
+            r = REPEAT
+        for i in r:
+            self._throttle.setF0(on)
 
     def horn(self):
         """In: void; Out: void"""
         print "[Conductor", self._address, "] Horn"
         self._throttle.setF2(True)
-        self._provider.waitMsec(100)
-        self._throttle.setF2(False)
+        self._provider.waitMsec(500)
+        r = [1]
+        if self._address == 537:
+            r = REPEAT
+        for i in r:
+            self._throttle.setF2(False)
         self._provider.waitMsec(200)
 
 
