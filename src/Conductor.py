@@ -76,11 +76,12 @@ class JmriThrottleAdapter(IJmriThrottle):
     def triggerFunction(self, function, on):
         """In: int function, boolean on; Out: void"""
         # Dynamically invoke JMRI throttle method setF0..setF28(boolean).
-        print "[Conductor", self._address, "]", "F" + function, on
+        Fn = "F" + str(function)
+        print "[Conductor", self._address, "]", Fn, on
         try:
-            getattr(self._throttle, "setF" + function)(on)
+            getattr(self._throttle, "set" + Fn)(on)
         except AttributeError as e:
-            print "[Conductor", self._address, "]", "F" + function, "Error:", e
+            print "[Conductor", self._address, "]", Fn, "Error:", e
 
 
 # noinspection PyPep8Naming
