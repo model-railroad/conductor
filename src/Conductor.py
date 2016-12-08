@@ -10,18 +10,19 @@ import jmri
 import jmri.jmrit.automat.AbstractAutomaton as AbstractAutomaton
 
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriProvider as IJmriProvider
+import com.alflabs.conductor.IJmriProvider as IJmriProvider
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriThrottle as IJmriThrottle
+import com.alflabs.conductor.IJmriThrottle as IJmriThrottle
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriTurnout as IJmriTurnout
+import com.alflabs.conductor.IJmriTurnout as IJmriTurnout
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.IJmriSensor as IJmriSensor
+import com.alflabs.conductor.IJmriSensor as IJmriSensor
 # noinspection PyUnresolvedReferences
-import com.alfray.conductor.EntryPoint as ConductorEntryPoint
+import com.alflabs.conductor.EntryPoint as ConductorEntryPoint
 
 REPEAT = range(0, 3)
 
+# noinspection PyPep8Naming
 class JmriThrottleAdapter(IJmriThrottle):
     def __init__(self, address, throttle, provider):
         self._address = address
@@ -72,7 +73,17 @@ class JmriThrottleAdapter(IJmriThrottle):
             self._throttle.setF2(False)
         self._provider.waitMsec(200)
 
+    def triggerFunction(self, function, on):
+        """In: int function, boolean on; Out: void"""
+        # Dynamically invoke JMRI throttle method setF0..setF28(boolean).
+        print "[Conductor", self._address, "]", "F" + function, on
+        try:
+            getattr(self._throttle, "setF" + function)(on)
+        except AttributeError as e:
+            print "[Conductor", self._address, "]", "F" + function, "Error:", e
 
+
+# noinspection PyPep8Naming
 class JmriSensorAdapter(IJmriSensor):
     def __init__(self, name, sensor):
         self._name = name
@@ -83,6 +94,7 @@ class JmriSensorAdapter(IJmriSensor):
         return self._sensor.knownState == jmri.Sensor.ACTIVE
 
 
+# noinspection PyPep8Naming
 class JmriTurnoutAdapter(IJmriTurnout):
     def __init__(self, name, turnout):
         self._name = name
@@ -97,6 +109,7 @@ class JmriTurnoutAdapter(IJmriTurnout):
             self._turnout.commandedState = jmri.Turnout.THROWN
 
 
+# noinspection PyPep8Naming
 class JmriProvider(IJmriProvider):
     def __init__(self, provider):
         self._provider = provider

@@ -1,0 +1,22 @@
+package com.alflabs.conductor.util;
+
+/**
+ * Helper around {@link System#currentTimeMillis()} to be able to override it
+ * during testing.
+ */
+public class NowProvider {
+    /** Returns the current time in milliseconds. */
+    public long now() {
+        return System.currentTimeMillis();
+    }
+
+    /** Sleeps for the requested time in milliseconds if > 0. */
+    public void sleep(long sleepTimeMs) {
+        if (sleepTimeMs > 0) {
+            try {
+                Thread.sleep(sleepTimeMs);
+            } catch (InterruptedException ignore) {}
+        }
+    }
+
+}
