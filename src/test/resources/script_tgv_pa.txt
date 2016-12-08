@@ -1,0 +1,67 @@
+# throttles
+
+Throttle PA = 537
+
+# states
+
+Var PA-Enable       = 1
+Var PA-Half-Speed   = 4
+Var PA-Full-Speed   = 20
+
+# sensors
+
+Sensor B360         = NS768      # 49:1
+Sensor B370         = NS769      # 49:2
+
+Sensor PA-Toggle    = NS784      # 50:1
+Sensor PA-Run3      = NS785      # 50:2
+Sensor P3.1         = NS786      # 50:3, B503a
+Sensor P3.2         = NS787      # 50:4, B503b
+
+# turnouts
+
+Turnout T330        = NT330
+
+# define timers and their default value in seconds
+
+Timer PA-Timer-370      = 8
+Timer PA-Timer-370-Stop = 3
+Timer PA-Timer-Summit = 5
+Timer PA-Timer-P3.2   = 15
+Timer PA-Timer-Enable = 3
+
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+ PA-Toggle                            -> PA Sound = 1; PA Light = 1; PA-Enable = 1
+ PA-Toggle + !PA-Enable  + PA-Run3    -> PA Horn
+
+# PA-Toggle   -> T503 = Normal;  
+# PA-Toggle   -> T330 = Reverse; 
+
+# Departure
+ P3.2 + PA Stopped + PA-Toggle + PA-Enable + PA-Run3 -> PA-Enable = 0; PA Light = 1; PA Sound = 1; PA Horn; PA Forward = PA-Half-Speed
+ P3.1 + PA Forward                    -> PA Forward = PA-Full-Speed
+
+# Summit
+ B370 + PA Forward                    -> Start = PA-Timer-370
+ PA-Timer-370                         -> End = PA-Timer-370; PA Forward = PA-Half-Speed; Start = PA-Timer-370-Stop
+ PA-Timer-370-Stop                         -> End = PA-Timer-370; PA Stop; Start = PA-Timer-Summit; PA Horn
+ PA-Timer-Summit                      -> End = PA-Timer-Summit ; PA Horn; PA Reverse = PA-Half-Speed
+ B360 + PA Reverse                    -> PA Reverse = PA-Full-speed
+
+# Arrival
+ P3.1 + PA Reverse                    -> PA Reverse = PA-Half-speed
+ P3.2 + PA Reverse                    -> Start = PA-Timer-P3.2
+ PA-Timer-P3.2                        -> End = PA-Timer-P3.2; PA Stop ; PA Horn; PA Light = 0; Start = PA-Timer-Enable # at station
+ PA-Timer-Enable                      -> End = PA-Timer-Enable; PA-Enable = 1; PA Horn
+
+# Teardown
+!PA-Toggle + !PA Reverse + !P3.2      -> PA Reverse = PA-Full-Speed
+!PA-Toggle +  PA Stopped              -> PA Sound = 0
+
+
