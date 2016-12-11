@@ -46,8 +46,9 @@ class JmriThrottleAdapter(IJmriThrottle):
         if self._address == 537:
             for i in REPEAT:
                 self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
-        elif self._address == 204 or self._address == 209:
+        elif self._address == 204 or self._address == 209 or self._address == 124:
             self._throttle.setF8(on)  # F8 true to sound
+            print "Sound changed for", self._address
         else:
             self._throttle.setF8(not on)  # F8 true to mute all others
         self._provider.waitMsec(100)
