@@ -49,7 +49,7 @@ public class Timer implements IConditional {
         return mEndTS != 0 && now() >= mEndTS;
     }
 
-    public long now() {
+    private long now() {
         return mNowProvider.now();
     }
 

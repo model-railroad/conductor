@@ -384,22 +384,30 @@ public class ScriptParser2 {
                 IConditional cond,
                 boolean negated,
                 int delaySeconds) {
-            name = name.replace('!', '~').replace('+', '$');
-            name = "$" + name + "$";
-            name = name.toLowerCase(Locale.US);
+            String timerName = name.replace('!', '~').replace('+', '$');
+            timerName = "$" + timerName + "$";
+            timerName = timerName.toLowerCase(Locale.US);
 
-            Timer timer = mScript.getTimer(name);
+            Timer timer = mScript.getTimer(timerName);
             if (timer == null) {
                 timer = createTimer(delaySeconds, mScript);
-                mScript.addTimer(name, timer);
+                mScript.addTimer(timerName, timer);
 
                 // create an event that will trigger the timer
-                Event timerEvent = new Event(mScript.getLogger(), name);
-                timerEvent.addConditional(cond, negated);
-                timerEvent.addAction(
+                Event triggerEvent = new Event(mScript.getLogger(), timerName + " trigger");
+                triggerEvent.addConditional(cond, negated);
+                triggerEvent.addAction(
                         timer.createFunction(Timer.Function.START),
                         new LiteralInt(0));
-                mScript.addEvent(timerEvent);
+                mScript.addEvent(triggerEvent);
+
+                // create an event that clears the timer
+                Event endEvent = new Event(mScript.getLogger(), timerName + " end");
+                endEvent.addConditional(timer, false);
+                endEvent.addAction(
+                        timer.createFunction(Timer.Function.END),
+                        new LiteralInt(0));
+                mScript.addEvent(endEvent);
             }
 
             return timer;

@@ -1,0 +1,34 @@
+# throttles
+
+Throttle CONSIST = 204
+Throttle REAR  = 209
+
+# states
+
+Var Init  = 1
+Var Speed = 8
+
+
+# sensors
+
+Sensor B1         = NS48      # 48:1
+Sensor TOGGLE     = NS49      # 48:2
+
+# turnouts
+
+
+# define timers and their default value in seconds
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+INIT -> CONSIST Sound = 1; CONSIST Light = 1; REAR Sound = 1; REAR Light = 1
+
+TOGGLE -> CONSIST Horn ; CONSIST Forward = Speed
+B1 + 5 & CONSIST Forward -> CONSIST Reverse = Speed ;
+B1     & CONSIST Reverse -> CONSIST Stop
+
+

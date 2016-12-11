@@ -654,7 +654,7 @@ public class ScriptParser2Test {
                 "!b1 + 2            -> T1 Light=0 \n" +
                 " B1 + 3            -> t1 Light=1 \n" +
                 " b1     & !b2+4  -> t1 Sound=0 \n" +
-                " B1 + 5 &  b2+6  -> T1 Sound=1 ; $b1$5$ end ; \n" +
+                " B1 + 5 &  b2+6  -> T1 Sound=1 ; \n" +
                 " B1 + 5 &  b2+7  -> T1 Sound=0 ; \n" ;
         NowProviderTest.TestableNowProvider now =
                 new NowProviderTest.TestableNowProvider(1000);
@@ -714,13 +714,13 @@ public class ScriptParser2Test {
         verify(throttle, never()).setLight(anyBoolean());
         verify(throttle, never()).setSound(anyBoolean());
 
-        // Trigger b1. Note this is now "!b2 + 5".
-        // The timer "!b2 + 4" is still active since it was not reset so line 3 is now valid.
+        // Trigger b1. Note this is now "!b2 + 5" and thus does not trigger (because !b2 + 4
+        // has auto-reset as soon as it became active).
         when(sensor1.isActive()).thenReturn(true);
         now.add(1 * 1000);
         script.handle();
         verify(throttle, never()).setLight(anyBoolean());
-        verify(throttle).setSound(false);
+        verify(throttle, never()).setSound(false);
 
         // Line 2: b1 + 3 is now becoming active.
         now.add(3 * 1000);
@@ -735,6 +735,8 @@ public class ScriptParser2Test {
         script.handle();
         verify(throttle, never()).setLight(anyBoolean());
         verify(throttle, never()).setSound(anyBoolean());
+        // Immediately after it triggers, a delayed timer is reset and ends
+        assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
 
         // Trigger b2
         when(sensor2.isActive()).thenReturn(true);
@@ -743,18 +745,17 @@ public class ScriptParser2Test {
         verify(throttle, never()).setSound(anyBoolean());
 
         // Then skip 6 seconds. b2+6 becomes active. This is now 11 seconds after
-        // b1 became active and b1+5 is still active since the timer has not been reset.
+        // b1 became active and b1+5 is no longer active since the delayed timer auto-resets.
+        // Bottom line: we can't write a rule that uses 2 delayed timers.
         now.add(6 * 1000);
-        assertThat(script.getTimer("$b1$5$").isActive()).isTrue();
+        assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
         reset(throttle);
         script.handle();
         verify(throttle, never()).setLight(anyBoolean());
-        verify(throttle).setSound(true);
-        // Timer b1+5 has now been reset.
-        assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
+        verify(throttle, never()).setSound(true);
 
         // Line 5: b2+7 becomes active.
-        // But since b1+5 has been reset 1 second ago it's not active yet.
+        // But since b1+5 has been reset as soon as it became active.
         now.add(1 * 1000);
         reset(throttle);
         script.handle();

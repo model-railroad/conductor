@@ -53,7 +53,7 @@ public class StatusWnd {
     }
 
     public static StatusWnd open() {
-        JFrame frame = new JFrame("Some Title");
+        JFrame frame = new JFrame("Conductor Status");
         StatusWnd statusWnd = new StatusWnd(frame);
         frame.setContentPane(statusWnd.mPanel1);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
