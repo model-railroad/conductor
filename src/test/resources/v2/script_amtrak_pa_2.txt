@@ -8,7 +8,7 @@ Throttle REAR  = 209
 Var PA-Enable           = 1
 Var PA-Station-Speed    = 8
 Var PA-Summit-Speed     = 12
-Var PA-Sonora-Speed     = 12
+Var PA-Sonora-Speed     = 16
 Var PA-Full-Speed       = 20
 
 # sensors
@@ -35,36 +35,37 @@ Timer PA-Timer-Summit = 8
 # ---------
 
 # Setup
- PA-Toggle                            -> CONSIST Sound = 1; CONSIST Light = 1; REAR Sound = 1; REAR Light = 1; PA-Enable = 1 ; CONSIST Horn
+ PA-Toggle                            -> CONSIST Sound = 1; CONSIST Light = 1; REAR Sound = 1; REAR Light = 1; PA-Enable = 1
  PA-Toggle & !PA-Enable  & PA-Run3    -> CONSIST Horn
 
-# PA-Toggle   -> T503 = Normal;  
-# PA-Toggle   -> T330 = Reverse; 
+# PA-Toggle   -> T503 = Normal;
+# PA-Toggle   -> T330 = Reverse;
 
 # Departure
- P3.2      & CONSIST Stopped & PA-Toggle & PA-Enable & PA-Run3 -> PA-Enable = 0; CONSIST Light = 1; CONSIST Sound = 1; REAR Light = 1 ; REAR Sound = 1; CONSIST Horn; CONSIST Forward = PA-Station-Speed
- P3.1      & CONSIST Forward    -> CONSIST Forward = PA-Full-Speed
+ P3.2      & CONSIST Stopped & PA-Toggle & PA-Enable & PA-Run3 -> PA-Enable = 0; CONSIST Light = 1; CONSIST Sound = 1; REAR Light = 1 ; REAR Sound = 1; CONSIST Horn; CONSIST Forward = PA-Station-Speed ; CONSIST F9 = 0 ; REAR F9 = 1 ; CONSIST F6 = 1 ; REAR F6 = 0 ; CONSIST Horn ; CONSIST Horn
+ P3.1      & CONSIST Forward    -> CONSIST Forward = PA-Full-Speed ; CONSIST F6 = 0
 # Sonora speed reduction
- P3.1 + 43 & CONSIST Forward    -> CONSIST Forward = PA-Sonora-Speed
- P3.1 + 73 & CONSIST Forward    -> CONSIST Forward = PA-Full-Speed
+ P3.1 + 43 & CONSIST Forward    -> CONSIST Forward = PA-Sonora-Speed ; CONSIST F6 = 1
+ P3.1 + 73 & CONSIST Forward    -> CONSIST Forward = PA-Full-Speed ; CONSIST F6 = 0
 # Mid-Station on the way up
- P3.1 + 63 & CONSIST Forward    -> CONSIST F3
- P3.1 + 93 & CONSIST Forward    -> CONSIST F3
+ P3.1 + 63 & CONSIST Forward    -> CONSIST F3 = 1 ; CONSIST F3 = 0
+# After tunnel on the way up
+ P3.1 + 93 & CONSIST Forward    -> CONSIST F3 = 1 ; CONSIST F3 = 0
 
 
 # Summit
  B370 +  9 & CONSIST Forward    -> CONSIST Forward = PA-Summit-Speed
- B370 + 15 & CONSIST Forward    -> CONSIST Stop; PA-Timer-Summit Start ; CONSIST Horn
- PA-Timer-Summit                -> CONSIST Horn; CONSIST Reverse = PA-Summit-Speed
- !B370 + 10 & CONSIST Reverse   -> CONSIST Reverse = PA-Full-speed
+ B370 + 15 & CONSIST Forward    -> CONSIST Stop; PA-Timer-Summit Start ; CONSIST Horn ; CONSIST F6 = 1 ; CONSIST F9 = 1 ; REAR F9 = 0
+ PA-Timer-Summit                -> CONSIST Horn; CONSIST Reverse = PA-Summit-Speed ; CONSIST F6 = 0  ; REAR F6 = 1 ;
+ !B370 + 10 & CONSIST Reverse   -> CONSIST Reverse = PA-Full-speed ; REAR F6 = 0
 # Mid-Station on the way down
- !B370 + 65 & CONSIST Reverse   -> CONSIST F3
+ !B370 + 65 & CONSIST Reverse   -> CONSIST F3 = 1 ; CONSIST F3 = 0
 
 
 # Arrival at station
- P3.1 +  5 & CONSIST Reverse    -> CONSIST Reverse = PA-Station-Speed
- P3.2 + 15 & CONSIST Reverse    -> CONSIST Stop; CONSIST Horn; REAR Light = 0
- P3.2 + 18 & CONSIST Stopped    -> PA-Enable = 1; CONSIST Horn
+ P3.1 +  5 & CONSIST Reverse    -> CONSIST Reverse = PA-Station-Speed ; REAR F6 = 1 ;
+ P3.2 + 15 & CONSIST Reverse    -> CONSIST Stop; CONSIST Horn; REAR Light = 0 ; REAR F6 = 0 ; CONSIST F9 = 0
+ P3.2 + 18 & CONSIST Stopped    -> PA-Enable = 1; CONSIST Horn ;
 
 # Teardown
 !PA-Toggle & !CONSIST Reverse & !P3.2   -> CONSIST Reverse = PA-Full-Speed ;

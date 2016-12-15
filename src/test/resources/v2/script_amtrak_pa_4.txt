@@ -1,0 +1,91 @@
+# throttles
+
+Throttle CONSIST = 204
+Throttle REAR  = 209
+
+# states
+
+Var PA-Enable           = 1
+Var PA-Station-Speed    = 8
+Var PA-Summit-Speed     = 12
+Var PA-Sonora-Speed     = 12
+Var PA-Full-Speed       = 20
+
+# sensors
+
+Sensor B330         = NS768      # 49:3
+Sensor B331         = NS769      # 49:3
+Sensor B360         = NS770      # 49:3
+Sensor B370         = NS771      # 49:4
+
+Sensor PA-Toggle    = NS784      # 50:1
+Sensor PA-Run3      = NS785      # 50:2
+Sensor P3.1         = NS786      # 50:3, B503a
+Sensor P3.2         = NS787      # 50:4, B503b
+
+# turnouts
+
+Turnout T330        = NT330
+
+# define timers and their default value in seconds
+
+Timer PA-Timer-P3.1   = 5
+Timer PA-Timer-P3.2   = 5
+Timer PA-Timer-Enable = 3
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+PA-Toggle -> CONSIST Sound = 1; CONSIST Light = 1; REAR Sound = 1; REAR Light = 1; PA-Enable = 1
+PA-Toggle & !PA-Enable  & PA-Run3 -> CONSIST Horn
+
+# PA-Toggle   -> T503 = Normal;  
+# PA-Toggle   -> T330 = Reverse; 
+
+# Departure
+Timer PA-Timer-MidStation = 43
+P3.2 & CONSIST Stopped & PA-Toggle & PA-Enable & PA-Run3 -> PA-Enable = 0; CONSIST Light = 1; CONSIST Sound = 1; REAR Light = 1 ; REAR Sound = 1; CONSIST Horn; CONSIST Forward = PA-Station-Speed ; CONSIST F9 = 0 ; REAR F9 = 1 ; CONSIST F6 = 1 ; REAR F6 = 0 ; CONSIST Horn ; CONSIST Horn
+P3.1 & CONSIST Forward -> CONSIST Forward = PA-Full-Speed ; PA-Timer-MidStation Start ; CONSIST F6 = 0
+
+# Mid-Station on the way up / Sonora speed reduction
+Timer PA-Timer-SonoraSpeed = 30
+Timer PA-Timer-BeforeTunnel = 20
+Timer PA-Timer-AfterTunnel = 50
+PA-Timer-MidStation & CONSIST Forward -> PA-Timer-MidStation End ; CONSIST F3 = 1 ; CONSIST F3 = 0 ; CONSIST Forward = PA-Sonora-Speed ; PA-Timer-SonoraSpeed Start; PA-Timer-BeforeTunnel Start ; PA-Timer-AfterTunnel Start
+PA-Timer-BeforeTunnel  & CONSIST Forward -> PA-Timer-BeforeTunnel End  ; CONSIST Horn
+PA-Timer-AfterTunnel   & CONSIST Forward -> PA-Timer-AfterTunnel End ; CONSIST Horn
+PA-Timer-SonoraSpeed   & CONSIST Forward -> PA-Timer-SonoraSpeed End ; CONSIST Forward = PA-Full-Speed
+
+# Summit
+Timer PA-Timer-370      = 19
+Timer PA-Timer-370-Stop = 6
+Timer PA-Timer-Summit = 8
+Timer PA-Timer-MidStationRev = 55
+Timer PA-Timer-FullSpeedRev = 15
+
+B360 & B370 & CONSIST Forward -> PA-Timer-370 Start
+PA-Timer-370 -> PA-Timer-370 End ; CONSIST Forward = PA-Summit-Speed; PA-Timer-370-Stop Start ; CONSIST F6 = 1
+PA-Timer-370-Stop -> PA-Timer-370-Stop End ; CONSIST Stop; PA-Timer-Summit Start ; CONSIST Horn
+PA-Timer-Summit -> PA-Timer-Summit End ; CONSIST Horn; CONSIST Reverse = PA-Summit-Speed ; CONSIST F9 = 1 ; REAR F9 = 0 ; CONSIST F6 = 0  ; REAR F6 = 1 ;
+B360 & CONSIST Reverse -> PA-Timer-FullSpeedRev Start
+PA-Timer-FullSpeedRev -> PA-Timer-FullSpeedRev End ; CONSIST Reverse = PA-Full-speed ; PA-Timer-MidStationRev Start ; REAR F6 = 0
+
+# Mid-Station on the way down
+PA-Timer-MidStationRev & CONSIST Reverse -> PA-Timer-MidStationRev End ; CONSIST F3 = 1 ; CONSIST F3 = 0
+
+
+# Arrival
+P3.1 & CONSIST Reverse -> PA-Timer-P3.1 Start
+PA-Timer-P3.1 & CONSIST Reverse -> PA-Timer-P3.1 End ; CONSIST Reverse = PA-Station-Speed ; REAR F6 = 1
+P3.2 & CONSIST Reverse -> PA-Timer-P3.2 Start
+PA-Timer-P3.2 & CONSIST Reverse -> PA-Timer-P3.2 End ; CONSIST Stop ; CONSIST Horn; REAR Light = 0; REAR F6 = 0 ; PA-Timer-Enable Start # at station
+PA-Timer-Enable & CONSIST Stopped -> PA-Timer-Enable End ; PA-Enable = 1; CONSIST Horn
+
+# Teardown
+!PA-Toggle & !CONSIST Reverse & !P3.2 -> CONSIST Reverse = PA-Full-Speed ;
+!PA-Toggle &  CONSIST Stopped         -> CONSIST Sound = 0 ; REAR Sound = 0; CONSIST F6 = 0 ; CONSIST F9 = 0; REAR F6 = 0 ; REAR F9 = 0
+
+
