@@ -20,8 +20,6 @@ import com.alflabs.conductor.IJmriSensor as IJmriSensor
 # noinspection PyUnresolvedReferences
 import com.alflabs.conductor.EntryPoint as ConductorEntryPoint
 
-REPEAT = range(0, 3)
-
 # noinspection PyPep8Naming
 class JmriThrottleAdapter(IJmriThrottle):
     def __init__(self, address, throttle, provider):
@@ -29,6 +27,12 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._throttle = throttle
         self._provider = provider
         self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
+
+    def repeat(self):
+        if self._address == 537:
+            return range(0, 3)
+        else:
+            return range(0, 2)
 
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
@@ -44,10 +48,10 @@ class JmriThrottleAdapter(IJmriThrottle):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Sound", on
         if self._address == 537:
-            for i in REPEAT:
+            for i in self.repeat():
                 self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
         elif self._address == 204 or self._address == 209 or self._address == 124:
-            self._throttle.setF8(on)  # F8 true to sound
+            self._throttle.setF8(on)  # F8 true to sound on these LokSelect decoders
             print "Sound changed for", self._address
         else:
             self._throttle.setF8(not on)  # F8 true to mute all others
@@ -56,21 +60,16 @@ class JmriThrottleAdapter(IJmriThrottle):
     def setLight(self, on):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Light", on
-        r = [1]
-        if self._address == 537:
-            r = REPEAT
-        for i in r:
+        for i in self.repeat():
             self._throttle.setF0(on)
 
     def horn(self):
         """In: void; Out: void"""
         print "[Conductor", self._address, "] Horn"
-        self._throttle.setF2(True)
+        for i in self.repeat():
+            self._throttle.setF2(True)
         self._provider.waitMsec(500)
-        r = [1]
-        if self._address == 537:
-            r = REPEAT
-        for i in r:
+        for i in self.repeat():
             self._throttle.setF2(False)
         self._provider.waitMsec(200)
 
@@ -80,7 +79,8 @@ class JmriThrottleAdapter(IJmriThrottle):
         Fn = "F" + str(function)
         print "[Conductor", self._address, "]", Fn, on
         try:
-            getattr(self._throttle, "set" + Fn)(on)
+            for i in self.repeat():
+                getattr(self._throttle, "set" + Fn)(on)
         except AttributeError as e:
             print "[Conductor", self._address, "]", Fn, "Error:", e
 
