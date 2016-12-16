@@ -546,6 +546,54 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testActionMultiline() throws Exception {
+        // Note: syntax if parser one for turnouts was "-> t1 = normal"
+        // whereas new syntax is                       "-> t1 normal"
+        String source = "" +
+                "throttle th = 42 \n " +
+                "turnout T1  = NT42 \n" +
+                "turnout t2  = NT43 \n" +
+                "th stopped -> \n" +
+                "   T1 normal ; \n" +
+                "   T2 reverse\n" +
+                "th forward -> \n" +
+                "   t1 reverse ; \n" +
+                "   t2 normal \n" ;
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriTurnout turnout1 = mock(IJmriTurnout.class);
+        IJmriTurnout turnout2 = mock(IJmriTurnout.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getTurnout("NT42")).thenReturn(turnout1);
+        when(provider.getTurnout("NT43")).thenReturn(turnout2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getTurnout("NT42");
+        verify(provider).getTurnout("NT43");
+
+        // Throttle is stopped
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
+        verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+
+        script.handle();
+
+        reset(turnout1);
+        reset(turnout2);
+        script.getThrottle("th").setSpeed(5);
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
+        verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
+    }
+
+    @Test
     public void testActionTurnout() throws Exception {
         // Note: syntax if parser one for turnouts was "-> t1 = normal"
         // whereas new syntax is                       "-> t1 normal"
@@ -553,8 +601,12 @@ public class ScriptParser2Test {
                 "throttle th = 42 \n " +
                 "turnout T1  = NT42 \n" +
                 "turnout t2  = NT43 \n" +
-                "th stopped -> T1 normal ; t2 reverse\n" +
-                "th forward -> t1 reverse ; t2 normal \n" +
+                "th stopped -> \n" +
+                "   T1 normal ; \n" +
+                "   t2 reverse\n" +
+                "th forward -> \n" +
+                "   t1 reverse ; \n" +
+                "   t2 normal \n" +
                 " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 

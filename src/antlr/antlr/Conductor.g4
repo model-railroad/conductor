@@ -21,7 +21,7 @@ condTime:   '+' NUM ;
 condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT ;
 
 actionList: action ( ';' action )* ';'? ;
-action:     ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
+action:     EOL? ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
