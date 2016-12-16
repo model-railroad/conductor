@@ -232,16 +232,13 @@ public class ScriptParser2Test {
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: no viable alternative at input 'stopped'.\n" +
-                "Error at line 4: extraneous input '!' expecting ID.\n" +
-                "Error at line 4: no viable alternative at input 'stopped'.\n" +
+                "Error at line 4: no viable alternative at input '!'.\n" +
                 "Error at line 8: token recognition error at: '-1'.\n" +
                 "Error at line 3: Unexpected symbol: 'stopped'.\n" +
                 "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 3: Expected var ID but found 't1'.\n" +
                 "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 4: Unexpected symbol: '!'.\n" +
-                "  Line 4: 't1 forward -> !t1 stopped'\n" +
-                "Error at line 4: Expected var ID but found 't1'.\n" +
                 "  Line 4: 't1 forward -> !t1 stopped'\n" +
                 "Error at line 5: Expected turnout ID for 'normal' but found 't1'.\n" +
                 "  Line 5: 't1 forward -> t1 normal'\n" +
@@ -694,6 +691,106 @@ public class ScriptParser2Test {
         verify(throttle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
         assertThat(script.getTimer("t2").isActive()).isTrue();
+    }
+
+    @Test
+    public void testTimerNoReset() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer T2  = 2 # seconds \n" +
+                "timer T5  = 5 \n" +
+                "timer T9  = 9 \n" +
+                "th stopped -> T2 start ; T5 start ; T9 start ; TH sound = 0 ; TH light = 0 \n" +
+                "T2         -> th horn \n" +
+                "T5         -> th sound = 1 \n" +
+                "T9         -> th light = 1\n" ;
+
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t2, t5, t9
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+
+        // t2 is active 5 seconds later
+        now.add(2*1000);
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isTrue();
+        verify(throttle).horn();
+
+        // t5 is active 3 seconds later
+        now.add(3*1000);
+        script.handle();
+        assertThat(script.getTimer("t5").isActive()).isTrue();
+        verify(throttle).setSound(true);
+
+        // t9 is active 4 seconds later
+        now.add(4*1000);
+        script.handle();
+        assertThat(script.getTimer("t9").isActive()).isTrue();
+        verify(throttle).setLight(true);
+    }
+
+    @Test
+    public void testTimerWithReset() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer T2  = 2 # seconds \n" +
+                "timer T5  = 5 \n" +
+                "timer T9  = 9 \n" +
+                "th stopped -> T2 start ; T5 start ; T9 start ; TH sound = 0 ; TH light = 0 \n" +
+                "T2         -> th horn ; Reset Timers \n " +
+                "T5         -> th sound = 1 \n" +
+                "T9         -> th light = 1\n" ;
+
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t2, t5, t9
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+
+        // t2 is active 5 seconds later and has just been reset
+        now.add(2*1000);
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        verify(throttle).horn();
+
+        // t5 is not executed 3 seconds later as it was reset
+        now.add(3*1000);
+        script.handle();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        verify(throttle, never()).setSound(true);
+
+        // t9 is not executed 4 seconds later as it was reset
+        now.add(4*1000);
+        script.handle();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+        verify(throttle, never()).setLight(true);
     }
 
     @SuppressWarnings("PointlessArithmeticExpression")

@@ -21,7 +21,9 @@ condTime:   '+' NUM ;
 condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT ;
 
 actionList: action ( ';' action )* ';'? ;
-action:     EOL? ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
+action:     EOL? ( idAction | fnAction ) ;
+idAction:   ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
+fnAction:   KW_RESET KW_TIMERS ;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -62,6 +64,8 @@ KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
 KW_START:   'start';
 KW_END:     'end';
+KW_RESET:   'reset';
+KW_TIMERS:  'timers';
 KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
 fragment KW_F0 :      'f'  [0-9] ;
 fragment KW_F10:      'f1' [0-9] ;

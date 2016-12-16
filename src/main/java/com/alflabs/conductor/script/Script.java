@@ -210,4 +210,14 @@ public class Script extends NowProvider {
     public void setHandleListener(Runnable handleListener) {
         mHandleListener = handleListener;
     }
+
+    private IIntFunction mResetTimersFunction = ignored -> {
+        for (Timer timer : mTimers.values()) {
+            timer.reset();
+        }
+    };
+
+    public IIntFunction getResetTimersFunction() {
+        return mResetTimersFunction;
+    }
 }

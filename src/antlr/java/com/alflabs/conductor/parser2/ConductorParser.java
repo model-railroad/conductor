@@ -21,32 +21,33 @@ public class ConductorParser extends Parser {
 		KW_PLUS=8, KW_SEMI=9, KW_VAR=10, KW_THROTTLE=11, KW_SENSOR=12, KW_TURNOUT=13, 
 		KW_TIMER=14, KW_FORWARD=15, KW_REVERSE=16, KW_NORMAL=17, KW_SOUND=18, 
 		KW_LIGHT=19, KW_HORN=20, KW_STOP=21, KW_STOPPED=22, KW_START=23, KW_END=24, 
-		KW_FN=25, ID=26, NUM=27;
+		KW_RESET=25, KW_TIMERS=26, KW_FN=27, ID=28, NUM=29;
 	public static final int
 		RULE_script = 0, RULE_scriptLine = 1, RULE_defLine = 2, RULE_defStrLine = 3, 
 		RULE_defStrType = 4, RULE_defIntLine = 5, RULE_defIntType = 6, RULE_eventLine = 7, 
 		RULE_condList = 8, RULE_cond = 9, RULE_condNot = 10, RULE_condTime = 11, 
-		RULE_condThrottleOp = 12, RULE_actionList = 13, RULE_action = 14, RULE_throttleOp = 15, 
-		RULE_turnoutOp = 16, RULE_timerOp = 17, RULE_funcValue = 18;
+		RULE_condThrottleOp = 12, RULE_actionList = 13, RULE_action = 14, RULE_idAction = 15, 
+		RULE_fnAction = 16, RULE_throttleOp = 17, RULE_turnoutOp = 18, RULE_timerOp = 19, 
+		RULE_funcValue = 20;
 	public static final String[] ruleNames = {
 		"script", "scriptLine", "defLine", "defStrLine", "defStrType", "defIntLine", 
 		"defIntType", "eventLine", "condList", "cond", "condNot", "condTime", 
-		"condThrottleOp", "actionList", "action", "throttleOp", "turnoutOp", "timerOp", 
-		"funcValue"
+		"condThrottleOp", "actionList", "action", "idAction", "fnAction", "throttleOp", 
+		"turnoutOp", "timerOp", "funcValue"
 	};
 
 	private static final String[] _LITERAL_NAMES = {
 		null, null, null, null, "'->'", "'='", "'&'", "'!'", "'+'", "';'", "'var'", 
 		"'throttle'", "'sensor'", "'turnout'", "'timer'", "'forward'", "'reverse'", 
 		"'normal'", "'sound'", "'light'", "'horn'", "'stop'", "'stopped'", "'start'", 
-		"'end'"
+		"'end'", "'reset'", "'timers'"
 	};
 	private static final String[] _SYMBOLIC_NAMES = {
 		null, "WS", "EOL", "SB_COMMENT", "KW_ARROW", "KW_EQUAL", "KW_AND", "KW_NOT", 
 		"KW_PLUS", "KW_SEMI", "KW_VAR", "KW_THROTTLE", "KW_SENSOR", "KW_TURNOUT", 
 		"KW_TIMER", "KW_FORWARD", "KW_REVERSE", "KW_NORMAL", "KW_SOUND", "KW_LIGHT", 
-		"KW_HORN", "KW_STOP", "KW_STOPPED", "KW_START", "KW_END", "KW_FN", "ID", 
-		"NUM"
+		"KW_HORN", "KW_STOP", "KW_STOPPED", "KW_START", "KW_END", "KW_RESET", 
+		"KW_TIMERS", "KW_FN", "ID", "NUM"
 	};
 	public static final Vocabulary VOCABULARY = new VocabularyImpl(_LITERAL_NAMES, _SYMBOLIC_NAMES);
 
@@ -131,36 +132,36 @@ public class ConductorParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(38);
+			setState(42);
 			scriptLine();
-			setState(43);
+			setState(47);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,0,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(39);
+					setState(43);
 					match(EOL);
-					setState(40);
+					setState(44);
 					scriptLine();
 					}
 					} 
 				}
-				setState(45);
+				setState(49);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,0,_ctx);
 			}
-			setState(47);
+			setState(51);
 			_la = _input.LA(1);
 			if (_la==EOL) {
 				{
-				setState(46);
+				setState(50);
 				match(EOL);
 				}
 			}
 
-			setState(49);
+			setState(53);
 			match(EOF);
 			}
 		}
@@ -204,7 +205,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(53);
+			setState(57);
 			switch (_input.LA(1)) {
 			case KW_VAR:
 			case KW_THROTTLE:
@@ -212,14 +213,14 @@ public class ConductorParser extends Parser {
 			case KW_TURNOUT:
 			case KW_TIMER:
 				{
-				setState(51);
+				setState(55);
 				defLine();
 				}
 				break;
 			case KW_NOT:
 			case ID:
 				{
-				setState(52);
+				setState(56);
 				eventLine();
 				}
 				break;
@@ -230,11 +231,11 @@ public class ConductorParser extends Parser {
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(56);
+			setState(60);
 			_la = _input.LA(1);
 			if (_la==SB_COMMENT) {
 				{
-				setState(55);
+				setState(59);
 				match(SB_COMMENT);
 				}
 			}
@@ -277,13 +278,13 @@ public class ConductorParser extends Parser {
 		DefLineContext _localctx = new DefLineContext(_ctx, getState());
 		enterRule(_localctx, 4, RULE_defLine);
 		try {
-			setState(60);
+			setState(64);
 			switch (_input.LA(1)) {
 			case KW_SENSOR:
 			case KW_TURNOUT:
 				enterOuterAlt(_localctx, 1);
 				{
-				setState(58);
+				setState(62);
 				defStrLine();
 				}
 				break;
@@ -292,7 +293,7 @@ public class ConductorParser extends Parser {
 			case KW_TIMER:
 				enterOuterAlt(_localctx, 2);
 				{
-				setState(59);
+				setState(63);
 				defIntLine();
 				}
 				break;
@@ -339,13 +340,13 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(62);
+			setState(66);
 			defStrType();
-			setState(63);
+			setState(67);
 			match(ID);
-			setState(64);
+			setState(68);
 			match(KW_EQUAL);
-			setState(65);
+			setState(69);
 			match(ID);
 			}
 		}
@@ -384,7 +385,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(67);
+			setState(71);
 			_la = _input.LA(1);
 			if ( !(_la==KW_SENSOR || _la==KW_TURNOUT) ) {
 			_errHandler.recoverInline(this);
@@ -430,13 +431,13 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(69);
+			setState(73);
 			defIntType();
-			setState(70);
+			setState(74);
 			match(ID);
-			setState(71);
+			setState(75);
 			match(KW_EQUAL);
-			setState(72);
+			setState(76);
 			match(NUM);
 			}
 		}
@@ -476,7 +477,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(74);
+			setState(78);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_VAR) | (1L << KW_THROTTLE) | (1L << KW_TIMER))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -523,11 +524,11 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(76);
+			setState(80);
 			condList();
-			setState(77);
+			setState(81);
 			match(KW_ARROW);
-			setState(78);
+			setState(82);
 			actionList();
 			}
 		}
@@ -570,21 +571,21 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(80);
+			setState(84);
 			cond();
-			setState(85);
+			setState(89);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
 			while (_la==KW_AND) {
 				{
 				{
-				setState(81);
+				setState(85);
 				match(KW_AND);
-				setState(82);
+				setState(86);
 				cond();
 				}
 				}
-				setState(87);
+				setState(91);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
 			}
@@ -633,31 +634,31 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(89);
+			setState(93);
 			_la = _input.LA(1);
 			if (_la==KW_NOT) {
 				{
-				setState(88);
+				setState(92);
 				condNot();
 				}
 			}
 
-			setState(91);
+			setState(95);
 			match(ID);
-			setState(93);
+			setState(97);
 			_la = _input.LA(1);
 			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_STOPPED))) != 0)) {
 				{
-				setState(92);
+				setState(96);
 				condThrottleOp();
 				}
 			}
 
-			setState(96);
+			setState(100);
 			_la = _input.LA(1);
 			if (_la==KW_PLUS) {
 				{
-				setState(95);
+				setState(99);
 				condTime();
 				}
 			}
@@ -696,7 +697,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(98);
+			setState(102);
 			match(KW_NOT);
 			}
 		}
@@ -733,9 +734,9 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(100);
+			setState(104);
 			match(KW_PLUS);
-			setState(101);
+			setState(105);
 			match(NUM);
 			}
 		}
@@ -777,7 +778,7 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(103);
+			setState(107);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_STOPPED))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -826,31 +827,31 @@ public class ConductorParser extends Parser {
 			int _alt;
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(105);
+			setState(109);
 			action();
-			setState(110);
+			setState(114);
 			_errHandler.sync(this);
 			_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			while ( _alt!=2 && _alt!=org.antlr.v4.runtime.atn.ATN.INVALID_ALT_NUMBER ) {
 				if ( _alt==1 ) {
 					{
 					{
-					setState(106);
+					setState(110);
 					match(KW_SEMI);
-					setState(107);
+					setState(111);
 					action();
 					}
 					} 
 				}
-				setState(112);
+				setState(116);
 				_errHandler.sync(this);
 				_alt = getInterpreter().adaptivePredict(_input,9,_ctx);
 			}
-			setState(114);
+			setState(118);
 			_la = _input.LA(1);
 			if (_la==KW_SEMI) {
 				{
-				setState(113);
+				setState(117);
 				match(KW_SEMI);
 				}
 			}
@@ -869,20 +870,13 @@ public class ConductorParser extends Parser {
 	}
 
 	public static class ActionContext extends ParserRuleContext {
-		public TerminalNode ID() { return getToken(ConductorParser.ID, 0); }
+		public IdActionContext idAction() {
+			return getRuleContext(IdActionContext.class,0);
+		}
+		public FnActionContext fnAction() {
+			return getRuleContext(FnActionContext.class,0);
+		}
 		public TerminalNode EOL() { return getToken(ConductorParser.EOL, 0); }
-		public ThrottleOpContext throttleOp() {
-			return getRuleContext(ThrottleOpContext.class,0);
-		}
-		public TurnoutOpContext turnoutOp() {
-			return getRuleContext(TurnoutOpContext.class,0);
-		}
-		public TimerOpContext timerOp() {
-			return getRuleContext(TimerOpContext.class,0);
-		}
-		public FuncValueContext funcValue() {
-			return getRuleContext(FuncValueContext.class,0);
-		}
 		public ActionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
@@ -904,18 +898,83 @@ public class ConductorParser extends Parser {
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(117);
+			setState(121);
 			_la = _input.LA(1);
 			if (_la==EOL) {
 				{
-				setState(116);
+				setState(120);
 				match(EOL);
 				}
 			}
 
-			setState(119);
+			setState(125);
+			switch (_input.LA(1)) {
+			case ID:
+				{
+				setState(123);
+				idAction();
+				}
+				break;
+			case KW_RESET:
+				{
+				setState(124);
+				fnAction();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class IdActionContext extends ParserRuleContext {
+		public TerminalNode ID() { return getToken(ConductorParser.ID, 0); }
+		public ThrottleOpContext throttleOp() {
+			return getRuleContext(ThrottleOpContext.class,0);
+		}
+		public TurnoutOpContext turnoutOp() {
+			return getRuleContext(TurnoutOpContext.class,0);
+		}
+		public TimerOpContext timerOp() {
+			return getRuleContext(TimerOpContext.class,0);
+		}
+		public FuncValueContext funcValue() {
+			return getRuleContext(FuncValueContext.class,0);
+		}
+		public IdActionContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_idAction; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterIdAction(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitIdAction(this);
+		}
+	}
+
+	public final IdActionContext idAction() throws RecognitionException {
+		IdActionContext _localctx = new IdActionContext(_ctx, getState());
+		enterRule(_localctx, 30, RULE_idAction);
+		int _la;
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(127);
 			match(ID);
-			setState(123);
+			setState(131);
 			switch (_input.LA(1)) {
 			case KW_FORWARD:
 			case KW_REVERSE:
@@ -925,20 +984,20 @@ public class ConductorParser extends Parser {
 			case KW_STOP:
 			case KW_FN:
 				{
-				setState(120);
+				setState(128);
 				throttleOp();
 				}
 				break;
 			case KW_NORMAL:
 				{
-				setState(121);
+				setState(129);
 				turnoutOp();
 				}
 				break;
 			case KW_START:
 			case KW_END:
 				{
-				setState(122);
+				setState(130);
 				timerOp();
 				}
 				break;
@@ -951,15 +1010,55 @@ public class ConductorParser extends Parser {
 			default:
 				throw new NoViableAltException(this);
 			}
-			setState(126);
+			setState(134);
 			_la = _input.LA(1);
 			if (_la==KW_EQUAL) {
 				{
-				setState(125);
+				setState(133);
 				funcValue();
 				}
 			}
 
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			_errHandler.reportError(this, re);
+			_errHandler.recover(this, re);
+		}
+		finally {
+			exitRule();
+		}
+		return _localctx;
+	}
+
+	public static class FnActionContext extends ParserRuleContext {
+		public TerminalNode KW_RESET() { return getToken(ConductorParser.KW_RESET, 0); }
+		public TerminalNode KW_TIMERS() { return getToken(ConductorParser.KW_TIMERS, 0); }
+		public FnActionContext(ParserRuleContext parent, int invokingState) {
+			super(parent, invokingState);
+		}
+		@Override public int getRuleIndex() { return RULE_fnAction; }
+		@Override
+		public void enterRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).enterFnAction(this);
+		}
+		@Override
+		public void exitRule(ParseTreeListener listener) {
+			if ( listener instanceof ConductorListener ) ((ConductorListener)listener).exitFnAction(this);
+		}
+	}
+
+	public final FnActionContext fnAction() throws RecognitionException {
+		FnActionContext _localctx = new FnActionContext(_ctx, getState());
+		enterRule(_localctx, 32, RULE_fnAction);
+		try {
+			enterOuterAlt(_localctx, 1);
+			{
+			setState(136);
+			match(KW_RESET);
+			setState(137);
+			match(KW_TIMERS);
 			}
 		}
 		catch (RecognitionException re) {
@@ -997,12 +1096,12 @@ public class ConductorParser extends Parser {
 
 	public final ThrottleOpContext throttleOp() throws RecognitionException {
 		ThrottleOpContext _localctx = new ThrottleOpContext(_ctx, getState());
-		enterRule(_localctx, 30, RULE_throttleOp);
+		enterRule(_localctx, 34, RULE_throttleOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(128);
+			setState(139);
 			_la = _input.LA(1);
 			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << KW_FORWARD) | (1L << KW_REVERSE) | (1L << KW_SOUND) | (1L << KW_LIGHT) | (1L << KW_HORN) | (1L << KW_STOP) | (1L << KW_FN))) != 0)) ) {
 			_errHandler.recoverInline(this);
@@ -1040,11 +1139,11 @@ public class ConductorParser extends Parser {
 
 	public final TurnoutOpContext turnoutOp() throws RecognitionException {
 		TurnoutOpContext _localctx = new TurnoutOpContext(_ctx, getState());
-		enterRule(_localctx, 32, RULE_turnoutOp);
+		enterRule(_localctx, 36, RULE_turnoutOp);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(130);
+			setState(141);
 			match(KW_NORMAL);
 			}
 		}
@@ -1078,12 +1177,12 @@ public class ConductorParser extends Parser {
 
 	public final TimerOpContext timerOp() throws RecognitionException {
 		TimerOpContext _localctx = new TimerOpContext(_ctx, getState());
-		enterRule(_localctx, 34, RULE_timerOp);
+		enterRule(_localctx, 38, RULE_timerOp);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(132);
+			setState(143);
 			_la = _input.LA(1);
 			if ( !(_la==KW_START || _la==KW_END) ) {
 			_errHandler.recoverInline(this);
@@ -1122,14 +1221,14 @@ public class ConductorParser extends Parser {
 
 	public final FuncValueContext funcValue() throws RecognitionException {
 		FuncValueContext _localctx = new FuncValueContext(_ctx, getState());
-		enterRule(_localctx, 36, RULE_funcValue);
+		enterRule(_localctx, 40, RULE_funcValue);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
-			setState(134);
+			setState(145);
 			match(KW_EQUAL);
-			setState(135);
+			setState(146);
 			_la = _input.LA(1);
 			if ( !(_la==ID || _la==NUM) ) {
 			_errHandler.recoverInline(this);
@@ -1150,42 +1249,47 @@ public class ConductorParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\35\u008c\4\2\t\2"+
+		"\3\u0430\ud6d1\u8206\uad2d\u4417\uaef1\u8d80\uaadd\3\37\u0097\4\2\t\2"+
 		"\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13"+
 		"\t\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
-		"\4\23\t\23\4\24\t\24\3\2\3\2\3\2\7\2,\n\2\f\2\16\2/\13\2\3\2\5\2\62\n"+
-		"\2\3\2\3\2\3\3\3\3\5\38\n\3\3\3\5\3;\n\3\3\4\3\4\5\4?\n\4\3\5\3\5\3\5"+
-		"\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3\t\3\t\3\t\3\t\3\n\3\n\3"+
-		"\n\7\nV\n\n\f\n\16\nY\13\n\3\13\5\13\\\n\13\3\13\3\13\5\13`\n\13\3\13"+
-		"\5\13c\n\13\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3\17\3\17\7\17o\n\17\f"+
-		"\17\16\17r\13\17\3\17\5\17u\n\17\3\20\5\20x\n\20\3\20\3\20\3\20\3\20\5"+
-		"\20~\n\20\3\20\5\20\u0081\n\20\3\21\3\21\3\22\3\22\3\23\3\23\3\24\3\24"+
-		"\3\24\3\24\2\2\25\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&\2\b\3\2"+
-		"\16\17\4\2\f\r\20\20\5\2\21\22\24\25\30\30\5\2\21\22\24\27\33\33\3\2\31"+
-		"\32\3\2\34\35\u0089\2(\3\2\2\2\4\67\3\2\2\2\6>\3\2\2\2\b@\3\2\2\2\nE\3"+
-		"\2\2\2\fG\3\2\2\2\16L\3\2\2\2\20N\3\2\2\2\22R\3\2\2\2\24[\3\2\2\2\26d"+
-		"\3\2\2\2\30f\3\2\2\2\32i\3\2\2\2\34k\3\2\2\2\36w\3\2\2\2 \u0082\3\2\2"+
-		"\2\"\u0084\3\2\2\2$\u0086\3\2\2\2&\u0088\3\2\2\2(-\5\4\3\2)*\7\4\2\2*"+
-		",\5\4\3\2+)\3\2\2\2,/\3\2\2\2-+\3\2\2\2-.\3\2\2\2.\61\3\2\2\2/-\3\2\2"+
-		"\2\60\62\7\4\2\2\61\60\3\2\2\2\61\62\3\2\2\2\62\63\3\2\2\2\63\64\7\2\2"+
-		"\3\64\3\3\2\2\2\658\5\6\4\2\668\5\20\t\2\67\65\3\2\2\2\67\66\3\2\2\2\67"+
-		"8\3\2\2\28:\3\2\2\29;\7\5\2\2:9\3\2\2\2:;\3\2\2\2;\5\3\2\2\2<?\5\b\5\2"+
-		"=?\5\f\7\2><\3\2\2\2>=\3\2\2\2?\7\3\2\2\2@A\5\n\6\2AB\7\34\2\2BC\7\7\2"+
-		"\2CD\7\34\2\2D\t\3\2\2\2EF\t\2\2\2F\13\3\2\2\2GH\5\16\b\2HI\7\34\2\2I"+
-		"J\7\7\2\2JK\7\35\2\2K\r\3\2\2\2LM\t\3\2\2M\17\3\2\2\2NO\5\22\n\2OP\7\6"+
-		"\2\2PQ\5\34\17\2Q\21\3\2\2\2RW\5\24\13\2ST\7\b\2\2TV\5\24\13\2US\3\2\2"+
-		"\2VY\3\2\2\2WU\3\2\2\2WX\3\2\2\2X\23\3\2\2\2YW\3\2\2\2Z\\\5\26\f\2[Z\3"+
-		"\2\2\2[\\\3\2\2\2\\]\3\2\2\2]_\7\34\2\2^`\5\32\16\2_^\3\2\2\2_`\3\2\2"+
-		"\2`b\3\2\2\2ac\5\30\r\2ba\3\2\2\2bc\3\2\2\2c\25\3\2\2\2de\7\t\2\2e\27"+
-		"\3\2\2\2fg\7\n\2\2gh\7\35\2\2h\31\3\2\2\2ij\t\4\2\2j\33\3\2\2\2kp\5\36"+
-		"\20\2lm\7\13\2\2mo\5\36\20\2nl\3\2\2\2or\3\2\2\2pn\3\2\2\2pq\3\2\2\2q"+
-		"t\3\2\2\2rp\3\2\2\2su\7\13\2\2ts\3\2\2\2tu\3\2\2\2u\35\3\2\2\2vx\7\4\2"+
-		"\2wv\3\2\2\2wx\3\2\2\2xy\3\2\2\2y}\7\34\2\2z~\5 \21\2{~\5\"\22\2|~\5$"+
-		"\23\2}z\3\2\2\2}{\3\2\2\2}|\3\2\2\2}~\3\2\2\2~\u0080\3\2\2\2\177\u0081"+
-		"\5&\24\2\u0080\177\3\2\2\2\u0080\u0081\3\2\2\2\u0081\37\3\2\2\2\u0082"+
-		"\u0083\t\5\2\2\u0083!\3\2\2\2\u0084\u0085\7\23\2\2\u0085#\3\2\2\2\u0086"+
-		"\u0087\t\6\2\2\u0087%\3\2\2\2\u0088\u0089\7\7\2\2\u0089\u008a\t\7\2\2"+
-		"\u008a\'\3\2\2\2\20-\61\67:>W[_bptw}\u0080";
+		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\3\2\3\2\3\2\7\2\60\n\2\f\2\16"+
+		"\2\63\13\2\3\2\5\2\66\n\2\3\2\3\2\3\3\3\3\5\3<\n\3\3\3\5\3?\n\3\3\4\3"+
+		"\4\5\4C\n\4\3\5\3\5\3\5\3\5\3\5\3\6\3\6\3\7\3\7\3\7\3\7\3\7\3\b\3\b\3"+
+		"\t\3\t\3\t\3\t\3\n\3\n\3\n\7\nZ\n\n\f\n\16\n]\13\n\3\13\5\13`\n\13\3\13"+
+		"\3\13\5\13d\n\13\3\13\5\13g\n\13\3\f\3\f\3\r\3\r\3\r\3\16\3\16\3\17\3"+
+		"\17\3\17\7\17s\n\17\f\17\16\17v\13\17\3\17\5\17y\n\17\3\20\5\20|\n\20"+
+		"\3\20\3\20\5\20\u0080\n\20\3\21\3\21\3\21\3\21\5\21\u0086\n\21\3\21\5"+
+		"\21\u0089\n\21\3\22\3\22\3\22\3\23\3\23\3\24\3\24\3\25\3\25\3\26\3\26"+
+		"\3\26\3\26\2\2\27\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*\2\b\3"+
+		"\2\16\17\4\2\f\r\20\20\5\2\21\22\24\25\30\30\5\2\21\22\24\27\35\35\3\2"+
+		"\31\32\3\2\36\37\u0093\2,\3\2\2\2\4;\3\2\2\2\6B\3\2\2\2\bD\3\2\2\2\nI"+
+		"\3\2\2\2\fK\3\2\2\2\16P\3\2\2\2\20R\3\2\2\2\22V\3\2\2\2\24_\3\2\2\2\26"+
+		"h\3\2\2\2\30j\3\2\2\2\32m\3\2\2\2\34o\3\2\2\2\36{\3\2\2\2 \u0081\3\2\2"+
+		"\2\"\u008a\3\2\2\2$\u008d\3\2\2\2&\u008f\3\2\2\2(\u0091\3\2\2\2*\u0093"+
+		"\3\2\2\2,\61\5\4\3\2-.\7\4\2\2.\60\5\4\3\2/-\3\2\2\2\60\63\3\2\2\2\61"+
+		"/\3\2\2\2\61\62\3\2\2\2\62\65\3\2\2\2\63\61\3\2\2\2\64\66\7\4\2\2\65\64"+
+		"\3\2\2\2\65\66\3\2\2\2\66\67\3\2\2\2\678\7\2\2\38\3\3\2\2\29<\5\6\4\2"+
+		":<\5\20\t\2;9\3\2\2\2;:\3\2\2\2;<\3\2\2\2<>\3\2\2\2=?\7\5\2\2>=\3\2\2"+
+		"\2>?\3\2\2\2?\5\3\2\2\2@C\5\b\5\2AC\5\f\7\2B@\3\2\2\2BA\3\2\2\2C\7\3\2"+
+		"\2\2DE\5\n\6\2EF\7\36\2\2FG\7\7\2\2GH\7\36\2\2H\t\3\2\2\2IJ\t\2\2\2J\13"+
+		"\3\2\2\2KL\5\16\b\2LM\7\36\2\2MN\7\7\2\2NO\7\37\2\2O\r\3\2\2\2PQ\t\3\2"+
+		"\2Q\17\3\2\2\2RS\5\22\n\2ST\7\6\2\2TU\5\34\17\2U\21\3\2\2\2V[\5\24\13"+
+		"\2WX\7\b\2\2XZ\5\24\13\2YW\3\2\2\2Z]\3\2\2\2[Y\3\2\2\2[\\\3\2\2\2\\\23"+
+		"\3\2\2\2][\3\2\2\2^`\5\26\f\2_^\3\2\2\2_`\3\2\2\2`a\3\2\2\2ac\7\36\2\2"+
+		"bd\5\32\16\2cb\3\2\2\2cd\3\2\2\2df\3\2\2\2eg\5\30\r\2fe\3\2\2\2fg\3\2"+
+		"\2\2g\25\3\2\2\2hi\7\t\2\2i\27\3\2\2\2jk\7\n\2\2kl\7\37\2\2l\31\3\2\2"+
+		"\2mn\t\4\2\2n\33\3\2\2\2ot\5\36\20\2pq\7\13\2\2qs\5\36\20\2rp\3\2\2\2"+
+		"sv\3\2\2\2tr\3\2\2\2tu\3\2\2\2ux\3\2\2\2vt\3\2\2\2wy\7\13\2\2xw\3\2\2"+
+		"\2xy\3\2\2\2y\35\3\2\2\2z|\7\4\2\2{z\3\2\2\2{|\3\2\2\2|\177\3\2\2\2}\u0080"+
+		"\5 \21\2~\u0080\5\"\22\2\177}\3\2\2\2\177~\3\2\2\2\u0080\37\3\2\2\2\u0081"+
+		"\u0085\7\36\2\2\u0082\u0086\5$\23\2\u0083\u0086\5&\24\2\u0084\u0086\5"+
+		"(\25\2\u0085\u0082\3\2\2\2\u0085\u0083\3\2\2\2\u0085\u0084\3\2\2\2\u0085"+
+		"\u0086\3\2\2\2\u0086\u0088\3\2\2\2\u0087\u0089\5*\26\2\u0088\u0087\3\2"+
+		"\2\2\u0088\u0089\3\2\2\2\u0089!\3\2\2\2\u008a\u008b\7\33\2\2\u008b\u008c"+
+		"\7\34\2\2\u008c#\3\2\2\2\u008d\u008e\t\5\2\2\u008e%\3\2\2\2\u008f\u0090"+
+		"\7\23\2\2\u0090\'\3\2\2\2\u0091\u0092\t\6\2\2\u0092)\3\2\2\2\u0093\u0094"+
+		"\7\7\2\2\u0094\u0095\t\7\2\2\u0095+\3\2\2\2\21\61\65;>B[_cftx{\177\u0085"+
+		"\u0088";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {
