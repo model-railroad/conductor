@@ -232,16 +232,13 @@ public class ScriptParser2Test {
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: no viable alternative at input 'stopped'.\n" +
-                "Error at line 4: extraneous input '!' expecting ID.\n" +
-                "Error at line 4: no viable alternative at input 'stopped'.\n" +
+                "Error at line 4: no viable alternative at input '!'.\n" +
                 "Error at line 8: token recognition error at: '-1'.\n" +
                 "Error at line 3: Unexpected symbol: 'stopped'.\n" +
                 "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 3: Expected var ID but found 't1'.\n" +
                 "  Line 3: 't1 stopped -> t1 stopped'\n" +
                 "Error at line 4: Unexpected symbol: '!'.\n" +
-                "  Line 4: 't1 forward -> !t1 stopped'\n" +
-                "Error at line 4: Expected var ID but found 't1'.\n" +
                 "  Line 4: 't1 forward -> !t1 stopped'\n" +
                 "Error at line 5: Expected turnout ID for 'normal' but found 't1'.\n" +
                 "  Line 5: 't1 forward -> t1 normal'\n" +
@@ -546,6 +543,54 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testActionMultiline() throws Exception {
+        // Note: syntax if parser one for turnouts was "-> t1 = normal"
+        // whereas new syntax is                       "-> t1 normal"
+        String source = "" +
+                "throttle th = 42 \n " +
+                "turnout T1  = NT42 \n" +
+                "turnout t2  = NT43 \n" +
+                "th stopped -> \n" +
+                "   T1 normal ; \n" +
+                "   T2 reverse\n" +
+                "th forward -> \n" +
+                "   t1 reverse ; \n" +
+                "   t2 normal \n" ;
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        IJmriTurnout turnout1 = mock(IJmriTurnout.class);
+        IJmriTurnout turnout2 = mock(IJmriTurnout.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        when(provider.getTurnout("NT42")).thenReturn(turnout1);
+        when(provider.getTurnout("NT43")).thenReturn(turnout2);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getTurnout("NT42");
+        verify(provider).getTurnout("NT43");
+
+        // Throttle is stopped
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
+        verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+
+        script.handle();
+
+        reset(turnout1);
+        reset(turnout2);
+        script.getThrottle("th").setSpeed(5);
+        script.handle();
+        verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
+        verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
+    }
+
+    @Test
     public void testActionTurnout() throws Exception {
         // Note: syntax if parser one for turnouts was "-> t1 = normal"
         // whereas new syntax is                       "-> t1 normal"
@@ -553,8 +598,12 @@ public class ScriptParser2Test {
                 "throttle th = 42 \n " +
                 "turnout T1  = NT42 \n" +
                 "turnout t2  = NT43 \n" +
-                "th stopped -> T1 normal ; t2 reverse\n" +
-                "th forward -> t1 reverse ; t2 normal \n" +
+                "th stopped -> \n" +
+                "   T1 normal ; \n" +
+                "   t2 reverse\n" +
+                "th forward -> \n" +
+                "   t1 reverse ; \n" +
+                "   t2 normal \n" +
                 " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 
@@ -642,6 +691,106 @@ public class ScriptParser2Test {
         verify(throttle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
         assertThat(script.getTimer("t2").isActive()).isTrue();
+    }
+
+    @Test
+    public void testTimerNoReset() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer T2  = 2 # seconds \n" +
+                "timer T5  = 5 \n" +
+                "timer T9  = 9 \n" +
+                "th stopped -> T2 start ; T5 start ; T9 start ; TH sound = 0 ; TH light = 0 \n" +
+                "T2         -> th horn \n" +
+                "T5         -> th sound = 1 \n" +
+                "T9         -> th light = 1\n" ;
+
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t2, t5, t9
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+
+        // t2 is active 5 seconds later
+        now.add(2*1000);
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isTrue();
+        verify(throttle).horn();
+
+        // t5 is active 3 seconds later
+        now.add(3*1000);
+        script.handle();
+        assertThat(script.getTimer("t5").isActive()).isTrue();
+        verify(throttle).setSound(true);
+
+        // t9 is active 4 seconds later
+        now.add(4*1000);
+        script.handle();
+        assertThat(script.getTimer("t9").isActive()).isTrue();
+        verify(throttle).setLight(true);
+    }
+
+    @Test
+    public void testTimerWithReset() throws Exception {
+        String source = "" +
+                "throttle th = 42 \n " +
+                "timer T2  = 2 # seconds \n" +
+                "timer T5  = 5 \n" +
+                "timer T9  = 9 \n" +
+                "th stopped -> T2 start ; T5 start ; T9 start ; TH sound = 0 ; TH light = 0 \n" +
+                "T2         -> th horn ; Reset Timers \n " +
+                "T5         -> th sound = 1 \n" +
+                "T9         -> th light = 1\n" ;
+
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(1000);
+
+        Script script = new TestableScriptParser2(now).parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle);
+        script.setup(provider);
+
+        // throttle is stopped, starts t2, t5, t9
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+
+        // t2 is active 5 seconds later and has just been reset
+        now.add(2*1000);
+        script.handle();
+        assertThat(script.getTimer("t2").isActive()).isFalse();
+        verify(throttle).horn();
+
+        // t5 is not executed 3 seconds later as it was reset
+        now.add(3*1000);
+        script.handle();
+        assertThat(script.getTimer("t5").isActive()).isFalse();
+        verify(throttle, never()).setSound(true);
+
+        // t9 is not executed 4 seconds later as it was reset
+        now.add(4*1000);
+        script.handle();
+        assertThat(script.getTimer("t9").isActive()).isFalse();
+        verify(throttle, never()).setLight(true);
     }
 
     @SuppressWarnings("PointlessArithmeticExpression")

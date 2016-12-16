@@ -30,4 +30,23 @@ public class TimerTest {
         timer.createFunction(Timer.Function.END).accept(1);
         assertThat(timer.isActive()).isFalse();
     }
+
+    @Test
+    public void testTimerReset() throws Exception {
+        NowProviderTest.TestableNowProvider now =
+                new NowProviderTest.TestableNowProvider(100*1000);
+        Timer timer = new Timer(42, now);
+
+        assertThat(timer.isActive()).isFalse();
+
+        timer.createFunction(Timer.Function.START).accept(1);
+        assertThat(timer.isActive()).isFalse();
+
+        // timer active now
+        now.setNow(200*1000);
+        assertThat(timer.isActive()).isTrue();
+
+        timer.reset();
+        assertThat(timer.isActive()).isFalse();
+    }
 }

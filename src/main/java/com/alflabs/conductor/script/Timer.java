@@ -39,7 +39,7 @@ public class Timer implements IConditional {
         case START:
             return ignored -> mEndTS = now() + mDurationSec * 1000;
         case END:
-            return ignored -> mEndTS = 0;
+            return ignored -> reset();
         }
         throw new IllegalArgumentException();
     }
@@ -47,6 +47,10 @@ public class Timer implements IConditional {
     @Override
     public boolean isActive() {
         return mEndTS != 0 && now() >= mEndTS;
+    }
+
+    public void reset() {
+        mEndTS = 0;
     }
 
     private long now() {

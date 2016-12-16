@@ -227,7 +227,7 @@ public class ScriptParser2 {
         }
 
         @Override
-        public void exitAction(ConductorParser.ActionContext ctx) {
+        public void exitIdAction(ConductorParser.IdActionContext ctx) {
             if (ctx.ID() == null) {
                 return;
             }
@@ -335,6 +335,15 @@ public class ScriptParser2 {
             }
 
             mEvent.addAction(function, value);
+        }
+
+        @Override
+        public void exitFnAction(ConductorParser.FnActionContext ctx) {
+            if (ctx.KW_RESET() != null && ctx.KW_TIMERS() != null) {
+                mEvent.addAction(mScript.getResetTimersFunction(), new LiteralInt(0));
+            } else {
+                emitError(ctx, "Unexpected call.");
+            }
         }
 
         @Override

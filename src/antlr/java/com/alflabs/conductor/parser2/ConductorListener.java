@@ -158,6 +158,26 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitAction(ConductorParser.ActionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConductorParser#idAction}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdAction(ConductorParser.IdActionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#idAction}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdAction(ConductorParser.IdActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#fnAction}.
+	 * @param ctx the parse tree
+	 */
+	void enterFnAction(ConductorParser.FnActionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#fnAction}.
+	 * @param ctx the parse tree
+	 */
+	void exitFnAction(ConductorParser.FnActionContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConductorParser#throttleOp}.
 	 * @param ctx the parse tree
 	 */
