@@ -3,14 +3,15 @@ grammar Conductor;
 script     : scriptLine ( EOL scriptLine )* EOL? EOF ;
 scriptLine : ( defLine | eventLine )? SB_COMMENT? ;
 
-defLine: defStrLine | defIntLine ;
+defLine: defStrLine | defIntLine | defThrottleLine ;
 
 defStrLine: defStrType ID '=' ID ;
 defStrType: KW_SENSOR | KW_TURNOUT ;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_THROTTLE | KW_VAR  | KW_TIMER ;
+defIntType: KW_VAR  | KW_TIMER ;
 
+defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
 eventLine: condList '->' actionList;
 

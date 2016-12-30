@@ -78,6 +78,16 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitDefIntType(ConductorParser.DefIntTypeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defThrottleLine}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefThrottleLine(ConductorParser.DefThrottleLineContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defThrottleLine}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefThrottleLine(ConductorParser.DefThrottleLineContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree
 	 */

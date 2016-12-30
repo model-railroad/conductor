@@ -28,6 +28,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -152,10 +154,6 @@ public class ScriptParser2 {
             }
 
             switch (type) {
-            case "throttle":
-                Throttle throttle = new Throttle(value);
-                mScript.addThrottle(name, throttle);
-                break;
             case "var":
                 Var var = new Var(value);
                 mScript.addVar(name, var);
@@ -168,6 +166,34 @@ public class ScriptParser2 {
                 emitError(ctx, "Unsupported type '" + type + "'.");
                 break;
             }
+        }
+
+        @Override
+        public void exitDefThrottleLine(ConductorParser.DefThrottleLineContext ctx) {
+            if (ctx.ID() == null) {
+                return;
+            }
+            List<TerminalNode> nums = ctx.NUM();
+            String name  = ctx.ID().getText();
+
+            if (mScript.isExistingName(name)) {
+                emitError(ctx, "Name '" + name + "' is already defined.");
+                return;
+            }
+
+            List<Integer> values = new ArrayList<>(nums.size());
+            for (TerminalNode num : nums) {
+                try {
+                    int value = Integer.parseInt(num.getText());
+                    values.add(value);
+                } catch (NumberFormatException e) {
+                    emitError(ctx, "Expected integer but found '" + num + "'.");
+                    return;
+                }
+            }
+
+            Throttle throttle = new Throttle(values);
+            mScript.addThrottle(name, throttle);
         }
 
         @Override

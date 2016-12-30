@@ -100,6 +100,18 @@ public class ConductorBaseListener implements ConductorListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDefThrottleLine(ConductorParser.DefThrottleLineContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDefThrottleLine(ConductorParser.DefThrottleLineContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterEventLine(ConductorParser.EventLineContext ctx) { }
 	/**
 	 * {@inheritDoc}
