@@ -157,6 +157,26 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testDefineMultiThrottle() throws Exception {
+        String source = "  Throttle TH   = 5201 5202 5203 5204 ";
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getThrottle("th")).isNotNull();
+    }
+
+    @Test
+    public void testDefineMultiThrottle_invalidDccAddress() throws Exception {
+        String source = "  Throttle TH   = 5201 5202 Block42 5203 5204 ";
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("Error at line 1: extraneous input 'Block42' expecting {<EOF>, EOL, SB_COMMENT, NUM}.");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
     public void testDefineTimer() throws Exception {
         String source = "  Timer Timer-1 = 5 ";
         Script script = new ScriptParser2().parse(source, mReporter);
@@ -323,6 +343,70 @@ public class ScriptParser2Test {
         script.handle();
         verify(throttle).setSpeed(0);
         verify(throttle).setSpeed(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
+    }
+
+    @Test
+    public void testStopForwardSequence_MultiThrottle() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 43 44 45 \n " +
+                "var speed = 5 \n " +
+                "t1 stopped -> t1 forward = speed ; t1 stop \n" +
+                "t1 forward -> t1 stop ; t1 forward = speed ";
+
+        Script script = new ScriptParser2().parse(source, mReporter);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriProvider provider = mock(IJmriProvider.class);
+        IJmriThrottle throttle2 = mock(IJmriThrottle.class);
+        IJmriThrottle throttle3 = mock(IJmriThrottle.class);
+        IJmriThrottle throttle4 = mock(IJmriThrottle.class);
+        IJmriThrottle throttle5 = mock(IJmriThrottle.class);
+        when(provider.getThrotlle(42)).thenReturn(throttle2);
+        when(provider.getThrotlle(43)).thenReturn(throttle3);
+        when(provider.getThrotlle(44)).thenReturn(throttle4);
+        when(provider.getThrotlle(45)).thenReturn(throttle5);
+
+        script.setup(provider);
+        verify(provider).getThrotlle(42);
+        verify(provider).getThrotlle(43);
+        verify(provider).getThrotlle(44);
+        verify(provider).getThrotlle(45);
+
+        // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
+        script.handle();
+
+        verify(throttle2).setSpeed(0);
+        verify(throttle3).setSpeed(0);
+        verify(throttle4).setSpeed(0);
+        verify(throttle5).setSpeed(0);
+
+        verify(throttle2).setSpeed(5);
+        verify(throttle3).setSpeed(5);
+        verify(throttle4).setSpeed(5);
+        verify(throttle5).setSpeed(5);
+        assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
+
+        // Execute with throttle at speed 5
+        script.getThrottle("t1").setSpeed(5);
+        reset(throttle2);
+        reset(throttle3);
+        reset(throttle4);
+        reset(throttle5);
+
+        script.handle();
+
+        verify(throttle2).setSpeed(0);
+        verify(throttle3).setSpeed(0);
+        verify(throttle4).setSpeed(0);
+        verify(throttle5).setSpeed(0);
+
+        verify(throttle2).setSpeed(5);
+        verify(throttle3).setSpeed(5);
+        verify(throttle4).setSpeed(5);
+        verify(throttle5).setSpeed(5);
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
     }
 
@@ -924,6 +1008,15 @@ public class ScriptParser2Test {
     @Test
     public void testScript2() throws Exception {
         String source = getFileSource("script2.txt");
+        assertThat(source).isNotNull();
+        Script script = new ScriptParser2().parse(source, mReporter);
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testScript4() throws Exception {
+        String source = getFileSource("script4.txt");
         assertThat(source).isNotNull();
         Script script = new ScriptParser2().parse(source, mReporter);
         assertThat(mReporter.toString()).isEqualTo("");

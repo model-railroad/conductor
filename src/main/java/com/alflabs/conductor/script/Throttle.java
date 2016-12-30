@@ -3,6 +3,9 @@ package com.alflabs.conductor.script;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * A throttle defined by a script.
  * <p/>
@@ -12,8 +15,8 @@ import com.alflabs.conductor.IJmriThrottle;
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
 public class Throttle {
-    private int mDccAddress;
-    private IJmriThrottle mJmriThrottle;
+    private final List<Integer> mDccAddresses = new ArrayList<>();
+    private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
@@ -44,23 +47,33 @@ public class Throttle {
         LIGHT,
     }
 
-    /** Creates a new throttle for the given JMRI dcc address. */
+    /** Creates a new throttle for the given JMRI DCC address. */
     public Throttle(int dccAddress) {
-        mDccAddress = dccAddress;
+        mDccAddresses.add(dccAddress);
     }
 
-    /** Initializes the underlying JMRI sensor. */
+    /** Creates a new throttle for multiple DCC addresses. */
+    public Throttle(List<Integer> dccAddresses) {
+        mDccAddresses.addAll(dccAddresses);
+    }
+
+
+    /** Initializes the underlying JMRI throttles. */
     public void setup(IJmriProvider provider) {
-        mJmriThrottle = provider.getThrotlle(mDccAddress);
+        mJmriThrottles.clear();
+        for (Integer dccAddress : mDccAddresses) {
+            mJmriThrottles.add(provider.getThrotlle(dccAddress));
+        }
     }
 
     public void setDccAddress(int dccAddress, IJmriProvider provider) {
-        mDccAddress = dccAddress;
+        mDccAddresses.clear();
+        mDccAddresses.add(dccAddress);
         setup(provider);
     }
 
     public int getDccAddress() {
-        return mDccAddress;
+        return mDccAddresses.isEmpty() ? 0 : mDccAddresses.get(0);
     }
 
     public int getSpeed() {
@@ -69,8 +82,8 @@ public class Throttle {
 
     public void setSpeed(int speed) {
         mSpeed = speed;
-        if (mJmriThrottle != null) {
-            mJmriThrottle.setSpeed(speed);
+        for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+            jmriThrottle.setSpeed(speed);
         }
         if (mSpeedListener != null) {
             try {
@@ -93,22 +106,22 @@ public class Throttle {
             return speed -> setSpeed(0);
         case HORN:
             return on -> {
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.horn();
+                for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+                    jmriThrottle.horn();
                 }
             };
         case SOUND:
             return on -> {
                 mSound = on != 0;
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.setSound(mSound);
+                for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+                    jmriThrottle.setSound(mSound);
                 }
             };
         case LIGHT:
             return on -> {
                 mLight = on != 0;
-                if (mJmriThrottle != null) {
-                    mJmriThrottle.setLight(mLight);
+                for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+                    jmriThrottle.setLight(mLight);
                 }
             };
         }
@@ -118,8 +131,8 @@ public class Throttle {
     public IIntFunction createFnFunction(int fn) {
         return on -> {
             boolean state = on != 0;
-            if (mJmriThrottle != null) {
-                mJmriThrottle.triggerFunction(fn, state);
+            for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+                jmriThrottle.triggerFunction(fn, state);
             }
         };
     }

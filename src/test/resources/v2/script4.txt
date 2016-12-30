@@ -1,6 +1,7 @@
 # throttles
 
-Throttle CONSIST = 204
+Throttle CONSIST = 204 209
+Throttle FRONT = 204
 Throttle REAR  = 209
 
 # states
@@ -25,9 +26,9 @@ Sensor TOGGLE     = NS49      # 48:2
 # ---------
 
 # Setup
-INIT -> CONSIST Sound = 1; CONSIST Light = 1; REAR Sound = 1; REAR Light = 1
+INIT -> FRONT Sound = 1; FRONT Light = 1; REAR Sound = 1; REAR Light = 1
 
-TOGGLE -> CONSIST Horn ; CONSIST Forward = Speed
+TOGGLE -> FRONT Horn ; CONSIST Forward = Speed
 B1 + 5 & CONSIST Forward -> CONSIST Reverse = Speed ;
 B1     & CONSIST Reverse -> CONSIST Stop
 
