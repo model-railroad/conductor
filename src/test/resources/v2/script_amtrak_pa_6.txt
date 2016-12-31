@@ -1,0 +1,186 @@
+# throttles
+
+Throttle PA-CONSIST = 204 209
+Throttle PA-FRONT = 204
+Throttle PA-REAR  = 209
+
+# states
+
+Var PA-State-Stop     = 1
+Var PA-State-Station = 0
+Var PA-State-Up      = 0
+Var PA-State-Summit  = 0
+Var PA-State-Down    = 0
+
+Var PA-Station-Speed    = 8
+Var PA-Summit-Speed     = 12
+Var PA-Sonora-Speed     = 12
+Var PA-Full-Speed       = 20
+
+# sensors
+
+Sensor B330         = NS768      # 49:3
+Sensor B331         = NS769      # 49:3
+Sensor B360         = NS770      # 49:3
+Sensor B370         = NS771      # 49:4
+
+Sensor PA-Toggle    = NS784      # 50:1
+Sensor PA-Run3      = NS785      # 50:2
+Sensor P3.1         = NS786      # 50:3, B503a
+Sensor P3.2         = NS787      # 50:4, B503b
+
+# turnouts
+
+Turnout T311        = NT311
+Turnout T320        = NT320
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T330        = NT330
+Turnout T370        = NT370
+Turnout T504        = NT504
+
+# Generic timers
+
+Timer PA-Timer-Acquire-Route = 1
+Timer PA-Timer-Release-Route = 1
+
+# ---------
+# Events PA
+# ---------
+
+# --- Routes
+
+PA-Timer-Acquire-Route ->
+    T504 Normal ;
+    T311 Reverse;
+    T320 Normal ;
+    T321 Normal ;
+    T322 Normal ;
+    T330 Reverse;
+    T370 Normal
+
+PA-Timer-Release-Route ->
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
+
+# --- State: Stop
+
+PA-State-Stop & PA-Toggle ->
+    PA-CONSIST Sound = 1; PA-CONSIST Light = 1;
+    PA-CONSIST Stop ;
+    PA-State-Station = 1 ;
+    PA-State-Stop = 0 ;
+    PA-Timer-Release-Route Start
+
+PA-State-Stop & PA-Toggle ->
+    PA-CONSIST Sound = 1; PA-CONSIST Light = 1;
+    PA-CONSIST Stop ;
+    PA-Timer-Release-Route Start
+
+Timer PA-Timer-Stop-Sound-Off = 60
+PA-State-Stop & PA-Timer-Stop-Sound-Off -> PA-CONSIST Sound = 0
+
+
+# --- State: Station
+
+# Departure from Station (going up)
+PA-State-Station & P3.2 & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
+    PA-State-Station = 0 ;
+    PA-State-Up = 1 ;
+    Reset Timers
+
+PA-State-Station & !PA-Toggle ->
+    PA-CONSIST Stop ;
+    PA-State-Station = 0 ;
+    PA-State-Stop = 1 ;
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal ;
+    Reset Timers ;
+    PA-Timer-Stop-Sound-Off Start
+
+
+# --- State: Going Up
+
+Timer PA-Station-Horn = 2
+PA-State-Up & P3.2 & PA-CONSIST Stopped ->
+    PA-CONSIST Light = 1; PA-CONSIST Sound = 1;
+    PA-FRONT F3 = 0 ;   PA-FRONT F6 = 1 ; PA-FRONT F9 = 0 ;
+    PA-REAR  F6 = 0 ;   PA-REAR F9 = 1 ;
+    PA-CONSIST Forward = PA-Station-Speed ;
+    PA-FRONT Horn ; PA-Station-Horn Start ;
+    PA-Timer-Acquire-Route Start
+
+PA-Station-Horn -> PA-FRONT Horn
+
+PA-State-Up & P3.1 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
+
+# Mid-Station doppler on the way up
+PA-State-Up &  P3.1 + 37 & PA-CONSIST Forward -> PA-FRONT F3 = 1 ; PA-FRONT F3 = 0
+# Sonora speed reduction
+PA-State-Up &  P3.1 + 50 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Sonora-Speed
+PA-State-Up &  P3.1 + 62 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed ; PA-FRONT Horn
+# After tunnel on the way up
+PA-State-Up &  P3.1 + 76 & PA-CONSIST Forward -> PA-FRONT F3 = 1 ; PA-FRONT F3 = 0
+
+PA-State-Up & B360 ->
+    PA-State-Up = 0 ;
+    PA-State-Summit = 1
+
+
+# PA-Toggle off reverts train to down
+PA-State-Up & !PA-Toggle & PA-CONSIST Forward ->
+    PA-State-Up = 0 ;
+    PA-State-Down = 1 ;
+    PA-CONSIST Reverse = PA-Summit-Speed
+
+# --- State: Summit
+
+PA-State-Summit & B370 +  9 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Summit-Speed
+PA-State-Summit & B370 + 14 & PA-CONSIST Forward ->
+    PA-CONSIST Stop ;
+    PA-FRONT Horn ;
+    PA-FRONT F6 = 0 ; PA-FRONT F9 = 0 ;
+    PA-REAR  F6 = 0 ; PA-REAR  F9 = 0
+PA-State-Summit & B370 + 22 ->
+    PA-FRONT Horn;
+    PA-CONSIST Reverse = PA-Summit-Speed ;
+    PA-FRONT F9 = 1  ;
+    PA-REAR  F6 = 1 ;
+
+PA-State-Summit & !B370 & B360 & PA-CONSIST Reverse ->
+    PA-State-Summit = 0 ;
+    PA-State-Down = 1 ;
+    PA-Timer-Acquire-Route Start
+
+
+# --- State: Going Down
+
+Timer PA-Timer-Full-Reverse = 12
+Timer PA-Timer-Horn-Midway-Back = 66
+PA-State-Down & PA-CONSIST Reverse ->
+    PA-Timer-Full-Reverse Start ;
+    PA-Timer-Horn-Midway-Back Start
+PA-State-Down & PA-CONSIST Reverse & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
+PA-State-Down & PA-CONSIST Reverse & PA-Timer-Horn-Midway-Back -> PA-FRONT F3 = 1 ; PA-FRONT F3 = 0
+
+# Arrival at Station
+PA-State-Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
+Timer PA-Timer-Down-Station = 10
+PA-State-Down & PA-CONSIST Reverse & !P3.1 & P3.2 -> PA-Timer-Down-Station Start
+PA-Timer-Down-Station ->
+    PA-CONSIST Stop ; PA-FRONT Horn;
+PA-State-Down & P3.2 + 18 & PA-CONSIST Stopped ->
+    PA-State-Down = 0 ;
+    PA-State-Station = 1 ;
+    PA-FRONT F6 = 0 ; PA-FRONT F9 = 0 ;
+    PA-REAR  F6 = 0 ; PA-REAR  F9 = 0
+
+
+# --- Horn
+# Horn when button is pressed during move
+
+PA-State-Up     & PA-Run3 -> PA-FRONT Horn
+PA-State-Summit & PA-Run3 -> PA-FRONT Horn
+PA-State-Down   & PA-Run3 -> PA-FRONT Horn
