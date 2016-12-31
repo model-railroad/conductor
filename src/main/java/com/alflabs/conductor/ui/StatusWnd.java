@@ -43,6 +43,7 @@ public class StatusWnd {
     private JButton mButtonChangeDcc1;
     private JButton mButtonChangeDcc2;
     private JButton mButtonStop;
+    private String mLastError;
 
     private StatusWnd(JFrame frame) {
         mFrame = frame;
@@ -72,11 +73,14 @@ public class StatusWnd {
         initScript(script, jmriProvider);
 
         mButtonReload.addActionListener(actionEvent -> {
+            mLastError = null;
             Pair<Script, String> pair = reloader.get();
+            if (pair.mSecond != null) {
+                mLastError = pair.mSecond;
+                showError(mLastError);
+            }
             if (pair.mFirst != null) {
                 initScript(pair.mFirst, jmriProvider);
-            } else if (pair.mSecond != null) {
-                showError(pair.mSecond);
             }
         });
 
@@ -106,7 +110,7 @@ public class StatusWnd {
         for (int i = 0; i < throttleNames.size() && i < numThrottles; i++) {
             Throttle throttle = script.getThrottle(throttleNames.get(i));
             throttles[i] = throttle;
-            labelDcc[i].setText(Integer.toString(throttle.getDccAddress()));
+            labelDcc[i].setText(throttle.getDccAddresses());
 
             JLabel label = labelSpeed[i];
             throttle.setSpeedListener(speed -> label.setText(Integer.toString(speed)));
@@ -130,7 +134,7 @@ public class StatusWnd {
     }
 
     private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {
-        String address = Integer.toString(throttle.getDccAddress());
+        String address = throttle.getDccAddresses();
         Object result = JOptionPane.showInputDialog(mFrame,
                 "New DCC Address to replace " + address,
                 "New DCC Address",
@@ -153,6 +157,10 @@ public class StatusWnd {
 
     private String generateVarStatus(Script script) {
         mStatus.setLength(0);
+
+        if (mLastError != null) {
+            mStatus.append(mLastError);
+        }
 
         mStatus.append("Freq: ");
         float freq = script.getHandleFrequency();

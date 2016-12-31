@@ -62,7 +62,10 @@ public class Throttle {
     public void setup(IJmriProvider provider) {
         mJmriThrottles.clear();
         for (Integer dccAddress : mDccAddresses) {
-            mJmriThrottles.add(provider.getThrotlle(dccAddress));
+            IJmriThrottle throtlle = provider.getThrotlle(dccAddress);
+            if (throtlle != null) {
+                mJmriThrottles.add(throtlle);
+            }
         }
     }
 
@@ -72,8 +75,16 @@ public class Throttle {
         setup(provider);
     }
 
-    public int getDccAddress() {
-        return mDccAddresses.isEmpty() ? 0 : mDccAddresses.get(0);
+    public String getDccAddresses() {
+        StringBuilder sb = new StringBuilder();
+        if (mDccAddresses.isEmpty()) {
+            sb.append("Missing");
+        } else {
+            for (Integer dccAddress : mDccAddresses) {
+                sb.append(dccAddress).append(' ');
+            }
+        }
+        return sb.toString().trim();
     }
 
     public int getSpeed() {

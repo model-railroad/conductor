@@ -26,7 +26,8 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._address = address
         self._throttle = throttle
         self._provider = provider
-        self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
+        if self._throttle is not None:
+            self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
 
     def repeat(self):
         if self._address == 537:
@@ -37,6 +38,9 @@ class JmriThrottleAdapter(IJmriThrottle):
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
         print "[Conductor", self._address, "] Speed", speed28
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
         self._throttle.setIsForward(speed28 >= 0)
         absv28 = speed28
         if absv28 < 0:
@@ -47,6 +51,9 @@ class JmriThrottleAdapter(IJmriThrottle):
     def setSound(self, on):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Sound", on
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
         if self._address == 537:
             for i in self.repeat():
                 self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
@@ -60,12 +67,18 @@ class JmriThrottleAdapter(IJmriThrottle):
     def setLight(self, on):
         """In: boolean on; Out: void"""
         print "[Conductor", self._address, "] Light", on
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
         for i in self.repeat():
             self._throttle.setF0(on)
 
     def horn(self):
         """In: void; Out: void"""
         print "[Conductor", self._address, "] Horn"
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
         for i in self.repeat():
             self._throttle.setF2(True)
         self._provider.waitMsec(500)
@@ -78,6 +91,9 @@ class JmriThrottleAdapter(IJmriThrottle):
         # Dynamically invoke JMRI throttle method setF0..setF28(boolean).
         Fn = "F" + str(function)
         print "[Conductor", self._address, "]", Fn, on
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
         try:
             for i in self.repeat():
                 getattr(self._throttle, "set" + Fn)(on)
@@ -93,6 +109,9 @@ class JmriSensorAdapter(IJmriSensor):
 
     def isActive(self):
         """In: void; Out: boolean"""
+        if self._sensor is None:
+            print "[Conductor] No Sensor for ", self._name
+            return False
         return self._sensor.knownState == jmri.Sensor.ACTIVE
 
 
@@ -105,6 +124,9 @@ class JmriTurnoutAdapter(IJmriTurnout):
     def setTurnout(self, normal):
         """In: boolean normal; Out: void"""
         print "[Conductor Turnout", self._name, "] set to ", normal
+        if self._turnout is None:
+            print "[Conductor] No Turnout for ", self._name
+            return False
         if normal:
             self._turnout.commandedState = jmri.Turnout.CLOSED
         else:
@@ -125,19 +147,31 @@ class JmriProvider(IJmriProvider):
 
     def getThrotlle(self, dccAddress):
         """In: int dccAddress; Out: IJmriThrottle"""
-        throttle = self._provider.getThrottle(dccAddress, True) #isLong
+        throttle = None
+        try:
+            throttle = self._provider.getThrottle(dccAddress, True) #isLong
+        except:
+            pass
         print "[Conductor] Get Throttle", dccAddress, throttle
         return JmriThrottleAdapter(dccAddress, throttle, self)
 
     def getSensor(self, systemName):
         """In: String systemName; Out: IJmriSensor"""
-        sensor = sensors.provideSensor(systemName)
+        sensor = None
+        try:
+            sensor = sensors.provideSensor(systemName)
+        except:
+            pass
         print "[Conductor] Get Sensor", systemName, sensor
         return JmriSensorAdapter(systemName, sensor)
 
     def getTurnout(self, systemName):
         """In: String systemName; Out: IJmriTurnout"""
-        turnout = turnouts.provideTurnout(systemName)
+        turnout = None
+        try:
+            turnout = turnouts.provideTurnout(systemName)
+        except:
+            pass
         print "[Conductor] Get Turnout", systemName, turnout
         return JmriTurnoutAdapter(systemName, turnout)
 

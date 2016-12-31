@@ -37,10 +37,12 @@ public class EntryPoint {
                     filepath,
                     mScript,
                     jmriProvider,
+                    // Reloader getter
                     () -> {
                         String error = loadScript(jmriProvider, scriptFile, logger, filepath);
                         return Pair.of(mScript, error);
                     },
+                    // Stopper runnable
                     () -> mStopRequested = true);
 
         } catch (Exception e) {
@@ -75,7 +77,10 @@ public class EntryPoint {
                 }
             }
         };
+
         try {
+            // Remove existing script and try to reload, which may fail with an error.
+            mScript = null;
             mScript = new ScriptParser2().parse(filepath, reporter);
             mScript.setup(jmriProvider);
         } catch (IOException e) {
@@ -102,11 +107,8 @@ public class EntryPoint {
         }
         if (mScript != null) {
             mScript.handle();
-            return true;
-        } else {
-            mScript.getLogger().log("[Conductor] Script.Handle returned false");
-            return false;
         }
+        return true;
     }
 
     public static void main(String[] args) {
