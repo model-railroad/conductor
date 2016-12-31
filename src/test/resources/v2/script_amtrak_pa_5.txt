@@ -5,16 +5,15 @@ Throttle REAR  = 209
 
 # states
 
-Var PA-State-Station = 1
+Var PA-State-Stop     = 1
+Var PA-State-Station = 0
 Var PA-State-Up      = 0
 Var PA-State-Summit  = 0
 Var PA-State-Down    = 0
-Var PA-State-Return  = 0
 
 Var PA-Station-Speed    = 8
 Var PA-Summit-Speed     = 12
 Var PA-Sonora-Speed     = 12
-Var PA-Return-Speed     = 16
 Var PA-Full-Speed       = 20
 
 # sensors
@@ -44,60 +43,57 @@ Turnout T504        = NT504
 # Events PA
 # ---------
 
-# Setup -- toogle up resets the state
-PA-Toggle ->
-    CONSIST Sound = 1;  CONSIST Light = 1;
-    REAR Sound = 1; REAR Light = 1;
+# Stopped -- toggle up resets the state
+PA-State-Stop & PA-Toggle ->
+    CONSIST Sound = 1; CONSIST Light = 1;
+    REAR Sound = 1;    REAR Light = 1;
+    CONSIST Stop ;
     PA-State-Station = 1 ;
-    PA-State-Up = 0 ;
-    PA-State-Summit = 0 ;
-    PA-State-Down = 0 ;
-    PA-State-Return = 0
+    PA-State-Stop = 0 ;
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
 
-
-# --- State: Return
-
-!PA-Toggle & !P3.2 ->
-    PA-State-Station = 0 ;
-    PA-State-Up = 0 ;
-    PA-State-Summit = 0 ;
-    PA-State-Down = 0 ;
-    PA-State-Return = 1
-
-PA-State-Return & !CONSIST Reverse & !P3.2   -> CONSIST Reverse = PA-Return-Speed
-PA-State-Return &  CONSIST Reverse &  P3.1   -> CONSIST Reverse = PA-Station-Speed
-Timer PA-Timer-Return-Station = 10
-PA-State-Return &  CONSIST Reverse & !P3.1 & P3.2 -> PA-Timer-Return-Station Start
-PA-Timer-Return-Station -> CONSIST Stop
-PA-State-Return &  CONSIST Stopped ->
-    PA-State-Station = 1 ;
-    PA-State-Up = 0 ;
-    PA-State-Summit = 0 ;
-    PA-State-Down = 0 ;
-    PA-State-Return = 0 ;
-    Reset Timers
+PA-State-Stop & PA-Toggle ->
+    CONSIST Sound = 1; CONSIST Light = 1;
+    REAR Sound = 1;    REAR Light = 1;
+    CONSIST Stop ;
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
 
 
 # --- State: Station
 
 # Departure from Station (going up)
 PA-State-Station & P3.2 & PA-Toggle & CONSIST Stopped & PA-Run3 ->
-    PA-State-Station = 0 ;
     PA-State-Up = 1 ;
-    PA-State-Summit = 0 ;
-    PA-State-Down = 0 ;
-    PA-State-Return = 0 ;
+    PA-State-Station = 0 ;
     Reset Timers
+
+Timer PA-Timer-Stop-Sound-Off = 60
+PA-State-Station & !PA-Toggle -> CONSIST Stop ;
+    PA-State-Station = 1 ;
+    PA-State-Stop = 1 ;
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal ;
+    Reset Timers ;
+    PA-Timer-Stop-Sound-Off Start
+
+PA-Timer-Stop-Sound-Off & PA-State-Stop -> CONSIST Sound = 0;  REAR Sound = 0
+
 
 # --- State: Going Up
 
+Timer PA-Station-Horn = 2
 PA-State-Up & P3.2 & CONSIST Stopped ->
     CONSIST Light = 1; CONSIST Sound = 1;
     CONSIST F3 = 0 ; CONSIST F6 = 1 ; CONSIST F9 = 0 ;
     REAR Light = 1 ; REAR Sound = 1;
     REAR F6 = 0 ; REAR F9 = 1 ;
     CONSIST Forward = PA-Station-Speed ;
-    CONSIST Horn ; CONSIST Horn ;
+    CONSIST Horn ; PA-Station-Horn Start ;
     T311 Reverse;
     T320 Normal ;
     T321 Normal ;
@@ -105,24 +101,30 @@ PA-State-Up & P3.2 & CONSIST Stopped ->
     T330 Reverse ;
     T370 Normal ;
     T504 Normal ;
+PA-Station-Horn -> CONSIST Horn
 
 PA-State-Up & P3.1 & CONSIST Forward -> CONSIST Forward = PA-Full-Speed ; CONSIST F6 = 0
 
 # Mid-Station doppler on the way up
-PA-State-Up &  P3.1 + 37 & CONSIST Forward    -> CONSIST F3 = 1 ; CONSIST F3 = 0
+PA-State-Up &  P3.1 + 37 & CONSIST Forward -> CONSIST F3 = 1 ; CONSIST F3 = 0
 # Sonora speed reduction
-PA-State-Up &  P3.1 + 50 & CONSIST Forward    -> CONSIST Forward = PA-Sonora-Speed ; CONSIST F6 = 1
-PA-State-Up &  P3.1 + 61 & CONSIST Forward    -> CONSIST Forward = PA-Full-Speed ; CONSIST F6 = 0 ; CONSIST Horn
+PA-State-Up &  P3.1 + 50 & CONSIST Forward -> CONSIST Forward = PA-Sonora-Speed ;
+                                              CONSIST F6 = 1
+PA-State-Up &  P3.1 + 62 & CONSIST Forward -> CONSIST Forward = PA-Full-Speed ;
+                                              CONSIST F6 = 0 ; CONSIST Horn
 # After tunnel on the way up
-PA-State-Up &  P3.1 + 75 & CONSIST Forward    -> CONSIST F3 = 1 ; CONSIST F3 = 0
+PA-State-Up &  P3.1 + 75 & CONSIST Forward -> CONSIST F3 = 1 ; CONSIST F3 = 0
 
 PA-State-Up & B360 ->
-    PA-State-Station = 0 ;
     PA-State-Up = 0 ;
-    PA-State-Summit = 1 ;
-    PA-State-Down = 0 ;
-    PA-State-Return = 0
+    PA-State-Summit = 1
 
+
+# PA-Toggle off reverts train to down
+PA-State-Up & !PA-Toggle & CONSIST Forward ->
+    PA-State-Up = 0 ;
+    PA-State-Down = 1 ;
+    CONSIST Reverse = PA-Summit-Speed
 
 # --- State: Summit
 
@@ -139,11 +141,8 @@ PA-State-Summit & B370 + 22 ->
     REAR F6 = 1 ;
 
 PA-State-Summit & !B370 & B360 & CONSIST Reverse ->
-    PA-State-Station = 0 ;
-    PA-State-Up = 0 ;
     PA-State-Summit = 0 ;
     PA-State-Down = 1 ;
-    PA-State-Return = 0 ;
     T311 Reverse;
     T320 Normal ;
     T321 Normal ;
@@ -157,12 +156,15 @@ PA-State-Summit & !B370 & B360 & CONSIST Reverse ->
 
 Timer PA-Timer-Full-Reverse = 12
 Timer PA-Timer-Horn-Midway-Back = 66
-PA-State-Down & CONSIST Reverse -> PA-Timer-Full-Reverse Start ; PA-Timer-Horn-Midway-Back Start
-PA-State-Down & CONSIST Reverse & PA-Timer-Full-Reverse -> CONSIST Reverse = PA-Full-speed ; REAR F6 = 0
+PA-State-Down & CONSIST Reverse -> PA-Timer-Full-Reverse Start ;
+                                   PA-Timer-Horn-Midway-Back Start
+PA-State-Down & CONSIST Reverse & PA-Timer-Full-Reverse -> CONSIST Reverse = PA-Full-speed ;
+                                                           REAR F6 = 0
 PA-State-Down & CONSIST Reverse & PA-Timer-Horn-Midway-Back -> CONSIST F3 = 1 ; CONSIST F3 = 0
 
 # Arrival at Station
-PA-State-Down & P3.1 +  5 & CONSIST Reverse -> CONSIST Reverse = PA-Station-Speed ; REAR F6 = 1 ;
+PA-State-Down & P3.1 + 5 & CONSIST Reverse -> CONSIST Reverse = PA-Station-Speed ;
+                                              REAR F6 = 1 ;
 Timer PA-Timer-Down-Station = 10
 PA-State-Down & CONSIST Reverse & !P3.1 & P3.2 -> PA-Timer-Down-Station Start
 PA-Timer-Down-Station ->
@@ -171,8 +173,12 @@ PA-Timer-Down-Station ->
     CONSIST F9 = 0
 PA-State-Down & P3.2 + 18 & CONSIST Stopped ->
     PA-State-Station = 1 ;
-    PA-State-Up = 0 ;
-    PA-State-Summit = 0 ;
     PA-State-Down = 0 ;
-    PA-State-Return = 0
 
+
+# --- Horn
+# Horn when button is pressed during move
+
+PA-State-Up     & PA-Run3 -> CONSIST Horn
+PA-State-Summit & PA-Run3 -> CONSIST Horn
+PA-State-Down   & PA-Run3 -> CONSIST Horn
