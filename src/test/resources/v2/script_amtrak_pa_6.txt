@@ -1,5 +1,9 @@
 # throttles
 
+# PA engines: Rapido F40PH
+# F3 = horn doppler effect (use F3 1 to 0)
+# F6 = Strobe lights
+# F9 = Red Markers (end unit)
 Throttle PA-CONSIST = 204 209
 Throttle PA-FRONT = 204
 Throttle PA-REAR  = 209
@@ -35,6 +39,7 @@ Turnout T311        = NT311
 Turnout T320        = NT320
 Turnout T321        = NT321
 Turnout T322        = NT322
+Turnout T326        = NT326
 Turnout T330        = NT330
 Turnout T370        = NT370
 Turnout T504        = NT504
@@ -56,6 +61,7 @@ PA-Timer-Acquire-Route ->
     T320 Normal ;
     T321 Normal ;
     T322 Normal ;
+    T326 Normal ;
     T330 Reverse;
     T370 Normal
 
@@ -106,7 +112,8 @@ PA-State-Station & !PA-Toggle ->
 Timer PA-Station-Horn = 2
 PA-State-Up & P3.2 & PA-CONSIST Stopped ->
     PA-CONSIST Light = 1; PA-CONSIST Sound = 1;
-    PA-FRONT F3 = 0 ;   PA-FRONT F6 = 1 ; PA-FRONT F9 = 0 ;
+    PA-FRONT F3 = 0 ;
+    PA-FRONT F6 = 1 ; PA-FRONT F9 = 0 ;
     PA-REAR  F6 = 0 ;   PA-REAR F9 = 1 ;
     PA-CONSIST Forward = PA-Station-Speed ;
     PA-FRONT Horn ; PA-Station-Horn Start ;
@@ -161,9 +168,12 @@ Timer PA-Timer-Full-Reverse = 12
 Timer PA-Timer-Horn-Midway-Back = 66
 PA-State-Down & PA-CONSIST Reverse ->
     PA-Timer-Full-Reverse Start ;
-    PA-Timer-Horn-Midway-Back Start
+    PA-Timer-Horn-Midway-Back Start ;
+    PA-FRONT F6 = 0 ; PA-FRONT F9 = 1 ;
+    PA-REAR  F6 = 1 ; PA-REAR  F9 = 0
 PA-State-Down & PA-CONSIST Reverse & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
-PA-State-Down & PA-CONSIST Reverse & PA-Timer-Horn-Midway-Back -> PA-FRONT F3 = 1 ; PA-FRONT F3 = 0
+PA-State-Down & PA-CONSIST Reverse & PA-Timer-Horn-Midway-Back & PA-Toggle ->
+                                                              PA-FRONT F3 = 1 ; PA-FRONT F3 = 0
 
 # Arrival at Station
 PA-State-Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
