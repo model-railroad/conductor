@@ -111,6 +111,13 @@ void checkInput(int index) {
   }
 }
 
+void sleep2seconds() {
+  for (int i = 0; i < 4; ++i) {
+    blink();
+    delay(DELAY_MS_START_x4);
+  }
+}
+
 void setup() {
   // Configure the onboard LED pin to a digital output
   pinMode(LED, OUTPUT);
@@ -129,12 +136,12 @@ void setup() {
   Serial.begin(9600, SERIAL_8N1);
   
   // Sleep 2 seconds to give time to the Switch-8 to start
-  for (int i = 0; i < 4; ++i) {
-    blink();
-    delay(DELAY_MS_START_x4);
-  }
-
+  sleep2seconds();
   isDebug = digitalRead(DEBUG_PIN) == LOW;
+  if (isDebug) {
+    Serial.write("\nDEBUG MODE\n");
+    sleep2seconds();
+  }
 
   // Checks the inputs and updates the Switch-8 to match the rotary switches.
   for (int i = 0; i < MAX_INPUT; ++i) {
