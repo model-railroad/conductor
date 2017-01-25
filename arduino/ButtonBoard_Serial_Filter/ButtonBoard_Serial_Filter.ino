@@ -133,9 +133,9 @@ bool output_command() {
   delay(PAUSE_RELEASE_MS);
 
   // Release event uses 0x40 instead of 0x80
-//  byte1 = 0x40 | (byte1 & 0x00F);
-//  Serial1.write(byte1);
-//  Serial1.write(byte2);
+  byte1 = 0x40 | (byte1 & 0x00F);
+  Serial1.write(byte1);
+  Serial1.write(byte2);
 
   // Update last sent command
   serial_last = serial_data;
