@@ -1,7 +1,3 @@
-/******************************************************************************/
-/* Files to Include                                                           */
-/******************************************************************************/
-
 #if defined(__XC)
     #include <xc.h>         /* XC8 General Include File */
 #elif defined(HI_TECH_C)
@@ -14,23 +10,8 @@
 #include "system.h"        /* System funct/params, like osc/peripheral config */
 #include "user.h"          /* User funct/params, such as InitApp */
 
-/******************************************************************************/
-/* User Global Variable Declaration                                           */
-/******************************************************************************/
-
-/* i.e. uint8_t <variable_name>; */
-
-/******************************************************************************/
-/* Main Program                                                               */
-
-/******************************************************************************/
 void main(void) {
-    /* Configure the oscillator for the device */
-    // -- replaced by MCC ConfigureOscillator();
-
-    /* Initialize I/O and Peripherals for application */
     InitApp();
     LoopApp();
-
 }
 

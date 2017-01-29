@@ -1,7 +1,3 @@
-/******************************************************************************/
-/* Files to Include                                                           */
-/******************************************************************************/
-
 #if defined(__XC)
     #include <xc.h>         /* XC8 General Include File */
 #elif defined(HI_TECH_C)
@@ -14,18 +10,7 @@
 #include "user.h"
 #include "mcc_generated_files/mcc.h"
 
-/******************************************************************************/
-/* User Functions                                                             */
-/******************************************************************************/
-
-/* <Initialize variables in user.h and insert code for user algorithms.> */
-
 void InitApp(void) {
-    /* TODO Initialize User Ports/Peripherals/Project here */
-    /* Setup analog functionality and port direction */
-    /* Initialize peripherals */
-    /* Enable interrupts */
-    
     /* Init via MCC generated code */
     SYSTEM_Initialize();
 }

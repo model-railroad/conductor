@@ -2,3 +2,5 @@ build
 debug
 dist
 nbproject/Makefile-local-XC8_*
+nbproject/Makefile-genesis.properties
+nbproject/Makefile-variables.mk
