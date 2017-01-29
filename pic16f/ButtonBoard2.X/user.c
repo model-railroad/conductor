@@ -1,9 +1,31 @@
 /**
- * 
+ * PIC program for Button Board, non-official version. 
  * 
  * Note for PIC I/O ports:
  * - Write to LATch
  * - Read from PORT.
+ * 
+ * License: MIT License.
+ * 
+ * Copyright 2017, Raphael.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
 #if defined(__XC)
     #include <xc.h>         /* XC8 General Include File */
@@ -21,27 +43,30 @@
 // any defined here. The default used is 2 seconds.
 
 // Number & Time in milliseconds to wait at startup to let the Switch-8 initialize.
-#define DELAY_Nx_START 8
-#define DELAY_MS_START 1000
+#define DELAY_Nx_START 1
+#define DELAY_MS_START 250
 
 // Number & Time in milliseconds to wait after sending a serial command to let
 // the Switch-8 throw the turnout.
-#define DELAY_Nx_SWITCH 3
-#define DELAY_MS_SWITCH 1000
+#define DELAY_Nx_SWITCH 1
+#define DELAY_MS_SWITCH 250
 
-#define NUM_REPEAT_CMD 3
+// Number of times to repeat the serial command
+#define NUM_REPEAT_CMD 1
 
 // Time in milliseconds before scanning next input.
-// This crude rate-limiter makes the sketch scan each input roughly once per second.
-#define DELAY_MS_LOOP 62
+#define DELAY_MS_LOOP 10
 
-// Blink the LED for 100 ms.
+// Time in milliseconds to blink the LED.
 #define DELAY_MS_BLINK 100
 
 // Time in milliseconds to wait before sending the button-released command to the Switch-8.
-#define DELAY_MS_BTN_RELEASE 250
+#define DELAY_MS_BTN_RELEASE 1000
 
-// Number of inputs scanned (8 turnouts, Normal/Release each).
+// How many input check cycles to count before blinking for the IDLE state.
+#define IDLE_BLINK_COUNT 32
+
+// Number of inputs scanned (8 turnouts, Normal/Release each, 16 inputs total).
 #define MAX_INPUT 16
 
 // Enable this to get human-readable UART output
@@ -74,8 +99,10 @@ void sendByte(uint8_t value) {
 
 void sendSwitch8Command(uint8_t index) {
     for (uint8_t i = 0; i < NUM_REPEAT_CMD; ++i) {
+        blink();
         sendByte(0x80 + index);
         __delay_ms(DELAY_MS_BTN_RELEASE);
+        blink();
         sendByte(0x40 + index);
         __delay_ms(DELAY_MS_BTN_RELEASE);
     }
@@ -115,7 +142,7 @@ void sleepAfterSwitch() {
 
 // Checks an input and sends a command to the Switch-8 if the input
 // has changed since last read.
-void checkInput(uint8_t index) {
+uint8_t checkInput(uint8_t index) {
     uint8_t state = readInput(index);
 
     if (state != states[index]) {
@@ -125,11 +152,12 @@ void checkInput(uint8_t index) {
         if (state == 0) {
             // Inputs are active low (when grounded).
             // For any turnout rotary switch, one of the inputs is LOW and the other one is HIGH.
-            blink();
             sendSwitch8Command(index);
             sleepAfterSwitch();
+            return 1;
         }
     }
+    return 0;
 }
 
 void initialSleep() {
@@ -144,9 +172,11 @@ void InitApp(void) {
     // Initialize using the MCC generated code
     SYSTEM_Initialize();
     
+#ifdef DEBUG
     // Send a dummy character to start the UART output when debugging
     EUSART_Write('\n');
-
+#endif
+    
     // Sleep a few seconds to give time to the Switch-8 to start
     initialSleep();
 
@@ -159,16 +189,24 @@ void InitApp(void) {
         // switches at startup.
         blink();
         checkInput(i);
+        __delay_ms(DELAY_MS_LOOP);
         CLRWDT();
     }
 }
 
 void LoopApp(void) {
+    uint8_t counter = 0;
     while (1) {
         for (uint8_t i = 0; i < MAX_INPUT; ++i) {
-            checkInput(i);
+            if (checkInput(i)) {
+                counter = 0;
+            }
             __delay_ms(DELAY_MS_LOOP);
             CLRWDT();
+        }
+        if (++counter == IDLE_BLINK_COUNT) {
+            blink();
+            counter = 0;
         }
     }
 }
