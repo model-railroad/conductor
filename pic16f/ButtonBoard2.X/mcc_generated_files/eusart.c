@@ -73,7 +73,6 @@ void EUSART_Initialize(void)
 
 }
 
-
 uint8_t EUSART_Read(void)
 {
 
