@@ -1,24 +1,70 @@
 /**
- * PIC program for Button Board, non-official version. 
- * 
+ * Program for Button Board and non-momentary contacts, non-official version.
+ *
+ * --------
+ * Summary:
+ * This is intended to reprogram an NCE Button Board's PIC16F microcontroller
+ * to properly support non-momentary contacts (e.g. rotary switches).
+ *
+ * More information at http://ralf.alfray.com/trains/nce_button_board.html
+ *
+ * -----------
+ * Disclaimer:
+ * This program was NOT designed by NCE nor is it endorsed or supported
+ * by NCE in any way.
+ * This program is provided as-is, in a source form, in the hope it may be
+ * helpful. However if you have no idea how to compile, assemble and program a
+ * PIC using this program, I will NOT help nor provide any kind of support.
+ * Trying to alter your NCE boards will likely result in losing your warranty.
+ * Please see the license below for more info.
+ *
+ * ------------------
+ * Mode of operation:
+ * - At startup, wait a certain time (see constants below) before sending any
+ *   command to the NCE Switch-8.
+ * - After the startup delay, scan the 16 inputs and send commands for all
+ *   grounded inputs. Since this is designed to work with non-momentary
+ *   contacts, each turnout should have a LOW input and a HIGH input.
+ * - After that, regularly scan the 16 inputs and send a command each time
+ *   one transitions from a HIGH to LOW state (e.g. grounded).
+ * - A command sent to the serial output for the Switch-8 is always comprised
+ *   of both a push event followed by a release event, regardless of the state
+ *   of the input. The release events are thus simulated, since they do not
+ *   occur in any timely manner with non-momentary contacts.
+ *
+ * This has been tested and works equally well with momentary contacts.
+ *
+ * ------------------
+ * PIC Configuration:
+ * - Configuration is done using the MCC. Do not edit mcc.c directly.
+ * - Lowest frequency usable is 500 kHz for a reasonable 9600 baud rate.
+ * - WDT is activated, as well as STVREN, and both are probably overkill here.
+ * - PWRT MUST be disabled. Enabling it would make sense but somehow
+ *   prevents the proper detection of the serial link by the Switch-8.
+ * - Detection of the serial data by the Switch-8 seems oddly finicky. It
+ *   seems to work better when the Switch-8 is powered after the Button Board,
+ *   which is the reverse of the current hardware design.
+ *
+ * -----------------------
  * Note for PIC I/O ports:
  * - Write to LATch
  * - Read from PORT.
- * 
+ *
+ * ---------------------
  * License: MIT License.
- * 
+ *
  * Copyright 2017, Raphael.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
  * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
  * sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -40,16 +86,18 @@
 #include "mcc_generated_files/mcc.h"
 
 // Note: if WDT is enabled, the WDTPS must be set to a larger timeout than
-// any defined here. The default used is 2 seconds.
+// any defined here. The default used is 2 seconds, which is why some
+// timeouts have a count multiplier and clear WDT at every iteration.
 
-// Number & Time in milliseconds to wait at startup to let the Switch-8 initialize.
-#define DELAY_Nx_START 1
-#define DELAY_MS_START 250
+// Number & Time in milliseconds to wait at startup to let the Switch-8
+// initialize before sending the initial turnout states.
+#define DELAY_Nx_START 8
+#define DELAY_MS_START 1000
 
 // Number & Time in milliseconds to wait after sending a serial command to let
 // the Switch-8 throw the turnout.
-#define DELAY_Nx_SWITCH 1
-#define DELAY_MS_SWITCH 250
+#define DELAY_Nx_SWITCH 2
+#define DELAY_MS_SWITCH 1000
 
 // Number of times to repeat the serial command
 #define NUM_REPEAT_CMD 1
@@ -60,13 +108,14 @@
 // Time in milliseconds to blink the LED.
 #define DELAY_MS_BLINK 100
 
-// Time in milliseconds to wait before sending the button-released command to the Switch-8.
-#define DELAY_MS_BTN_RELEASE 1000
+// Time in milliseconds to wait before sending the button-released command.
+#define DELAY_MS_BTN_RELEASE (1000 - 2 * DELAY_MS_BLINK)
 
 // How many input check cycles to count before blinking for the IDLE state.
 #define IDLE_BLINK_COUNT 32
 
 // Number of inputs scanned (8 turnouts, Normal/Release each, 16 inputs total).
+// This value MUST not be larger than 16 without modifiy readInput().
 #define MAX_INPUT 16
 
 // Enable this to get human-readable UART output
@@ -76,6 +125,7 @@
 uint8_t states[MAX_INPUT];
 
 // Blinks the on-board LED.
+// This method takes 2 x DELAY_MS_BLINK time.
 void blink() {
     IO_LED_SetLow();
     __delay_ms(DELAY_MS_BLINK);
@@ -151,7 +201,8 @@ uint8_t checkInput(uint8_t index) {
 
         if (state == 0) {
             // Inputs are active low (when grounded).
-            // For any turnout rotary switch, one of the inputs is LOW and the other one is HIGH.
+            // For any turnout rotary switch, one of the inputs is LOW and
+            // the other one is HIGH.
             sendSwitch8Command(index);
             sleepAfterSwitch();
             return 1;
@@ -171,12 +222,12 @@ void initialSleep() {
 void InitApp(void) {
     // Initialize using the MCC generated code
     SYSTEM_Initialize();
-    
+
 #ifdef DEBUG
     // Send a dummy character to start the UART output when debugging
     EUSART_Write('\n');
 #endif
-    
+
     // Sleep a few seconds to give time to the Switch-8 to start
     initialSleep();
 

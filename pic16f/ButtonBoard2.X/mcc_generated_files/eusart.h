@@ -89,7 +89,7 @@
     None
 
   @Comment
-    
+
 */
 void EUSART_Initialize(void);
 
