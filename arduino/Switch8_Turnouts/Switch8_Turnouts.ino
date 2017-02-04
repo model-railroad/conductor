@@ -26,21 +26,21 @@
 // Pin number of the Arduino's onboard LED.
 #define LED 13
 
-// 4x Time in milliseconds to wait at startup to let the Switch-8 initialize.
-#define DELAY_MS_START_x4 500
+// Time in milliseconds to wait at startup to let the Switch-8 initialize.
+#define DELAY_MS_START 2000
 
 // Time in milliseconds to wait after sending a serial command to let the Switch-8 throw the turnout.
-#define DELAY_MS_SWITCH 3000
+#define DELAY_MS_SWITCH 1000
 
 // Time in milliseconds before scanning next input.
 // This crude rate-limiter makes the sketch scan each input roughtly once per second.
-#define DELAY_MS_LOOP 62
+#define DELAY_MS_LOOP 10
 
 // Blink the LED for 100 ms.
 #define DELAY_MS_BLINK 100
 
 // Time in milliseconds to wait before sending the button-released command to the Switch-8.
-#define DELAY_MS_BTN_RELEASE 100
+#define DELAY_MS_BTN_RELEASE 500
 
 // Number of inputs scanned (8 turnouts, Normal/Release each).
 #define MAX_INPUT 16
@@ -111,10 +111,10 @@ void checkInput(int index) {
   }
 }
 
-void sleep2seconds() {
+void sleepStart() {
   for (int i = 0; i < 4; ++i) {
     blink();
-    delay(DELAY_MS_START_x4);
+    delay(DELAY_MS_START / 4);
   }
 }
 
@@ -135,12 +135,12 @@ void setup() {
   // Initialize serial port.
   Serial.begin(9600, SERIAL_8N1);
   
-  // Sleep 2 seconds to give time to the Switch-8 to start
-  sleep2seconds();
+  // Sleep to give time to the Switch-8 to start
+  sleepStart();
   isDebug = digitalRead(DEBUG_PIN) == LOW;
   if (isDebug) {
     Serial.write("\nDEBUG MODE\n");
-    sleep2seconds();
+    sleepStart();
   }
 
   // Checks the inputs and updates the Switch-8 to match the rotary switches.

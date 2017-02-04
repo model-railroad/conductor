@@ -91,13 +91,13 @@
 
 // Number & Time in milliseconds to wait at startup to let the Switch-8
 // initialize before sending the initial turnout states.
-#define DELAY_Nx_START 8
+#define DELAY_Nx_START 6
 #define DELAY_MS_START 1000
 
 // Number & Time in milliseconds to wait after sending a serial command to let
 // the Switch-8 throw the turnout.
 #define DELAY_Nx_SWITCH 2
-#define DELAY_MS_SWITCH 1000
+#define DELAY_MS_SWITCH 500
 
 // Number of times to repeat the serial command
 #define NUM_REPEAT_CMD 1
@@ -109,7 +109,7 @@
 #define DELAY_MS_BLINK 100
 
 // Time in milliseconds to wait before sending the button-released command.
-#define DELAY_MS_BTN_RELEASE (1000 - 2 * DELAY_MS_BLINK)
+#define DELAY_MS_BTN_RELEASE (500 - 2 * DELAY_MS_BLINK)
 
 // How many input check cycles to count before blinking for the IDLE state.
 #define IDLE_BLINK_COUNT 32
@@ -154,7 +154,6 @@ void sendSwitch8Command(uint8_t index) {
         __delay_ms(DELAY_MS_BTN_RELEASE);
         blink();
         sendByte(0x40 + index);
-        __delay_ms(DELAY_MS_BTN_RELEASE);
     }
 }
 
