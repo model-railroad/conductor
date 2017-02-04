@@ -5,15 +5,20 @@
 
 # sensors
 
-Sensor BLParked     = NS752     # 48:1
-Sensor BLStation    = NS753     # 48:2
-Sensor BLTunnel     = NS754     # 48:3
-Sensor BLReverse    = NS755     # 48:4
+Sensor BLParked     = NS752      # 48:1
+Sensor BLStation    = NS753      # 48:2
+Sensor BLTunnel     = NS754      # 48:3
+Sensor BLReverse    = NS755      # 48:4
+Sensor BLRun        = NS765      # 48:14
 
-Sensor B330         = NS768      # 49:3
-Sensor B331         = NS769      # 49:3
-Sensor B360         = NS770      # 49:3
-Sensor B370         = NS771      # 49:4
+Sensor B310         = NS768      # 49:1
+Sensor B311         = NS769      # 49:2
+Sensor B320         = NS770      # 49:3
+Sensor B321         = NS771      # 49:4
+Sensor B330         = NS773      # 49:6
+Sensor B340         = NS774      # 49:7
+Sensor B360         = NS775      # 49:8
+Sensor B370         = NS776      # 49:9
 
 Sensor PA-Toggle    = NS784      # 50:1
 Sensor PA-Run3      = NS785      # 50:2
@@ -26,6 +31,7 @@ Turnout T311        = NT311
 Turnout T320        = NT320
 Turnout T321        = NT321
 Turnout T322        = NT322
+Turnout T324        = NT324
 Turnout T326        = NT326
 Turnout T330        = NT330
 Turnout T370        = NT370
@@ -197,54 +203,80 @@ PA-State-Down   & PA-Run3 -> PA-CONSIST Horn
 # Events BL
 # ---------
 
+# On the RDC SP-10:
+# F8 1/0 for Sound
+# F5 is a doppler horn, too long so not using it
+# F7 for dim lights for stations
+# F9 for red markers on the "end" side
 Throttle BL = 10
 
-Var BL-Station-Speed = 8
-Var BL-Full-Speed = 16
+Var BL-Station-Speed = 12
+Var BL-Full-Speed    = 20
 
-Var BL-State-Stop     = 1
+Var BL-State-Stop    = 1
 Var BL-State-Up      = 0
 Var BL-State-Down    = 0
 
+# --- State: Stopped
 
-BL-State-Stop & BLParked & PA-Run3->
-    BL F1 = 1 ;
-    BL F8 = 1;
+BL-State-Stop & BLParked & BLRun & PA-Toggle ->
+    BL F1 = 0 ;
+    BL F8 = 1 ;
+    BL F9 = 1 ;
     BL Light = 1;
     BL-State-Stop = 0 ;
     BL-State-Up = 1
 
-BL-State-Up + 5 ->
-    BL Forward = BL-Station-Speed ;
+# --- State: Up (front)
 
-BL-State-Up & BLStation + 5 -> BL Stop
-BL-State-Up & BLStation + 10 -> BL F1 = 0 ; BL Horn ; BL Forward = BL-Full-Speed
-BL-State-Up & BLStation + 25 -> BL Horn
-BL-State-Up & BLStation + 27 -> BL Horn
-BL-State-Up & BLTunnel -> BL Forward = BL-Station-Speed
-BL-State-Up & BLReverse + 3 -> BL Stop ;
+BL-State-Up + 10 -> BL Forward = BL-Station-Speed ; T324 Normal
+
+BL-State-Up & BLStation +  9 -> BL F1 = 1
+BL-State-Up & BLStation + 11 -> BL Stop
+BL-State-Up & BLStation + 18 -> BL F1 = 0 ; BL Horn ; BL Forward = BL-Full-Speed
+BL-State-Up & BLStation + 37 -> BL Horn
+BL-State-Up & BLStation + 41 -> BL Horn
+
+BL-State-Up & BLTunnel  + 6 -> BL Forward = BL-Station-Speed
+BL-State-Up & BLReverse + 2 -> BL F1 = 1
+BL-State-Up & BLReverse + 6 -> BL Stop ; BL Horn ;
     BL-State-Up = 0 ;
     BL-State-Down = 1
 
-BL-State-Down + 15 ->
-    BL F1 = 1 ;
-    BL F8 = 1;
-    BL Horn ;
+BL-State-Up & !BL Stopped & BLRun & PA-Toggle -> BL Horn
+
+BL-State-Up & !PA-Toggle ->
     BL Reverse = BL-Station-Speed ;
+    BL-State-Up = 0 ;
+    BL-State-Down = 1
+
+# --- State: Down (reverse)
+
+BL-State-Down + 15 ->
+    BL F8 = 1;
+    BL Reverse = BL-Station-Speed ;
+BL-State-Down + 17 -> BL Horn
 
 BL-State-Down & BLTunnel ->
     BL F1 = 0;
     BL Reverse = BL-Full-Speed
 
-BL-State-Down & !BLTunnel + 8 -> BL Horn
-BL-State-Down & !BLTunnel + 10 -> BL Horn
-BL-State-Down & BLStation + 2 -> BL Stop
-BL-State-Down & BLStation + 15 -> BL Reverse = BL-Station-Speed
-BL-State-Down & BLParked ->
-    BL Stop ;
+BL-State-Down & !BLTunnel + 14 -> BL Horn
+BL-State-Down & !BLTunnel + 16 -> BL Horn
+BL-State-Down & BLStation     -> T324 Normal
+BL-State-Down & BLStation + 2 -> BL F1 = 1
+BL-State-Down & BLStation + 5 & PA-Toggle -> BL Stop
+BL-State-Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
 
-BL-State-Down & BLParked + 2 ->
+
+BL-State-Down & BLParked + 2  -> BL Stop
+BL-State-Down & BLParked + 12 ->
     BL F8 = 0;
+    BL F9 = 1 ;
     BL Light = 0;
     BL-State-Down = 0 ;
     BL-State-Stop = 1
+
+BL-State-Down & !BL Stopped & BLRun & PA-Toggle -> BL Horn
+
+# ---------
