@@ -217,6 +217,28 @@ Var BL-State-Stop    = 1
 Var BL-State-Up      = 0
 Var BL-State-Down    = 0
 
+# --- State: Setup at reverse station
+
+BL-State-Stop & !BLParked & BLReverse & BLRun & !PA-Toggle ->
+    BL F8 = 0 ;
+    BL Light = 0;
+    BL Reverse = BL-Station-Speed ;
+    BL-State-Stop = 0 ;
+    BL-State-Up = 0 ;
+    BL-State-Down = 1
+
+    
+BL-State-Down & BLParked & BL Stopped & !PA-Toggle ->
+    BL F8 = 0;
+    BL F9 = 0 ;
+    BL Light = 0;
+    BL-State-Down = 0 ;
+    BL-State-Stop = 1
+
+BL-State-Stop & BLParked & PA-Toggle ->
+    BL F9 = 1 ;
+    BL Light = 1
+
 # --- State: Stopped
 
 BL-State-Stop & BLParked & BLRun & PA-Toggle ->
@@ -252,17 +274,16 @@ BL-State-Up & !PA-Toggle ->
 
 # --- State: Down (reverse)
 
-BL-State-Down + 15 ->
-    BL F8 = 1;
-    BL Reverse = BL-Station-Speed ;
-BL-State-Down + 17 -> BL Horn
+BL-State-Down + 15 -> BL Reverse = BL-Station-Speed ;
+BL-State-Down + 16 & PA-Toggle -> BL F8 = 1;
+BL-State-Down + 17 & PA-Toggle -> BL Horn
 
 BL-State-Down & BLTunnel ->
     BL F1 = 0;
     BL Reverse = BL-Full-Speed
 
-BL-State-Down & !BLTunnel + 14 -> BL Horn
-BL-State-Down & !BLTunnel + 16 -> BL Horn
+BL-State-Down & !BLTunnel + 14 & PA-Toggle -> BL Horn
+BL-State-Down & !BLTunnel + 16 & PA-Toggle -> BL Horn
 BL-State-Down & BLStation     -> T324 Normal
 BL-State-Down & BLStation + 2 -> BL F1 = 1
 BL-State-Down & BLStation + 5 & PA-Toggle -> BL Stop
@@ -272,7 +293,7 @@ BL-State-Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
 BL-State-Down & BLParked + 2  -> BL Stop
 BL-State-Down & BLParked + 12 ->
     BL F8 = 0;
-    BL F9 = 1 ;
+    BL F9 = 0 ;
     BL Light = 0;
     BL-State-Down = 0 ;
     BL-State-Stop = 1
