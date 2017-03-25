@@ -1,8 +1,3 @@
-# throttles
-
-
-
-
 # sensors
 
 Sensor BLParked     = NS752      # 48:1
@@ -47,8 +42,12 @@ Timer PA-Timer-Release-Route = 1
 # ---------
 
 # PA engines: Rapido F40PH
+# F0 is light (use PA Light)
+# F1 is bell
+# F2 is horn (use PA Horn)
 # F3 = horn doppler effect (use F3 1 to 0)
 # F6 = Strobe lights
+# F8 1/0 for Sound (use PA Sound)
 # F9 = Red Markers (end unit)
 Throttle PA-CONSIST = 204
 
@@ -204,9 +203,13 @@ PA-State-Down   & PA-Run3 -> PA-CONSIST Horn
 # ---------
 
 # On the RDC SP-10:
-# F8 1/0 for Sound
+# F0 is light (use BL Light)
+# F1 is bell
+# F2 is horn (use BL Horn)
 # F5 is a doppler horn, too long so not using it
+# F6 is disabled (function used by ESU PowerPack)
 # F7 for dim lights for stations
+# F8 1/0 for Sound (use BL Sound)
 # F9 for red markers on the "end" side
 Throttle BL = 10
 
@@ -221,13 +224,13 @@ Var BL-State-Down    = 0
 
 BL-State-Stop & !BLParked & BLReverse & BLRun & !PA-Toggle ->
     BL F8 = 0 ;
+    BL F1 = 1 ;
     BL Light = 0;
     BL Reverse = BL-Station-Speed ;
     BL-State-Stop = 0 ;
     BL-State-Up = 0 ;
     BL-State-Down = 1
 
-    
 BL-State-Down & BLParked & BL Stopped & !PA-Toggle ->
     BL F8 = 0;
     BL F9 = 0 ;
@@ -286,6 +289,9 @@ BL-State-Down & !BLTunnel + 14 & PA-Toggle -> BL Horn
 BL-State-Down & !BLTunnel + 16 & PA-Toggle -> BL Horn
 BL-State-Down & BLStation     -> T324 Normal
 BL-State-Down & BLStation + 2 -> BL F1 = 1
+
+
+
 BL-State-Down & BLStation + 5 & PA-Toggle -> BL Stop
 BL-State-Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
 
@@ -299,5 +305,20 @@ BL-State-Down & BLParked + 12 ->
     BL-State-Stop = 1
 
 BL-State-Down & !BL Stopped & BLRun & PA-Toggle -> BL Horn
+
+
+# ------------------
+# Automatic Turnouts
+# ------------------
+
+# If automation is off, T330 is automatically selected:
+# B320 -> B330 via T330 Normal
+# B321 -> B330 via T330 Reverse
+
+!PA-Toggle & !B330 & B320 -> T330 Normal
+!PA-Toggle & !B330 & B321 -> T330 Reverse
+
+
+
 
 # ---------
