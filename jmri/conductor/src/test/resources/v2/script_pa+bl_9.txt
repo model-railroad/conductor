@@ -61,7 +61,7 @@ Var PA-State-Down    = 0
 Var PA-Station-Speed    = 8
 Var PA-Summit-Speed     = 12
 Var PA-Sonora-Speed     = 12
-Var PA-Full-Speed       = 20
+Var PA-Full-Speed       = 16
 
 # --- Routes
 
@@ -131,12 +131,14 @@ PA-Station-Horn -> PA-CONSIST Horn
 PA-State-Up & P3.1 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
 
 # Mid-Station doppler on the way up
-PA-State-Up &  P3.1 + 37 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+# TODO adjust timings here
+PA-State-Up &  B321 + 37 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+
 # Sonora speed reduction
-PA-State-Up &  P3.1 + 50 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Sonora-Speed
-PA-State-Up &  P3.1 + 62 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed ; PA-CONSIST Horn
+PA-State-Up &  B330 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Sonora-Speed
+PA-State-Up &  B330 + 12 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed ; PA-CONSIST Horn
 # After tunnel on the way up
-PA-State-Up &  P3.1 + 76 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+PA-State-Up &  B330 + 26 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
 
 PA-State-Up & B360 ->
     PA-State-Up = 0 ;
@@ -151,6 +153,7 @@ PA-State-Up & !PA-Toggle & PA-CONSIST Forward ->
 
 # --- State: Summit
 
+# TODO adjust timings here
 PA-State-Summit & B370 +  9 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Summit-Speed
 PA-State-Summit & B370 + 14 & PA-CONSIST Forward ->
     PA-CONSIST Stop ;
@@ -170,17 +173,19 @@ PA-State-Summit & !B370 & B360 & PA-CONSIST Reverse ->
 # --- State: Going Down
 
 Timer PA-Timer-Full-Reverse = 12
-Timer PA-Timer-Horn-Midway-Back = 66
 PA-State-Down & PA-CONSIST Reverse ->
     PA-Timer-Full-Reverse Start ;
-    PA-Timer-Horn-Midway-Back Start ;
     PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
 PA-State-Down & PA-CONSIST Reverse & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
-PA-State-Down & PA-CONSIST Reverse & PA-Timer-Horn-Midway-Back & PA-Toggle ->
-                                                              PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+
+# TODO adjust timings here: B330+delay or B321+0?
+PA-State-Down & PA-CONSIST Reverse & B321 & PA-Toggle ->
+    PA-CONSIST F3 = 1 ;
+    PA-CONSIST F3 = 0
 
 # Arrival at Station
-PA-State-Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
+# TODO adjust timings here: 5+
+PA-State-Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed
 Timer PA-Timer-Down-Station = 10
 PA-State-Down & PA-CONSIST Reverse & !P3.1 & P3.2 -> PA-Timer-Down-Station Start
 PA-Timer-Down-Station ->
