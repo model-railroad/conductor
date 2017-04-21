@@ -14,6 +14,7 @@ Sensor B330         = NS773      # 49:6
 Sensor B340         = NS774      # 49:7
 Sensor B360         = NS775      # 49:8
 Sensor B370         = NS776      # 49:9
+Sensor BL-Toggle    = NS781      # 49:14
 
 Sensor PA-Toggle    = NS784      # 50:1
 Sensor PA-Run3      = NS785      # 50:2
@@ -59,7 +60,7 @@ Var PA-State-Down    = 0
 
 Var PA-Station-Speed    = 8
 Var PA-Summit-Speed     = 12
-Var PA-Sonora-Speed     = 12
+Var PA-Sonora-Speed     = 16
 Var PA-Full-Speed       = 20
 
 # --- Routes
@@ -79,7 +80,7 @@ PA-Timer-Release-Route ->
     T320 Normal ;
     T321 Normal
 
-# --- State: Stop
+# --- PA State: Stop
 
 Timer PA-Timer-Stop-Sound-Off = 30
 
@@ -99,7 +100,7 @@ PA-State-Stop & !PA-Toggle ->
 PA-State-Stop & PA-Timer-Stop-Sound-Off -> PA-CONSIST Sound = 0
 
 
-# --- State: Station
+# --- PA State: Station
 
 # Departure from Station (going up)
 PA-State-Station & P3.2 & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
@@ -114,7 +115,7 @@ PA-State-Station & !PA-Toggle ->
     Reset Timers ;
 
 
-# --- State: Going Up
+# --- PA State: Going Up
 
 Timer PA-Station-Horn = 2
 PA-State-Up & P3.2 & PA-CONSIST Stopped ->
@@ -130,12 +131,12 @@ PA-Station-Horn -> PA-CONSIST Horn
 PA-State-Up & P3.1 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
 
 # Mid-Station doppler on the way up
-PA-State-Up &  P3.1 + 37 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+PA-State-Up &  B321 + 27 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
 # Sonora speed reduction
-PA-State-Up &  P3.1 + 50 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Sonora-Speed
-PA-State-Up &  P3.1 + 62 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed ; PA-CONSIST Horn
+PA-State-Up &  B330 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Sonora-Speed
+PA-State-Up &  B330 + 10 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed ; PA-CONSIST Horn
 # After tunnel on the way up
-PA-State-Up &  P3.1 + 76 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+PA-State-Up &  B330 + 24 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
 
 PA-State-Up & B360 ->
     PA-State-Up = 0 ;
@@ -148,7 +149,7 @@ PA-State-Up & !PA-Toggle & PA-CONSIST Forward ->
     PA-State-Down = 1 ;
     PA-CONSIST Reverse = PA-Summit-Speed
 
-# --- State: Summit
+# --- PA State: Summit
 
 PA-State-Summit & B370 +  9 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Summit-Speed
 PA-State-Summit & B370 + 14 & PA-CONSIST Forward ->
@@ -166,17 +167,16 @@ PA-State-Summit & !B370 & B360 & PA-CONSIST Reverse ->
     PA-Timer-Acquire-Route Start
 
 
-# --- State: Going Down
+# --- PA State: Going Down
 
 Timer PA-Timer-Full-Reverse = 12
-Timer PA-Timer-Horn-Midway-Back = 66
 PA-State-Down & PA-CONSIST Reverse ->
     PA-Timer-Full-Reverse Start ;
-    PA-Timer-Horn-Midway-Back Start ;
     PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
 PA-State-Down & PA-CONSIST Reverse & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
-PA-State-Down & PA-CONSIST Reverse & PA-Timer-Horn-Midway-Back & PA-Toggle ->
-                                                              PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+PA-State-Down & PA-CONSIST Reverse & B321 & PA-Toggle ->
+    PA-CONSIST F3 = 1 ;
+    PA-CONSIST F3 = 0
 
 # Arrival at Station
 PA-State-Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
@@ -190,7 +190,7 @@ PA-State-Down & P3.2 + 18 & PA-CONSIST Stopped ->
     PA-CONSIST F6 = 0 ; PA-CONSIST  F9 = 0
 
 
-# --- Horn
+# --- PA Horn
 # Horn when button is pressed during move
 #
 #PA-State-Up     & PA-Run3 -> PA-CONSIST Horn
@@ -220,12 +220,12 @@ Var BL-State-Stop    = 1
 Var BL-State-Up      = 0
 Var BL-State-Down    = 0
 
-# --- State: Setup at reverse station
+# --- BL State: Setup at reverse station
 
-!PA-Toggle -> BL Sound = 0
-PA-Toggle -> BL Sound = 1
+!BL-Toggle -> BL Sound = 0
+BL-Toggle -> BL Sound = 1
 
-BL-State-Stop & !BLParked & BLReverse & BLRun & !PA-Toggle ->
+BL-State-Stop & !BLParked & BLReverse & BLRun & !BL-Toggle ->
     BL F1 = 1 ;
     BL Light = 0;
     BL Reverse = BL-Station-Speed ;
@@ -233,19 +233,19 @@ BL-State-Stop & !BLParked & BLReverse & BLRun & !PA-Toggle ->
     BL-State-Up = 0 ;
     BL-State-Down = 1
 
-BL-State-Down & BLParked & BL Stopped & !PA-Toggle ->
+BL-State-Down & BLParked & BL Stopped & !BL-Toggle ->
     BL F9 = 0 ;
     BL Light = 0;
     BL-State-Down = 0 ;
     BL-State-Stop = 1
 
-BL-State-Stop & BLParked & PA-Toggle ->
+BL-State-Stop & BLParked & BL-Toggle ->
     BL F9 = 1 ;
     BL Light = 1
 
-# --- State: Stopped
+# --- BL State: Stopped
 
-BL-State-Stop & BLParked & BLRun & PA-Toggle ->
+BL-State-Stop & BLParked & BLRun & BL-Toggle ->
     BL F1 = 0 ;
     BL F8 = 1 ;
     BL F9 = 1 ;
@@ -253,7 +253,7 @@ BL-State-Stop & BLParked & BLRun & PA-Toggle ->
     BL-State-Stop = 0 ;
     BL-State-Up = 1
 
-# --- State: Up (front)
+# --- BL State: Up (front)
 
 BL-State-Up -> BL Forward = BL-Station-Speed ; T324 Normal
 
@@ -269,42 +269,42 @@ BL-State-Up & BLReverse + 6 -> BL Stop ; BL Horn ;
     BL-State-Up = 0 ;
     BL-State-Down = 1
 
-BL-State-Up & !BL Stopped & BLRun & PA-Toggle -> BL Horn
+BL-State-Up & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 
-BL-State-Up & !PA-Toggle ->
+BL-State-Up & !BL-Toggle ->
     BL Reverse = BL-Station-Speed ;
     BL-State-Up = 0 ;
     BL-State-Down = 1
 
-# --- State: Down (reverse)
+# --- BL State: Down (reverse)
 
 BL-State-Down + 15 -> BL Reverse = BL-Station-Speed ;
-BL-State-Down + 16 & PA-Toggle -> BL F8 = 1;
-BL-State-Down + 17 & PA-Toggle -> BL Horn
+BL-State-Down + 16 & BL-Toggle -> BL F8 = 1;
+BL-State-Down + 17 & BL-Toggle -> BL Horn
 
 BL-State-Down & BLTunnel ->
     BL F1 = 0;
     BL Reverse = BL-Full-Speed
 
-BL-State-Down & !BLTunnel + 14 & PA-Toggle -> BL Horn
-BL-State-Down & !BLTunnel + 16 & PA-Toggle -> BL Horn
+BL-State-Down & !BLTunnel + 14 & BL-Toggle -> BL Horn
+BL-State-Down & !BLTunnel + 16 & BL-Toggle -> BL Horn
 BL-State-Down & BLStation     -> T324 Normal
 BL-State-Down & BLStation + 2 -> BL F1 = 1
 
 
 
-BL-State-Down & BLStation + 5 & PA-Toggle -> BL Stop
+BL-State-Down & BLStation + 5 & BL-Toggle -> BL Stop
 BL-State-Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
 
 
 BL-State-Down & BLParked + 2  -> BL Stop
-BL-State-Down & BLParked + 12 ->
+BL-State-Down & BLParked + 6 ->
     BL F9 = 0 ;
     BL Light = 0;
     BL-State-Down = 0 ;
     BL-State-Stop = 1
 
-BL-State-Down & !BL Stopped & BLRun & PA-Toggle -> BL Horn
+BL-State-Down & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 
 
 # ------------------
