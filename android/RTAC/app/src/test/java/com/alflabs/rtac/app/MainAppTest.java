@@ -1,0 +1,35 @@
+package com.alflabs.rtac.app;
+
+import android.app.Application;
+import com.alflabs.rtac.BuildConfig;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+
+import static com.google.common.truth.Truth.assertThat;
+
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
+public class MainAppTest {
+    private Application mApp;
+
+    @Before
+    public void setUp() throws Exception {
+        mApp = RuntimeEnvironment.application;
+    }
+
+    @Test
+    public void onCreate() throws Exception {
+        assertThat(mApp).isNotNull();
+        assertThat(mApp).isInstanceOf(MainApp.class);
+    }
+
+    @Test
+    public void getAppComponent() throws Exception {
+        assertThat(MainApp.getAppComponent(RuntimeEnvironment.application)).isInstanceOf(IAppComponent.class);
+    }
+
+}
