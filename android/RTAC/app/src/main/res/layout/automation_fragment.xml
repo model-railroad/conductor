@@ -1,0 +1,28 @@
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             tools:context="com.alflabs.rtac.fragment.AutomationFragment">
+
+    <TableRow
+            android:layout_width="match_parent">
+        <include
+                android:id="@+id/cell1"
+                android:layout_weight="1"
+                layout="@layout/automation_cell"/>
+        <View
+            android:background="@color/white"
+            android:layout_width="1dp"
+            android:layout_height="match_parent" />
+        <include
+                android:id="@+id/cell2"
+                android:layout_weight="1"
+                layout="@layout/automation_cell"/>
+    </TableRow>
+
+    <View
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+</TableLayout>

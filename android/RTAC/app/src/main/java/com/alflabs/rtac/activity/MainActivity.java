@@ -1,7 +1,6 @@
 package com.alflabs.rtac.activity;
 
 import android.app.Activity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.app.MainApp;
