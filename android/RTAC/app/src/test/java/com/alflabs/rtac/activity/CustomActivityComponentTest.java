@@ -1,7 +1,6 @@
 package com.alflabs.rtac.activity;
 
 import android.view.View;
-import android.widget.TextView;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.InjectionValidator;
@@ -18,10 +17,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -39,7 +35,6 @@ public class CustomActivityComponentTest {
 
     @Before
     public void setUp() throws Exception {
-        //RuntimeEnvironment.application.setTheme(android.R.style.Theme_Holo_Light_DarkActionBar);
         ActivityController<TestMainActivity> activityController = Robolectric.buildActivity(TestMainActivity.class);
         mActivity = activityController.get();
         // Setup the mockito expectations before onCreate() gets called.

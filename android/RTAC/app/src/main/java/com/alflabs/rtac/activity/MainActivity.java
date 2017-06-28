@@ -1,5 +1,6 @@
 package com.alflabs.rtac.activity;
 
+import android.app.Activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import com.alflabs.rtac.R;
@@ -8,7 +9,7 @@ import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     @Inject ILogger mLogger;
 

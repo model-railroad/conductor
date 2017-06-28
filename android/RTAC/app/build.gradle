@@ -17,12 +17,17 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+
+    compileOptions {
+        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_7
+    }
 }
 
 dependencies {
     compile project(":LibUtils")
 
-    compile "com.android.support:appcompat-v7:26.+"
+    //--compile "com.android.support:appcompat-v7:26.+"
     compile "com.android.support.constraint:constraint-layout:1.0.2"
 
 
