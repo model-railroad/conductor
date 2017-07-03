@@ -8,7 +8,7 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.LogException;
-import com.alflabs.conductor.util.Pair;
+import com.alflabs.utils.RPair;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -67,20 +67,20 @@ public class StatusWnd {
             File scriptName,
             Script script,
             IJmriProvider jmriProvider,
-            Supplier<Pair<Script, String>> reloader,
+            Supplier<RPair<Script, String>> reloader,
             Runnable stopper) {
         mTextScriptName.setText(scriptName.getAbsolutePath());
         initScript(script, jmriProvider);
 
         mButtonReload.addActionListener(actionEvent -> {
             mLastError = null;
-            Pair<Script, String> pair = reloader.get();
-            if (pair.mSecond != null) {
-                mLastError = pair.mSecond;
+            RPair<Script, String> pair = reloader.get();
+            if (pair.second != null) {
+                mLastError = pair.second;
                 showError(mLastError);
             }
-            if (pair.mFirst != null) {
-                initScript(pair.mFirst, jmriProvider);
+            if (pair.first != null) {
+                initScript(pair.first, jmriProvider);
             }
         });
 

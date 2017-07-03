@@ -6,7 +6,7 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.conductor.util.Pair;
+import com.alflabs.utils.RPair;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class EntryPoint {
                     // Reloader getter
                     () -> {
                         String error = loadScript(jmriProvider, scriptFile, logger, filepath);
-                        return Pair.of(mScript, error);
+                        return RPair.create(mScript, error);
                     },
                     // Stopper runnable
                     () -> mStopRequested = true);
