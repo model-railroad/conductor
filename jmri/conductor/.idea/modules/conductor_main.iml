@@ -12,14 +12,18 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: com.google.guava:guava:19.0" level="project" />
+    <orderEntry type="module" module-name="LibUtils-LibUtilsJava_main" />
     <orderEntry type="library" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.truth:truth:0.31" level="project" />
     <orderEntry type="library" name="Gradle: org.antlr:antlr4-runtime:4.5.3" level="project" />
     <orderEntry type="library" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" name="Gradle: jdom:jdom:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: junit:junit:4.10" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.errorprone:error_prone_annotations:2.0.12" level="project" />
     <orderEntry type="library" name="Gradle: asm:asm-tree:3.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.hamcrest:hamcrest-core:1.1" level="project" />
     <orderEntry type="library" name="Gradle: asm:asm:3.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.truth:truth:0.30" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:20.0" level="project" />
   </component>
 </module>

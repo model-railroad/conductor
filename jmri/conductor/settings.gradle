@@ -1,6 +1,5 @@
 rootProject.name = "conductor"
 
 include "LibUtilsJava"
-project(":LibUtilsJava").projectDir = new File(rootProject.projectDir,
-        "../../android/RTAC/LibUtils/LibUtilsJava".replace("/", File.separator))
+project(":LibUtilsJava").projectDir = new File(rootProject.projectDir, "LibUtils/LibUtilsJava")
 
