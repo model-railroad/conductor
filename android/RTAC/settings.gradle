@@ -1,2 +1,3 @@
 include ":app"
-include ":LibUtils"
+include ":LibUtils:LibUtilsJava"
+include ":LibUtils:LibUtilsAndroid"
