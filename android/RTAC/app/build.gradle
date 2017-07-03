@@ -25,7 +25,7 @@ android {
 }
 
 dependencies {
-    compile project(":LibUtils:LibUtilsAndroid")
+    compile project(":LibUtilsAndroid")
 
     //--compile "com.android.support:appcompat-v7:26.+"
     compile "com.android.support.constraint:constraint-layout:1.0.2"

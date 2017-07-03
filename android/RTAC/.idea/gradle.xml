@@ -8,7 +8,6 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/LibUtils" />
             <option value="$PROJECT_DIR$/LibUtils/LibUtilsAndroid" />
             <option value="$PROJECT_DIR$/LibUtils/LibUtilsJava" />
             <option value="$PROJECT_DIR$/app" />
