@@ -6,15 +6,21 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.ILogger;
 import com.alflabs.utils.RPair;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
+    private static final int KV_SERVER_PORT = 8080;
+
     private Script mScript;
     private boolean mStopRequested;
+    private KeyValueServer mKeyValueServer;
 
     /**
      * Invoked when the JMRI automation is being setup, from the Jython script.
@@ -32,6 +38,10 @@ public class EntryPoint {
 
         // Open the window if a GUI is possible. This can fail.
         try {
+            mKeyValueServer = new KeyValueServer(createLogger(logger));
+            InetSocketAddress address = mKeyValueServer.start(KV_SERVER_PORT);
+            logger.log("[Conductor] KV Server available at " + address);
+
             StatusWnd wnd = StatusWnd.open();
             wnd.init(
                     filepath,
@@ -43,7 +53,11 @@ public class EntryPoint {
                         return RPair.create(mScript, error);
                     },
                     // Stopper runnable
-                    () -> mStopRequested = true);
+                    () -> {
+                        logger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
+                        mKeyValueServer.stopSync();
+                        mStopRequested = true;
+                    });
 
         } catch (Exception e) {
             // Ignore. continue.
@@ -90,6 +104,20 @@ public class EntryPoint {
             LogException.logException(logger, e);
         }
         return error.toString();
+    }
+
+    private ILogger createLogger(Logger logger) {
+        return new ILogger() {
+            @Override
+            public void d(String tag, String message) {
+                logger.log(tag + ": " + message);
+            }
+
+            @Override
+            public void d(String tag, String message, Throwable tr) {
+                logger.log(tag + ": " + message + ": " + tr);
+            }
+        };
     }
 
     /**

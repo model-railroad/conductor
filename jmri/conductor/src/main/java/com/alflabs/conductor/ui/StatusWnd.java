@@ -15,20 +15,14 @@ import com.intellij.uiDesigner.core.Spacer;
 
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 
 public class StatusWnd {
     private final JFrame mFrame;
@@ -89,6 +83,15 @@ public class StatusWnd {
             mFrame.dispose();
         });
 
+        mFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        mFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent windowEvent) {
+                super.windowClosing(windowEvent);
+                stopper.run();
+                mFrame.dispose();
+            }
+        });
     }
 
     private void showError(String error) {

@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" />
+      <module fileurl="file://C:\Ralf\RalfDev\bitbucket\ralfoide\randall-layout\android\RTAC\LibUtils\LibUtilsAndroid\LibUtilsAndroid.iml" filepath="C:\Ralf\RalfDev\bitbucket\ralfoide\randall-layout\android\RTAC\LibUtils\LibUtilsAndroid\LibUtilsAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" />
+      <module fileurl="file://C:\Ralf\RalfDev\bitbucket\ralfoide\randall-layout\android\RTAC\LibUtils\LibUtilsJava\LibUtilsJava.iml" filepath="C:\Ralf\RalfDev\bitbucket\ralfoide\randall-layout\android\RTAC\LibUtils\LibUtilsJava\LibUtilsJava.iml" />
       <module fileurl="file://$PROJECT_DIR$/RTAC.iml" filepath="$PROJECT_DIR$/RTAC.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
