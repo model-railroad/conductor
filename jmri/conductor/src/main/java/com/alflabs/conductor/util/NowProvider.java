@@ -1,10 +1,16 @@
 package com.alflabs.conductor.util;
 
+import javax.inject.Inject;
+
 /**
  * Helper around {@link System#currentTimeMillis()} to be able to override it
  * during testing.
  */
 public class NowProvider {
+
+    @Inject
+    public NowProvider() {}
+
     /** Returns the current time in milliseconds. */
     public long now() {
         return System.currentTimeMillis();

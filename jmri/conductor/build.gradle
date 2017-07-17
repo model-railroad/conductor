@@ -1,7 +1,11 @@
+plugins {
+    id "java"
+    // Add the Annotation Processor Plugin to run dagger at build-time.
+    id "net.ltgt.apt" version "0.10"
+}
+
 group "com.alflabs.conductor"
 version "1.0-SNAPSHOT"
-
-apply plugin: "java"
 
 repositories {
     mavenCentral()
@@ -19,8 +23,24 @@ ext.antlr = [
         antlrGenDir : "src/antlr/java"
 ]
 
+ext.dagger = [
+    generatedSrcDir: "../build/generated/source/apt/main"
+]
+
 sourceSets {
-    main.java.srcDir antlr.antlrGenDir
+    // Gradle syntax to add source dirs is either:
+    // All in one line to set a full new srcDir set:
+    //      main.java.srcDir [dirToAdd]+
+    // or to extend the block using one srcDirs added per line:
+    //      main { java { [srcDirs dirToAdd]+ } }
+    // (srcDir is a sets a list whereas srcDirs adds to a list)
+
+    main {
+        java {
+            srcDirs antlr.antlrGenDir
+            srcDirs dagger.generatedSrcDir
+        }
+    }
 }
 
 dependencies {
@@ -32,6 +52,9 @@ dependencies {
     // antlr4 dep for building g4 to java sources, and antlr runtime for compiling generated srcs
     antlr4  group: "org.antlr", name: "antlr4",         version: "4.5.3"
     compile group: "org.antlr", name: "antlr4-runtime", version: "4.5.3"
+
+    compile "com.google.dagger:dagger:2.5"
+    apt "com.google.dagger:dagger-compiler:2.5"
 
     testCompile "junit:junit:4.11"
     testCompile "com.google.truth:truth:0.31"

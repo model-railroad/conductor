@@ -28,6 +28,9 @@ public class EntryPoint {
      * @return True to start the automation, false if there's a problem and it should not start.
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
+
+        DaggerIConductorComponent.builder().build();
+
         Logger logger = jmriProvider;
         logger.log("[Conductor] Setup");
         File filepath = new File(scriptFile);
