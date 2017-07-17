@@ -7,9 +7,9 @@ import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
-import com.alflabs.utils.ILogger;
 import com.alflabs.utils.RPair;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -20,7 +20,9 @@ public class EntryPoint {
 
     private Script mScript;
     private boolean mStopRequested;
-    private KeyValueServer mKeyValueServer;
+
+    @Inject Logger mLogger;
+    @Inject KeyValueServer mKeyValueServer;
 
     /**
      * Invoked when the JMRI automation is being setup, from the Jython script.
@@ -29,21 +31,24 @@ public class EntryPoint {
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
 
-        DaggerIConductorComponent.builder().build();
+        IConductorComponent component = DaggerIConductorComponent
+                .builder()
+                .conductorModule(new ConductorModule(jmriProvider))
+                .build();
 
-        Logger logger = jmriProvider;
-        logger.log("[Conductor] Setup");
+        component.inject(this);
+
+        mLogger.log("[Conductor] Setup");
         File filepath = new File(scriptFile);
 
-        if (loadScript(jmriProvider, scriptFile, logger, filepath).length() > 0) {
+        if (loadScript(jmriProvider, scriptFile, mLogger, filepath).length() > 0) {
             return false;
         }
 
         // Open the window if a GUI is possible. This can fail.
         try {
-            mKeyValueServer = new KeyValueServer(createLogger(logger));
             InetSocketAddress address = mKeyValueServer.start(KV_SERVER_PORT);
-            logger.log("[Conductor] KV Server available at " + address);
+            mLogger.log("[Conductor] KV Server available at " + address);
 
             StatusWnd wnd = StatusWnd.open();
             wnd.init(
@@ -52,20 +57,20 @@ public class EntryPoint {
                     jmriProvider,
                     // Reloader getter
                     () -> {
-                        String error = loadScript(jmriProvider, scriptFile, logger, filepath);
+                        String error = loadScript(jmriProvider, scriptFile, mLogger, filepath);
                         return RPair.create(mScript, error);
                     },
                     // Stopper runnable
                     () -> {
-                        logger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
+                        mLogger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
                         mKeyValueServer.stopSync();
                         mStopRequested = true;
                     });
 
         } catch (Exception e) {
             // Ignore. continue.
-            logger.log("[Conductor] UI not enabled: ");
-            LogException.logException(logger, e);
+            mLogger.log("[Conductor] UI not enabled: ");
+            LogException.logException(mLogger, e);
         }
 
         return true;
@@ -107,20 +112,6 @@ public class EntryPoint {
             LogException.logException(logger, e);
         }
         return error.toString();
-    }
-
-    private ILogger createLogger(Logger logger) {
-        return new ILogger() {
-            @Override
-            public void d(String tag, String message) {
-                logger.log(tag + ": " + message);
-            }
-
-            @Override
-            public void d(String tag, String message, Throwable tr) {
-                logger.log(tag + ": " + message + ": " + tr);
-            }
-        };
     }
 
     /**

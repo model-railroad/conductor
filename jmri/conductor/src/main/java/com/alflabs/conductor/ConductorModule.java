@@ -1,28 +1,59 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.conductor.util.NowProvider;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.ILogger;
 import dagger.Module;
+import dagger.Provides;
+
+import javax.inject.Singleton;
 
 @Module
 public class ConductorModule {
     private final IJmriProvider mJmriProvider;
-    private final KeyValueServer mKvServer;
 
-    public ConductorModule(IJmriProvider jmriProvider, KeyValueServer kvServer) {
+    public ConductorModule(IJmriProvider jmriProvider) {
         mJmriProvider = jmriProvider;
-        mKvServer = kvServer;
     }
 
-    public Logger provideLogger() {
-        return mJmriProvider;
+    @Singleton
+    @Provides
+    public NowProvider provideNowProvider() {
+        return new NowProvider();
     }
 
+    @Singleton
+    @Provides
     public IJmriProvider provideJmriProvider() {
         return mJmriProvider;
     }
 
-    public KeyValueServer provideKvServer() {
-        return mKvServer;
+    @Singleton
+    @Provides
+    public Logger provideLogger() {
+        return mJmriProvider;
+    }
+
+    @Singleton
+    @Provides
+    public KeyValueServer provideKeyValueServer(ILogger logger) {
+        return new KeyValueServer(logger);
+    }
+
+    @Singleton
+    @Provides
+    public ILogger provideILogger(Logger logger) {
+        return new ILogger() {
+            @Override
+            public void d(String tag, String message) {
+                logger.log(tag + ": " + message);
+            }
+
+            @Override
+            public void d(String tag, String message, Throwable tr) {
+                logger.log(tag + ": " + message + ": " + tr);
+            }
+        };
     }
 }
