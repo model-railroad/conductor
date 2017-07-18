@@ -13,6 +13,7 @@ import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.ThrottleFactory;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
+import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.Now;
 import com.google.common.base.Charsets;
@@ -41,6 +42,7 @@ public class ScriptParser2 {
 
     private final Now mNow;
     private final ThrottleFactory mThrottleFactory;
+    private final TurnoutFactory mTurnoutFactory;
     private final Script mScript;
     private final Reporter mReporter;
 
@@ -49,11 +51,13 @@ public class ScriptParser2 {
             Reporter reporter,
             Script script,
             Now now,
-            ThrottleFactory throttleFactory) {
+            ThrottleFactory throttleFactory,
+            TurnoutFactory turnoutFactory) {
         mReporter = reporter;
         mScript = script;
         mNow = now;
         mThrottleFactory = throttleFactory;
+        mTurnoutFactory = turnoutFactory;
     }
 
     /**
@@ -134,7 +138,7 @@ public class ScriptParser2 {
                 mScript.addSensor(name, sensor);
                 break;
             case "turnout":
-                Turnout turnout = new Turnout(value);
+                Turnout turnout = mTurnoutFactory.create(value);
                 mScript.addTurnout(name, turnout);
                 break;
             default:

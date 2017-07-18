@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
+import com.google.auto.factory.AutoFactory;
 
 /**
  * A sensor defined by a script.

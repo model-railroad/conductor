@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,11 +21,11 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class ThrottleTest {
-    @Rule MockitoRule mRule = MockitoJUnit.rule();
+    public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IJmriProvider mJmriProvider;
+    @Mock IJmriThrottle mJmriThrottle;
 
-    private IJmriThrottle mJmriThrottle;
     private Throttle mThrottle;
     private IIntFunction fwd;
     private IIntFunction rev;
@@ -39,17 +40,14 @@ public class ThrottleTest {
 
     @Before
     public void setUp() throws Exception {
-        mJmriThrottle = mock(IJmriThrottle.class);
+        when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
-        IJmriProvider provider = mock(IJmriProvider.class);
-        when(provider.getThrotlle(42)).thenReturn(mJmriThrottle);
-
-        ThrottleFactory factory = new ThrottleFactory(mJmriProvider);
+        ThrottleFactory factory = new ThrottleFactory(InstanceFactory.create(mJmriProvider));
         mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
 
-        mThrottle.onExecStart(provider);
-        verify(provider).getThrotlle(42);
+        mThrottle.onExecStart(mJmriProvider);
+        verify(mJmriProvider).getThrotlle(42);
 
         fwd = mThrottle.createFunction(Throttle.Function.FORWARD);
         rev = mThrottle.createFunction(Throttle.Function.REVERSE);

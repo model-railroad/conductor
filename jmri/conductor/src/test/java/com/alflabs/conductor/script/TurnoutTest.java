@@ -2,9 +2,14 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriTurnout;
+import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import static com.google.common.truth.Truth.*;
 import static org.mockito.Mockito.mock;
@@ -14,20 +19,24 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class TurnoutTest {
-    private IJmriTurnout mJmriTurnout;
+    public @Rule MockitoRule mRule = MockitoJUnit.rule();
+
+    @Mock IJmriProvider mJmriProvider;
+    @Mock IJmriTurnout mJmriTurnout;
+
     private Turnout mTurnout;
 
     @Before
     public void setUp() throws Exception {
         mJmriTurnout = mock(IJmriTurnout.class);
 
-        IJmriProvider provider = mock(IJmriProvider.class);
-        when(provider.getTurnout("name")).thenReturn(mJmriTurnout);
+        when(mJmriProvider.getTurnout("name")).thenReturn(mJmriTurnout);
 
-        mTurnout = new Turnout("name");
+        TurnoutFactory factory = new TurnoutFactory(InstanceFactory.create(mJmriProvider));
+        mTurnout = factory.create("name");
 
-        mTurnout.onExecStart(provider);
-        verify(provider).getTurnout("name");
+        mTurnout.onExecStart(mJmriProvider);
+        verify(mJmriProvider).getTurnout("name");
 
         assertThat(mTurnout.isActive()).isTrue();
     }

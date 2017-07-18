@@ -2,6 +2,10 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriTurnout;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
+
+import javax.inject.Inject;
 
 /**
  * A turnout defined by a script.
@@ -14,9 +18,12 @@ import com.alflabs.conductor.IJmriTurnout;
  * When used as a conditional, a turnout is true in its "normal" state and false
  * in reverse.
  */
+@AutoFactory(allowSubclasses = true)
 public class Turnout implements IConditional, IExecStart {
 
     private final String mJmriName;
+    private final IJmriProvider mJmriProvider;
+
     private IJmriTurnout mTurnout;
     private boolean mIsNormal = true;
 
@@ -30,14 +37,16 @@ public class Turnout implements IConditional, IExecStart {
     }
 
     /** Creates a new turnout for the given JMRI system name. */
-    public Turnout(String jmriName) {
+    @Inject
+    public Turnout(String jmriName, @Provided IJmriProvider jmriProvider) {
         mJmriName = jmriName;
+        mJmriProvider = jmriProvider;
     }
 
     /** Initializes the underlying JMRI turnout. */
     @Override
     public void onExecStart(IJmriProvider provider) {
-        mTurnout = provider.getTurnout(mJmriName);
+        mTurnout = mJmriProvider.getTurnout(mJmriName);
     }
 
     public IIntFunction createFunction(Function function) {

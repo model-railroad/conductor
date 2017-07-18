@@ -22,6 +22,7 @@ public class Throttle implements IExecStart {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private final IJmriProvider mJmriProvider;
+
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
@@ -54,9 +55,7 @@ public class Throttle implements IExecStart {
 
     /** Creates a new throttle for multiple DCC addresses. */
     @Inject
-    public Throttle(
-            List<Integer> dccAddresses,
-            @Provided IJmriProvider jmriProvider) {
+    public Throttle(List<Integer> dccAddresses, @Provided IJmriProvider jmriProvider) {
         mJmriProvider = jmriProvider;
         mDccAddresses.addAll(dccAddresses);
     }
