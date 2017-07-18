@@ -112,9 +112,7 @@ public class EntryPoint {
             ScriptParser2 parser = scriptComponent.getScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
-            mScript = null;
-            parser.parse(mComponent.getScriptFile());
-
+            mScript = parser.parse(mComponent.getScriptFile());
             mEngine = scriptComponent.getScriptExecEngine();
             mEngine.onExecStart();
         } catch (IOException e) {
