@@ -2,12 +2,12 @@ package com.alflabs.conductor.util;
 
 public class RateLimiter {
 
-    private final NowProvider mNow;
+    private final Now mNow;
     private final long mTargetTimeMs;
     private long mLastTimeMs;
 
-    public RateLimiter(float frequencyHz, NowProvider nowProvider) {
-        mNow = nowProvider;
+    public RateLimiter(float frequencyHz, Now now) {
+        mNow = now;
         mTargetTimeMs = (long) (1000.0f / frequencyHz);
     }
 

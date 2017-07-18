@@ -6,10 +6,10 @@ import javax.inject.Inject;
  * Helper around {@link System#currentTimeMillis()} to be able to override it
  * during testing.
  */
-public class NowProvider {
+public class Now {
 
     @Inject
-    public NowProvider() {}
+    public Now() {}
 
     /** Returns the current time in milliseconds. */
     public long now() {

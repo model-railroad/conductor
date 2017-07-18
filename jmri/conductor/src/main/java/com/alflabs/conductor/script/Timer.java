@@ -1,6 +1,6 @@
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 
 /**
  * A timer defined by a script.
@@ -11,7 +11,7 @@ import com.alflabs.conductor.util.NowProvider;
  */
 public class Timer implements IConditional {
 
-    private final NowProvider mNowProvider;
+    private final Now mNow;
     private final int mDurationSec;
     private long mEndTS;
 
@@ -24,9 +24,9 @@ public class Timer implements IConditional {
         END
     }
 
-    public Timer(int durationSec, NowProvider nowProvider) {
+    public Timer(int durationSec, Now now) {
         mDurationSec = durationSec;
-        mNowProvider = nowProvider;
+        mNow = now;
         mEndTS = 0;
     }
 
@@ -54,7 +54,7 @@ public class Timer implements IConditional {
     }
 
     private long now() {
-        return mNowProvider.now();
+        return mNow.now();
     }
 
 }

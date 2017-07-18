@@ -14,8 +14,8 @@ import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.ScriptScope;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.NowProvider;
-import com.alflabs.conductor.util.NowProviderTest;
+import com.alflabs.conductor.util.FakeNow;
+import com.alflabs.conductor.util.Now;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class ScriptParser2Test {
 
     private TestReporter mReporter;
     private IScriptComponent mScriptComponent;
-    private NowProviderTest.TestableNowProvider mNow;
+    private FakeNow mNow;
     private IScriptComponent mTestableScriptComponent;
 
     @Before
@@ -64,12 +64,12 @@ public class ScriptParser2Test {
 
         mScriptComponent = component1.newScriptComponent(new ScriptModule(mReporter));
 
-        mNow = new NowProviderTest.TestableNowProvider(1000);
+        mNow = new FakeNow(1000);
 
         IConductorComponent component2 = DaggerIConductorComponent.builder()
                 .conductorModule(new ConductorModule(mJmriProvider) {
                     @Override
-                    public NowProvider provideNowProvider() {
+                    public Now provideNowProvider() {
                         return mNow;
                     }
                 })
@@ -82,9 +82,9 @@ public class ScriptParser2Test {
 
                     @Override
                     @ScriptScope // provider is a "singleton" in the Script scope
-                    public ScriptParser2 provideScriptParser(Reporter reporter, Script script, NowProvider nowProvider) {
+                    public ScriptParser2 provideScriptParser(Reporter reporter, Script script, Now now) {
                         if (mParserSingleton == null) {
-                            mParserSingleton = new TestableScriptParser2(reporter, script, nowProvider);
+                            mParserSingleton = new TestableScriptParser2(reporter, script, now);
                         }
                         return mParserSingleton;
                     }
@@ -1090,16 +1090,16 @@ public class ScriptParser2Test {
 
     @Deprecated
     private static class TestableScriptParser2 extends ScriptParser2 {
-//        private final NowProvider mNowProvider;
+//        private final Now mNowProvider;
 
-        public TestableScriptParser2(Reporter reporter, Script script, NowProvider nowProvider) {
-            super(reporter, script, nowProvider);
+        public TestableScriptParser2(Reporter reporter, Script script, Now now) {
+            super(reporter, script, now);
 //            mNowProvider = script;
         }
 
         // DEPRECATED
 //        @Override
-//        Timer createTimer(int durationSec, NowProvider nowProvider) {
+//        Timer createTimer(int durationSec, Now nowProvider) {
 //            return super.createTimer(durationSec, mNowProvider);
 //        }
     }

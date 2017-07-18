@@ -7,11 +7,11 @@ import static com.google.common.truth.Truth.assertThat;
 
 public class RateLimiterTest {
 
-    private NowProviderTest.TestableNowProvider mNow;
+    private FakeNow mNow;
 
     @Before
     public void setUp() throws Exception {
-        mNow = new NowProviderTest.TestableNowProvider(1000);
+        mNow = new FakeNow(1000);
     }
 
     @Test

@@ -7,12 +7,12 @@ import static com.google.common.truth.Truth.assertThat;
 
 public class FrequencyMeasurerTest {
 
-    private NowProviderTest.TestableNowProvider mNow;
+    private FakeNow mNow;
     private FrequencyMeasurer mFreq;
 
     @Before
     public void setUp() throws Exception {
-        mNow = new NowProviderTest.TestableNowProvider(1000);
+        mNow = new FakeNow(1000);
         mFreq = new FrequencyMeasurer(mNow);
     }
 

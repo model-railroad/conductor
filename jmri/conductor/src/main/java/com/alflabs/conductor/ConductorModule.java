@@ -1,7 +1,7 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.ILogger;
 import dagger.Module;
@@ -19,8 +19,8 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public NowProvider provideNowProvider() {
-        return new NowProvider();
+    public Now provideNowProvider() {
+        return new Now();
     }
 
     @Singleton

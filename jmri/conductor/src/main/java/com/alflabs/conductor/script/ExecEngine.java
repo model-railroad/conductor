@@ -2,7 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.util.FrequencyMeasurer;
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 import com.alflabs.conductor.util.RateLimiter;
 
 import javax.inject.Inject;
@@ -19,7 +19,7 @@ public class ExecEngine {
     private Runnable mHandleListener;
 
     @Inject
-    public ExecEngine(NowProvider now, Script script) {
+    public ExecEngine(Now now, Script script) {
         mScript = script;
         mHandleFrequency = new FrequencyMeasurer(now);
         mHandleRateLimiter = new RateLimiter(30.0f, now);

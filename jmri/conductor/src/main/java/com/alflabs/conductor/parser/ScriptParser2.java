@@ -8,13 +8,12 @@ import com.alflabs.conductor.script.IConditional;
 import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.Script;
-import com.alflabs.conductor.script.ScriptScope;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -27,7 +26,6 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,16 +38,16 @@ import java.util.Locale;
 public class ScriptParser2 {
 
     private final Script mScript;
-    private final NowProvider mNowProvider;
+    private final Now mNow;
     private final Reporter mReporter;
 
     public ScriptParser2(
             Reporter reporter,
             Script script,
-            NowProvider nowProvider) {
+            Now now) {
         mReporter = reporter;
         mScript = script;
-        mNowProvider = nowProvider;
+        mNow = now;
     }
 
     /**
@@ -57,7 +55,7 @@ public class ScriptParser2 {
      */
     @Deprecated
     Timer createTimer(int durationSec) {
-        return new Timer(durationSec, mNowProvider);
+        return new Timer(durationSec, mNow);
     }
 
     /**

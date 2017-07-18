@@ -2,7 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ import java.util.TreeMap;
  * of being factored out.
  */
 @ScriptScope
-public class Script extends NowProvider {
+public class Script extends Now {
 
     private final Logger mLogger;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();

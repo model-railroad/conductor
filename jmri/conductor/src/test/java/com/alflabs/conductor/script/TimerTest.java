@@ -1,6 +1,6 @@
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.util.NowProviderTest;
+import com.alflabs.conductor.util.FakeNow;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -8,8 +8,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class TimerTest {
     @Test
     public void testTimer() throws Exception {
-        NowProviderTest.TestableNowProvider now =
-                new NowProviderTest.TestableNowProvider(100*1000);
+        FakeNow now = new FakeNow(100*1000);
         Timer timer = new Timer(42, now);
 
         assertThat(timer.isActive()).isFalse();
@@ -33,8 +32,7 @@ public class TimerTest {
 
     @Test
     public void testTimerReset() throws Exception {
-        NowProviderTest.TestableNowProvider now =
-                new NowProviderTest.TestableNowProvider(100*1000);
+        FakeNow now = new FakeNow(100*1000);
         Timer timer = new Timer(42, now);
 
         assertThat(timer.isActive()).isFalse();

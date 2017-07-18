@@ -5,13 +5,13 @@ import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;
 
-public class NowProviderTest {
+public class NowTest {
 
-    private TestableNowProvider mNow;
+    private FakeNow mNow;
 
     @Before
     public void setUp() throws Exception {
-        mNow = new NowProviderTest.TestableNowProvider(1000);
+        mNow = new FakeNow(1000);
     }
 
     @Test
@@ -41,31 +41,4 @@ public class NowProviderTest {
         assertThat(mNow.now()).isEqualTo(3000);
     }
 
-    public static class TestableNowProvider extends NowProvider {
-        private long mNow;
-
-        public TestableNowProvider(long now) {
-            mNow = now;
-        }
-
-        public void setNow(long now) {
-            mNow = now;
-        }
-
-        public void add(long now) {
-            mNow += now;
-        }
-
-        @Override
-        public long now() {
-            return mNow;
-        }
-
-        @Override
-        public void sleep(long sleepTimeMs) {
-            if (sleepTimeMs > 0) {
-                add(sleepTimeMs);
-            }
-        }
-    }
 }

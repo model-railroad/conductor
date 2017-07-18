@@ -2,16 +2,16 @@ package com.alflabs.conductor.util;
 
 public class FrequencyMeasurer {
 
-    private final NowProvider mNowProvider;
+    private final Now mNow;
     private long mLastPingMs;
     private long mDelayMs;
 
-    public FrequencyMeasurer(NowProvider nowProvider) {
-        mNowProvider = nowProvider;
+    public FrequencyMeasurer(Now now) {
+        mNow = now;
     }
 
     public void ping() {
-        long now = mNowProvider.now();
+        long now = mNow.now();
         if (mLastPingMs != 0) {
             long delay = now - mLastPingMs;
             // simple averaging: 1/3rd last delay, 2/3rd new delay

@@ -1,6 +1,6 @@
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,8 +42,8 @@ public class IConductorComponentTest {
 
     @Test
     public void testNowProviderIsSingleton() throws Exception {
-        NowProvider np1 = mComponent.getNowProvider();
-        NowProvider np2 = mComponent.getNowProvider();
+        Now np1 = mComponent.getNowProvider();
+        Now np2 = mComponent.getNowProvider();
         assertThat(np1).isNotNull();
         assertThat(np1).isSameAs(np2);
     }

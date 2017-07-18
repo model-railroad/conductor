@@ -2,7 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.parser.Reporter;
 import com.alflabs.conductor.parser.ScriptParser2;
-import com.alflabs.conductor.util.NowProvider;
+import com.alflabs.conductor.util.Now;
 import dagger.Module;
 import dagger.Provides;
 
@@ -17,8 +17,8 @@ public class ScriptModule {
 
     @Provides
     @ScriptScope
-    public ScriptParser2 provideScriptParser(Reporter reporter, Script script, NowProvider nowProvider) {
-        return new ScriptParser2(reporter, script, nowProvider);
+    public ScriptParser2 provideScriptParser(Reporter reporter, Script script, Now now) {
+        return new ScriptParser2(reporter, script, now);
     }
 
     @Provides
