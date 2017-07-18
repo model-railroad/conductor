@@ -4,7 +4,13 @@ import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+
+import java.util.Collections;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -14,6 +20,10 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class ThrottleTest {
+    @Rule MockitoRule mRule = MockitoJUnit.rule();
+
+    @Mock IJmriProvider mJmriProvider;
+
     private IJmriThrottle mJmriThrottle;
     private Throttle mThrottle;
     private IIntFunction fwd;
@@ -34,7 +44,8 @@ public class ThrottleTest {
         IJmriProvider provider = mock(IJmriProvider.class);
         when(provider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
-        mThrottle = new Throttle(42);
+        ThrottleFactory factory = new ThrottleFactory(mJmriProvider);
+        mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
 
         mThrottle.onExecStart(provider);

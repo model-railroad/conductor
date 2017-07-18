@@ -149,7 +149,7 @@ public class StatusWnd {
         if (result instanceof String) {
             try {
                 int newAddress = Integer.parseInt((String) result);
-                throttle.setDccAddress(newAddress, jmriProvider);
+                throttle.setDccAddress(newAddress);
                 label.setText(Integer.toString(newAddress));
             } catch (Exception e) {
                 LogException.logException(jmriProvider, e);

@@ -54,7 +54,10 @@ dependencies {
     compile group: "org.antlr", name: "antlr4-runtime", version: "4.5.3"
 
     compile "com.google.dagger:dagger:2.11"
-    apt "com.google.dagger:dagger-compiler:2.11"
+    apt     "com.google.dagger:dagger-compiler:2.11"
+
+    compile "com.google.auto.factory:auto-factory:1.0-beta5"
+    apt     "com.google.auto.factory:auto-factory:1.0-beta5"
 
     testCompile "junit:junit:4.11"
     testCompile "com.google.truth:truth:0.31"

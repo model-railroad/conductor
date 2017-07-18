@@ -2,7 +2,10 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +17,11 @@ import java.util.List;
  * This throttle object keeps track of its state (speed, light/sound state) and only
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
+@AutoFactory(allowSubclasses = true)
 public class Throttle implements IExecStart {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
+    private final IJmriProvider mJmriProvider;
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
@@ -47,33 +52,31 @@ public class Throttle implements IExecStart {
         LIGHT,
     }
 
-    /** Creates a new throttle for the given JMRI DCC address. */
-    public Throttle(int dccAddress) {
-        mDccAddresses.add(dccAddress);
-    }
-
     /** Creates a new throttle for multiple DCC addresses. */
-    public Throttle(List<Integer> dccAddresses) {
+    @Inject
+    public Throttle(
+            List<Integer> dccAddresses,
+            @Provided IJmriProvider jmriProvider) {
+        mJmriProvider = jmriProvider;
         mDccAddresses.addAll(dccAddresses);
     }
-
 
     /** Initializes the underlying JMRI throttles. */
     @Override
     public void onExecStart(IJmriProvider provider) {
         mJmriThrottles.clear();
         for (Integer dccAddress : mDccAddresses) {
-            IJmriThrottle throtlle = provider.getThrotlle(dccAddress);
+            IJmriThrottle throtlle = mJmriProvider.getThrotlle(dccAddress);
             if (throtlle != null) {
                 mJmriThrottles.add(throtlle);
             }
         }
     }
 
-    public void setDccAddress(int dccAddress, IJmriProvider provider) {
+    public void setDccAddress(int dccAddress) {
         mDccAddresses.clear();
         mDccAddresses.add(dccAddress);
-        onExecStart(provider);
+        onExecStart(mJmriProvider);
     }
 
     public String getDccAddresses() {

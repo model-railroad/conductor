@@ -10,6 +10,7 @@ import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
+import com.alflabs.conductor.script.ThrottleFactory;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
@@ -26,6 +27,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,16 +40,20 @@ import java.util.Locale;
 public class ScriptParser2 {
 
     private final Now mNow;
+    private final ThrottleFactory mThrottleFactory;
     private final Script mScript;
     private final Reporter mReporter;
 
+    @Inject
     public ScriptParser2(
             Reporter reporter,
             Script script,
-            Now now) {
+            Now now,
+            ThrottleFactory throttleFactory) {
         mReporter = reporter;
         mScript = script;
         mNow = now;
+        mThrottleFactory = throttleFactory;
     }
 
     /**
@@ -197,7 +203,7 @@ public class ScriptParser2 {
                 }
             }
 
-            Throttle throttle = new Throttle(values);
+            Throttle throttle = mThrottleFactory.create(values);
             mScript.addThrottle(name, throttle);
         }
 
