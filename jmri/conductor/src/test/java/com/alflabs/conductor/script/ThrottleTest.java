@@ -37,7 +37,7 @@ public class ThrottleTest {
         mThrottle = new Throttle(42);
         assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
 
-        mThrottle.setup(provider);
+        mThrottle.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         fwd = mThrottle.createFunction(Throttle.Function.FORWARD);

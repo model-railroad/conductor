@@ -32,17 +32,17 @@ public class ExecEngine {
      * @param provider A non-null JMRI provider.
      * @return An error if there's no DCC variable for the throttle DCC address.
      */
-    public boolean setup(IJmriProvider provider) {
+    public boolean onExecStart(IJmriProvider provider) {
         for (Throttle throttle : mScript.getThrottles()) {
-            throttle.setup(provider);
+            throttle.onExecStart(provider);
         }
 
         for (Turnout turnout : mScript.getTurnouts()) {
-            turnout.setup(provider);
+            turnout.onExecStart(provider);
         }
 
         for (Sensor sensor : mScript.getSensors()) {
-            sensor.setup(provider);
+            sensor.onExecStart(provider);
         }
 
         return true;

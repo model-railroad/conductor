@@ -37,8 +37,8 @@ import java.util.Locale;
  */
 public class ScriptParser2 {
 
-    private final Script mScript;
     private final Now mNow;
+    private final Script mScript;
     private final Reporter mReporter;
 
     public ScriptParser2(

@@ -11,7 +11,6 @@ import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
-import com.alflabs.conductor.script.ScriptScope;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
@@ -48,7 +47,7 @@ public class ScriptParser2Test {
     private TestReporter mReporter;
     private IScriptComponent mScriptComponent;
     private FakeNow mNow;
-    private IScriptComponent mTestableScriptComponent;
+    private IScriptComponent mFakeNowScriptComponent;
 
     @Before
     public void setUp() throws Exception {
@@ -57,16 +56,16 @@ public class ScriptParser2Test {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
-        IConductorComponent component1 = DaggerIConductorComponent.builder()
+        IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
                 .conductorModule(new ConductorModule(mJmriProvider))
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = component1.newScriptComponent(new ScriptModule(mReporter));
+        mScriptComponent = realNowComponent.newScriptComponent(new ScriptModule(mReporter));
 
         mNow = new FakeNow(1000);
 
-        IConductorComponent component2 = DaggerIConductorComponent.builder()
+        IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
                 .conductorModule(new ConductorModule(mJmriProvider) {
                     @Override
                     public Now provideNowProvider() {
@@ -76,21 +75,7 @@ public class ScriptParser2Test {
                 .scriptFile(file)
                 .build();
 
-        mTestableScriptComponent = component2.newScriptComponent(
-                new ScriptModule(mReporter) {
-                    private TestableScriptParser2 mParserSingleton;
-
-                    @Override
-                    @ScriptScope // provider is a "singleton" in the Script scope
-                    public ScriptParser2 provideScriptParser(Reporter reporter, Script script, Now now) {
-                        if (mParserSingleton == null) {
-                            mParserSingleton = new TestableScriptParser2(reporter, script, now);
-                        }
-                        return mParserSingleton;
-                    }
-                }
-        );
-
+        mFakeNowScriptComponent = fakeNowComponent.newScriptComponent(new ScriptModule(mReporter));
     }
 
     @Test
@@ -351,7 +336,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -386,7 +371,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
@@ -428,7 +413,7 @@ public class ScriptParser2Test {
         when(provider.getThrotlle(44)).thenReturn(throttle4);
         when(provider.getThrotlle(45)).thenReturn(throttle5);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
         verify(provider).getThrotlle(43);
         verify(provider).getThrotlle(44);
@@ -486,7 +471,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute t1 stopped case
@@ -523,7 +508,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
         assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
 
@@ -554,7 +539,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -585,7 +570,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -616,7 +601,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -655,7 +640,7 @@ public class ScriptParser2Test {
         when(provider.getSensor("NS42")).thenReturn(sensor1);
         when(provider.getSensor("NS7805")).thenReturn(sensor2);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
         verify(provider).getSensor("NS42");
         verify(provider).getSensor("NS7805");
@@ -720,7 +705,7 @@ public class ScriptParser2Test {
         when(provider.getTurnout("NT42")).thenReturn(turnout1);
         when(provider.getTurnout("NT43")).thenReturn(turnout2);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
         verify(provider).getTurnout("NT42");
         verify(provider).getTurnout("NT43");
@@ -771,7 +756,7 @@ public class ScriptParser2Test {
         when(provider.getTurnout("NT42")).thenReturn(turnout1);
         when(provider.getTurnout("NT43")).thenReturn(turnout2);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
         verify(provider).getThrotlle(42);
         verify(provider).getTurnout("NT42");
         verify(provider).getTurnout("NT43");
@@ -805,8 +790,8 @@ public class ScriptParser2Test {
                 "T1         -> th horn ; t2 start \n" +
                 "t2         -> t1 end ; th forward = 1 \n" ; // "Timer end" is optional
 
-        Script script = mTestableScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mTestableScriptComponent.getScriptExecEngine();
+        Script script = mFakeNowScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mFakeNowScriptComponent.getScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -814,7 +799,7 @@ public class ScriptParser2Test {
         IJmriProvider provider = mock(IJmriProvider.class);
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
-        engine.setup(provider);
+        engine.onExecStart(provider);
 
         // throttle is stopped, starts t1
         assertThat(script.getTimer("t1").isActive()).isFalse();
@@ -854,8 +839,8 @@ public class ScriptParser2Test {
                 "T5         -> th sound = 1 \n" +
                 "T9         -> th light = 1\n" ;
 
-        Script script = mTestableScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mTestableScriptComponent.getScriptExecEngine();
+        Script script = mFakeNowScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mFakeNowScriptComponent.getScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -863,7 +848,7 @@ public class ScriptParser2Test {
         IJmriProvider provider = mock(IJmriProvider.class);
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
-        engine.setup(provider);
+        engine.onExecStart(provider);
 
         // throttle is stopped, starts t2, t5, t9
         engine.handle();
@@ -902,8 +887,8 @@ public class ScriptParser2Test {
                 "T5         -> th sound = 1 \n" +
                 "T9         -> th light = 1\n" ;
 
-        Script script = mTestableScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mTestableScriptComponent.getScriptExecEngine();
+        Script script = mFakeNowScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mFakeNowScriptComponent.getScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -911,7 +896,7 @@ public class ScriptParser2Test {
         IJmriProvider provider = mock(IJmriProvider.class);
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(provider.getThrotlle(42)).thenReturn(throttle);
-        engine.setup(provider);
+        engine.onExecStart(provider);
 
         // throttle is stopped, starts t2, t5, t9
         engine.handle();
@@ -951,8 +936,8 @@ public class ScriptParser2Test {
                 " B1 + 5 &  b2+6  -> T1 Sound=1 ; \n" +
                 " B1 + 5 &  b2+7  -> T1 Sound=0 ; \n" ;
 
-        Script script = mTestableScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mTestableScriptComponent.getScriptExecEngine();
+        Script script = mFakeNowScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mFakeNowScriptComponent.getScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -965,7 +950,7 @@ public class ScriptParser2Test {
         when(provider.getSensor("NS42")).thenReturn(sensor1);
         when(provider.getSensor("NS7805")).thenReturn(sensor2);
 
-        engine.setup(provider);
+        engine.onExecStart(provider);
 
         verify(provider).getThrotlle(42);
         verify(provider).getSensor("NS42");
@@ -1086,21 +1071,5 @@ public class ScriptParser2Test {
     private String getFileSource(String fileName) throws IOException {
         String path = new File("v2", fileName).getPath();
         return Resources.toString(Resources.getResource(path), Charsets.UTF_8);
-    }
-
-    @Deprecated
-    private static class TestableScriptParser2 extends ScriptParser2 {
-//        private final Now mNowProvider;
-
-        public TestableScriptParser2(Reporter reporter, Script script, Now now) {
-            super(reporter, script, now);
-//            mNowProvider = script;
-        }
-
-        // DEPRECATED
-//        @Override
-//        Timer createTimer(int durationSec, Now nowProvider) {
-//            return super.createTimer(durationSec, mNowProvider);
-//        }
     }
 }

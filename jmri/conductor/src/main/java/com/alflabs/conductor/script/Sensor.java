@@ -6,9 +6,9 @@ import com.alflabs.conductor.IJmriSensor;
 /**
  * A sensor defined by a script.
  * <p/>
- * The actual JMRI sensor is only assigned via the {@link #setup(IJmriProvider)} method.
+ * The actual JMRI sensor is only assigned via the {@link #onExecStart(IJmriProvider)} method.
  */
-public class Sensor implements IConditional {
+public class Sensor implements IConditional, IExecStart {
 
     private final String mJmriName;
     private IJmriSensor mSensor;
@@ -19,7 +19,8 @@ public class Sensor implements IConditional {
     }
 
     /** Initializes the underlying JMRI sensor. */
-    public void setup(IJmriProvider provider) {
+    @Override
+    public void onExecStart(IJmriProvider provider) {
         mSensor = provider.getSensor(mJmriName);
     }
 

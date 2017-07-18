@@ -26,7 +26,7 @@ public class TurnoutTest {
 
         mTurnout = new Turnout("name");
 
-        mTurnout.setup(provider);
+        mTurnout.onExecStart(provider);
         verify(provider).getTurnout("name");
 
         assertThat(mTurnout.isActive()).isTrue();

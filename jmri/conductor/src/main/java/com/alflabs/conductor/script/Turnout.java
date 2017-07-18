@@ -6,7 +6,7 @@ import com.alflabs.conductor.IJmriTurnout;
 /**
  * A turnout defined by a script.
  * <p/>
- * The actual JMRI turnout is only assigned via the {@link #setup(IJmriProvider)} method.
+ * The actual JMRI turnout is only assigned via the {@link #onExecStart(IJmriProvider)} method.
  * <p/>
  * JMRI is only used as a setter. We don't use the JMRI turnout state and instead cache
  * the last state set. The default state is normal.
@@ -14,7 +14,7 @@ import com.alflabs.conductor.IJmriTurnout;
  * When used as a conditional, a turnout is true in its "normal" state and false
  * in reverse.
  */
-public class Turnout implements IConditional {
+public class Turnout implements IConditional, IExecStart {
 
     private final String mJmriName;
     private IJmriTurnout mTurnout;
@@ -35,7 +35,8 @@ public class Turnout implements IConditional {
     }
 
     /** Initializes the underlying JMRI turnout. */
-    public void setup(IJmriProvider provider) {
+    @Override
+    public void onExecStart(IJmriProvider provider) {
         mTurnout = provider.getTurnout(mJmriName);
     }
 

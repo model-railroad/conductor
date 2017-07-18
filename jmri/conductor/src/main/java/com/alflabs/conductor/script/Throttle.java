@@ -9,12 +9,12 @@ import java.util.List;
 /**
  * A throttle defined by a script.
  * <p/>
- * The actual JMRI throttle is only assigned via the {@link #setup(IJmriProvider)} method.
+ * The actual JMRI throttle is only assigned via the {@link #onExecStart(IJmriProvider)} method.
  * <p/>
  * This throttle object keeps track of its state (speed, light/sound state) and only
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
-public class Throttle {
+public class Throttle implements IExecStart {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private int mSpeed;
@@ -59,7 +59,8 @@ public class Throttle {
 
 
     /** Initializes the underlying JMRI throttles. */
-    public void setup(IJmriProvider provider) {
+    @Override
+    public void onExecStart(IJmriProvider provider) {
         mJmriThrottles.clear();
         for (Integer dccAddress : mDccAddresses) {
             IJmriThrottle throtlle = provider.getThrotlle(dccAddress);
@@ -72,7 +73,7 @@ public class Throttle {
     public void setDccAddress(int dccAddress, IJmriProvider provider) {
         mDccAddresses.clear();
         mDccAddresses.add(dccAddress);
-        setup(provider);
+        onExecStart(provider);
     }
 
     public String getDccAddresses() {
