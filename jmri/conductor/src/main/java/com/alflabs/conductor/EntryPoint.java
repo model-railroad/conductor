@@ -2,7 +2,10 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.parser.Reporter;
 import com.alflabs.conductor.parser.ScriptParser2;
+import com.alflabs.conductor.script.ExecEngine;
+import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
+import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
@@ -19,7 +22,9 @@ public class EntryPoint {
     private static final int KV_SERVER_PORT = 8080;
 
     private Script mScript;
+    private ExecEngine mEngine;
     private boolean mStopRequested;
+    private IConductorComponent mComponent;
 
     @Inject Logger mLogger;
     @Inject KeyValueServer mKeyValueServer;
@@ -31,17 +36,16 @@ public class EntryPoint {
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
 
-        IConductorComponent component = DaggerIConductorComponent
+        mComponent = DaggerIConductorComponent
                 .builder()
                 .conductorModule(new ConductorModule(jmriProvider))
+                .scriptFile(new File(scriptFile))
                 .build();
 
-        component.inject(this);
+        mComponent.inject(this);
 
         mLogger.log("[Conductor] Setup");
-        File filepath = new File(scriptFile);
-
-        if (loadScript(jmriProvider, scriptFile, mLogger, filepath).length() > 0) {
+        if (loadScript().length() > 0) {
             return false;
         }
 
@@ -52,12 +56,12 @@ public class EntryPoint {
 
             StatusWnd wnd = StatusWnd.open();
             wnd.init(
-                    filepath,
+                    mComponent,
                     mScript,
-                    jmriProvider,
+                    mEngine,
                     // Reloader getter
                     () -> {
-                        String error = loadScript(jmriProvider, scriptFile, mLogger, filepath);
+                        String error = loadScript();
                         return RPair.create(mScript, error);
                     },
                     // Stopper runnable
@@ -76,9 +80,10 @@ public class EntryPoint {
         return true;
     }
 
-    private String loadScript(IJmriProvider jmriProvider, String scriptFile, final Logger logger, File filepath) {
+    private String loadScript() {
+
         StringBuilder error = new StringBuilder();
-        Reporter reporter = new Reporter(logger) {
+        Reporter reporter = new Reporter(mLogger) {
             private boolean mIsReport;
 
             @Override
@@ -100,16 +105,22 @@ public class EntryPoint {
             }
         };
 
+        IScriptComponent scriptComponent = mComponent.newScriptComponent(
+                new ScriptModule(reporter));
+
         try {
+            ScriptParser2 parser = scriptComponent.getScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
+            mEngine = null;
             mScript = null;
-            mScript = new ScriptParser2().parse(filepath, reporter);
-            mScript.setup(jmriProvider);
+            parser.parse(mComponent.getScriptFile());
+
+            mEngine = scriptComponent.getScriptExecEngine();
+            mEngine.setup(mComponent.getJmriProvider());
         } catch (IOException e) {
-            logger.log("[Conductor] Script Path: " + scriptFile);
-            logger.log("[Conductor] Full Path: " + filepath.getAbsolutePath());
-            logger.log("[Conductor] failed to load event script with the following exception:");
-            LogException.logException(logger, e);
+            mLogger.log("[Conductor] Script Path: " + mComponent.getScriptFile().getAbsolutePath());
+            mLogger.log("[Conductor] failed to load event script with the following exception:");
+            LogException.logException(mLogger, e);
         }
         return error.toString();
     }
@@ -124,11 +135,11 @@ public class EntryPoint {
     public boolean handle() {
         // DEBUG ONLY: mScript.getLogger().log("[Conductor] Handle");
         if (mStopRequested) {
-            mScript.getLogger().log("[Conductor] Stop Requested");
+            mLogger.log("[Conductor] Stop Requested");
             return false;
         }
-        if (mScript != null) {
-            mScript.handle();
+        if (mEngine != null) {
+            mEngine.handle();
         }
         return true;
     }

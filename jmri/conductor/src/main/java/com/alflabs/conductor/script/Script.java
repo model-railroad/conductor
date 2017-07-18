@@ -1,13 +1,12 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.util.FrequencyMeasurer;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.conductor.util.NowProvider;
-import com.alflabs.conductor.util.RateLimiter;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
@@ -29,6 +28,7 @@ import java.util.TreeMap;
  * Implementation wise, the "execution engine" is so simple that it is integrated here instead
  * of being factored out.
  */
+@ScriptScope
 public class Script extends NowProvider {
 
     private final Logger mLogger;
@@ -38,18 +38,30 @@ public class Script extends NowProvider {
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
-    private final List<Event> mActivatedEvents = new LinkedList<>();
-    private final CondCache mCondCache = new CondCache();
-    private final FrequencyMeasurer mHandleFrequency = new FrequencyMeasurer(this);
-    private final RateLimiter mHandleRateLimiter = new RateLimiter(30.0f, this);
-    private Runnable mHandleListener;
 
+    @Inject
     public Script(Logger logger) {
         mLogger = logger;
     }
 
     public Logger getLogger() {
         return mLogger;
+    }
+
+    Collection<Throttle> getThrottles() {
+        return mThrottles.values();
+    }
+
+    Collection<Sensor> getSensors() {
+        return mSensors.values();
+    }
+
+    Collection<Turnout> getTurnouts() {
+        return mTurnouts.values();
+    }
+
+    Collection<Event> getEvents() {
+        return mEvents;
     }
 
     public void addThrottle(String name, Throttle throttle) {
@@ -139,76 +151,6 @@ public class Script extends NowProvider {
         return mThrottles.containsKey(name)
                 || mVars.containsKey(name)
                 || getConditional(name) != null;
-    }
-
-    /**
-     * Initializes throttle and sensors before executing the script.
-     *
-     * @param provider A non-null JMRI provider.
-     * @return An error if there's no DCC variable for the throttle DCC address.
-     */
-    public boolean setup(IJmriProvider provider) {
-        for (Throttle throttle : mThrottles.values()) {
-            throttle.setup(provider);
-        }
-
-        for (Turnout turnout : mTurnouts.values()) {
-            turnout.setup(provider);
-        }
-
-        for (Sensor sensor : mSensors.values()) {
-            sensor.setup(provider);
-        }
-
-        return true;
-    }
-
-    /**
-     * Handles one execution of events.
-     * <p/>
-     * This first checks ALL the events, and then applies activated actions.
-     * Because some actions influence conditions (e.g. throttle stop/forward), all conditions
-     * are evaluated first. Actions are only executed after all conditions have been checked.
-     * Conditions are checked only once per iteration to make sure that timers and sensors
-     * give a uniform view during the evaluation.
-     * <p/>
-     * Each event is only activated once when the condition becomes true (e.g. on a raising
-     * edge in electronics terms). Next time the event is evaluated, it is not executed again
-     * unless the condition was first evaluated to false.
-     */
-    public void handle() {
-        mHandleFrequency.ping();
-
-        mCondCache.clear();
-        mActivatedEvents.clear();
-        for (Event event : mEvents) {
-            if (event.evalConditions(mCondCache)) {
-                if (!event.isExecuted()) {
-                    mActivatedEvents.add(event);
-                }
-            } else {
-                event.resetExecuted();
-            }
-        }
-        for (Event event : mActivatedEvents) {
-            event.execute();
-        }
-
-        if (mHandleListener != null) {
-            try {
-                mHandleListener.run();
-            } catch (Throwable ignore) {}
-        }
-
-        mHandleRateLimiter.limit();
-    }
-
-    public float getHandleFrequency() {
-        return mHandleFrequency.getFrequency();
-    }
-
-    public void setHandleListener(Runnable handleListener) {
-        mHandleListener = handleListener;
     }
 
     private IIntFunction mResetTimersFunction = ignored -> {

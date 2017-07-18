@@ -1,6 +1,8 @@
 package com.alflabs.conductor.ui;
 
+import com.alflabs.conductor.IConductorComponent;
 import com.alflabs.conductor.IJmriProvider;
+import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
@@ -9,15 +11,11 @@ import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.utils.RPair;
-import com.intellij.uiDesigner.core.GridConstraints;
-import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
@@ -58,13 +56,13 @@ public class StatusWnd {
     }
 
     public void init(
-            File scriptName,
+            IConductorComponent component,
             Script script,
-            IJmriProvider jmriProvider,
+            ExecEngine engine,
             Supplier<RPair<Script, String>> reloader,
             Runnable stopper) {
-        mTextScriptName.setText(scriptName.getAbsolutePath());
-        initScript(script, jmriProvider);
+        mTextScriptName.setText(component.getScriptFile().getAbsolutePath());
+        initScript(component, script, engine);
 
         mButtonReload.addActionListener(actionEvent -> {
             mLastError = null;
@@ -74,7 +72,7 @@ public class StatusWnd {
                 showError(mLastError);
             }
             if (pair.first != null) {
-                initScript(pair.first, jmriProvider);
+                initScript(component, pair.first, engine);
             }
         });
 
@@ -102,7 +100,10 @@ public class StatusWnd {
         mLabelDcc2.setText("");
     }
 
-    private void initScript(Script script, IJmriProvider jmriProvider) {
+    private void initScript(
+            IConductorComponent component,
+            Script script,
+            ExecEngine engine) {
         final int numThrottles = 2; // TODO hack for quick test
         JLabel[] labelSpeed = new JLabel[]{mLabelSpeed1, mLabelSpeed2};
         JLabel[] labelDcc = new JLabel[]{mLabelDcc1, mLabelDcc2};
@@ -128,12 +129,12 @@ public class StatusWnd {
                 JLabel label = labelDcc[i];
                 button.setEnabled(true);
                 button.addActionListener(actionEvent -> {
-                    askNewDccAddress(throttle, jmriProvider, label);
+                    askNewDccAddress(throttle, component.getJmriProvider(), label);
                 });
             }
         }
 
-        script.setHandleListener(() -> mAreaStatus.setText(generateVarStatus(script)));
+        engine.setHandleListener(() -> mAreaStatus.setText(generateVarStatus(script, engine)));
     }
 
     private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {
@@ -158,7 +159,7 @@ public class StatusWnd {
 
     private StringBuilder mStatus = new StringBuilder();
 
-    private String generateVarStatus(Script script) {
+    private String generateVarStatus(Script script, ExecEngine engine) {
         mStatus.setLength(0);
 
         if (mLastError != null) {
@@ -166,7 +167,7 @@ public class StatusWnd {
         }
 
         mStatus.append("Freq: ");
-        float freq = script.getHandleFrequency();
+        float freq = engine.getHandleFrequency();
         mStatus.append(String.format("%.1f Hz\n\n", freq));
 
         int i = 0;

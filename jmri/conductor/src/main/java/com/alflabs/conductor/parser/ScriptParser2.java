@@ -8,6 +8,7 @@ import com.alflabs.conductor.script.IConditional;
 import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.Script;
+import com.alflabs.conductor.script.ScriptScope;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.Timer;
@@ -26,6 +27,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,70 +35,75 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Parses a script and produces a new {@link Script}.
+ * Parses a script and fills a {@link Script}.
  */
 public class ScriptParser2 {
+
+    private final Script mScript;
+    private final NowProvider mNowProvider;
+    private final Reporter mReporter;
+
+    public ScriptParser2(
+            Reporter reporter,
+            Script script,
+            NowProvider nowProvider) {
+        mReporter = reporter;
+        mScript = script;
+        mNowProvider = nowProvider;
+    }
 
     /**
      * Helper to create a timer, used to be overridden in tests.
      */
-    Timer createTimer(int durationSec, NowProvider nowProvider) {
-        return new Timer(durationSec, nowProvider);
+    @Deprecated
+    Timer createTimer(int durationSec) {
+        return new Timer(durationSec, mNowProvider);
     }
 
     /**
      * Parses a script file.
      *
      * @param filepath The path of the file to be parsed.
-     * @param reporter A non-null reporter to report errors.
      * @return A new {@link Script}.
      * @throws IOException if the file is not found or can't be read from.
      */
-    public Script parse(File filepath, Reporter reporter) throws IOException {
+    public Script parse(File filepath) throws IOException {
         String source = Files.toString(filepath, Charsets.UTF_8);
-        return parse(source, reporter);
+        return parse(source);
     }
 
     /**
      * Parses a script file.
      *
      * @param source   The content of the file to be parsed.
-     * @param reporter A non-null reporter to report errors.
      * @return A new {@link Script}.
      * @throws IOException if the file is not found or can't be read from.
      */
-    public Script parse(String source, Reporter reporter) throws IOException {
-        Script script = new Script(reporter);
-
+    public Script parse(String source) throws IOException {
         LineCounter lineCounter = new LineCounter(source);
         CaseInsensitiveInputStream input = new CaseInsensitiveInputStream(source);
         ConductorLexer lexer = new ConductorLexer(input);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         ConductorParser parser = new ConductorParser(tokenStream);
 
-        ReporterErrorListener errorListener = new ReporterErrorListener(reporter);
+        ReporterErrorListener errorListener = new ReporterErrorListener();
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
 
         ConductorParser.ScriptContext tree = parser.script();  // parse a full script
-        ConductorListenerImpl listener = new ConductorListenerImpl(script, reporter, lineCounter);
+        ConductorListenerImpl listener = new ConductorListenerImpl(lineCounter);
         ParseTreeWalker.DEFAULT.walk(listener, tree);
 
-        return script;
+        return mScript;
     }
 
     private class ConductorListenerImpl extends ConductorBaseListener {
-
-        private final Script mScript;
-        private final Reporter mReporter;
         private final LineCounter mLineCounter;
         private Event mEvent;
 
-        ConductorListenerImpl(Script script, Reporter reporter, LineCounter lineCounter) {
-            mScript = script;
-            mReporter = reporter;
+        ConductorListenerImpl(LineCounter lineCounter) {
             mLineCounter = lineCounter;
         }
 
@@ -159,7 +166,7 @@ public class ScriptParser2 {
                 mScript.addVar(name, var);
                 break;
             case "timer":
-                Timer timer = createTimer(value, mScript);
+                Timer timer = createTimer(value);
                 mScript.addTimer(name, timer);
                 break;
             default:
@@ -425,7 +432,7 @@ public class ScriptParser2 {
 
             Timer timer = mScript.getTimer(timerName);
             if (timer == null) {
-                timer = createTimer(delaySeconds, mScript);
+                timer = createTimer(delaySeconds);
                 mScript.addTimer(timerName, timer);
 
                 // create an event that will trigger the timer
@@ -449,12 +456,7 @@ public class ScriptParser2 {
         }
     }
 
-    private static class ReporterErrorListener extends BaseErrorListener {
-        private final Reporter mReporter;
-
-        public ReporterErrorListener(Reporter reporter) {
-            mReporter = reporter;
-        }
+    private class ReporterErrorListener extends BaseErrorListener {
 
         @Override
         public void syntaxError(

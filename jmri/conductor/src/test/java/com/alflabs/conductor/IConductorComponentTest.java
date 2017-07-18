@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.io.File;
+
 import static com.google.common.truth.Truth.assertThat;
 
 public class IConductorComponentTest {
@@ -20,9 +22,13 @@ public class IConductorComponentTest {
 
     @Before
     public void setUp() throws Exception {
+        File file = File.createTempFile("conductor_tests", "tmp");
+        file.deleteOnExit();
+
         mComponent = DaggerIConductorComponent
                 .builder()
                 .conductorModule(new ConductorModule(mJmriProvider))
+                .scriptFile(file)
                 .build();
     }
 
