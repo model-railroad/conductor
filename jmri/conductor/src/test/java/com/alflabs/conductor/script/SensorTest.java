@@ -2,30 +2,35 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
+import dagger.internal.InstanceFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SensorTest {
+    public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    private IJmriSensor mJmriSensor;
+    @Mock IJmriProvider mJmriProvider;
+    @Mock IJmriSensor mJmriSensor;
+
     private Sensor mSensor;
 
     @Before
     public void setUp() throws Exception {
-        mJmriSensor = mock(IJmriSensor.class);
+        when(mJmriProvider.getSensor("name")).thenReturn(mJmriSensor);
 
-        IJmriProvider provider = mock(IJmriProvider.class);
-        when(provider.getSensor("name")).thenReturn(mJmriSensor);
+        SensorFactory factory = new SensorFactory(InstanceFactory.create(mJmriProvider));
+        mSensor = factory.create("name");
 
-        mSensor = new Sensor("name");
-
-        mSensor.onExecStart(provider);
-        verify(provider).getSensor("name");
+        mSensor.onExecStart();
+        verify(mJmriProvider).getSensor("name");
     }
 
     @Test

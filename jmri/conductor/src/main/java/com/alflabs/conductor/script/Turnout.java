@@ -10,7 +10,7 @@ import javax.inject.Inject;
 /**
  * A turnout defined by a script.
  * <p/>
- * The actual JMRI turnout is only assigned via the {@link #onExecStart(IJmriProvider)} method.
+ * The actual JMRI turnout is only assigned via the {@link #onExecStart()} method.
  * <p/>
  * JMRI is only used as a setter. We don't use the JMRI turnout state and instead cache
  * the last state set. The default state is normal.
@@ -45,7 +45,7 @@ public class Turnout implements IConditional, IExecStart {
 
     /** Initializes the underlying JMRI turnout. */
     @Override
-    public void onExecStart(IJmriProvider provider) {
+    public void onExecStart() {
         mTurnout = mJmriProvider.getTurnout(mJmriName);
     }
 

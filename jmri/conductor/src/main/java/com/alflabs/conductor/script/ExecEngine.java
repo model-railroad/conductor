@@ -28,24 +28,19 @@ public class ExecEngine {
 
     /**
      * Initializes throttle and sensors before executing the script.
-     *
-     * @param provider A non-null JMRI provider.
-     * @return An error if there's no DCC variable for the throttle DCC address.
      */
-    public boolean onExecStart(IJmriProvider provider) {
+    public void onExecStart() {
         for (Throttle throttle : mScript.getThrottles()) {
-            throttle.onExecStart(provider);
+            throttle.onExecStart();
         }
 
         for (Turnout turnout : mScript.getTurnouts()) {
-            turnout.onExecStart(provider);
+            turnout.onExecStart();
         }
 
         for (Sensor sensor : mScript.getSensors()) {
-            sensor.onExecStart(provider);
+            sensor.onExecStart();
         }
-
-        return true;
     }
 
     /**

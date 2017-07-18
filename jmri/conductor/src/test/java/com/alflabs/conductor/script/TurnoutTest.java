@@ -35,7 +35,7 @@ public class TurnoutTest {
         TurnoutFactory factory = new TurnoutFactory(InstanceFactory.create(mJmriProvider));
         mTurnout = factory.create("name");
 
-        mTurnout.onExecStart(mJmriProvider);
+        mTurnout.onExecStart();
         verify(mJmriProvider).getTurnout("name");
 
         assertThat(mTurnout.isActive()).isTrue();

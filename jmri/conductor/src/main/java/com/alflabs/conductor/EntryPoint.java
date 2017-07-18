@@ -116,7 +116,7 @@ public class EntryPoint {
             parser.parse(mComponent.getScriptFile());
 
             mEngine = scriptComponent.getScriptExecEngine();
-            mEngine.onExecStart(mComponent.getJmriProvider());
+            mEngine.onExecStart();
         } catch (IOException e) {
             mLogger.log("[Conductor] Script Path: " + mComponent.getScriptFile().getAbsolutePath());
             mLogger.log("[Conductor] failed to load event script with the following exception:");

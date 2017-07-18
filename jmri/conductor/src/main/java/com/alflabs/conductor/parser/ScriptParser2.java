@@ -9,9 +9,11 @@ import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
+import com.alflabs.conductor.script.SensorFactory;
 import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.ThrottleFactory;
 import com.alflabs.conductor.script.Timer;
+import com.alflabs.conductor.script.TimerFactory;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
@@ -40,9 +42,10 @@ import java.util.Locale;
  */
 public class ScriptParser2 {
 
-    private final Now mNow;
     private final ThrottleFactory mThrottleFactory;
     private final TurnoutFactory mTurnoutFactory;
+    private final SensorFactory mSensorFactory;
+    private final TimerFactory mTimerFactory;
     private final Script mScript;
     private final Reporter mReporter;
 
@@ -52,20 +55,15 @@ public class ScriptParser2 {
             Script script,
             Now now,
             ThrottleFactory throttleFactory,
-            TurnoutFactory turnoutFactory) {
+            TurnoutFactory turnoutFactory,
+            SensorFactory sensorFactory,
+            TimerFactory timerFactory) {
         mReporter = reporter;
         mScript = script;
-        mNow = now;
         mThrottleFactory = throttleFactory;
         mTurnoutFactory = turnoutFactory;
-    }
-
-    /**
-     * Helper to create a timer, used to be overridden in tests.
-     */
-    @Deprecated
-    Timer createTimer(int durationSec) {
-        return new Timer(durationSec, mNow);
+        mSensorFactory = sensorFactory;
+        mTimerFactory = timerFactory;
     }
 
     /**
@@ -134,7 +132,7 @@ public class ScriptParser2 {
 
             switch (type) {
             case "sensor":
-                Sensor sensor = new Sensor(value);
+                Sensor sensor = mSensorFactory.create(value);
                 mScript.addSensor(name, sensor);
                 break;
             case "turnout":
@@ -174,7 +172,7 @@ public class ScriptParser2 {
                 mScript.addVar(name, var);
                 break;
             case "timer":
-                Timer timer = createTimer(value);
+                Timer timer = mTimerFactory.create(value);
                 mScript.addTimer(name, timer);
                 break;
             default:
@@ -440,7 +438,7 @@ public class ScriptParser2 {
 
             Timer timer = mScript.getTimer(timerName);
             if (timer == null) {
-                timer = createTimer(delaySeconds);
+                timer = mTimerFactory.create(delaySeconds);
                 mScript.addTimer(timerName, timer);
 
                 // create an event that will trigger the timer

@@ -1,6 +1,8 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.util.Now;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
 
 /**
  * A timer defined by a script.
@@ -9,6 +11,7 @@ import com.alflabs.conductor.util.Now;
  * A timer is active once it has reached its expiration time and remains active until it
  * is either restart or ended.
  */
+@AutoFactory(allowSubclasses = true)
 public class Timer implements IConditional {
 
     private final Now mNow;
@@ -24,7 +27,7 @@ public class Timer implements IConditional {
         END
     }
 
-    public Timer(int durationSec, Now now) {
+    public Timer(int durationSec, @Provided Now now) {
         mDurationSec = durationSec;
         mNow = now;
         mEndTS = 0;

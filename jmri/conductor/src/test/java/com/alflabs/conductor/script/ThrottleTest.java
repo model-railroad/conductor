@@ -14,7 +14,6 @@ import org.mockito.junit.MockitoRule;
 import java.util.Collections;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -46,7 +45,7 @@ public class ThrottleTest {
         mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
 
-        mThrottle.onExecStart(mJmriProvider);
+        mThrottle.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         fwd = mThrottle.createFunction(Throttle.Function.FORWARD);

@@ -336,7 +336,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -367,7 +367,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
@@ -408,7 +408,7 @@ public class ScriptParser2Test {
         when(mJmriProvider.getThrotlle(44)).thenReturn(throttle4);
         when(mJmriProvider.getThrotlle(45)).thenReturn(throttle5);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriProvider).getThrotlle(43);
         verify(mJmriProvider).getThrotlle(44);
@@ -462,7 +462,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute t1 stopped case
@@ -495,7 +495,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
 
@@ -525,7 +525,7 @@ public class ScriptParser2Test {
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(mJmriProvider.getThrotlle(42)).thenReturn(throttle);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -552,7 +552,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -579,7 +579,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
@@ -615,7 +615,7 @@ public class ScriptParser2Test {
         when(mJmriProvider.getSensor("NS42")).thenReturn(sensor1);
         when(mJmriProvider.getSensor("NS7805")).thenReturn(sensor2);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriProvider).getSensor("NS42");
         verify(mJmriProvider).getSensor("NS7805");
@@ -677,7 +677,7 @@ public class ScriptParser2Test {
         when(mJmriProvider.getTurnout("NT42")).thenReturn(turnout1);
         when(mJmriProvider.getTurnout("NT43")).thenReturn(turnout2);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriProvider).getTurnout("NT42");
         verify(mJmriProvider).getTurnout("NT43");
@@ -725,7 +725,7 @@ public class ScriptParser2Test {
         when(mJmriProvider.getTurnout("NT42")).thenReturn(turnout1);
         when(mJmriProvider.getTurnout("NT43")).thenReturn(turnout2);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriProvider).getTurnout("NT42");
         verify(mJmriProvider).getTurnout("NT43");
@@ -765,7 +765,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
 
         // throttle is stopped, starts t1
         assertThat(script.getTimer("t1").isActive()).isFalse();
@@ -811,7 +811,7 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
 
         // throttle is stopped, starts t2, t5, t9
         engine.handle();
@@ -858,7 +858,7 @@ public class ScriptParser2Test {
 
         IJmriThrottle throttle = mock(IJmriThrottle.class);
         when(mJmriProvider.getThrotlle(42)).thenReturn(throttle);
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
 
         // throttle is stopped, starts t2, t5, t9
         engine.handle();
@@ -909,7 +909,7 @@ public class ScriptParser2Test {
         when(mJmriProvider.getSensor("NS42")).thenReturn(sensor1);
         when(mJmriProvider.getSensor("NS7805")).thenReturn(sensor2);
 
-        engine.onExecStart(mJmriProvider);
+        engine.onExecStart();
 
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriProvider).getSensor("NS42");
