@@ -21,15 +21,16 @@ import java.util.TreeMap;
  * switches from false to true. Once fire, the event will not be executed again till the condition
  * first becomes false.
  * <p/>
- * The script follows the setup/handle format of a JMRI Jython script. A script must be first
- * {@link #setup(IJmriProvider)} to link to the underlying JMRI throttles and sensors, then
- * {@link #handle()} is called repeatedly to evaluate all conditions and execute all fired events.
- * <p/>
- * Implementation wise, the "execution engine" is so simple that it is integrated here instead
- * of being factored out.
+ * The script follows the setup/handle format of a JMRI Jython script.
+ * There's an {@link ExecEngine} associated with this script.
+ * A exec engine must be first setup by calling the adequately named
+ * {@link ExecEngine#onExecStart()} method to link to the underlying JMRI throttles and sensors,
+ * then {@link ExecEngine#handle()} is called repeatedly to evaluate all conditions and execute
+ * all fired events. The execution engine's instance keeps all the dynamic state due to the
+ * evaluation whereas the script is "static" and does not change once parsed.
  */
 @ScriptScope
-public class Script extends Now {
+public class Script {
 
     private final Logger mLogger;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();

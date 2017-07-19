@@ -15,7 +15,7 @@ import java.io.File;
 @Component(modules = {ConductorModule.class})
 public interface IConductorComponent {
 
-    Now getNowProvider();
+    Now getNow();
     KeyValueServer getKeyValueServer();
     IJmriProvider getJmriProvider();
     @Named("script") File getScriptFile();

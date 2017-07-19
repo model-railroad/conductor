@@ -1,6 +1,5 @@
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.util.FrequencyMeasurer;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.conductor.util.RateLimiter;
@@ -10,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @ScriptScope
-public class ExecEngine {
+public class ExecEngine implements IExecStart {
     private final Script mScript;
     private final List<Event> mActivatedEvents = new LinkedList<>();
     private final CondCache mCondCache = new CondCache();
@@ -29,6 +28,7 @@ public class ExecEngine {
     /**
      * Initializes throttle and sensors before executing the script.
      */
+    @Override
     public void onExecStart() {
         for (Throttle throttle : mScript.getThrottles()) {
             throttle.onExecStart();

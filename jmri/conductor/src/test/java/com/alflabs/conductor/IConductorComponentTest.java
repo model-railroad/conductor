@@ -42,8 +42,8 @@ public class IConductorComponentTest {
 
     @Test
     public void testNowProviderIsSingleton() throws Exception {
-        Now np1 = mComponent.getNowProvider();
-        Now np2 = mComponent.getNowProvider();
+        Now np1 = mComponent.getNow();
+        Now np2 = mComponent.getNow();
         assertThat(np1).isNotNull();
         assertThat(np1).isSameAs(np2);
     }

@@ -53,7 +53,6 @@ public class ScriptParser2 {
     public ScriptParser2(
             Reporter reporter,
             Script script,
-            Now now,
             ThrottleFactory throttleFactory,
             TurnoutFactory turnoutFactory,
             SensorFactory sensorFactory,
