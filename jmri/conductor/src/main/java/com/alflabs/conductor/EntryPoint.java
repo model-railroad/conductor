@@ -36,6 +36,12 @@ public class EntryPoint {
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
 
+        // FIXME: if "DaggerIConductorComponent" cannot be resolved, 2 things are needed.
+        // 1- Build the project.
+        // 2- In Intellij, right click build/generated/source/apt/main and mark it as a
+        //    generated source folder.
+        // For some reason, IJ extracts generated/source/apt/main as a gen folder from the
+        // gradle API instead of the proper build/generated/...
         mComponent = DaggerIConductorComponent
                 .builder()
                 .conductorModule(new ConductorModule(jmriProvider))
