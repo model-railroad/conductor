@@ -65,7 +65,8 @@ public class ScriptParser2Test {
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = realNowComponent.newScriptComponent(new ScriptModule(mReporter));
+        mScriptComponent = realNowComponent.newScriptComponent(
+                new ScriptModule(mReporter, realNowComponent.getKeyValueServer()));
 
         mNow = new FakeNow(1000);
 
@@ -79,7 +80,8 @@ public class ScriptParser2Test {
                 .scriptFile(file)
                 .build();
 
-        mFakeNowScriptComponent = fakeNowComponent.newScriptComponent(new ScriptModule(mReporter));
+        mFakeNowScriptComponent = fakeNowComponent.newScriptComponent(
+                new ScriptModule(mReporter, fakeNowComponent.getKeyValueServer()));
     }
 
     @Test

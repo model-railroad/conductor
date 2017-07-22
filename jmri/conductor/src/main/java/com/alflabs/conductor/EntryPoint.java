@@ -112,7 +112,7 @@ public class EntryPoint {
         };
 
         IScriptComponent scriptComponent = mComponent.newScriptComponent(
-                new ScriptModule(reporter));
+                new ScriptModule(reporter, mKeyValueServer));
 
         try {
             ScriptParser2 parser = scriptComponent.getScriptParser2();

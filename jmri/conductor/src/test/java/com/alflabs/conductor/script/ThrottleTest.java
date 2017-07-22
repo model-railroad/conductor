@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -14,7 +15,12 @@ import org.mockito.junit.MockitoRule;
 import java.util.Collections;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -24,6 +30,7 @@ public class ThrottleTest {
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
+    @Mock IKeyValue mKeyValue;
 
     private Throttle mThrottle;
     private IIntFunction fwd;
@@ -41,7 +48,9 @@ public class ThrottleTest {
     public void setUp() throws Exception {
         when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
-        ThrottleFactory factory = new ThrottleFactory(InstanceFactory.create(mJmriProvider));
+        ThrottleFactory factory = new ThrottleFactory(
+                InstanceFactory.create(mJmriProvider),
+                InstanceFactory.create(mKeyValue));
         mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
 
@@ -76,6 +85,7 @@ public class ThrottleTest {
     public void testForward() throws Exception {
         fwd.accept(42);
         verify(mJmriThrottle).setSpeed(42);
+        verify(mJmriThrottle).getDccAddress();
 
         assertThat(isFwd.isActive()).isTrue();
         assertThat(isRev.isActive()).isFalse();
@@ -83,6 +93,7 @@ public class ThrottleTest {
 
         fwd.accept(-42);
         verify(mJmriThrottle).setSpeed(0);
+        verify(mJmriThrottle, times(2)).getDccAddress();
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -93,6 +104,7 @@ public class ThrottleTest {
     public void testReverse() throws Exception {
         rev.accept(42);
         verify(mJmriThrottle).setSpeed(-42);
+        verify(mJmriThrottle).getDccAddress();
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isTrue();
@@ -100,6 +112,7 @@ public class ThrottleTest {
 
         rev.accept(-42);
         verify(mJmriThrottle).setSpeed(0);
+        verify(mJmriThrottle, times(2)).getDccAddress();
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -110,9 +123,11 @@ public class ThrottleTest {
     public void testStop() throws Exception {
         fwd.accept(42);
         verify(mJmriThrottle).setSpeed(42);
+        verify(mJmriThrottle).getDccAddress();
 
         stop.accept(0); // value is irrelevant
         verify(mJmriThrottle).setSpeed(0);
+        verify(mJmriThrottle, times(2)).getDccAddress();
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isTrue();

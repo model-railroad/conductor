@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.kv.IKeyValue;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -23,6 +24,7 @@ public class Turnout implements IConditional, IExecStart {
 
     private final String mJmriName;
     private final IJmriProvider mJmriProvider;
+    private final IKeyValue mKeyValue;
 
     private IJmriTurnout mTurnout;
     private boolean mIsNormal = true;
@@ -38,15 +40,20 @@ public class Turnout implements IConditional, IExecStart {
 
     /** Creates a new turnout for the given JMRI system name. */
     @Inject
-    public Turnout(String jmriName, @Provided IJmriProvider jmriProvider) {
+    public Turnout(
+            String jmriName,
+            @Provided IJmriProvider jmriProvider,
+            @Provided IKeyValue keyValue) {
         mJmriName = jmriName;
         mJmriProvider = jmriProvider;
+        mKeyValue = keyValue;
     }
 
     /** Initializes the underlying JMRI turnout. */
     @Override
     public void onExecStart() {
         mTurnout = mJmriProvider.getTurnout(mJmriName);
+        updateKV();
     }
 
     public IIntFunction createFunction(Function function) {
@@ -64,10 +71,15 @@ public class Turnout implements IConditional, IExecStart {
         if (mTurnout != null) {
             mTurnout.setTurnout(normal);
         }
+        updateKV();
     }
 
     @Override
     public boolean isActive() {
         return mIsNormal;
+    }
+
+    private void updateKV() {
+        mKeyValue.putValue(mJmriName, mIsNormal ? "N" : "R", true /*broadcast*/);
     }
 }

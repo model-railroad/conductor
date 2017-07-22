@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -11,9 +12,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import static com.google.common.truth.Truth.*;
+import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -23,6 +25,7 @@ public class TurnoutTest {
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriTurnout mJmriTurnout;
+    @Mock IKeyValue mKeyValue;
 
     private Turnout mTurnout;
 
@@ -32,11 +35,14 @@ public class TurnoutTest {
 
         when(mJmriProvider.getTurnout("name")).thenReturn(mJmriTurnout);
 
-        TurnoutFactory factory = new TurnoutFactory(InstanceFactory.create(mJmriProvider));
+        TurnoutFactory factory = new TurnoutFactory(
+                InstanceFactory.create(mJmriProvider),
+                InstanceFactory.create(mKeyValue));
         mTurnout = factory.create("name");
 
         mTurnout.onExecStart();
         verify(mJmriProvider).getTurnout("name");
+        verify(mKeyValue).putValue("name", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
     }
@@ -44,22 +50,27 @@ public class TurnoutTest {
     @After
     public void tearDown() throws Exception {
         verifyNoMoreInteractions(mJmriTurnout);
+        verifyNoMoreInteractions(mKeyValue);
     }
 
     @Test
     public void testNormal() throws Exception {
+        reset(mKeyValue);
         mTurnout.createFunction(Turnout.Function.NORMAL).accept(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
+        verify(mKeyValue).putValue("name", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
     }
 
     @Test
     public void testReverse() throws Exception {
+        reset(mKeyValue);
         mTurnout.createFunction(Turnout.Function.REVERSE).accept(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
+        verify(mKeyValue).putValue("name", "R", true);
 
         assertThat(mTurnout.isActive()).isFalse();
     }

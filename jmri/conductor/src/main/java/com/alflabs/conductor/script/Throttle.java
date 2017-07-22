@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.kv.IKeyValue;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -22,6 +23,7 @@ public class Throttle implements IExecStart {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private final IJmriProvider mJmriProvider;
+    private final IKeyValue mKeyValue;
 
     private int mSpeed;
     private boolean mSound;
@@ -53,10 +55,14 @@ public class Throttle implements IExecStart {
         LIGHT,
     }
 
-    /** Creates a new throttle for multiple DCC addresses. */
+    /** Creates a new throttle for one or more DCC addresses. */
     @Inject
-    public Throttle(List<Integer> dccAddresses, @Provided IJmriProvider jmriProvider) {
+    public Throttle(
+            List<Integer> dccAddresses,
+            @Provided IJmriProvider jmriProvider,
+            @Provided IKeyValue keyValue) {
         mJmriProvider = jmriProvider;
+        mKeyValue = keyValue;
         mDccAddresses.addAll(dccAddresses);
     }
 
@@ -98,6 +104,7 @@ public class Throttle implements IExecStart {
         mSpeed = speed;
         for (IJmriThrottle jmriThrottle : mJmriThrottles) {
             jmriThrottle.setSpeed(speed);
+            updateKV(jmriThrottle.getDccAddress(), speed);
         }
         if (mSpeedListener != null) {
             try {
@@ -165,5 +172,11 @@ public class Throttle implements IExecStart {
             return () -> mLight;
         }
         throw new IllegalArgumentException();
+    }
+
+    private void updateKV(int address, int speed) {
+        mKeyValue.putValue(
+                "Throttle-" + Integer.toString(address),
+                Integer.toString(speed), true /*broadcast*/);
     }
 }

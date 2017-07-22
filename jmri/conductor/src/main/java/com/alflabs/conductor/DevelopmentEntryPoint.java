@@ -44,6 +44,11 @@ public class DevelopmentEntryPoint {
                 public void triggerFunction(int function, boolean on) {
                     log(String.format("[%d] F%d: %s\n", dccAddress, function, on));
                 }
+
+                @Override
+                public int getDccAddress() {
+                    return dccAddress;
+                }
             };
         }
 

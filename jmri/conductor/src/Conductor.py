@@ -35,6 +35,10 @@ class JmriThrottleAdapter(IJmriThrottle):
         else:
             return range(0, 2)
 
+    def getDccAddress(self):
+        """In: void; Out: int address"""
+        return self._address
+
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
         print "[Conductor", self._address, "] Speed", speed28

@@ -57,4 +57,9 @@ public interface IJmriThrottle {
      * This is however not dictated by the script; the actual behavior depends on the adapter.
      */
     void triggerFunction(int function, boolean on);
+
+    /**
+     * Returns the DCC address that was associated with this throttle when it was created.
+     */
+    int getDccAddress();
 }
