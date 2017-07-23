@@ -1,14 +1,38 @@
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.util.Logger;
 import com.google.common.truth.Truth;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Entry point controlled for development purposes using a fake no-op JMRI interface. */
 public class DevelopmentEntryPoint {
 
     public static void main(String[] args) {
-        EntryPoint ep = new EntryPoint();
+        FakeJmriProvider jmriProvider = new FakeJmriProvider();
+        AtomicBoolean keepRunning = new AtomicBoolean(true);
+        EntryPoint entryPoint = new EntryPoint() {
+            @Override
+            protected void onStopAction() {
+                super.onStopAction();
+                keepRunning.set(false);
+            }
+        };
         String filePath = "src/test/resources/v2/script_pa+bl_9c.txt";
-        Truth.assertThat(ep.setup(new FakeJmriProvider(), filePath)).isTrue();
+        boolean parsed = entryPoint.setup(jmriProvider, filePath);
+        Truth.assertThat(parsed).isTrue();
+        if (parsed) {
+            Thread thread = new Thread(() -> mainLoop(jmriProvider, keepRunning, entryPoint), "MainLoop");
+            thread.start();
+        }
+    }
+
+    private static void mainLoop(Logger logger, AtomicBoolean keepRunning, EntryPoint entryPoint) {
+        logger.log("[Main] Start thread");
+        while (keepRunning.get()) {
+            entryPoint.handle();
+        }
+        logger.log("[Main] End thread");
     }
 
     private static class FakeJmriProvider implements IJmriProvider {
@@ -54,21 +78,13 @@ public class DevelopmentEntryPoint {
 
         @Override
         public IJmriSensor getSensor(String systemName) {
-            return new IJmriSensor() {
-                @Override
-                public boolean isActive() {
-                    return false;
-                }
-            };
+            return () -> false;
         }
 
         @Override
         public IJmriTurnout getTurnout(String systemName) {
-            return new IJmriTurnout() {
-                @Override
-                public void setTurnout(boolean normal) {
-                    log(String.format("[%s] Turnout: %s\n", systemName, normal ? "Normal" : "Reverse"));
-                }
+            return normal -> {
+                log(String.format("[%s] Turnout: %s\n", systemName, normal ? "Normal" : "Reverse"));
             };
         }
     }

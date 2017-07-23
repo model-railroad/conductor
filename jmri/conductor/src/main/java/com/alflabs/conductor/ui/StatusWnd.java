@@ -59,14 +59,14 @@ public class StatusWnd {
             IConductorComponent component,
             Script script,
             ExecEngine engine,
-            Supplier<RPair<Script, String>> reloader,
-            Runnable stopper) {
+            Supplier<RPair<Script, String>> onReloadAction,
+            Runnable onStopAction) {
         mTextScriptName.setText(component.getScriptFile().getAbsolutePath());
         initScript(component, script, engine);
 
         mButtonReload.addActionListener(actionEvent -> {
             mLastError = null;
-            RPair<Script, String> pair = reloader.get();
+            RPair<Script, String> pair = onReloadAction.get();
             if (pair.second != null) {
                 mLastError = pair.second;
                 showError(mLastError);
@@ -77,7 +77,7 @@ public class StatusWnd {
         });
 
         mButtonStop.addActionListener(actionEvent -> {
-            stopper.run();
+            onStopAction.run();
             mFrame.dispose();
         });
 
@@ -86,7 +86,7 @@ public class StatusWnd {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 super.windowClosing(windowEvent);
-                stopper.run();
+                onStopAction.run();
                 mFrame.dispose();
             }
         });

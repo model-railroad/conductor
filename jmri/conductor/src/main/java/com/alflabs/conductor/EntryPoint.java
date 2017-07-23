@@ -65,17 +65,8 @@ public class EntryPoint {
                     mComponent,
                     mScript,
                     mEngine,
-                    // Reloader getter
-                    () -> {
-                        String error = loadScript();
-                        return RPair.create(mScript, error);
-                    },
-                    // Stopper runnable
-                    () -> {
-                        mLogger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
-                        mKeyValueServer.stopSync();
-                        mStopRequested = true;
-                    });
+                    this::onReloadAction,
+                    this::onStopAction);
 
         } catch (Exception e) {
             // Ignore. continue.
@@ -84,6 +75,17 @@ public class EntryPoint {
         }
 
         return true;
+    }
+
+    protected void onStopAction() {
+        mLogger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
+        mKeyValueServer.stopSync();
+        mStopRequested = true;
+    }
+
+    protected RPair<Script, String> onReloadAction() {
+        String error = loadScript();
+        return RPair.create(mScript, error);
     }
 
     private String loadScript() {
