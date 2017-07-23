@@ -20,7 +20,7 @@ import javax.inject.Inject;
  * in reverse.
  */
 @AutoFactory(allowSubclasses = true)
-public class Turnout implements IConditional, IExecStart {
+public class Turnout implements IConditional, IExecEngine {
 
     private final String mJmriName;
     private final IJmriProvider mJmriProvider;
@@ -53,7 +53,7 @@ public class Turnout implements IConditional, IExecStart {
     @Override
     public void onExecStart() {
         mTurnout = mJmriProvider.getTurnout(mJmriName);
-        updateKV();
+        onExecHandle();
     }
 
     public IIntFunction createFunction(Function function) {
@@ -71,7 +71,6 @@ public class Turnout implements IConditional, IExecStart {
         if (mTurnout != null) {
             mTurnout.setTurnout(normal);
         }
-        updateKV();
     }
 
     @Override
@@ -79,7 +78,8 @@ public class Turnout implements IConditional, IExecStart {
         return mIsNormal;
     }
 
-    private void updateKV() {
+    @Override
+    public void onExecHandle() {
         mKeyValue.putValue(mJmriName, mIsNormal ? "N" : "R", true /*broadcast*/);
     }
 }

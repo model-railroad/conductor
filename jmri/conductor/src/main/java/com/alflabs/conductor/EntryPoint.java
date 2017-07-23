@@ -143,7 +143,7 @@ public class EntryPoint {
             return false;
         }
         if (mEngine != null) {
-            mEngine.handle();
+            mEngine.onExecHandle();
         }
         return true;
     }

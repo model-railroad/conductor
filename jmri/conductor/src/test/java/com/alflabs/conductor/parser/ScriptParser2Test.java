@@ -342,14 +342,14 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setSpeed(5);
         verify(mJmriThrottle, never()).setSpeed(0);
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
 
         // Execute with throttle at speed 5
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setSpeed(5);
         verify(mJmriThrottle).setSpeed(0);
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
@@ -373,7 +373,7 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setSpeed(0);
         verify(mJmriThrottle).setSpeed(5);
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(0);
@@ -381,7 +381,7 @@ public class ScriptParser2Test {
         // Execute with throttle at speed 5
         script.getThrottle("t1").setSpeed(5);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setSpeed(0);
         verify(mJmriThrottle).setSpeed(5);
         assertThat(script.getThrottle("t1").getSpeed()).isEqualTo(5);
@@ -417,7 +417,7 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(45);
 
         // Execute with throttle defaulting to speed 0 (stopped). Speed is set then reset.
-        engine.handle();
+        engine.onExecHandle();
 
         verify(throttle2).setSpeed(0);
         verify(throttle3).setSpeed(0);
@@ -437,7 +437,7 @@ public class ScriptParser2Test {
         reset(throttle4);
         reset(throttle5);
 
-        engine.handle();
+        engine.onExecHandle();
 
         verify(throttle2).setSpeed(0);
         verify(throttle3).setSpeed(0);
@@ -468,7 +468,7 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute t1 stopped case
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).triggerFunction(1, true);
         verify(mJmriThrottle).triggerFunction(0, false);
         verify(mJmriThrottle).triggerFunction(28, true);
@@ -476,7 +476,7 @@ public class ScriptParser2Test {
         // Execute t1 forward case
         script.getThrottle("t1").setSpeed(5);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).triggerFunction(1, false);
         verify(mJmriThrottle).triggerFunction(0, false);
         verify(mJmriThrottle).triggerFunction(28, false);
@@ -502,12 +502,12 @@ public class ScriptParser2Test {
         assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
 
         // Execute with throttle defaulting to speed 0 (stopped).
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
 
         // Execute with throttle at speed 5
         script.getThrottle("t1").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
     }
 
@@ -531,13 +531,13 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
-        engine.handle();
+        engine.onExecHandle();
         verify(throttle).setSound(false);
 
         // Execute with throttle at forward speed
         reset(throttle);
         script.getThrottle("t1").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         verify(throttle).setSound(true);
     }
 
@@ -558,13 +558,13 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(false);
 
         // Execute with throttle at forward speed
         reset(mJmriThrottle);
         script.getThrottle("t1").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(true);
     }
 
@@ -585,13 +585,13 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrotlle(42);
 
         // Execute with throttle defaulting to speed 0 (stopped)
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).horn();
 
         // Execute with throttle at forward speed
         reset(mJmriThrottle);
         script.getThrottle("t1").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).horn();
     }
 
@@ -625,14 +625,14 @@ public class ScriptParser2Test {
         when(sensor1.isActive()).thenReturn(false);
         when(sensor2.isActive()).thenReturn(false);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(false);
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         when(sensor1.isActive()).thenReturn(false);
         when(sensor2.isActive()).thenReturn(true);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         // Note: event !b1 is not executed a second time till the condition gets invalidated
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
@@ -640,14 +640,14 @@ public class ScriptParser2Test {
         when(sensor1.isActive()).thenReturn(true);
         when(sensor2.isActive()).thenReturn(false);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(true);
         verify(mJmriThrottle).setSound(false);
 
         when(sensor1.isActive()).thenReturn(true);
         when(sensor2.isActive()).thenReturn(true);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         // Note: event b1 is not executed a second time till the condition gets invalidated
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle).setSound(true);
@@ -685,16 +685,16 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getTurnout("NT43");
 
         // Throttle is stopped
-        engine.handle();
+        engine.onExecHandle();
         verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
         verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
 
-        engine.handle();
+        engine.onExecHandle();
 
         reset(turnout1);
         reset(turnout2);
         script.getThrottle("th").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
         verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
     }
@@ -732,21 +732,21 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getTurnout("NT42");
         verify(mJmriProvider).getTurnout("NT43");
 
-        engine.handle();
+        engine.onExecHandle();
         verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
         verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
         verify(mJmriThrottle).setSound(false);
-        // Note: line "!t2->..." is not invoked at first because t2 was true in this handle call.
-        // The "t2 = reverse" action will only be noticed at the next handle call.
+        // Note: line "!t2->..." is not invoked at first because t2 was true in this onExecHandle call.
+        // The "t2 = reverse" action will only be noticed at the next onExecHandle call.
         verify(mJmriThrottle, never()).setSound(true);
 
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setSound(true);
 
         reset(turnout1);
         reset(turnout2);
         script.getThrottle("th").setSpeed(5);
-        engine.handle();
+        engine.onExecHandle();
         verify(turnout1).setTurnout(IJmriTurnout.REVERSE);
         verify(turnout2).setTurnout(IJmriTurnout.NORMAL);
     }
@@ -771,25 +771,25 @@ public class ScriptParser2Test {
 
         // throttle is stopped, starts t1
         assertThat(script.getTimer("t1").isActive()).isFalse();
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // t1 is active 5 seconds later
         mNow.add(5*1000 - 1);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // Note: timer is still active because the "t1 ->" does not reset it with end yet.
         // A timer remains active till it is either restarted or ended.
         mNow.add(1);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).horn();
         verify(mJmriThrottle, never()).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isTrue();
 
         // t2 is active 2 seconds later. Both t1 gets reset as soon as t2 becomes active.
         mNow.add(2*1000);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
         assertThat(script.getTimer("t2").isActive()).isTrue();
@@ -816,26 +816,26 @@ public class ScriptParser2Test {
         engine.onExecStart();
 
         // throttle is stopped, starts t2, t5, t9
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isFalse();
         assertThat(script.getTimer("t5").isActive()).isFalse();
         assertThat(script.getTimer("t9").isActive()).isFalse();
 
         // t2 is active 5 seconds later
         mNow.add(2*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isTrue();
         verify(mJmriThrottle).horn();
 
         // t5 is active 3 seconds later
         mNow.add(3*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t5").isActive()).isTrue();
         verify(mJmriThrottle).setSound(true);
 
         // t9 is active 4 seconds later
         mNow.add(4*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t9").isActive()).isTrue();
         verify(mJmriThrottle).setLight(true);
     }
@@ -863,26 +863,26 @@ public class ScriptParser2Test {
         engine.onExecStart();
 
         // throttle is stopped, starts t2, t5, t9
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isFalse();
         assertThat(script.getTimer("t5").isActive()).isFalse();
         assertThat(script.getTimer("t9").isActive()).isFalse();
 
         // t2 is active 5 seconds later and has just been reset
         mNow.add(2*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isFalse();
         verify(throttle).horn();
 
         // t5 is not executed 3 seconds later as it was reset
         mNow.add(3*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t5").isActive()).isFalse();
         verify(throttle, never()).setSound(true);
 
         // t9 is not executed 4 seconds later as it was reset
         mNow.add(4*1000);
-        engine.handle();
+        engine.onExecHandle();
         assertThat(script.getTimer("t9").isActive()).isFalse();
         verify(throttle, never()).setLight(true);
     }
@@ -929,18 +929,18 @@ public class ScriptParser2Test {
         when(sensor1.isActive()).thenReturn(false);
         when(sensor2.isActive()).thenReturn(false);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         // Line 1 : !b1 is active 2 seconds later
         mNow.add(2*1000 - 1);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         mNow.add(1);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(false);
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
@@ -949,7 +949,7 @@ public class ScriptParser2Test {
         // However b1 is still negative so the line doesn't yet trigger.
         mNow.add(2 * 1000);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
@@ -957,21 +957,21 @@ public class ScriptParser2Test {
         // has auto-reset as soon as it became active).
         when(sensor1.isActive()).thenReturn(true);
         mNow.add(1 * 1000);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(false);
 
         // Line 2: b1 + 3 is now becoming active.
         mNow.add(3 * 1000);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle).setLight(true);
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         // Line 4: b1 + 5 becomes active. But b2 is still negative so the line doesn't trigger.
         mNow.add(2 * 1000);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
         // Immediately after it triggers, a delayed timer is reset and ends
@@ -979,7 +979,7 @@ public class ScriptParser2Test {
 
         // Trigger b2
         when(sensor2.isActive()).thenReturn(true);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
@@ -989,7 +989,7 @@ public class ScriptParser2Test {
         mNow.add(6 * 1000);
         assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(true);
 
@@ -997,7 +997,7 @@ public class ScriptParser2Test {
         // But since b1+5 has been reset as soon as it became active.
         mNow.add(1 * 1000);
         reset(mJmriThrottle);
-        engine.handle();
+        engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
     }

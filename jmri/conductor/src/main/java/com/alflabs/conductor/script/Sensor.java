@@ -12,7 +12,7 @@ import com.google.auto.factory.Provided;
  * The actual JMRI sensor is only assigned via the {@link #onExecStart()} method.
  */
 @AutoFactory(allowSubclasses = true)
-public class Sensor implements IConditional, IExecStart {
+public class Sensor implements IConditional, IExecEngine {
 
     private final String mJmriName;
     private final IJmriProvider mJmriProvider;
@@ -34,16 +34,16 @@ public class Sensor implements IConditional, IExecStart {
     @Override
     public void onExecStart() {
         mSensor = mJmriProvider.getSensor(mJmriName);
-        isActive();
+        onExecHandle();
     }
 
     @Override
     public boolean isActive() {
-        return updateKV(mSensor != null && mSensor.isActive());
+        return mSensor != null && mSensor.isActive();
     }
 
-    private boolean updateKV(boolean isActive) {
-        mKeyValue.putValue(mJmriName, isActive ? "ON" : "OFF", true /*broadcast*/);
-        return isActive;
+    @Override
+    public void onExecHandle() {
+        mKeyValue.putValue(mJmriName, isActive() ? "ON" : "OFF", true /*broadcast*/);
     }
 }

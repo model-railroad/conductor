@@ -1,5 +1,6 @@
 package com.alflabs.conductor.script;
 
-public interface IExecStart {
+public interface IExecEngine {
     void onExecStart();
+    void onExecHandle();
 }

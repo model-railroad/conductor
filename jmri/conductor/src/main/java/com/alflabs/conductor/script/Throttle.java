@@ -19,7 +19,7 @@ import java.util.List;
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
 @AutoFactory(allowSubclasses = true)
-public class Throttle implements IExecStart {
+public class Throttle implements IExecEngine {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private final IJmriProvider mJmriProvider;
@@ -74,6 +74,7 @@ public class Throttle implements IExecStart {
             IJmriThrottle throtlle = mJmriProvider.getThrotlle(dccAddress);
             if (throtlle != null) {
                 mJmriThrottles.add(throtlle);
+                updateKV(throtlle.getDccAddress(), getSpeed());
             }
         }
     }
@@ -172,6 +173,11 @@ public class Throttle implements IExecStart {
             return () -> mLight;
         }
         throw new IllegalArgumentException();
+    }
+
+    @Override
+    public void onExecHandle() {
+        // no-op
     }
 
     private void updateKV(int address, int speed) {

@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @ScriptScope
-public class ExecEngine implements IExecStart {
+public class ExecEngine implements IExecEngine {
     private final Script mScript;
     private final List<Event> mActivatedEvents = new LinkedList<>();
     private final CondCache mCondCache = new CondCache();
@@ -56,7 +56,8 @@ public class ExecEngine implements IExecStart {
      * edge in electronics terms). Next time the event is evaluated, it is not executed again
      * unless the condition was first evaluated to false.
      */
-    public void handle() {
+    @Override
+    public void onExecHandle() {
         mHandleFrequency.ping();
 
         mCondCache.clear();

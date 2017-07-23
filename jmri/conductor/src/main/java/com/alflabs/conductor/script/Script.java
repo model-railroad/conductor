@@ -1,8 +1,6 @@
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.conductor.util.Now;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -25,7 +23,7 @@ import java.util.TreeMap;
  * There's an {@link ExecEngine} associated with this script.
  * A exec engine must be first setup by calling the adequately named
  * {@link ExecEngine#onExecStart()} method to link to the underlying JMRI throttles and sensors,
- * then {@link ExecEngine#handle()} is called repeatedly to evaluate all conditions and execute
+ * then {@link ExecEngine#onExecHandle()} is called repeatedly to evaluate all conditions and execute
  * all fired events. The execution engine's instance keeps all the dynamic state due to the
  * evaluation whereas the script is "static" and does not change once parsed.
  */
