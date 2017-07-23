@@ -60,6 +60,18 @@ public class ExecEngine implements IExecEngine {
     public void onExecHandle() {
         mHandleFrequency.ping();
 
+        for (Throttle throttle : mScript.getThrottles()) {
+            throttle.onExecHandle();
+        }
+
+        for (Turnout turnout : mScript.getTurnouts()) {
+            turnout.onExecHandle();
+        }
+
+        for (Sensor sensor : mScript.getSensors()) {
+            sensor.onExecHandle();
+        }
+
         mCondCache.clear();
         mActivatedEvents.clear();
         for (Event event : mScript.getEvents()) {

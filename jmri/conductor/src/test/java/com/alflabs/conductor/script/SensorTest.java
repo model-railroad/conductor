@@ -13,6 +13,9 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -53,11 +56,17 @@ public class SensorTest {
         reset(mKeyValue);
         when(mJmriSensor.isActive()).thenReturn(true);
         assertThat(mSensor.isActive()).isTrue();
+
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
+        mSensor.onExecHandle();
         verify(mKeyValue).putValue("name", "ON", true);
 
         reset(mKeyValue);
         when(mJmriSensor.isActive()).thenReturn(false);
         assertThat(mSensor.isActive()).isFalse();
+
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
+        mSensor.onExecHandle();
         verify(mKeyValue).putValue("name", "OFF", true);
     }
 

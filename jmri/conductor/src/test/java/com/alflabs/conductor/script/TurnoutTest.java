@@ -13,6 +13,8 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -43,6 +45,7 @@ public class TurnoutTest {
         mTurnout.onExecStart();
         verify(mJmriProvider).getTurnout("name");
         verify(mKeyValue).putValue("name", "N", true);
+        reset(mKeyValue);
 
         assertThat(mTurnout.isActive()).isTrue();
     }
@@ -55,10 +58,12 @@ public class TurnoutTest {
 
     @Test
     public void testNormal() throws Exception {
-        reset(mKeyValue);
         mTurnout.createFunction(Turnout.Function.NORMAL).accept(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
+
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
+        mTurnout.onExecHandle();
         verify(mKeyValue).putValue("name", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
@@ -66,10 +71,12 @@ public class TurnoutTest {
 
     @Test
     public void testReverse() throws Exception {
-        reset(mKeyValue);
         mTurnout.createFunction(Turnout.Function.REVERSE).accept(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
+
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
+        mTurnout.onExecHandle();
         verify(mKeyValue).putValue("name", "R", true);
 
         assertThat(mTurnout.isActive()).isFalse();
