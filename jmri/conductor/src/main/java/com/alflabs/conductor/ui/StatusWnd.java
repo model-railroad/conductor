@@ -10,6 +10,7 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.LogException;
+import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.RPair;
 
 import java.awt.Dimension;
@@ -18,6 +19,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.swing.*;
@@ -134,7 +136,8 @@ public class StatusWnd {
             }
         }
 
-        engine.setHandleListener(() -> mAreaStatus.setText(generateVarStatus(script, engine)));
+        engine.setHandleListener(() -> mAreaStatus.setText(
+                generateVarStatus(script, engine, component.getKeyValueServer())));
     }
 
     private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {
@@ -159,37 +162,44 @@ public class StatusWnd {
 
     private StringBuilder mStatus = new StringBuilder();
 
-    private String generateVarStatus(Script script, ExecEngine engine) {
+    private String generateVarStatus(
+            Script script,
+            ExecEngine engine,
+            KeyValueServer kvServer) {
         mStatus.setLength(0);
-
-        if (mLastError != null) {
-            mStatus.append(mLastError);
-        }
 
         mStatus.append("Freq: ");
         float freq = engine.getHandleFrequency();
         mStatus.append(String.format("%.1f Hz\n\n", freq));
 
+        if (mLastError != null) {
+            mStatus.append("--- [ LAST ERROR ] ---\n");
+            mStatus.append(mLastError);
+        }
+
+        mStatus.append("--- [ TURNOUTS ] ---\n");
         int i = 0;
         for (String name : script.getTurnoutNames()) {
             Turnout turnout = script.getTurnout(name);
-            mStatus.append(name).append(':').append(turnout.isActive() ? 'N' : 'R');
+            mStatus.append(name.toUpperCase()).append(": ").append(turnout.isActive() ? 'N' : 'R');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         if (mStatus.charAt(mStatus.length() - 1) != '\n') {
             mStatus.append('\n');
         }
 
+        mStatus.append("--- [ SENSORS ] ---\n");
         i = 0;
         for (String name : script.getSensorNames()) {
             Sensor sensor = script.getSensor(name);
-            mStatus.append(name).append(':').append(sensor.isActive() ? '1' : '0');
+            mStatus.append(name.toUpperCase()).append(": ").append(sensor.isActive() ? '1' : '0');
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         if (mStatus.charAt(mStatus.length() - 1) != '\n') {
             mStatus.append('\n');
         }
 
+        mStatus.append("--- [ TIMERS ] ---\n");
         i = 0;
         for (String name : script.getTimerNames()) {
             Timer timer = script.getTimer(name);
@@ -200,6 +210,7 @@ public class StatusWnd {
             mStatus.append('\n');
         }
 
+        mStatus.append("--- [ VARS ] ---\n");
         i = 0;
         for (String name : script.getVarNames()) {
             Var var = script.getVar(name);
@@ -208,6 +219,12 @@ public class StatusWnd {
         }
         if (mStatus.charAt(mStatus.length() - 1) != '\n') {
             mStatus.append('\n');
+        }
+
+        mStatus.append("--- [ KV Server ] ---\n");
+        mStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
+        for (Map.Entry<String, String> entry : kvServer.getAllValues().entrySet()) {
+            mStatus.append('[').append(entry.getKey()).append("] = ").append(entry.getValue()).append('\n');
         }
 
         return mStatus.toString();
