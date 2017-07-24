@@ -59,7 +59,7 @@ dependencies {
     compile "com.google.auto.factory:auto-factory:1.0-beta5"
     apt     "com.google.auto.factory:auto-factory:1.0-beta5"
 
-    testCompile "junit:junit:4.11"
+    testCompile "junit:junit:4.10"
     testCompile "com.google.truth:truth:0.31"
     testCompile "org.mockito:mockito-core:2.2.9"
     testCompile "com.google.guava:guava:19.0"
