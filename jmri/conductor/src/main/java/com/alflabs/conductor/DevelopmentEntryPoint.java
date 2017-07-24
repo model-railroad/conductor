@@ -3,6 +3,8 @@ package com.alflabs.conductor;
 import com.alflabs.conductor.util.Logger;
 import com.google.common.truth.Truth;
 
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Entry point controlled for development purposes using a fake no-op JMRI interface. */
@@ -36,6 +38,8 @@ public class DevelopmentEntryPoint {
     }
 
     private static class FakeJmriProvider implements IJmriProvider {
+        final Map<String, IJmriSensor> mSensors = new TreeMap<>();
+
         @Override
         public void log(String msg) {
             System.out.println(msg);
@@ -46,27 +50,27 @@ public class DevelopmentEntryPoint {
             return new IJmriThrottle() {
                 @Override
                 public void setSpeed(int speed) {
-                    log(String.format("[%d] Speed: %d\n", dccAddress, speed));
+                    log(String.format("[%d] Speed: %d", dccAddress, speed));
                 }
 
                 @Override
                 public void setSound(boolean on) {
-                    log(String.format("[%d] Sound: %s\n", dccAddress, on));
+                    log(String.format("[%d] Sound: %s", dccAddress, on));
                 }
 
                 @Override
                 public void setLight(boolean on) {
-                    log(String.format("[%d] Light: %s\n", dccAddress, on));
+                    log(String.format("[%d] Light: %s", dccAddress, on));
                 }
 
                 @Override
                 public void horn() {
-                    log(String.format("[%d] Horn\n", dccAddress));
+                    log(String.format("[%d] Horn", dccAddress));
                 }
 
                 @Override
                 public void triggerFunction(int function, boolean on) {
-                    log(String.format("[%d] F%d: %s\n", dccAddress, function, on));
+                    log(String.format("[%d] F%d: %s", dccAddress, function, on));
                 }
 
                 @Override
@@ -78,13 +82,25 @@ public class DevelopmentEntryPoint {
 
         @Override
         public IJmriSensor getSensor(String systemName) {
-            return () -> false;
+            return mSensors.computeIfAbsent(systemName, key -> new IJmriSensor() {
+                boolean mActive = false;
+
+                @Override
+                public boolean isActive() {
+                    return mActive;
+                }
+
+                @Override
+                public void setActive(boolean active) {
+                    mActive = active;
+                }
+            });
         }
 
         @Override
         public IJmriTurnout getTurnout(String systemName) {
             return normal -> {
-                log(String.format("[%s] Turnout: %s\n", systemName, normal ? "Normal" : "Reverse"));
+                log(String.format("[%s] Turnout: %s", systemName, normal ? "Normal" : "Reverse"));
             };
         }
     }

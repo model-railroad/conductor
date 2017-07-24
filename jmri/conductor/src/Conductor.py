@@ -116,6 +116,10 @@ class JmriSensorAdapter(IJmriSensor):
             return False
         return self._sensor.knownState == jmri.Sensor.ACTIVE
 
+    def setActive(self, active):
+        """In: boolean; Out: void"""
+        print "[Conductor] Ignoring SetActive for sensor ", self._name
+
 
 # noinspection PyPep8Naming
 class JmriTurnoutAdapter(IJmriTurnout):

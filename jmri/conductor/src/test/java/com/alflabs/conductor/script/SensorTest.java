@@ -27,22 +27,27 @@ public class SensorTest {
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriSensor mJmriSensor;
     @Mock IKeyValue mKeyValue;
+    @Mock Runnable mOnChangeRunnable;
 
     private Sensor mSensor;
 
     @Before
     public void setUp() throws Exception {
         when(mJmriProvider.getSensor("name")).thenReturn(mJmriSensor);
+        when(mJmriSensor.isActive()).thenReturn(false);
 
         SensorFactory factory = new SensorFactory(
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
         mSensor = factory.create("name");
-        when(mJmriSensor.isActive()).thenReturn(false);
+        mSensor.setOnChangedListener(mOnChangeRunnable);
+
+        assertThat(mSensor.getJmriSensor()).isNull();
 
         mSensor.onExecStart();
         verify(mJmriProvider).getSensor("name");
         verify(mKeyValue).putValue("name", "OFF", true);
+        assertThat(mSensor.getJmriSensor()).isSameAs(mJmriSensor);
     }
 
     @After
@@ -56,18 +61,23 @@ public class SensorTest {
         reset(mKeyValue);
         when(mJmriSensor.isActive()).thenReturn(true);
         assertThat(mSensor.isActive()).isTrue();
+        verify(mOnChangeRunnable, never()).run();
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
         verify(mKeyValue).putValue("name", "ON", true);
+        verify(mOnChangeRunnable).run();
 
         reset(mKeyValue);
+        reset(mOnChangeRunnable);
+
         when(mJmriSensor.isActive()).thenReturn(false);
         assertThat(mSensor.isActive()).isFalse();
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
         verify(mKeyValue).putValue("name", "OFF", true);
+        verify(mOnChangeRunnable).run();
     }
 
 }

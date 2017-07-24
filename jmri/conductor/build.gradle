@@ -33,7 +33,7 @@ sourceSets {
     //      main.java.srcDir [dirToAdd]+
     // or to extend the block using one srcDirs added per line:
     //      main { java { [srcDirs dirToAdd]+ } }
-    // (srcDir is a sets a list whereas srcDirs adds to a list)
+    // (srcDir sets a list whereas srcDirs adds to a list)
 
     main {
         java {

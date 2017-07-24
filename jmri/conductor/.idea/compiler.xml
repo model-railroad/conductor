@@ -2,19 +2,11 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="true">
+      <profile default="true" name="Default">
         <sourceOutputDir name="build/generated/source/apt/main" />
         <sourceTestOutputDir name="build/generated/source/apt/test" />
         <outputRelativeToContentRoot value="true" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="conductor_main" target="1.8" />
-      <module name="conductor_test" target="1.8" />
-      <module name="LibUtils-LibUtilsJava_main" target="1.8" />
-      <module name="LibUtils-LibUtilsJava_test" target="1.8" />
-      <module name="LibUtilsJava_main" target="1.8" />
-      <module name="LibUtilsJava_test" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

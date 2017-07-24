@@ -18,7 +18,9 @@ public class Sensor implements IConditional, IExecEngine {
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
+    private Runnable mOnChangedListener;
     private IJmriSensor mSensor;
+    private boolean mLastActive;
 
     /** Creates a new sensor for the given JMRI system name. */
     public Sensor(
@@ -28,6 +30,10 @@ public class Sensor implements IConditional, IExecEngine {
         mJmriName = jmriName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
+    }
+
+    public void setOnChangedListener(Runnable onChangedListener) {
+        mOnChangedListener = onChangedListener;
     }
 
     /** Initializes the underlying JMRI sensor. */
@@ -44,6 +50,15 @@ public class Sensor implements IConditional, IExecEngine {
 
     @Override
     public void onExecHandle() {
-        mKeyValue.putValue(mJmriName, isActive() ? "ON" : "OFF", true /*broadcast*/);
+        boolean active = isActive();
+        mKeyValue.putValue(mJmriName, active ? "ON" : "OFF", true /*broadcast*/);
+        if (active != mLastActive && mOnChangedListener != null) {
+            mLastActive = active;
+            mOnChangedListener.run();
+        }
+    }
+
+    public IJmriSensor getJmriSensor() {
+        return mSensor;
     }
 }
