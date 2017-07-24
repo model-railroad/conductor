@@ -15,8 +15,6 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,19 +23,19 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.File;
-import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.reset;
 
 /**
- * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine.
+ * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
+ * using isolated JUnit tests.
  */
 public class ScriptParser2Test {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
@@ -1000,37 +998,5 @@ public class ScriptParser2Test {
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
-    }
-
-    @Test
-    public void testScript1() throws Exception {
-        String source = getFileSource("script1.txt");
-        assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        assertThat(mReporter.toString()).isEqualTo("");
-        assertThat(script).isNotNull();
-    }
-
-    @Test
-    public void testScript2() throws Exception {
-        String source = getFileSource("script2.txt");
-        assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        assertThat(mReporter.toString()).isEqualTo("");
-        assertThat(script).isNotNull();
-    }
-
-    @Test
-    public void testScript4() throws Exception {
-        String source = getFileSource("script4.txt");
-        assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        assertThat(mReporter.toString()).isEqualTo("");
-        assertThat(script).isNotNull();
-    }
-
-    private String getFileSource(String fileName) throws IOException {
-        String path = new File("v2", fileName).getPath();
-        return Resources.toString(Resources.getResource(path), Charsets.UTF_8);
     }
 }
