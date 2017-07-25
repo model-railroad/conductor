@@ -2,7 +2,8 @@ apply plugin: "com.android.application"
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    buildToolsVersion "25.0.2"   // [AS2]
+    //--[AS3]--buildToolsVersion "26.0.0"      // [AS3]
     defaultConfig {
         applicationId "com.alflabs.rtac"
         minSdkVersion 19
@@ -10,7 +11,13 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+	    // Needed to use Java 1.8 features such as lambdas and and streams [AS2]
+        jackOptions {
+            enabled true
+        }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -27,17 +34,20 @@ android {
 dependencies {
     compile project(":LibUtilsAndroid")
 
+    //--compile "com.caverock:androidsvg:1.2.1"
+
     //--compile "com.android.support:appcompat-v7:26.+"
     compile "com.android.support.constraint:constraint-layout:1.0.2"
 
     // Note: annotationProcessor starting with gradle 2.2 replaces the previous APT (annotation processor plugin)
     compile "com.google.dagger:dagger:2.5"
     annotationProcessor "com.google.dagger:dagger-compiler:2.5"
+
     // Testing: Robolectric, Mockito and Truth
-    testCompile "org.mockito:mockito-all:2.0.2-beta"
-    testCompile "com.google.truth:truth:0.31"
-    testCompile "org.robolectric:robolectric:3.1"
-    testCompile "junit:junit:4.12"
+    testCompile "org.mockito:mockito-core:2.2.9"
+    testCompile "org.robolectric:robolectric:3.1" // uses hamcrest 1.3
+    testCompile "com.google.truth:truth:0.34"     // to match hamcrest 1.3 from Robolectric
+    testCompile "junit:junit:4.12"                // to match hamcrest 1.3 from Robolectric
 
     //--not used--
     // compile fileTree(dir: "libs", include: ["*.jar"])
