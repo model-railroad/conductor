@@ -48,6 +48,7 @@ dependencies {
     compile "com.google.guava:guava:19.0"
     compile "com.intellij:forms_rt:7.0.3"
     compile "com.google.truth:truth:0.31"
+    compile "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
 
     // antlr4 dep for building g4 to java sources, and antlr runtime for compiling generated srcs
     antlr4  group: "org.antlr", name: "antlr4",         version: "4.5.3"
