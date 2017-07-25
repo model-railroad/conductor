@@ -1,0 +1,8 @@
+apply plugin: 'java'
+
+dependencies {
+    // No deps
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"

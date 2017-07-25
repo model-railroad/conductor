@@ -1,5 +1,7 @@
 package com.alflabs.conductor.script;
 
+import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.Prefix;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
 import com.alflabs.kv.IKeyValue;
@@ -15,7 +17,7 @@ import com.google.auto.factory.Provided;
 public class Sensor implements IConditional, IExecEngine {
 
     private final String mJmriName;
-    private final String mScriptName;
+    private final String mKeyName;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
@@ -30,7 +32,7 @@ public class Sensor implements IConditional, IExecEngine {
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
         mJmriName = jmriName;
-        mScriptName = scriptName;
+        mKeyName = Prefix.Sensor + scriptName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
     }
@@ -54,7 +56,7 @@ public class Sensor implements IConditional, IExecEngine {
     @Override
     public void onExecHandle() {
         boolean active = isActive();
-        mKeyValue.putValue(mScriptName, active ? "ON" : "OFF", true /*broadcast*/);
+        mKeyValue.putValue(mKeyName, active ? Constants.On : Constants.Off, true /*broadcast*/);
         if (active != mLastActive && mOnChangedListener != null) {
             mLastActive = active;
             mOnChangedListener.run();

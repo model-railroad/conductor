@@ -8,6 +8,7 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/../../android/RTAC/LibManifest" />
             <option value="$PROJECT_DIR$/../../android/RTAC/LibUtils/LibUtilsJava" />
             <option value="$PROJECT_DIR$" />
           </set>

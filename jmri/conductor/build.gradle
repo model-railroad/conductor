@@ -44,6 +44,7 @@ sourceSets {
 }
 
 dependencies {
+    compile project(":LibManifest")
     compile project(":LibUtilsJava")
     compile "com.google.guava:guava:19.0"
     compile "com.intellij:forms_rt:7.0.3"

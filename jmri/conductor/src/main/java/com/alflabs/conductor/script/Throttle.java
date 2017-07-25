@@ -3,6 +3,7 @@ package com.alflabs.conductor.script;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Prefix;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -182,7 +183,7 @@ public class Throttle implements IExecEngine {
 
     private void updateKV(int address, int speed) {
         mKeyValue.putValue(
-                "Throttle-" + Integer.toString(address),
+                Prefix.DccThrottle + Integer.toString(address),
                 Integer.toString(speed), true /*broadcast*/);
     }
 }

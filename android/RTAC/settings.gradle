@@ -1,3 +1,4 @@
+include ":LibManifest"
 include ":app"
 
 include ":LibUtilsJava"

@@ -1,5 +1,7 @@
 package com.alflabs.conductor.script;
 
+import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.Prefix;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriTurnout;
 import com.alflabs.kv.IKeyValue;
@@ -23,7 +25,7 @@ import javax.inject.Inject;
 public class Turnout implements IConditional, IExecEngine {
 
     private final String mJmriName;
-    private final String mScriptName;
+    private final String mKeyName;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
@@ -47,7 +49,7 @@ public class Turnout implements IConditional, IExecEngine {
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
         mJmriName = jmriName;
-        mScriptName = scriptName;
+        mKeyName = Prefix.Turnout + scriptName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
     }
@@ -83,6 +85,6 @@ public class Turnout implements IConditional, IExecEngine {
 
     @Override
     public void onExecHandle() {
-        mKeyValue.putValue(mScriptName, mIsNormal ? "N" : "R", true /*broadcast*/);
+        mKeyValue.putValue(mKeyName, mIsNormal ? Constants.Normal : Constants.Reverse, true /*broadcast*/);
     }
 }

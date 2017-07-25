@@ -54,7 +54,7 @@ public class ThrottleTest {
         mThrottle.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriThrottle, atLeastOnce()).getDccAddress();
-        verify(mKeyValue).putValue("Throttle-42", "0", true);
+        verify(mKeyValue).putValue("D:42", "0", true);
         reset(mKeyValue);
 
         fwd = mThrottle.createFunction(Throttle.Function.FORWARD);
@@ -84,17 +84,17 @@ public class ThrottleTest {
 
     @Test
     public void testForward() throws Exception {
-        fwd.accept(42);
-        verify(mJmriThrottle).setSpeed(42);
-        verify(mKeyValue).putValue("Throttle-42", "42", true);
+        fwd.accept(41);
+        verify(mJmriThrottle).setSpeed(41);
+        verify(mKeyValue).putValue("D:42", "41", true);
 
         assertThat(isFwd.isActive()).isTrue();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isFalse();
 
-        fwd.accept(-42);
+        fwd.accept(-43);
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("Throttle-42", "0", true);
+        verify(mKeyValue).putValue("D:42", "0", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -105,17 +105,17 @@ public class ThrottleTest {
 
     @Test
     public void testReverse() throws Exception {
-        rev.accept(42);
-        verify(mJmriThrottle).setSpeed(-42);
-        verify(mKeyValue).putValue("Throttle-42", "-42", true);
+        rev.accept(41);
+        verify(mJmriThrottle).setSpeed(-41);
+        verify(mKeyValue).putValue("D:42", "-41", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isTrue();
         assertThat(isStop.isActive()).isFalse();
 
-        rev.accept(-42);
+        rev.accept(-43);
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("Throttle-42", "0", true);
+        verify(mKeyValue).putValue("D:42", "0", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -126,13 +126,13 @@ public class ThrottleTest {
 
     @Test
     public void testStop() throws Exception {
-        fwd.accept(42);
-        verify(mJmriThrottle).setSpeed(42);
-        verify(mKeyValue).putValue("Throttle-42", "42", true);
+        fwd.accept(41);
+        verify(mJmriThrottle).setSpeed(41);
+        verify(mKeyValue).putValue("D:42", "41", true);
 
         stop.accept(0); // value is irrelevant
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("Throttle-42", "0", true);
+        verify(mKeyValue).putValue("D:42", "0", true);
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isTrue();
