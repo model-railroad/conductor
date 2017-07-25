@@ -11,6 +11,9 @@ else
 	echo ; echo "#### DRY-RUN MODE. Use -f to run. ####" ; echo
 fi
 
+echo "Nothing to do. To setup LibUtils, run ../../android/RTAC/_init.sh instead."
+exit 0
+if false ; then
 ROOT=.
 GIT_USER=$(sed -n '/email = /s/.*= \(.*\)@.*/\1/p' ~/.gitconfig)
 if [[ -z $GIT_USER ]]; then set +x; echo "Git user not found"; exit 1; fi
@@ -27,4 +30,5 @@ LIB_BRANCH="android-lib-v2"
         $DRY git checkout $LIB_BRANCH
     fi
 )
+fi
 

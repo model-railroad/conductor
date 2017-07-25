@@ -8,8 +8,8 @@
         <option name="gradleJvm" value="#JAVA_HOME" />
         <option name="modules">
           <set>
+            <option value="$PROJECT_DIR$/../../android/RTAC/LibUtils/LibUtilsJava" />
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/LibUtils/LibUtilsJava" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
