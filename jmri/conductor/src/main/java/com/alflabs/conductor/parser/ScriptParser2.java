@@ -3,10 +3,12 @@ package com.alflabs.conductor.parser;
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.Event;
 import com.alflabs.conductor.script.IConditional;
 import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
+import com.alflabs.conductor.script.IStringValue;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.SensorFactory;
@@ -17,7 +19,6 @@ import com.alflabs.conductor.script.TimerFactory;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.Now;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -34,6 +35,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -121,22 +123,22 @@ public class ScriptParser2 {
                 return;
             }
             String type = ctx.defStrType().getText().toLowerCase(Locale.US);
-            String scriptName  = ctx.ID(0).getText();
+            String varName  = ctx.ID(0).getText();
             String jmriName = ctx.ID(1).getText();
 
-            if (mScript.isExistingName(scriptName)) {
-                emitError(ctx, "Name '" + scriptName + "' is already defined.");
+            if (mScript.isExistingName(varName)) {
+                emitError(ctx, "Name '" + varName + "' is already defined.");
                 return;
             }
 
             switch (type) {
             case "sensor":
-                Sensor sensor = mSensorFactory.create(jmriName, scriptName);
-                mScript.addSensor(scriptName, sensor);
+                Sensor sensor = mSensorFactory.create(jmriName, varName);
+                mScript.addSensor(varName, sensor);
                 break;
             case "turnout":
-                Turnout turnout = mTurnoutFactory.create(jmriName, scriptName);
-                mScript.addTurnout(scriptName, turnout);
+                Turnout turnout = mTurnoutFactory.create(jmriName, varName);
+                mScript.addTurnout(varName, turnout);
                 break;
             default:
                 emitError(ctx, "Unsupported type '" + type + "'.");
@@ -150,7 +152,7 @@ public class ScriptParser2 {
                 return;
             }
             String type = ctx.defIntType().getText().toLowerCase(Locale.US);
-            String name  = ctx.ID().getText();
+            String varName  = ctx.ID().getText();
             String num = ctx.NUM().getText();
             int value;
             try {
@@ -160,19 +162,19 @@ public class ScriptParser2 {
                 return;
             }
 
-            if (mScript.isExistingName(name)) {
-                emitError(ctx, "Name '" + name + "' is already defined.");
+            if (mScript.isExistingName(varName)) {
+                emitError(ctx, "Name '" + varName + "' is already defined.");
                 return;
             }
 
             switch (type) {
             case "var":
                 Var var = new Var(value);
-                mScript.addVar(name, var);
+                mScript.addVar(varName, var);
                 break;
             case "timer":
                 Timer timer = mTimerFactory.create(value);
-                mScript.addTimer(name, timer);
+                mScript.addTimer(varName, timer);
                 break;
             default:
                 emitError(ctx, "Unsupported type '" + type + "'.");
@@ -185,11 +187,11 @@ public class ScriptParser2 {
             if (ctx.ID() == null) {
                 return;
             }
+            String varName  = ctx.ID().getText();
             List<TerminalNode> nums = ctx.NUM();
-            String name  = ctx.ID().getText();
 
-            if (mScript.isExistingName(name)) {
-                emitError(ctx, "Name '" + name + "' is already defined.");
+            if (mScript.isExistingName(varName)) {
+                emitError(ctx, "Name '" + varName + "' is already defined.");
                 return;
             }
 
@@ -205,7 +207,29 @@ public class ScriptParser2 {
             }
 
             Throttle throttle = mThrottleFactory.create(values);
-            mScript.addThrottle(name, throttle);
+            mScript.addThrottle(varName, throttle);
+        }
+
+        @Override
+        public void exitDefEnumLine(ConductorParser.DefEnumLineContext ctx) {
+            if (ctx.ID() == null) {
+                return;
+            }
+            String varName  = ctx.ID().getText();
+            List<TerminalNode> ids = ctx.defEnumValues().ID();
+
+            if (mScript.isExistingName(varName)) {
+                emitError(ctx, "Name '" + varName + "' is already defined.");
+                return;
+            }
+
+            List<String> values = new ArrayList<>(ids.size());
+            for (TerminalNode id : ids) {
+                values.add(id.getText().toLowerCase(Locale.US));
+            }
+
+            Enum_ enum_ = new Enum_(values);
+            mScript.addEnum(varName, enum_);
         }
 
         @Override
@@ -229,7 +253,23 @@ public class ScriptParser2 {
 
             IConditional cond = null;
 
-            if (ctx.condThrottleOp() != null) {
+            if (ctx.condEnum() != null) {
+                String op = ctx.condEnum().condEnumOp().getText(); // == or !=
+                Enum_ enum_ = mScript.getEnum(id);
+                if (enum_ == null) {
+                    emitError(ctx, "Expected Enum ID for '" + op + "' but found '" + id + "'.");
+                    return;
+                }
+
+                String rhs = ctx.condEnum().ID().getText().toLowerCase(Locale.US);
+                if (!enum_.getValues().contains(rhs)) {
+                    emitError(ctx, "Invalid value '" + rhs + "' for enum '" + id + "'. Expected: "
+                            + Arrays.toString(enum_.getValues().toArray()));
+                }
+
+                cond = enum_.createCondition(op, rhs);
+
+            } else if (ctx.condThrottleOp() != null) {
                 String op = ctx.condThrottleOp().getText();
                 Throttle throttle = mScript.getThrottle(id);
                 if (throttle == null) {
@@ -271,30 +311,66 @@ public class ScriptParser2 {
             }
             String id = ctx.ID().getText();
 
+            // Parse simplified case for enums
+            Enum_ enum_ = mScript.getEnum(id);
+            if (enum_ != null && ctx.funcValue() != null) {
+                TerminalNode node = ctx.funcValue().ID();
+                IStringValue stringValue = null;
+                String value = node == null ? null : node.getText().toLowerCase(Locale.US);
+
+                if (value != null) {
+                    if (enum_.getValues().contains(value)) {
+                        stringValue = new LiteralString(value);
+                    } else {
+                        stringValue = mScript.getEnum(value);
+                    }
+                }
+
+                if (stringValue != null) {
+                    String extra = ctx.throttleOp() == null ? null : ctx.throttleOp().getText();
+                    extra = extra != null ? extra : (ctx.timerOp() == null ? null : ctx.timerOp().getText());
+                    if (extra != null) {
+                        emitError(ctx, "Unexpected extra after '" + id + " = " + value + "': " + extra);
+                        return;
+                    }
+
+                    mEvent.addStringAction(enum_, stringValue);
+                    return;
+                }
+
+                if (node == null) {
+                    node = ctx.funcValue().NUM();
+                    value = node == null ? null : node.getText();
+                }
+                emitError(ctx, "Invalid value '" + value + "' for enum '" + id + "'. Expected: " +
+                        Arrays.toString(enum_.getValues().toArray()));
+                return;
+            }
+
             // Parse optional value
-            IIntValue value = null;
+            IIntValue intValue = null;
             if (ctx.funcValue() != null) {
                 TerminalNode node = ctx.funcValue().NUM();
                 if (node != null) {
-                    value = new LiteralInt(Integer.parseInt(node.getText()));
+                    intValue = new LiteralInt(Integer.parseInt(node.getText()));
                 } else {
                     node = ctx.funcValue().ID();
                     if (node != null) {
-                        value = mScript.getVar(node.getText());
+                        intValue = mScript.getVar(node.getText());
                     }
                 }
-                if (value == null) {
+                if (intValue == null) {
                     String text = node != null ? node.getText() : ctx.funcValue().getText();
                     emitError(ctx, "Expected NUM or ID argument for '" + id + "' but found '" + text + "'.");
                     return;
                 }
             }
-            if (value == null) {
-                value = new LiteralInt(0);
+            if (intValue == null) {
+                intValue = new LiteralInt(0);
             }
 
             // Parse optional operation, which gives a specific function if valid.
-            IIntFunction function = null;
+            IIntFunction intFunction = null;
 
             // Note: KW_REVERSE is used for both throttle op and turnout op.
             // When present, a throttle op gets evaluated first even though the id might be turnout.
@@ -320,14 +396,14 @@ public class ScriptParser2 {
 
                 if (throttle != null) {
                     if (opfn != null) {
-                        function = throttle.createFunction(opfn);
+                        intFunction = throttle.createFunction(opfn);
                     } else {
-                        function = throttle.createFnFunction(fnIndex);
+                        intFunction = throttle.createFnFunction(fnIndex);
                     }
                 }
             }
 
-            if (function == null && (isKwReverse || ctx.turnoutOp() != null)) {
+            if (intFunction == null && (isKwReverse || ctx.turnoutOp() != null)) {
                 String op = isKwReverse ? null : ctx.turnoutOp().getText();
                 Turnout turnout = mScript.getTurnout(id);
 
@@ -344,10 +420,10 @@ public class ScriptParser2 {
                     return;
                 }
 
-                function = turnout.createFunction(fn);
+                intFunction = turnout.createFunction(fn);
             }
 
-            if (function == null && ctx.timerOp() != null) {
+            if (intFunction == null && ctx.timerOp() != null) {
                 String op = ctx.timerOp().getText();
                 Timer timer = mScript.getTimer(id);
 
@@ -358,27 +434,27 @@ public class ScriptParser2 {
                     return;
                 }
 
-                function = timer.createFunction(fn);
+                intFunction = timer.createFunction(fn);
             }
 
-            if (function == null) {
+            if (intFunction == null) {
                 // If it's not an op for a throttle/turnout/timer, it must be a variable in the
                 // syntax of "var = value".
-                function = mScript.getVar(id);
+                intFunction = mScript.getVar(id);
 
-                if (function == null) {
+                if (intFunction == null) {
                     emitError(ctx, "Expected var ID but found '" + id + "'.");
                     return;
                 }
             }
 
-            mEvent.addAction(function, value);
+            mEvent.addIntAction(intFunction, intValue);
         }
 
         @Override
         public void exitFnAction(ConductorParser.FnActionContext ctx) {
             if (ctx.KW_RESET() != null && ctx.KW_TIMERS() != null) {
-                mEvent.addAction(mScript.getResetTimersFunction(), new LiteralInt(0));
+                mEvent.addIntAction(mScript.getResetTimersFunction(), new LiteralInt(0));
             } else {
                 emitError(ctx, "Unexpected call.");
             }
@@ -443,7 +519,7 @@ public class ScriptParser2 {
                 // create an event that will trigger the timer
                 Event triggerEvent = new Event(mScript.getLogger(), timerName + " trigger");
                 triggerEvent.addConditional(cond, negated);
-                triggerEvent.addAction(
+                triggerEvent.addIntAction(
                         timer.createFunction(Timer.Function.START),
                         new LiteralInt(0));
                 mScript.addEvent(triggerEvent);
@@ -451,7 +527,7 @@ public class ScriptParser2 {
                 // create an event that clears the timer
                 Event endEvent = new Event(mScript.getLogger(), timerName + " end");
                 endEvent.addConditional(timer, false);
-                endEvent.addAction(
+                endEvent.addIntAction(
                         timer.createFunction(Timer.Function.END),
                         new LiteralInt(0));
                 mScript.addEvent(endEvent);

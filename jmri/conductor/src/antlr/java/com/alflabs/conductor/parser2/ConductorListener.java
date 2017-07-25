@@ -88,6 +88,26 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitDefThrottleLine(ConductorParser.DefThrottleLineContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defEnumLine}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefEnumLine(ConductorParser.DefEnumLineContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defEnumLine}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefEnumLine(ConductorParser.DefEnumLineContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defEnumValues}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefEnumValues(ConductorParser.DefEnumValuesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defEnumValues}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefEnumValues(ConductorParser.DefEnumValuesContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree
 	 */
@@ -147,6 +167,26 @@ public interface ConductorListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCondThrottleOp(ConductorParser.CondThrottleOpContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#condEnum}.
+	 * @param ctx the parse tree
+	 */
+	void enterCondEnum(ConductorParser.CondEnumContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#condEnum}.
+	 * @param ctx the parse tree
+	 */
+	void exitCondEnum(ConductorParser.CondEnumContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#condEnumOp}.
+	 * @param ctx the parse tree
+	 */
+	void enterCondEnumOp(ConductorParser.CondEnumOpContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#condEnumOp}.
+	 * @param ctx the parse tree
+	 */
+	void exitCondEnumOp(ConductorParser.CondEnumOpContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ConductorParser#actionList}.
 	 * @param ctx the parse tree

@@ -3,7 +3,7 @@ package com.alflabs.conductor.script;
 import java.util.function.IntConsumer;
 
 /**
- * A script function-like item that can receive a value.
+ * A script function-like item that can receive an int value.
  * <p/>
  * The effective signature of a script function is (int) -> void.
  * <p/>

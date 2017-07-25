@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class Event {
     private final List<Cond> mConditions = new ArrayList<>();
-    private final List<Action> mActions = new ArrayList<>();
+    private final List<IAction> mActions = new ArrayList<>();
     private final Logger mLogger;
     private final String mSrcLine;
     private boolean mExecuted;
@@ -24,8 +24,12 @@ public class Event {
         mConditions.add(new Cond(condition, negated));
     }
 
-    public void addAction(IIntFunction function, IIntValue value) {
-        mActions.add(new Action(function, value));
+    public void addIntAction(IIntFunction function, IIntValue value) {
+        mActions.add(new IntAction(function, value));
+    }
+
+    public void addStringAction(IStringFunction function, IStringValue value) {
+        mActions.add(new StringAction(function, value));
     }
 
     boolean evalConditions(CondCache condCache) {
@@ -44,13 +48,13 @@ public class Event {
 
     void execute() {
         if (!mExecuted) {
-            for (Action action : mActions) {
+            for (IAction action : mActions) {
                 try {
                     mLogger.log("[Conductor] Exec: " + mSrcLine);
                     action.execute();
 
                 } catch (Exception e) {
-                    mLogger.log("[Conductor] Action failed [" + action + "]: " + e);
+                    mLogger.log("[Conductor] IAction failed [" + action + "]: " + e);
                 }
             }
 

@@ -102,6 +102,10 @@ public class Throttle implements IExecEngine {
         return mSpeed;
     }
 
+    /**
+     * Sets the throttle speed and direction.
+     * Speed 0 means stopped, a positive number for forward and a negative number for reverse.
+     */
     public void setSpeed(int speed) {
         mSpeed = speed;
         for (IJmriThrottle jmriThrottle : mJmriThrottles) {

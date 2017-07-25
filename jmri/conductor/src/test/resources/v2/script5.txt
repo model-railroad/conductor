@@ -1,0 +1,36 @@
+# throttles
+
+Throttle CONSIST = 204
+
+# states
+
+Enum State = Init Idle Fwd Rev      # Enum is initialized with its first value.
+Var Speed = 8
+
+
+# sensors
+
+Sensor B1         = NS48      # 48:1
+Sensor B2         = NS49      # 48:2
+Sensor TOGGLE     = NS50      # 48:3
+
+# turnouts
+
+Turnout T1        = NT01
+
+# define timers and their default value in seconds
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+State == INIT -> State = Idle; CONSIST Sound = 1; CONSIST Light = 1
+
+State == Idle & TOGGLE -> State = Fwd ; CONSIST Horn ; CONSIST Forward = Speed
+State == Fwd  & B1 + 5 & CONSIST Forward -> State = Rev; CONSIST Reverse = Speed;
+State == Rev  & B1     & CONSIST Reverse -> CONSIST Stop; State = Idle
+
+State != Idle -> T1 Normal;
+

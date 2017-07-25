@@ -81,6 +81,15 @@ public class ScriptParserFullTest {
         assertThat(script).isNotNull();
     }
 
+    @Test
+    public void testScript5() throws Exception {
+        String source = getFileSource("script5.txt");
+        assertThat(source).isNotNull();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+    }
+
     private String getFileSource(String fileName) throws IOException {
         String path = new File("v2", fileName).getPath();
         return Resources.toString(Resources.getResource(path), Charsets.UTF_8);

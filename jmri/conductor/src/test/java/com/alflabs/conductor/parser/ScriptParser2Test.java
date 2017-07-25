@@ -182,6 +182,32 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testDefineEnum() throws Exception {
+        String source = "  Enum EN   = Init Idle Fwd Rev ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getEnum("en")).isNotNull();
+        assertThat(script.getEnum("en").getValues().toArray()).isEqualTo(
+                new String[] { "init", "idle", "fwd", "rev" });
+    }
+
+    @Test
+    public void testDefineEnum_alreadyDefined() throws Exception {
+        String source = "" +
+                "Enum EN   = Init Idle Fwd Rev \n" +
+                "Enum EN   = Init Idle";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'EN' is already defined.\n" +
+                        "  Line 2: 'Enum EN   = Init Idle'");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
     public void testDefineThrottle() throws Exception {
         String source = "  Throttle TH   = 5201 ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
@@ -247,6 +273,19 @@ public class ScriptParser2Test {
         assertThat(script).isNotNull();
 
         assertThat(script.getVar("my-var").getAsInt()).isEqualTo(1);
+    }
+
+    @Test
+    public void testEnumDefineCondAction() throws Exception {
+        String source = "" +
+                "Enum State = Init Idle Fwd Rev\n" +
+                "State == INIT -> State = Idle\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
     }
 
     @Test
@@ -478,6 +517,40 @@ public class ScriptParser2Test {
         verify(mJmriThrottle).triggerFunction(1, false);
         verify(mJmriThrottle).triggerFunction(0, false);
         verify(mJmriThrottle).triggerFunction(28, false);
+    }
+
+    @Test
+    public void testActionEnum() throws Exception {
+        String source = "" +
+                "throttle T1=42\n " +
+                "Enum State = Init Idle Fwd Rev\n" +
+                "Enum Other = Rev\n" +
+                "state == init & t1 stopped -> state = idle\n" +
+                "state == idle & t1 forward -> state = fwd \n" +
+                "state == fwd  & t1 reverse -> state = other ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+        verify(mJmriProvider).getThrotlle(42);
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+
+        // Execute with throttle defaulting to speed 0 (stopped).
+        engine.onExecHandle();
+        assertThat(script.getEnum("State").get()).isEqualTo("idle");
+
+        // Execute with throttle at speed 5
+        script.getThrottle("t1").setSpeed(5);
+        engine.onExecHandle();
+        assertThat(script.getEnum("State").get()).isEqualTo("fwd");
+
+        // Execute with throttle at speed -5
+        script.getThrottle("t1").setSpeed(-5);
+        engine.onExecHandle();
+        assertThat(script.getEnum("State").get()).isEqualTo("rev");
     }
 
     @Test

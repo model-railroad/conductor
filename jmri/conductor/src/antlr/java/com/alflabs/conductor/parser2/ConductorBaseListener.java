@@ -112,6 +112,30 @@ public class ConductorBaseListener implements ConductorListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDefEnumLine(ConductorParser.DefEnumLineContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDefEnumLine(ConductorParser.DefEnumLineContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDefEnumValues(ConductorParser.DefEnumValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDefEnumValues(ConductorParser.DefEnumValuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterEventLine(ConductorParser.EventLineContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -179,6 +203,30 @@ public class ConductorBaseListener implements ConductorListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCondThrottleOp(ConductorParser.CondThrottleOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCondEnum(ConductorParser.CondEnumContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCondEnum(ConductorParser.CondEnumContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterCondEnumOp(ConductorParser.CondEnumOpContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitCondEnumOp(ConductorParser.CondEnumOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

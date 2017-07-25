@@ -32,6 +32,7 @@ public class Script {
 
     private final Logger mLogger;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
+    private final TreeMap<String, Enum_> mEnums = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
@@ -67,6 +68,10 @@ public class Script {
         mThrottles.put(name.toLowerCase(Locale.US), throttle);
     }
 
+    public void addEnum(String name, Enum_ enum_) {
+        mEnums.put(name.toLowerCase(Locale.US), enum_);
+    }
+
     public void addVar(String name, Var var) {
         mVars.put(name.toLowerCase(Locale.US), var);
     }
@@ -89,6 +94,10 @@ public class Script {
 
     public Throttle getThrottle(String name) {
         return mThrottles.get(name.toLowerCase(Locale.US));
+    }
+
+    public Enum_ getEnum(String name) {
+        return mEnums.get(name.toLowerCase(Locale.US));
     }
 
     public Var getVar(String name) {
@@ -149,6 +158,7 @@ public class Script {
         name = name.toLowerCase(Locale.US);
         return mThrottles.containsKey(name)
                 || mVars.containsKey(name)
+                || mEnums.containsKey(name)
                 || getConditional(name) != null;
     }
 
