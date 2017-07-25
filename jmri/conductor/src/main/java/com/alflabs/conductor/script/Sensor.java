@@ -15,6 +15,7 @@ import com.google.auto.factory.Provided;
 public class Sensor implements IConditional, IExecEngine {
 
     private final String mJmriName;
+    private final String mScriptName;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
@@ -25,9 +26,11 @@ public class Sensor implements IConditional, IExecEngine {
     /** Creates a new sensor for the given JMRI system name. */
     public Sensor(
             String jmriName,
+            String scriptName,
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
         mJmriName = jmriName;
+        mScriptName = scriptName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
     }
@@ -51,7 +54,7 @@ public class Sensor implements IConditional, IExecEngine {
     @Override
     public void onExecHandle() {
         boolean active = isActive();
-        mKeyValue.putValue(mJmriName, active ? "ON" : "OFF", true /*broadcast*/);
+        mKeyValue.putValue(mScriptName, active ? "ON" : "OFF", true /*broadcast*/);
         if (active != mLastActive && mOnChangedListener != null) {
             mLastActive = active;
             mOnChangedListener.run();

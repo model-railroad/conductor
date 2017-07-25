@@ -121,22 +121,22 @@ public class ScriptParser2 {
                 return;
             }
             String type = ctx.defStrType().getText().toLowerCase(Locale.US);
-            String name  = ctx.ID(0).getText();
-            String value = ctx.ID(1).getText();
+            String scriptName  = ctx.ID(0).getText();
+            String jmriName = ctx.ID(1).getText();
 
-            if (mScript.isExistingName(name)) {
-                emitError(ctx, "Name '" + name + "' is already defined.");
+            if (mScript.isExistingName(scriptName)) {
+                emitError(ctx, "Name '" + scriptName + "' is already defined.");
                 return;
             }
 
             switch (type) {
             case "sensor":
-                Sensor sensor = mSensorFactory.create(value);
-                mScript.addSensor(name, sensor);
+                Sensor sensor = mSensorFactory.create(jmriName, scriptName);
+                mScript.addSensor(scriptName, sensor);
                 break;
             case "turnout":
-                Turnout turnout = mTurnoutFactory.create(value);
-                mScript.addTurnout(name, turnout);
+                Turnout turnout = mTurnoutFactory.create(jmriName);
+                mScript.addTurnout(scriptName, turnout);
                 break;
             default:
                 emitError(ctx, "Unsupported type '" + type + "'.");

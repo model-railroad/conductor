@@ -33,20 +33,20 @@ public class SensorTest {
 
     @Before
     public void setUp() throws Exception {
-        when(mJmriProvider.getSensor("name")).thenReturn(mJmriSensor);
+        when(mJmriProvider.getSensor("jmriName")).thenReturn(mJmriSensor);
         when(mJmriSensor.isActive()).thenReturn(false);
 
         SensorFactory factory = new SensorFactory(
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
-        mSensor = factory.create("name");
+        mSensor = factory.create("jmriName", "scriptName");
         mSensor.setOnChangedListener(mOnChangeRunnable);
 
         assertThat(mSensor.getJmriSensor()).isNull();
 
         mSensor.onExecStart();
-        verify(mJmriProvider).getSensor("name");
-        verify(mKeyValue).putValue("name", "OFF", true);
+        verify(mJmriProvider).getSensor("jmriName");
+        verify(mKeyValue).putValue("scriptName", "OFF", true);
         assertThat(mSensor.getJmriSensor()).isSameAs(mJmriSensor);
     }
 
@@ -65,7 +65,7 @@ public class SensorTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
-        verify(mKeyValue).putValue("name", "ON", true);
+        verify(mKeyValue).putValue("scriptName", "ON", true);
         verify(mOnChangeRunnable).run();
 
         reset(mKeyValue);
@@ -76,7 +76,7 @@ public class SensorTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
-        verify(mKeyValue).putValue("name", "OFF", true);
+        verify(mKeyValue).putValue("scriptName", "OFF", true);
         verify(mOnChangeRunnable).run();
     }
 
