@@ -23,6 +23,7 @@ import javax.inject.Inject;
 public class Turnout implements IConditional, IExecEngine {
 
     private final String mJmriName;
+    private final String mScriptName;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
@@ -42,9 +43,11 @@ public class Turnout implements IConditional, IExecEngine {
     @Inject
     public Turnout(
             String jmriName,
+            String scriptName,
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
         mJmriName = jmriName;
+        mScriptName = scriptName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
     }
@@ -80,6 +83,6 @@ public class Turnout implements IConditional, IExecEngine {
 
     @Override
     public void onExecHandle() {
-        mKeyValue.putValue(mJmriName, mIsNormal ? "N" : "R", true /*broadcast*/);
+        mKeyValue.putValue(mScriptName, mIsNormal ? "N" : "R", true /*broadcast*/);
     }
 }

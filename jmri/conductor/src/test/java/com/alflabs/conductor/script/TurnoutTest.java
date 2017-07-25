@@ -35,16 +35,16 @@ public class TurnoutTest {
     public void setUp() throws Exception {
         mJmriTurnout = mock(IJmriTurnout.class);
 
-        when(mJmriProvider.getTurnout("name")).thenReturn(mJmriTurnout);
+        when(mJmriProvider.getTurnout("jmriName")).thenReturn(mJmriTurnout);
 
         TurnoutFactory factory = new TurnoutFactory(
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
-        mTurnout = factory.create("name");
+        mTurnout = factory.create("jmriName", "scriptName");
 
         mTurnout.onExecStart();
-        verify(mJmriProvider).getTurnout("name");
-        verify(mKeyValue).putValue("name", "N", true);
+        verify(mJmriProvider).getTurnout("jmriName");
+        verify(mKeyValue).putValue("scriptName", "N", true);
         reset(mKeyValue);
 
         assertThat(mTurnout.isActive()).isTrue();
@@ -64,7 +64,7 @@ public class TurnoutTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
-        verify(mKeyValue).putValue("name", "N", true);
+        verify(mKeyValue).putValue("scriptName", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
     }
@@ -77,7 +77,7 @@ public class TurnoutTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
-        verify(mKeyValue).putValue("name", "R", true);
+        verify(mKeyValue).putValue("scriptName", "R", true);
 
         assertThat(mTurnout.isActive()).isFalse();
     }

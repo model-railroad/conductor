@@ -135,7 +135,7 @@ public class ScriptParser2 {
                 mScript.addSensor(scriptName, sensor);
                 break;
             case "turnout":
-                Turnout turnout = mTurnoutFactory.create(jmriName);
+                Turnout turnout = mTurnoutFactory.create(jmriName, scriptName);
                 mScript.addTurnout(scriptName, turnout);
                 break;
             default:
