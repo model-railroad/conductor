@@ -20,6 +20,10 @@ Turnout T1        = NT01
 
 # define timers and their default value in seconds
 
+# Maps and Routes info
+
+Map Map1 = "maps/filename1.svg"
+Map Map2 = "maps/filename2.svg"
 
 # ---------
 # Events PA

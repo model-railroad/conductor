@@ -108,6 +108,16 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitDefEnumValues(ConductorParser.DefEnumValuesContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defMapLine}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefMapLine(ConductorParser.DefMapLineContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defMapLine}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefMapLine(ConductorParser.DefMapLineContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree
 	 */

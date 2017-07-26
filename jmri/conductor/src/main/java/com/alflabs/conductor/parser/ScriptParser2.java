@@ -233,6 +233,27 @@ public class ScriptParser2 {
         }
 
         @Override
+        public void exitDefMapLine(ConductorParser.DefMapLineContext ctx) {
+            if (ctx.ID() == null || ctx.STR() == null) {
+                return;
+            }
+            String mapName  = ctx.ID().getText();
+            String mapFilename = ctx.STR().getText();
+
+            // Remove start/end quotes from the string
+            if (mapFilename.startsWith("\"") && mapFilename.endsWith("\"")) {
+                mapFilename = mapFilename.substring(1, mapFilename.length() - 1);
+            }
+
+            if (mScript.isExistingName(mapName)) {
+                emitError(ctx, "Name '" + mapName + "' is already defined.");
+                return;
+            }
+
+            mScript.addMap(mapName, mapFilename);
+        }
+
+        @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
             mEvent = new Event(mScript.getLogger(), getLine(ctx));
         }

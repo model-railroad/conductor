@@ -182,32 +182,6 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineEnum() throws Exception {
-        String source = "  Enum EN   = Init Idle Fwd Rev ";
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-
-        assertThat(mReporter.toString()).isEqualTo("");
-        assertThat(script).isNotNull();
-
-        assertThat(script.getEnum("en")).isNotNull();
-        assertThat(script.getEnum("en").getValues().toArray()).isEqualTo(
-                new String[] { "init", "idle", "fwd", "rev" });
-    }
-
-    @Test
-    public void testDefineEnum_alreadyDefined() throws Exception {
-        String source = "" +
-                "Enum EN   = Init Idle Fwd Rev \n" +
-                "Enum EN   = Init Idle";
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-
-        assertThat(mReporter.toString()).isEqualTo(
-                "Error at line 2: Name 'EN' is already defined.\n" +
-                        "  Line 2: 'Enum EN   = Init Idle'");
-        assertThat(script).isNotNull();
-    }
-
-    @Test
     public void testDefineThrottle() throws Exception {
         String source = "  Throttle TH   = 5201 ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
@@ -258,6 +232,60 @@ public class ScriptParser2Test {
         assertThat(script.getTimer("TIMER-1")).isNotNull();
         Timer timer = script.getTimer("timer-1");
         assertThat(timer.getDurationSec()).isEqualTo(5);
+    }
+
+    @Test
+    public void testDefineEnum() throws Exception {
+        String source = "  Enum EN   = Init Idle Fwd Rev ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getEnum("en")).isNotNull();
+        assertThat(script.getEnum("en").getValues().toArray()).isEqualTo(
+                new String[] { "init", "idle", "fwd", "rev" });
+    }
+
+    @Test
+    public void testDefineEnum_alreadyDefined() throws Exception {
+        String source = "" +
+                "Enum EN   = Init Idle Fwd Rev \n" +
+                "Enum EN   = Init Idle";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'EN' is already defined.\n" +
+                        "  Line 2: 'Enum EN   = Init Idle'");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testDefineMap() throws Exception {
+        String source = "" +
+                "  Map Map-1 = \"path/to/map1.svg\" \n" +
+                "  Map Map-2 = \"path\\to\\map2.svg\" ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getMaps()).hasFirstEntry("map-1", "path/to/map1.svg");
+        assertThat(script.getMaps()).hasLastEntry ("map-2", "path\\to\\map2.svg");
+        assertThat(script.getMaps()).hasSize(2);
+    }
+
+    @Test
+    public void testDefineMap_alreadyDefined() throws Exception {
+        String source = "" +
+                "  Map Map-1 = \"path/to/map1.svg\" \n" +
+                "  Map Map-1 = \"path\\to\\map2.svg\" ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'Map-1' is already defined.\n" +
+                        "  Line 2: 'Map Map-1 = \"path\\to\\map2.svg\"'");
+        assertThat(script).isNotNull();
     }
 
     @Test

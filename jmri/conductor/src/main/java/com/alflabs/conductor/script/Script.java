@@ -37,6 +37,7 @@ public class Script {
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
+    private final TreeMap<String, String> mMaps = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
@@ -90,6 +91,10 @@ public class Script {
 
     public void addEvent(Event event) {
         mEvents.add(event);
+    }
+
+    public void addMap(String mapName, String mapFilename) {
+        mMaps.put(mapName.toLowerCase(Locale.US), mapFilename);
     }
 
     public Throttle getThrottle(String name) {
@@ -154,11 +159,16 @@ public class Script {
         return new ArrayList<>(mVars.keySet());
     }
 
+    public TreeMap<String, String> getMaps() {
+        return mMaps;
+    }
+
     public boolean isExistingName(String name) {
         name = name.toLowerCase(Locale.US);
         return mThrottles.containsKey(name)
                 || mVars.containsKey(name)
                 || mEnums.containsKey(name)
+                || mMaps.containsKey(name)
                 || getConditional(name) != null;
     }
 
