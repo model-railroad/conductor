@@ -19,6 +19,7 @@ import com.alflabs.conductor.script.TimerFactory;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
+import com.alflabs.manifest.MapInfo;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -250,7 +251,7 @@ public class ScriptParser2 {
                 return;
             }
 
-            mScript.addMap(mapName, mapFilename);
+            mScript.addMap(mapName, new MapInfo(mapName, mapFilename));
         }
 
         @Override

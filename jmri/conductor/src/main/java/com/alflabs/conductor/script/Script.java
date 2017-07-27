@@ -1,6 +1,7 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.manifest.MapInfo;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class Script {
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
-    private final TreeMap<String, String> mMaps = new TreeMap<>();
+    private final TreeMap<String, MapInfo> mMaps = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
@@ -93,8 +94,8 @@ public class Script {
         mEvents.add(event);
     }
 
-    public void addMap(String mapName, String mapFilename) {
-        mMaps.put(mapName.toLowerCase(Locale.US), mapFilename);
+    public void addMap(String mapName, MapInfo mapInfo) {
+        mMaps.put(mapName.toLowerCase(Locale.US), mapInfo);
     }
 
     public Throttle getThrottle(String name) {
@@ -159,7 +160,7 @@ public class Script {
         return new ArrayList<>(mVars.keySet());
     }
 
-    public TreeMap<String, String> getMaps() {
+    public TreeMap<String, MapInfo> getMaps() {
         return mMaps;
     }
 

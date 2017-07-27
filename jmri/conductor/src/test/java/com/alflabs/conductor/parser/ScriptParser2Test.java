@@ -15,6 +15,7 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
+import com.alflabs.manifest.MapInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +24,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.File;
+import java.util.TreeMap;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -270,9 +272,12 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getMaps()).hasFirstEntry("map-1", "path/to/map1.svg");
-        assertThat(script.getMaps()).hasLastEntry ("map-2", "path\\to\\map2.svg");
-        assertThat(script.getMaps()).hasSize(2);
+        TreeMap<String, MapInfo> maps = script.getMaps();
+        assertThat(maps).hasFirstEntry("map-1", new MapInfo("Map-1", "path/to/map1.svg"));
+        assertThat(maps).hasLastEntry ("map-2", new MapInfo("Map-2", "path\\to\\map2.svg"));
+        assertThat(maps.get("map-1").toString()).isEqualTo("{\"name\":\"Map-1\",\"svg\":\"path/to/map1.svg\"}");
+        assertThat(maps.get("map-2").toString()).isEqualTo("{\"name\":\"Map-2\",\"svg\":\"path\\\\to\\\\map2.svg\"}");
+        assertThat(maps).hasSize(2);
     }
 
     @Test
