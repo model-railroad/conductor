@@ -13,7 +13,7 @@ Var Speed = 8
 # sensors
 
 Sensor B1         = NS48      # 48:1
-Sensor TOGGLE     = NS49      # 48:2
+Sensor PA-TOGGLE  = NS49      # 48:2
 
 # turnouts
 
@@ -28,7 +28,7 @@ Sensor TOGGLE     = NS49      # 48:2
 # Setup
 INIT -> FRONT Sound = 1; FRONT Light = 1; REAR Sound = 1; REAR Light = 1
 
-TOGGLE -> FRONT Horn ; CONSIST Forward = Speed
+PA-TOGGLE -> FRONT Horn ; CONSIST Forward = Speed
 B1 + 5 & CONSIST Forward -> CONSIST Reverse = Speed ;
 B1     & CONSIST Reverse -> CONSIST Stop
 

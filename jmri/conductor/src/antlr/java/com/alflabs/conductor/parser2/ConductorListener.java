@@ -118,6 +118,56 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitDefMapLine(ConductorParser.DefMapLineContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link ConductorParser#defRouteLine}.
+	 * @param ctx the parse tree
+	 */
+	void enterDefRouteLine(ConductorParser.DefRouteLineContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#defRouteLine}.
+	 * @param ctx the parse tree
+	 */
+	void exitDefRouteLine(ConductorParser.DefRouteLineContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#routeInfoList}.
+	 * @param ctx the parse tree
+	 */
+	void enterRouteInfoList(ConductorParser.RouteInfoListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#routeInfoList}.
+	 * @param ctx the parse tree
+	 */
+	void exitRouteInfoList(ConductorParser.RouteInfoListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#routeInfo}.
+	 * @param ctx the parse tree
+	 */
+	void enterRouteInfo(ConductorParser.RouteInfoContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#routeInfo}.
+	 * @param ctx the parse tree
+	 */
+	void exitRouteInfo(ConductorParser.RouteInfoContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#routeInfoOpId}.
+	 * @param ctx the parse tree
+	 */
+	void enterRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#routeInfoOpId}.
+	 * @param ctx the parse tree
+	 */
+	void exitRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link ConductorParser#routeInfoOpNum}.
+	 * @param ctx the parse tree
+	 */
+	void enterRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link ConductorParser#routeInfoOpNum}.
+	 * @param ctx the parse tree
+	 */
+	void exitRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree
 	 */

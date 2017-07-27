@@ -255,6 +255,11 @@ public class ScriptParser2 {
         }
 
         @Override
+        public void exitDefRouteLine(ConductorParser.DefRouteLineContext ctx) {
+            super.exitDefRouteLine(ctx);
+        }
+
+        @Override
         public void enterEventLine(ConductorParser.EventLineContext ctx) {
             mEvent = new Event(mScript.getLogger(), getLine(ctx));
         }

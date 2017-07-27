@@ -1,37 +1,43 @@
 grammar Conductor;
 
-script     : scriptLine ( EOL scriptLine )* EOL? EOF ;
-scriptLine : ( defLine | eventLine )? SB_COMMENT? ;
+script     : scriptLine ( EOL scriptLine )* EOL? EOF;
+scriptLine : ( defLine | eventLine )? SB_COMMENT?;
 
-defLine: defStrLine | defIntLine | defThrottleLine | defEnumLine | defMapLine ;
+defLine: defStrLine | defIntLine | defThrottleLine | defEnumLine | defMapLine | defRouteLine;
 
-defStrLine: defStrType ID '=' ID ;
-defStrType: KW_SENSOR | KW_TURNOUT ;
+defStrLine: defStrType ID '=' ID;
+defStrType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_VAR  | KW_TIMER ;
+defIntType: KW_VAR  | KW_TIMER;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
 defEnumLine: KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
 
-defMapLine: KW_MAP ID '=' STR ;
+defMapLine: KW_MAP ID '=' STR;
+
+defRouteLine:  KW_ROUTE ID '=' routeInfoList;
+routeInfoList: routeInfo ( ',' routeInfo )* ','? ;
+routeInfo:     routeInfoOpId ':' ID | routeInfoOpNum ':' NUM;
+routeInfoOpId: KW_TOGGLE | KW_STATUS;
+routeInfoOpNum:KW_THROTTLE;
 
 eventLine: condList '->' actionList;
 
 condList:   cond ( '&' cond )* ;
 cond:       condNot? ID condEnum? condThrottleOp? condTime? ;
-condNot:    '!' ;
-condTime:   '+' NUM ;
-condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT ;
+condNot:    '!';
+condTime:   '+' NUM;
+condThrottleOp: KW_FORWARD | KW_REVERSE | KW_STOPPED | KW_SOUND | KW_LIGHT;
 condEnum:   condEnumOp ID;
 condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 
 actionList: action ( ';' action )* ';'? ;
 action:     EOL? ( idAction | fnAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
-fnAction:   KW_RESET KW_TIMERS ;
+fnAction:   KW_RESET KW_TIMERS;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -59,25 +65,28 @@ KW_SEMI:    ';';
 // Note: we use a case-insensitive input stream which works by converting the input to
 // lowercase so all the keywords here need to be lower case. However when the visitor
 // uses ctx.getText(), it will get the original case of the source file.
-KW_MAP:     'map';
-KW_VAR:     'var';
+KW_END:     'end';
 KW_ENUM:    'enum';
-KW_THROTTLE:'throttle';
-KW_SENSOR:  'sensor';
-KW_TURNOUT: 'turnout';
-KW_TIMER:   'timer';
 KW_FORWARD: 'forward';
-KW_REVERSE: 'reverse';
-KW_NORMAL:  'normal';
-KW_SOUND:   'sound';
-KW_LIGHT:   'light';
 KW_HORN:    'horn';
+KW_LIGHT:   'light';
+KW_MAP:     'map';
+KW_NORMAL:  'normal';
+KW_RESET:   'reset';
+KW_REVERSE: 'reverse';
+KW_ROUTE:   'route';
+KW_SENSOR:  'sensor';
+KW_SOUND:   'sound';
+KW_START:   'start';
+KW_STATUS:  'status';
 KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
-KW_START:   'start';
-KW_END:     'end';
-KW_RESET:   'reset';
+KW_THROTTLE:'throttle';
+KW_TIMER:   'timer';
 KW_TIMERS:  'timers';
+KW_TOGGLE:  'toggle';
+KW_TURNOUT: 'turnout';
+KW_VAR:     'var';
 KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
 fragment KW_F0 :      'f'  [0-9] ;
 fragment KW_F10:      'f1' [0-9] ;
@@ -90,12 +99,12 @@ NUM:     IdNum+ ;      // An int literal
 STR:     '"' ~["\r\n]* '"';
 
 fragment IdCharStart: IdUnreserved | IdLetter ;
-fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDoubleQuote | IdDash ;
+fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDash ;
 fragment IdCharLast:  IdUnreserved | IdLetter | IdNum ;
 
 // Unreserved characters can be used to start an ID or even be the whole 1-char ID
-// ; is not allowed since it's the separator and " is treated separately due to STR vs ID.
-fragment IdUnreserved: [$?_:*/,.%^()\[\]{}\'`~] ;
+// ;:, are not allowed since they are separators and " is treated separately due to STR vs ID.
+fragment IdUnreserved: [$?_*/.%^()\[\]{}\'`~] ;
 fragment IdNum:        [0-9] ;
 // Letter covers all unicode characters above 0xFF which are not a surrogate
 // (syntax doesn't seem right so for now just accepting the tradional A-Z)
