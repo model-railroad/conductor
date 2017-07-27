@@ -3,9 +3,14 @@ package com.alflabs.manifest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
+
 public class MapInfo {
-    public final String name;
-    public final String svg;
+    public String name;     // field exported to JSON
+    public String svg;      // field exported to JSON
+
+    /** Constructor needed by the JSON ObjectMapper. */
+    protected MapInfo() {}
 
     public MapInfo(String name, String svg) {
         this.name = name;
@@ -20,11 +25,20 @@ public class MapInfo {
         return svg;
     }
 
+    public static MapInfo parseJson(String json) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, MapInfo.class);
+    }
+
+    public String toJsonString() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this);
+    }
+
     @Override
     public String toString() {
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.writeValueAsString(this);
+            return toJsonString();
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
