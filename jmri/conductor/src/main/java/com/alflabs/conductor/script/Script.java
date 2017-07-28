@@ -178,6 +178,10 @@ public class Script {
         return new ArrayList<>(mVars.keySet());
     }
 
+    public List<String> getEnumNames() {
+        return new ArrayList<>(mEnums.keySet());
+    }
+
     public TreeMap<String, MapInfo> getMaps() {
         return mMaps;
     }
