@@ -25,8 +25,8 @@ Turnout T1        = NT01
 Map Map1 = "maps/filename1.svg"
 Map Map2 = "maps/filename2.svg"
 
-Route Passenger  = Toggle: PA-TOGGLE, Status: State, Throttle: 204
-Route Branchline = Toggle: PA-TOGGLE, Status: State, Throttle: 204
+Route Passenger  = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
+Route Branchline = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
 
 # ---------
 # Events PA

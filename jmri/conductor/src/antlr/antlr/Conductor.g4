@@ -20,9 +20,8 @@ defMapLine: KW_MAP ID '=' STR;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
 routeInfoList: routeInfo ( ',' routeInfo )* ','? ;
-routeInfo:     routeInfoOpId ':' ID | routeInfoOpNum ':' NUM;
-routeInfoOpId: KW_TOGGLE | KW_STATUS;
-routeInfoOpNum:KW_THROTTLE;
+routeInfo:     routeInfoOp ':' ID;
+routeInfoOp:   KW_TOGGLE | KW_STATUS | KW_THROTTLE;
 
 eventLine: condList '->' actionList;
 

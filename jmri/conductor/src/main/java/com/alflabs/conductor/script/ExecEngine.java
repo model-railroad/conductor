@@ -41,6 +41,14 @@ public class ExecEngine implements IExecEngine {
         for (Sensor sensor : mScript.getSensors()) {
             sensor.onExecStart();
         }
+
+        for (Var var : mScript.getVars()) {
+            var.onExecStart();
+        }
+
+        for (Enum_ enum_ : mScript.getEnums()) {
+            enum_.onExecStart();
+        }
     }
 
     /**
@@ -70,6 +78,14 @@ public class ExecEngine implements IExecEngine {
 
         for (Sensor sensor : mScript.getSensors()) {
             sensor.onExecHandle();
+        }
+
+        for (Var var : mScript.getVars()) {
+            var.onExecHandle();
+        }
+
+        for (Enum_ enum_ : mScript.getEnums()) {
+            enum_.onExecHandle();
         }
 
         mCondCache.clear();

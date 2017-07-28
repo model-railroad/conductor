@@ -1,21 +1,38 @@
 package com.alflabs.conductor.script;
 
+import com.alflabs.kv.IKeyValue;
+import dagger.internal.InstanceFactory;
 import junit.framework.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import java.util.Arrays;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class EnumTest {
+    public @Rule MockitoRule mRule = MockitoJUnit.rule();
+
+    @Mock IKeyValue mKeyValue;
 
     private Enum_ mEnum;
 
     @Before
     public void setUp() throws Exception {
-        mEnum = new Enum_(Arrays.asList("one", "two", "three"));
+        EnumFactory factory = new EnumFactory(InstanceFactory.create(mKeyValue));
+        mEnum = factory.create(Arrays.asList("one", "two", "three"), "MyVar");
         assertThat(mEnum.get()).isEqualTo("one");
+
+        mEnum.onExecStart();
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
     }
 
     @Test
@@ -28,6 +45,15 @@ public class EnumTest {
     public void testSetValue_Invalid() throws Exception {
         mEnum.accept("Invalid");
         Assert.fail("Expected IllegalArgumentException");
+    }
+
+    @Test
+    public void testSetExported() throws Exception {
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
+        mEnum.setExported(true);
+        mEnum.accept("two");
+        mEnum.onExecHandle();
+        verify(mKeyValue).putValue("V:MyVar", "two", true);
     }
 
     @Test

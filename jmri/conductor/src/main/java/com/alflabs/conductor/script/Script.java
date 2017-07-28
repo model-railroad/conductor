@@ -1,7 +1,12 @@
 package com.alflabs.conductor.script;
 
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
+import com.alflabs.manifest.Prefix;
+import com.alflabs.manifest.RouteInfo;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -39,6 +44,7 @@ public class Script {
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
     private final TreeMap<String, MapInfo> mMaps = new TreeMap<>();
+    private final TreeMap<String, RouteInfo> mRoutes = new TreeMap<>();
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
@@ -64,6 +70,14 @@ public class Script {
 
     Collection<Event> getEvents() {
         return mEvents;
+    }
+
+    public Collection<Enum_> getEnums() {
+        return mEnums.values();
+    }
+
+    public Collection<Var> getVars() {
+        return mVars.values();
     }
 
     public void addThrottle(String name, Throttle throttle) {
@@ -96,6 +110,10 @@ public class Script {
 
     public void addMap(String mapName, MapInfo mapInfo) {
         mMaps.put(mapName.toLowerCase(Locale.US), mapInfo);
+    }
+
+    public void addRoute(String routeName, RouteInfo routeInfo) {
+        mRoutes.put(routeName.toLowerCase(Locale.US), routeInfo);
     }
 
     public Throttle getThrottle(String name) {
@@ -164,12 +182,42 @@ public class Script {
         return mMaps;
     }
 
+    public TreeMap<String, RouteInfo> getRoutes() {
+        return mRoutes;
+    }
+
+    /** Returns the KV Server key name for the script ID name or null if not defined. */
+    @Null
+    public String getKVKeyNameForId(@NonNull String name) {
+        name = name.toLowerCase(Locale.US);
+        if (mSensors.containsKey(name)) {
+            return Prefix.Sensor + name;
+        }
+        if (mTurnouts.containsKey(name)) {
+            return Prefix.Turnout + name;
+        }
+        if (mThrottles.containsKey(name)) {
+            return Prefix.DccThrottle + name;
+        }
+        if (mVars.containsKey(name) || mEnums.containsKey(name)) {
+            return Prefix.Var + name;
+        }
+        if (mMaps.containsKey(name)) {
+            return Prefix.Map + name;
+        }
+        if (mRoutes.containsKey(name)) {
+            return Prefix.Route + name;
+        }
+        return null;
+    }
+
     public boolean isExistingName(String name) {
         name = name.toLowerCase(Locale.US);
         return mThrottles.containsKey(name)
                 || mVars.containsKey(name)
                 || mEnums.containsKey(name)
                 || mMaps.containsKey(name)
+                || mRoutes.containsKey(name)
                 || getConditional(name) != null;
     }
 

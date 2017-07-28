@@ -86,7 +86,11 @@ public class Throttle implements IExecEngine {
         onExecStart();
     }
 
-    public String getDccAddresses() {
+    public List<Integer> getDccAddresses() {
+        return mDccAddresses;
+    }
+
+    public String getDccAddressesAsString() {
         StringBuilder sb = new StringBuilder();
         if (mDccAddresses.isEmpty()) {
             sb.append("Missing");

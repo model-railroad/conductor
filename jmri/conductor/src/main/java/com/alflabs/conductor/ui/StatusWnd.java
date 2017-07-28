@@ -159,7 +159,7 @@ public class StatusWnd {
         for (int i = 0; i < throttleNames.size() && i < numThrottles; i++) {
             Throttle throttle = script.getThrottle(throttleNames.get(i));
             throttles[i] = throttle;
-            labelDcc[i].setText(throttle.getDccAddresses());
+            labelDcc[i].setText(throttle.getDccAddressesAsString());
 
             JLabel label = labelSpeed[i];
             throttle.setSpeedListener(speed -> label.setText(Integer.toString(speed)));
@@ -184,7 +184,7 @@ public class StatusWnd {
     }
 
     private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {
-        String address = throttle.getDccAddresses();
+        String address = throttle.getDccAddressesAsString();
         Object result = JOptionPane.showInputDialog(mFrame,
                 "New DCC Address to replace " + address,
                 "New DCC Address",

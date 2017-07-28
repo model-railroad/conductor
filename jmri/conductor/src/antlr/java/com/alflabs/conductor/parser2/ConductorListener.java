@@ -148,25 +148,15 @@ public interface ConductorListener extends ParseTreeListener {
 	 */
 	void exitRouteInfo(ConductorParser.RouteInfoContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link ConductorParser#routeInfoOpId}.
+	 * Enter a parse tree produced by {@link ConductorParser#routeInfoOp}.
 	 * @param ctx the parse tree
 	 */
-	void enterRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx);
+	void enterRouteInfoOp(ConductorParser.RouteInfoOpContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link ConductorParser#routeInfoOpId}.
+	 * Exit a parse tree produced by {@link ConductorParser#routeInfoOp}.
 	 * @param ctx the parse tree
 	 */
-	void exitRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link ConductorParser#routeInfoOpNum}.
-	 * @param ctx the parse tree
-	 */
-	void enterRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link ConductorParser#routeInfoOpNum}.
-	 * @param ctx the parse tree
-	 */
-	void exitRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx);
+	void exitRouteInfoOp(ConductorParser.RouteInfoOpContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link ConductorParser#eventLine}.
 	 * @param ctx the parse tree

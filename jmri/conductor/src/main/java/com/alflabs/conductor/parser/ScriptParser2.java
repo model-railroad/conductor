@@ -3,6 +3,7 @@ package com.alflabs.conductor.parser;
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.script.EnumFactory;
 import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.Event;
 import com.alflabs.conductor.script.IConditional;
@@ -19,7 +20,10 @@ import com.alflabs.conductor.script.TimerFactory;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
+import com.alflabs.conductor.script.VarFactory;
 import com.alflabs.manifest.MapInfo;
+import com.alflabs.manifest.Prefix;
+import com.alflabs.manifest.RouteInfo;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -39,6 +43,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Parses a script and fills a {@link Script}.
@@ -49,6 +55,8 @@ public class ScriptParser2 {
     private final TurnoutFactory mTurnoutFactory;
     private final SensorFactory mSensorFactory;
     private final TimerFactory mTimerFactory;
+    private final EnumFactory mEnumFactory;
+    private final VarFactory mVarFactory;
     private final Script mScript;
     private final Reporter mReporter;
 
@@ -59,13 +67,17 @@ public class ScriptParser2 {
             ThrottleFactory throttleFactory,
             TurnoutFactory turnoutFactory,
             SensorFactory sensorFactory,
-            TimerFactory timerFactory) {
+            TimerFactory timerFactory,
+            EnumFactory enumFactory,
+            VarFactory varFactory) {
         mReporter = reporter;
         mScript = script;
         mThrottleFactory = throttleFactory;
         mTurnoutFactory = turnoutFactory;
         mSensorFactory = sensorFactory;
         mTimerFactory = timerFactory;
+        mEnumFactory = enumFactory;
+        mVarFactory = varFactory;
     }
 
     /**
@@ -134,11 +146,11 @@ public class ScriptParser2 {
 
             switch (type) {
             case "sensor":
-                Sensor sensor = mSensorFactory.create(jmriName, varName);
+                Sensor sensor = mSensorFactory.create(jmriName, varName.toLowerCase(Locale.US));
                 mScript.addSensor(varName, sensor);
                 break;
             case "turnout":
-                Turnout turnout = mTurnoutFactory.create(jmriName, varName);
+                Turnout turnout = mTurnoutFactory.create(jmriName, varName.toLowerCase(Locale.US));
                 mScript.addTurnout(varName, turnout);
                 break;
             default:
@@ -170,7 +182,7 @@ public class ScriptParser2 {
 
             switch (type) {
             case "var":
-                Var var = new Var(value);
+                Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
                 mScript.addVar(varName, var);
                 break;
             case "timer":
@@ -229,7 +241,7 @@ public class ScriptParser2 {
                 values.add(id.getText().toLowerCase(Locale.US));
             }
 
-            Enum_ enum_ = new Enum_(values);
+            Enum_ enum_ = mEnumFactory.create(values, varName.toLowerCase(Locale.US));
             mScript.addEnum(varName, enum_);
         }
 
@@ -256,7 +268,85 @@ public class ScriptParser2 {
 
         @Override
         public void exitDefRouteLine(ConductorParser.DefRouteLineContext ctx) {
-            super.exitDefRouteLine(ctx);
+            if (ctx.ID() == null) {
+                return;
+            }
+
+            String routeName = ctx.ID().getText();
+
+            final String TOGGLE = "toggle";
+            final String STATUS = "status";
+            final String THROTTLE = "throttle";
+            Map<String, String> arguments = new TreeMap<>();
+            arguments.put(TOGGLE, null);
+            arguments.put(STATUS, null);
+            arguments.put(THROTTLE, null);
+
+            for (ConductorParser.RouteInfoContext routeCtx : ctx.routeInfoList().routeInfo()) {
+                String key = null;
+                String value = null;
+                if (routeCtx.routeInfoOp() != null) {
+                    key = routeCtx.routeInfoOp().getText();
+                    value = routeCtx.ID().getText();
+                }
+                if (key == null || value == null) {
+                    emitError(ctx, "Route '" + routeName + "': Unexpected error parsing " + routeCtx.getText());
+                    return;
+                }
+                key = key.toLowerCase(Locale.US);
+                if (!arguments.containsKey(key)) {
+                    emitError(ctx, "Route '" + routeName + "': Unknown argument '" + key + "'. Expected: " +
+                            Arrays.toString(arguments.keySet().toArray()));
+                    return;
+                }
+                if (arguments.get(key) != null) {
+                    emitError(ctx, "Route '" + routeName + "': Argument '" + key + "' is already defined.");
+                    return;
+                }
+
+                String value2 = null;
+                if (key.equals(THROTTLE)) {
+                    // The throttle is a specific case: in the definition we want the DCC address
+                    // of the throttle, not its script name. For a multi-throttle, the first
+                    // address is used (since what matters is the speed and by definition all
+                    // entries in a multi throttle have the same speed).
+                    Throttle throttle = mScript.getThrottle(value);
+                    if (throttle != null) {
+                        value2 = Prefix.DccThrottle + Integer.toString(throttle.getDccAddresses().get(0));
+                    }
+                } else {
+                    value2 = mScript.getKVKeyNameForId(value);
+                }
+
+                if (value2 == null) {
+                    emitError(ctx, "Route '" + routeName + "': Id '" + value + "' for argument '" + key + "' is not defined.");
+                    return;
+                }
+
+                Var var = mScript.getVar(value);
+                if (var != null) {
+                    var.setExported(true);
+                }
+                Enum_ enum_ = mScript.getEnum(value);
+                if (enum_ != null) {
+                    enum_.setExported(true);
+                }
+
+                arguments.put(key, value2);
+            }
+
+            for (Map.Entry<String, String> entry : arguments.entrySet()) {
+                if (entry.getValue() == null || entry.getValue().trim().isEmpty()) {
+                    emitError(ctx, "Route '" + routeName + "': Argument '" + entry.getValue() + "' is not defined");
+                    return;
+                }
+            }
+
+            mScript.addRoute(routeName, new RouteInfo(
+                    routeName,
+                    arguments.get(TOGGLE),
+                    arguments.get(STATUS),
+                    arguments.get(THROTTLE)));
         }
 
         @Override

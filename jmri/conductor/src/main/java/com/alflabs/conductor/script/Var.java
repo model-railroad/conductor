@@ -1,11 +1,25 @@
 package com.alflabs.conductor.script;
 
-public class Var implements IConditional, IIntFunction, IIntValue {
+import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Prefix;
+import com.google.auto.factory.AutoFactory;
+import com.google.auto.factory.Provided;
+
+@AutoFactory(allowSubclasses = true)
+public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, IExportable {
+
+    private final String mKeyName;
+    private final IKeyValue mKeyValue;
 
     private int mValue;
+    private boolean mExported;
 
-    public Var(int value) {
+    public Var(int value,
+               String scriptName,
+               @Provided IKeyValue keyValue) {
         mValue = value;
+        mKeyName = Prefix.Var + scriptName;
+        mKeyValue = keyValue;
     }
 
     @Override
@@ -21,5 +35,22 @@ public class Var implements IConditional, IIntFunction, IIntValue {
     @Override
     public void accept(int value) {
         mValue = value;
+    }
+
+    @Override
+    public void setExported(boolean exported) {
+        mExported = exported;
+    }
+
+    @Override
+    public void onExecStart() {
+        onExecHandle();
+    }
+
+    @Override
+    public void onExecHandle() {
+        if (mExported) {
+            mKeyValue.putValue(mKeyName, Integer.toString(mValue), true /*broadcast*/);
+        }
     }
 }

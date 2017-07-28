@@ -48,7 +48,7 @@ public class ThrottleTest {
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
         mThrottle = factory.create(Collections.singletonList(42));
-        assertThat(mThrottle.getDccAddresses()).isEqualTo("42");
+        assertThat(mThrottle.getDccAddressesAsString()).isEqualTo("42");
         when(mJmriThrottle.getDccAddress()).thenReturn(42);
 
         mThrottle.onExecStart();

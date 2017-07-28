@@ -184,25 +184,13 @@ public class ConductorBaseListener implements ConductorListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx) { }
+	@Override public void enterRouteInfoOp(ConductorParser.RouteInfoOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitRouteInfoOpId(ConductorParser.RouteInfoOpIdContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitRouteInfoOpNum(ConductorParser.RouteInfoOpNumContext ctx) { }
+	@Override public void exitRouteInfoOp(ConductorParser.RouteInfoOpContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

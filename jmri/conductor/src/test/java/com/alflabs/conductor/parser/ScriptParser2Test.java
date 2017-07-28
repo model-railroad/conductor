@@ -15,10 +15,13 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
+import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.MapInfo;
+import com.alflabs.manifest.RouteInfo;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -29,6 +32,8 @@ import java.util.TreeMap;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -44,6 +49,7 @@ public class ScriptParser2Test {
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
+    @Mock IKeyValue mKeyValue;
 
     private FakeNow mNow;
     private TestReporter mReporter;
@@ -66,7 +72,7 @@ public class ScriptParser2Test {
                 .build();
 
         mScriptComponent = realNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, realNowComponent.getKeyValueServer()));
+                new ScriptModule(mReporter, mKeyValue));
 
         mNow = new FakeNow(1000);
 
@@ -81,7 +87,7 @@ public class ScriptParser2Test {
                 .build();
 
         mFakeNowScriptComponent = fakeNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, fakeNowComponent.getKeyValueServer()));
+                new ScriptModule(mReporter, mKeyValue));
     }
 
     @Test
@@ -291,6 +297,123 @@ public class ScriptParser2Test {
                 "Error at line 2: Name 'Map-1' is already defined.\n" +
                         "  Line 2: 'Map Map-1 = \"path\\to\\map2.svg\"'");
         assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testDefineRoute() throws Exception {
+        String source = "" +
+                "Throttle PA-100  = 100\n" +
+                "Throttle BLT-200 = 200\n" +
+                "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Var  BL-Status   = 300\n" +
+                "Sensor PA-Toggle = NS420\n" +
+                "Sensor BL-Toggle = NS430\n" +
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
+                "Route Branchline=toggle:bl-toggle,status:bl-status,throttle:blt-200\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        TreeMap<String, RouteInfo> routes = script.getRoutes();
+        assertThat(routes).hasFirstEntry("branchline", new RouteInfo("Branchline", "S:bl-toggle", "V:bl-status", "D:200"));
+        assertThat(routes).hasLastEntry("passenger"  , new RouteInfo("Passenger" , "S:pa-toggle", "V:pa-status", "D:100"));
+        assertThat(routes).hasSize(2);
+
+        ExecEngine engine = mScriptComponent.getScriptExecEngine();
+
+        IJmriThrottle jmriThrottle100 = mock(IJmriThrottle.class);
+        IJmriThrottle jmriThrottle200 = mock(IJmriThrottle.class);
+        when(jmriThrottle100.getDccAddress()).thenReturn(100);
+        when(jmriThrottle200.getDccAddress()).thenReturn(200);
+        when(mJmriProvider.getThrotlle(100)).thenReturn(jmriThrottle100);
+        when(mJmriProvider.getThrotlle(200)).thenReturn(jmriThrottle200);
+
+        engine.onExecStart();
+        verify(mJmriProvider).getThrotlle(100);
+        verify(mJmriProvider).getThrotlle(200);
+
+        ArgumentCaptor<String> keyCapture = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
+        verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
+        assertThat(keyCapture.getAllValues().toArray()).isEqualTo(new String[]
+                { "D:200", "D:100", "S:bl-toggle", "S:pa-toggle", "V:bl-status", "V:pa-status" });
+        assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
+                { "0", "0", "OFF", "OFF", "300", "init" });
+    }
+
+    @Test
+    public void testDefineRoute_MissingThrottle() throws Exception {
+        String source = "" +
+                "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Sensor PA-Toggle = NS420\n" +
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 3: Route 'Passenger': Id 'PA-100' for argument 'throttle' is not defined.\n" +
+                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+        assertThat(script).isNotNull();
+
+        TreeMap<String, RouteInfo> routes = script.getRoutes();
+        assertThat(routes).isNotNull();
+        assertThat(routes).isEmpty();
+    }
+
+    @Test
+    public void testDefineRoute_MissingStatus() throws Exception {
+        String source = "" +
+                "Throttle PA-100  = 100\n" +
+                "Sensor PA-Toggle = NS420\n" +
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 3: Route 'Passenger': Id 'PA-Status' for argument 'status' is not defined.\n" +
+                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+        assertThat(script).isNotNull();
+
+        TreeMap<String, RouteInfo> routes = script.getRoutes();
+        assertThat(routes).isNotNull();
+        assertThat(routes).isEmpty();
+    }
+
+    @Test
+    public void testDefineRoute_MissingToggle() throws Exception {
+        String source = "" +
+                "Throttle PA-100  = 100\n" +
+                "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 3: Route 'Passenger': Id 'PA-Toggle' for argument 'toggle' is not defined.\n" +
+                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+        assertThat(script).isNotNull();
+
+        TreeMap<String, RouteInfo> routes = script.getRoutes();
+        assertThat(routes).isNotNull();
+        assertThat(routes).isEmpty();
+    }
+
+    @Test
+    public void testDefineRoute_DupToggle() throws Exception {
+        String source = "" +
+                "Throttle PA-100  = 100\n" +
+                "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Sensor PA-Toggle = NS420\n" +
+                "Sensor MyToggle  = NS421\n" +
+                "Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("" +
+                "Error at line 5: Route 'Passenger': Argument 'toggle' is already defined.\n" +
+                "  Line 5: 'Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+        assertThat(script).isNotNull();
+
+        TreeMap<String, RouteInfo> routes = script.getRoutes();
+        assertThat(routes).isNotNull();
+        assertThat(routes).isEmpty();
     }
 
     @Test
