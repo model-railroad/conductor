@@ -82,11 +82,15 @@ public class AppPrefsValues extends BasePrefsValues {
     @NonNull
     public BootAction getSystem_BootAction() {
         String s = mPrefs.getString(PREF_SYSTEM__BOOT_ACTION, BootAction.NO_ACTION.toString());
-        BootAction mode = null;
+        BootAction action = null;
         try {
-            mode = BootAction.valueOf(s.toUpperCase(Locale.US));
+            action = BootAction.valueOf(s.toUpperCase(Locale.US));
         } catch (Exception ignore) {}
-        return mode == null ? BootAction.NO_ACTION : mode;
+        return action == null ? BootAction.NO_ACTION : action;
+    }
+
+    public void setSystem_BootAction(BootAction action) {
+        setString(PREF_SYSTEM__BOOT_ACTION, action.toString().toLowerCase(Locale.US));
     }
 
 // Imported from JED... remove or use later.
@@ -130,7 +134,7 @@ public class AppPrefsValues extends BasePrefsValues {
 //    }
 
     @NonNull
-    public String getDataServerHostName() {
+    public String getData_ServerHostName() {
         return mPrefs.getString(PREF_DATA__SERVER_HOSTNAME, "");
     }
 
@@ -140,7 +144,7 @@ public class AppPrefsValues extends BasePrefsValues {
         }
     }
 
-    public int getDataServerPort() {
+    public int getData_ServerPort() {
         try {
             return Integer.parseInt(mPrefs.getString(PREF_DATA__SERVER_PORT, "20005"));
         } catch (Exception ignore) {
@@ -148,7 +152,7 @@ public class AppPrefsValues extends BasePrefsValues {
         }
     }
 
-    public void setDataServerPort(int port) {
+    public void setData_ServerPort(int port) {
         synchronized (editLock()) {
             endEdit(startEdit().putString(PREF_DATA__SERVER_PORT, Integer.toString(port)));
         }
