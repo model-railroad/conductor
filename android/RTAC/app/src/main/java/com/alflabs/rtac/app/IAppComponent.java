@@ -2,12 +2,14 @@ package com.alflabs.rtac.app;
 
 import com.alflabs.rtac.activity.ActivityContextModule;
 import com.alflabs.rtac.activity.IMainActivityComponent;
+import com.alflabs.rtac.service.RtacService;
+import com.alflabs.rtac.service.ServiceModule;
 import dagger.Component;
 
 import javax.inject.Singleton;
 
 @Singleton
-@Component(modules = { AppContextModule.class } )
+@Component(modules = { AppContextModule.class, ServiceModule.class} )
 @SuppressWarnings("WeakerAccess")
 public interface IAppComponent
     extends IMainActivityComponent.Factory {
@@ -21,4 +23,5 @@ public interface IAppComponent
 
     void inject(MainApp mainApp);
     void inject(BootReceiver bootReceiver);
+    void inject(RtacService rtacService);
 }

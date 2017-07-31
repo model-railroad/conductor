@@ -6,9 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.net.wifi.WifiManager;
 import android.os.Binder;
-import android.os.HandlerThread;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
@@ -16,14 +14,30 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
+import com.alflabs.rtac.app.MainApp;
+
+import javax.inject.Inject;
 
 /**
  * Service for RTAC.
  * <p/>
  * The service by itself does not handle anything.
- * Its main purpose is to keep the app alive when not in foreground,
- * with a notification to bring it back. It also adds a wakelock on
- * wifi to prevent it from going to sleep.
+ * Its main purpose is to keep the app alive when not in foreground in order to maintain the state and the
+ * network connections alive and ready at all time. If for some reason the users exits the activity,
+ * a notification is presented to bring it back.
+ * There's also a wakelock on wifi to prevent it from going to sleep.
+ * <p/>
+ * Consequently, the service's lifecylce is tied to the "useful" lifecycle of the app (from a user point of view).
+ * Although the service is started by the main activity, it does so when the app starts.
+ * Similarly, the service ends when the user tells the main activity explicitely to "quit the app".
+ * <p/>
+ * The app is structured as having essentially one main activity that is always shown to the user.
+ * This is the one that starts and binds to the service.
+ * There may be accessory activities such as settings but these do not bind to the service.
+ * <p/>
+ * To summarize:
+ * - the onCreate/onDestroy cycle matches the useful part of the app lifecycle.
+ * - the onBind/onUnbind cycle matches the main activity being visible and connected to the service.
  */
 public class RtacService extends android.app.Service {
 
@@ -32,10 +46,21 @@ public class RtacService extends android.app.Service {
     private static final int NID = 'r' << 24 + 't' << 16 + 'a' << 8 + 'c';
 
     private final IBinder mBinder = new LocalBinder();
-    private boolean mIsRunning;
     private NotificationManager mNotifMan;
-    private WifiManager.WifiLock mWifiLock;
+    /**
+     * Flag set by the first onBind() after onCreate() when the main activity binds to the service for the first time.
+     * It is only unset in onDestroy() and is true even when the activity is not bound to the service.
+     */
+    private boolean mIsRunning;
+    /**
+     * Flag set when the activity starts the service.
+     * It is false when the user navigates away from the main activity (settings, home, other app, etc.)
+     * It is a good indication that the main activity UI is presenting the state to the user.
+     */
     private boolean mIsForeground;
+
+    @Inject DataClientMixin mDataClientMixin;
+    @Inject WifiLockMixin mWifiLockMixin;
 
     /**
      * Must be called by the activity to start the service.
@@ -57,20 +82,12 @@ public class RtacService extends android.app.Service {
         if (DEBUG) Log.d(TAG, "onCreate");
         super.onCreate();
         Context appContext = getApplicationContext();
+        MainApp.getAppComponent(appContext).inject(this);
+
         mNotifMan = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        WifiManager wifiMan = (WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
-        // TODO have a pref to toggle between FULL and FULL_HIGH_PERF (with high being default)
-        try {
-            mWifiLock = wifiMan.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "Cab Throttle Service");
-            mWifiLock.acquire();
-            if (DEBUG) Log.d(TAG, "Wifi Lock Acquire");
-        } catch (Throwable e) {
-            Log.e(TAG, "Wifi Lock Acquire failed", e);
-        }
-
-        HandlerThread thread = new HandlerThread(TAG + "_handler");
-        thread.start();
+        mWifiLockMixin.onCreate(this);
+        mDataClientMixin.onCreate(this);
     }
 
     @Override
@@ -84,16 +101,14 @@ public class RtacService extends android.app.Service {
     public void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
         mIsRunning = false;
-        try {
-            if (DEBUG) Log.d(TAG, "Wifi Lock Release");
-            mWifiLock.release();
-        } catch (Throwable e) {
-            Log.e(TAG, "Wifi Lock Release failed", e);
-        }
-        mWifiLock = null;
+
+        mDataClientMixin.onDestroy();
+        mWifiLockMixin.onDestroy();
+
         super.onDestroy();
     }
 
+    /** Called after onCreate once the activity binds to the service's binder object. */
     @Override
     public IBinder onBind(Intent intent) {
         if (DEBUG) Log.d(TAG, "onBind");
@@ -102,6 +117,10 @@ public class RtacService extends android.app.Service {
         return mBinder;
     }
 
+    /**
+     * Called after onUnbind when the activity goes back in the foreground and
+     * is reconnecting to the same service.
+     */
     @Override
     public void onRebind(Intent intent) {
         if (DEBUG) Log.d(TAG, "onRebind");
@@ -110,6 +129,11 @@ public class RtacService extends android.app.Service {
         hideNotification();
     }
 
+    /**
+     * Called after onBind or onRebind when the activity is no longer bound to the binder object.
+     * This can mean the main activity was close due to going into settings or the home screen
+     * and the service is essentially running in the background.
+     */
     @Override
     public boolean onUnbind(Intent intent) {
         if (DEBUG) Log.d(TAG, "onUnbind");
