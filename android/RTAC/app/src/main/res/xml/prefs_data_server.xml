@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="pref_data__server_hostname"
+        android:title="Data Server Hostname"
+        android:defaultValue="localhost"
+        android:selectAllOnFocus="false"
+        android:inputType="text"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+    <EditTextPreference
+        android:key="pref_data__server_port"
+        android:title="Data Server Port"
+        android:defaultValue="20005"
+        android:selectAllOnFocus="false"
+        android:inputType="number"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+</PreferenceScreen>

@@ -14,6 +14,7 @@ import java.util.Locale;
 @Singleton
 public class AppPrefsValues extends BasePrefsValues {
 
+    // The enum names here must match the ones in res/values/prefs_arrays.xml
     public enum BootAction {
         NO_ACTION,
         START_RTAC
@@ -26,14 +27,9 @@ public class AppPrefsValues extends BasePrefsValues {
     public static final String PREF_DATA__SERVER_HOSTNAME = "pref_data__server_hostname";
     public static final String PREF_DATA__SERVER_PORT     = "pref_data__server_port";
 
-// Imported from JED... remove or use later.
-//    public static final String PREF_SYSTEM__COLOR_SET = "pref_system__color_set";
-//
-//    public static final String PREF_JMRI__SERVER_HOSTNAME = "pref_jmri__server_hostname";
-//    public static final String PREF_JMRI__SERVER_PORT     = "pref_jmri__server_port";
-//    public static final String PREF_JMRI__THROTTLE_NAME   = "pref_jmri__throttle_name";
-//    public static final String PREF_JMRI__FORCE_MULTI_THROTTLE = "pref_jmri__force_multi_throttle";
-//    public static final String PREF_JMRI__ONE_SOCKET_PER_THROTTLE = "pref_jmri__one_socket_per_throttle";
+    public static final String PREF_JMRI__SERVER_HOSTNAME = "pref_jmri__server_hostname";
+    public static final String PREF_JMRI__SERVER_PORT     = "pref_jmri__server_port";
+    public static final String PREF_JMRI__THROTTLE_NAME   = "pref_jmri__throttle_name";
 
     @Inject
     public AppPrefsValues(@AppQualifier Context context) {
@@ -93,49 +89,32 @@ public class AppPrefsValues extends BasePrefsValues {
         setString(PREF_SYSTEM__BOOT_ACTION, action.toString().toLowerCase(Locale.US));
     }
 
-// Imported from JED... remove or use later.
-//    public int getSystem_ColorSet() {
-//        String s = mPrefs.getString(PREF_SYSTEM__COLOR_SET, "pastel");
-//        return "saturated".equals(s) ? 2 : 1;
-//    }
-//
-//    @NonNull
-//    public String getJmriThrottleName() {
-//        return mPrefs.getString(PREF_JMRI__THROTTLE_NAME, "");
-//    }
-//
-//    public void setJmriThrottleName(@NonNull String name) {
-//        synchronized (editLock()) {
-//            endEdit(startEdit().putString(PREF_JMRI__THROTTLE_NAME, name));
-//        }
-//    }
+    public String getJmri_ThrottleName() {
+        return mPrefs.getString(PREF_JMRI__THROTTLE_NAME, "");
+    }
 
-// Imported from JED... remove or use later.
-//    @NonNull
-//    public String getJmriServerHostName() {
-//        return mPrefs.getString(PREF_JMRI__SERVER_HOSTNAME, "");
-//    }
-//
-//    public int getJmriServerPort() {
-//        try {
-//            return Integer.parseInt(mPrefs.getString(PREF_JMRI__SERVER_PORT, "20004"));
-//        } catch (Exception ignore) {
-//            return 20004;
-//        }
-//    }
+    public void setJmri_ThrottleName(@NonNull String name) {
+        synchronized (editLock()) {
+            endEdit(startEdit().putString(PREF_JMRI__THROTTLE_NAME, name));
+        }
+    }
 
-// Imported from JED... remove or use later.
-//    public boolean getPrefJmri_OneSocketPerThrottle() {
-//        return mPrefs.getBoolean(PREF_JMRI__ONE_SOCKET_PER_THROTTLE, false);
-//    }
-//
-//    public boolean getPrefJmri_ForceMultiThrottle() {
-//        return mPrefs.getBoolean(PREF_JMRI__FORCE_MULTI_THROTTLE, true);
-//    }
+    @NonNull
+    public String getJmri_ServerHostName() {
+        return mPrefs.getString(PREF_JMRI__SERVER_HOSTNAME, "localhost");
+    }
+
+    public int getJmri_ServerPort() {
+        try {
+            return Integer.parseInt(mPrefs.getString(PREF_JMRI__SERVER_PORT, "20004"));
+        } catch (Exception ignore) {
+            return 20004;
+        }
+    }
 
     @NonNull
     public String getData_ServerHostName() {
-        return mPrefs.getString(PREF_DATA__SERVER_HOSTNAME, "");
+        return mPrefs.getString(PREF_DATA__SERVER_HOSTNAME, "localhost");
     }
 
     public void setDataServerHostName(@NonNull String name) {

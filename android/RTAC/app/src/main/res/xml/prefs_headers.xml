@@ -1,0 +1,17 @@
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- These settings headers are only used on tablets (which is where this app runs). -->
+
+    <header
+        android:fragment="com.alflabs.rtac.activity.PrefsActivity$SystemPreferenceFragment"
+        android:title="System"/>
+
+    <header
+        android:fragment="com.alflabs.rtac.activity.PrefsActivity$JmriPreferenceFragment"
+        android:title="JMRI"/>
+
+    <header
+        android:fragment="com.alflabs.rtac.activity.PrefsActivity$DataServerPreferenceFragment"
+        android:title="Data Server"/>
+
+</preference-headers>

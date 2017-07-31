@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="pref_system__boot_action_strings">
+        <item>No Action</item>
+        <item>Launch RTAC</item>
+    </string-array>
+
+    <!-- Must match AppPrefsValues.BootAction (case insensitive) -->
+    <string-array name="pref_system__boot_action_values">
+        <item>no_action</item>
+        <item>start_rtac</item>
+    </string-array>
+
+</resources>

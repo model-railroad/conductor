@@ -1,0 +1,31 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="pref_jmri__server_hostname"
+        android:title="JMRI Server Hostname"
+        android:defaultValue="localhost"
+        android:selectAllOnFocus="false"
+        android:inputType="text"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+    <EditTextPreference
+        android:key="pref_jmri__server_port"
+        android:title="JMRI Server Port"
+        android:defaultValue="20004"
+        android:selectAllOnFocus="false"
+        android:inputType="number"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+    <EditTextPreference
+        android:key="pref_jmri__throttle_name"
+        android:title="JMRI Throttle Name"
+        android:defaultValue="RTAC"
+        android:selectAllOnFocus="false"
+        android:inputType="textCapWords"
+        android:capitalize="words"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+</PreferenceScreen>

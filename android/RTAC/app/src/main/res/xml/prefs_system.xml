@@ -1,0 +1,25 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="pref_system__hide_navigation"
+        android:title="Hide Navigation Bar"
+        android:summaryOn="On: Do not display navigation bar (e.g. home &amp; back icons)"
+        android:summaryOff="Off: Display navigation bar (e.g. home &amp; back icons)"
+        android:defaultValue="true" />
+
+    <ListPreference
+        android:key="pref_system__boot_action"
+        android:title="On-Boot Action"
+        android:entries="@array/pref_system__boot_action_strings"
+        android:entryValues="@array/pref_system__boot_action_values"
+        android:defaultValue="no_action"
+        />
+
+    <CheckBoxPreference
+        android:key="pref_system__enable_nsd"
+        android:title="JD-KV Server Discovery"
+        android:summaryOff="Off: Disable JD KV Server Zero-conf Discovery"
+        android:summaryOn="On: Enable JD KV Server Zero-conf Discovery (default)"
+        android:defaultValue="true" />
+
+</PreferenceScreen>
