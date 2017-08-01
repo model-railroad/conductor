@@ -4,13 +4,13 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+import android.support.annotation.VisibleForTesting;
 import android.util.Log;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
@@ -46,7 +46,7 @@ public class RtacService extends android.app.Service {
     private static final int NID = 'r' << 24 + 't' << 16 + 'a' << 8 + 'c';
 
     private final IBinder mBinder = new LocalBinder();
-    private NotificationManager mNotifMan;
+
     /**
      * Flag set by the first onBind() after onCreate() when the main activity binds to the service for the first time.
      * It is only unset in onDestroy() and is true even when the activity is not bound to the service.
@@ -59,8 +59,19 @@ public class RtacService extends android.app.Service {
      */
     private boolean mIsForeground;
 
+    @Inject NotificationManager mNotificationManager;
     @Inject DataClientMixin mDataClientMixin;
     @Inject WifiLockMixin mWifiLockMixin;
+
+    @VisibleForTesting
+    boolean isRunning() {
+        return mIsRunning;
+    }
+
+    @VisibleForTesting
+    boolean isForeground() {
+        return mIsForeground;
+    }
 
     /**
      * Must be called by the activity to start the service.
@@ -83,8 +94,6 @@ public class RtacService extends android.app.Service {
         super.onCreate();
         Context appContext = getApplicationContext();
         MainApp.getAppComponent(appContext).inject(this);
-
-        mNotifMan = (NotificationManager) appContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
         mWifiLockMixin.onCreate(this);
         mDataClientMixin.onCreate(this);
@@ -144,7 +153,7 @@ public class RtacService extends android.app.Service {
 
     private void showNotification(@NonNull Activity parentActivity) {
         if (DEBUG) Log.d(TAG, "showNotification");
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        Notification.Builder builder = createNotificationBuilder();
         builder.setSmallIcon(R.drawable.ic_rtac_launcher);
         builder.setContentTitle("RTAC is running");
         builder.setAutoCancel(false);
@@ -152,23 +161,35 @@ public class RtacService extends android.app.Service {
         // Create an intent with a "fake" back stack as if the activity had been launched
         // from the home screen.
         Intent i = new Intent(this, parentActivity.getClass());
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        TaskStackBuilder stackBuilder = createTaskStackBuilder();
         stackBuilder.addParentStack(parentActivity.getClass());
         stackBuilder.addNextIntent(i);
         PendingIntent pending = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pending);
 
-        Notification not = builder.build();
-        mNotifMan.notify(NID, not);
-        startForeground(NID, not);
+        Notification notif = builder.build();
+        mNotificationManager.notify(NID, notif);
+        startForeground(NID, notif);
         mIsForeground = true;
+    }
+
+    @VisibleForTesting
+    @NonNull
+    protected TaskStackBuilder createTaskStackBuilder() {
+        return TaskStackBuilder.create(this);
+    }
+
+    @VisibleForTesting
+    @NonNull
+    protected Notification.Builder createNotificationBuilder() {
+        return new Notification.Builder(this);
     }
 
     private void hideNotification() {
         if (DEBUG) Log.d(TAG, "hideNotification: " + (mIsForeground ? "Yes" : "No"));
         if (mIsForeground) {
             stopForeground(true /*removeNotification*/);
-            mNotifMan.cancel(NID);
+            mNotificationManager.cancel(NID);
             mIsForeground = false;
         }
     }

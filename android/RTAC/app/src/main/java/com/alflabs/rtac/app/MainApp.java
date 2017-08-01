@@ -2,6 +2,7 @@ package com.alflabs.rtac.app;
 
 import android.app.Application;
 import android.content.Context;
+import android.support.annotation.Nullable;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.utils.ILogger;
 
@@ -27,6 +28,11 @@ public class MainApp extends Application {
                 .builder()
                 .appContextModule(new AppContextModule(getApplicationContext()))
                 .build();
+    }
+
+    @Nullable
+    public IAppComponent getAppComponent() {
+        return mAppComponent;
     }
 
     @NonNull

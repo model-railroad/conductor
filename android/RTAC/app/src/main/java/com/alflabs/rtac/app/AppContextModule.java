@@ -1,5 +1,6 @@
 package com.alflabs.rtac.app;
 
+import android.app.NotificationManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
 import com.alflabs.annotations.NonNull;
@@ -51,5 +52,12 @@ public class AppContextModule {
     @Singleton
     public WifiManager providesWifiManager() {
         return (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+    }
+
+    @NonNull
+    @Provides
+    @Singleton
+    public NotificationManager providesNotificationManager() {
+        return (NotificationManager) mContext.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
     }
 }
