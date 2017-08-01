@@ -2,6 +2,7 @@ package com.alflabs.rtac.activity;
 
 import android.view.View;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.InjectionValidator;
 import org.junit.Before;
@@ -78,6 +79,7 @@ public class CustomActivityComponentTest {
 //                    mainActivity.mNetworkSomething = mMockNetworkSomething;
 //                    mainActivity.mPresenterSomething = mock(PresenterSomething.class);
                     mainActivity.mLogger = mock(ILogger.class);
+                    mainActivity.mAppPrefsValues = mock(AppPrefsValues.class);
 
                     // One fragility of this pattern is that when new @Inject fields are added to the class
                     // we want this to break, otherwise some new injected fields would remain unset. This

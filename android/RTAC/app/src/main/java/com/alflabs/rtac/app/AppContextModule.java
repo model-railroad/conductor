@@ -1,6 +1,7 @@
 package com.alflabs.rtac.app;
 
 import android.content.Context;
+import android.net.wifi.WifiManager;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.dagger.AppQualifier;
 import com.alflabs.utils.AndroidLogger;
@@ -43,5 +44,12 @@ public class AppContextModule {
     @Singleton
     public ILogger providesLogger() {
         return new AndroidLogger();
+    }
+
+    @NonNull
+    @Provides
+    @Singleton
+    public WifiManager providesWifiManager() {
+        return (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 }

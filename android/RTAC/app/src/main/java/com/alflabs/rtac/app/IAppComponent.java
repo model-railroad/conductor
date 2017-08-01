@@ -1,9 +1,9 @@
 package com.alflabs.rtac.app;
 
-import com.alflabs.rtac.activity.ActivityContextModule;
 import com.alflabs.rtac.activity.IMainActivityComponent;
 import com.alflabs.rtac.service.RtacService;
 import com.alflabs.rtac.service.ServiceModule;
+import com.alflabs.rtac.service.WifiLockMixin;
 import dagger.Component;
 
 import javax.inject.Singleton;
@@ -20,6 +20,7 @@ public interface IAppComponent
     //--IMainActivityComponent create(ActivityContextModule activityContextModule);
 
     AppPrefsValues getAppPrefsValues();
+    WifiLockMixin getWifiLockMixin();
 
     void inject(MainApp mainApp);
     void inject(BootReceiver bootReceiver);
