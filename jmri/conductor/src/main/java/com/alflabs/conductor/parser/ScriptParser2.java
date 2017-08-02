@@ -342,6 +342,11 @@ public class ScriptParser2 {
                 }
             }
 
+            if (mScript.isExistingName(routeName)) {
+                emitError(ctx, "Name '" + routeName + "' is already defined.");
+                return;
+            }
+
             mScript.addRoute(routeName, new RouteInfo(
                     routeName,
                     arguments.get(TOGGLE),

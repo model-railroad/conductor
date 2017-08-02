@@ -264,7 +264,7 @@ public class ScriptParser2Test {
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'EN' is already defined.\n" +
-                        "  Line 2: 'Enum EN   = Init Idle'");
+                "  Line 2: 'Enum EN   = Init Idle'");
         assertThat(script).isNotNull();
     }
 
@@ -295,7 +295,7 @@ public class ScriptParser2Test {
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'Map-1' is already defined.\n" +
-                        "  Line 2: 'Map Map-1 = \"path\\to\\map2.svg\"'");
+                "  Line 2: 'Map Map-1 = \"path\\to\\map2.svg\"'");
         assertThat(script).isNotNull();
     }
 
@@ -340,6 +340,25 @@ public class ScriptParser2Test {
                 { "D:200", "D:100", "S:bl-toggle", "S:pa-toggle", "V:bl-status", "V:pa-status" });
         assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
                 { "0", "0", "OFF", "OFF", "300", "init" });
+    }
+
+    @Test
+    public void testDefineRoute_alreadyDefined() throws Exception {
+        String source = "" +
+                "Throttle PA-100  = 100\n" +
+                "Throttle BLT-200 = 200\n" +
+                "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Var  BL-Status   = 300\n" +
+                "Sensor PA-Toggle = NS420\n" +
+                "Sensor BL-Toggle = NS430\n" +
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
+                "Route Passenger  = toggle:bl-toggle,status:bl-status,throttle:blt-200\n";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 8: Name 'Passenger' is already defined.\n" +
+                "  Line 8: 'Route Passenger  = toggle:bl-toggle,status:bl-status,throttle:blt-200'");
+        assertThat(script).isNotNull();
     }
 
     @Test

@@ -211,7 +211,7 @@ Var BL-Full-Speed    = 20
 
 Enum BL-State = Idle Up Down
 
-Route Passenger = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
+Route Branchline = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
 
 # --- BL State: Setup at reverse station
 
