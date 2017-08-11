@@ -21,6 +21,7 @@ import com.alflabs.rtac.R;
  */
 public class AutomationFragment extends Fragment {
 
+    @Deprecated
     private OnFragmentInteractionListener mListener;
 
     public AutomationFragment() {
@@ -61,12 +62,14 @@ public class AutomationFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        /** -- Deprecated. Re-enable if really useful.
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
+         */
     }
 
     @Override
@@ -85,6 +88,7 @@ public class AutomationFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
+    @Deprecated
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
