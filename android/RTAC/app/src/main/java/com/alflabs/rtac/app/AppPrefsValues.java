@@ -117,7 +117,7 @@ public class AppPrefsValues extends BasePrefsValues {
         return mPrefs.getString(PREF_DATA__SERVER_HOSTNAME, "localhost");
     }
 
-    public void setDataServerHostName(@NonNull String name) {
+    public void setData_ServerHostName(@NonNull String name) {
         synchronized (editLock()) {
             endEdit(startEdit().putString(PREF_DATA__SERVER_HOSTNAME, name));
         }

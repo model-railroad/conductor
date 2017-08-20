@@ -3,9 +3,16 @@ package com.alflabs.rtac.service;
 import android.net.nsd.NsdServiceInfo;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.widget.TextView;
+import com.alflabs.annotations.Null;
 import com.alflabs.kv.KeyValueClient;
-import com.alflabs.sub.Emitter;
+import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.app.AppPrefsValues;
+import com.alflabs.rtac.nsd.DiscoveryListener;
+import com.alflabs.rx.IPublisher;
+import com.alflabs.rx.IStream;
+import com.alflabs.rx.ISubscriber;
+import com.alflabs.rx.Publishers;
+import com.alflabs.rx.Streams;
 import com.alflabs.utils.ServiceMixin;
 
 import javax.inject.Inject;
@@ -17,17 +24,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
 public class DataClientMixin extends ServiceMixin<RtacService> {
+    private static final String TAG = DataClientMixin.class.getSimpleName();
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    private TextView mDataStatusText;
     private final AtomicBoolean mTryToConnect = new AtomicBoolean();
+    private final DataClientStatus mStatus = new DataClientStatus();
+    private final IStream<DataClientStatus> mStatusStream = Streams.stream();
+    private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
 
-    private final Emitter<DataClientStatus> mStatusEmitter = new Emitter<>();
+    private KeyValueClient mDataClient;
+
+    @Inject AppPrefsValues mAppPrefsValues;
+    @Inject DiscoveryListener mNsdListener;
 
     @Inject
-    public DataClientMixin() {}
+    public DataClientMixin() {
+        mStatusStream.publishWith(mStatusPublisher);
+    }
 
-    public Emitter<DataClientStatus> getStatusEmitter() {
-        return mStatusEmitter;
+    public IStream<DataClientStatus> getStatusStream() {
+        return mStatusStream;
+    }
+
+    public KeyValueClient getDataClient() {
+        return mDataClient;
     }
 
     @Override
@@ -43,104 +63,100 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     private void startCnx() {
-// FIXME import for JED to be rewritten
-//        if (AppGlobals.getDataServer() == null) {
-//            mDataStatusText.setBackgroundColor(Colors.STATUS_BG_ERROR);
-//            mDataStatusText.setText("Data Client: Not Started");
-//        }
-//
-//        mTryToConnect.set(true);
-//        Thread t = new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                KeyValueClient dataClient = AppGlobals.getDataClient();
-//                if (dataClient != null) {
-//                    dataClient.stopSync();
-//                    AppGlobals.setDataClient(null);
-//                }
-//
-//                DiscoveryListener nsdListener = new DiscoveryListener(mActivity) {
-//                    @Override
-//                    public void onServiceResolved(@NonNull NsdServiceInfo serviceInfo) {
-//                        InetAddress host = serviceInfo.getHost();
-//                        int port = serviceInfo.getPort();
-//                        if (DEBUG) Log.e(TAG, "Data Client Loop: onServiceResolved " + host.getHostAddress() + " port " + port);
-//                        if (host != null && port > 0) {
-//                            AppPrefsValues prefs = AppGlobals.getAppPrefs();
-//                            prefs.setDataServerHostName(host.getHostAddress());
-//                            prefs.setDataServerPort(port);
-//                        }
-//                    }
-//                };
-//
-//                boolean useNsd = nsdListener.start();
-//                if (useNsd) {
-//                    AppGlobals.getAppPrefs().setDataServerHostName("");
-//                }
-//
-//                while (mTryToConnect.get() && AppGlobals.getDataClient() == null) {
-//                    String dataHostname = AppGlobals.getAppPrefs().getDataServerHostName();
-//                    int dataPort = AppGlobals.getAppPrefs().getDataServerPort();
-//
-//                    if (DEBUG) Log.e(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
-//
-//                    try {
-//                        try {
-//                            if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
-//                            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
-//                            KeyValueClient data = new KeyValueClient(address);
-//                            AppGlobals.setDataClient(data);
-//                            data.setOnChangeListener(mActivity);
-//
-//                            if (data.startSync()) {
-//                                mTryToConnect.set(false);
-//                                data.requestAllKeys();
-//                            }
-//
-//                        } catch (UnknownHostException e) {
-//                            if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
-//                            mActivity.runOnUiThread(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    mDataStatusText.setText("Data Server: Invalid Hostname. Please check settings.");
-//                                }
-//                            });
-//                        }
-//
-//                        if (mTryToConnect.get()) {
-//                            if (DEBUG) Log.e(TAG, "Data Client Loop: failed, retry in 2 seconds");
-//                            Thread.sleep(2000);
-//                        }
-//                    } catch (InterruptedException e) {
-//                        // data.startSync or thread.sleep got interrupted.
-//                        // if mTryToConnect is false, the while loop will terminate
-//                        // otherwise we'll retry.
-//                    }
-//                }
-//                if (DEBUG) Log.e(TAG, "Data Client Loop: finished");
-//
-//                if (useNsd) {
-//                    nsdListener.stop();
-//                }
-//            }
-//        }, "StarDataClient-Thread");
-//        t.start();
+        if (mDataClient == null) {
+            setStatus(true, "Data Client: Not Started");
+        }
+
+        mTryToConnect.set(true);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (mDataClient != null) {
+                    mDataClient.stopSync();
+                    mDataClient = null;
+                }
+
+                ISubscriber<NsdServiceInfo> nsdSubscriber = (stream, serviceInfo) -> {
+                    assert serviceInfo != null;
+                    InetAddress host = serviceInfo.getHost();
+                    int port = serviceInfo.getPort();
+                    if (DEBUG)
+                        Log.e(TAG, "Data Client Loop: onServiceResolved " + host.getHostAddress() + " port " + port);
+                    if (host != null && port > 0) {
+                        mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
+                        mAppPrefsValues.setData_ServerPort(port);
+                    }
+                };
+
+                mNsdListener.getServiceResolvedStream().subscribe(nsdSubscriber);
+
+                boolean useNsd = mNsdListener.start();
+                if (useNsd) {
+                    mAppPrefsValues.setData_ServerHostName("");
+                }
+
+                while (mTryToConnect.get() && mDataClient == null) {
+                    String dataHostname = mAppPrefsValues.getData_ServerHostName();
+                    int dataPort = mAppPrefsValues.getData_ServerPort();
+
+                    if (DEBUG) Log.e(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
+
+                    try {
+                        try {
+                            if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
+                            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
+                            mDataClient = new KeyValueClient(address);
+                            // TODO FIXME ++ mDataClient.setOnChangeListener(mActivity);
+
+                            if (mDataClient.startSync()) {
+                                mTryToConnect.set(false);
+                                mDataClient.requestAllKeys();
+                            }
+
+                        } catch (UnknownHostException e) {
+                            if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
+                            setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
+                        }
+
+                        if (mTryToConnect.get()) {
+                            if (DEBUG) Log.e(TAG, "Data Client Loop: failed, retry in 2 seconds");
+                            Thread.sleep(2000);
+                        }
+                    } catch (InterruptedException e) {
+                        // data.startSync or thread.sleep got interrupted.
+                        // if mTryToConnect is false, the while loop will terminate
+                        // otherwise we'll retry.
+                    }
+                }
+                if (DEBUG) Log.e(TAG, "Data Client Loop: finished");
+
+                mNsdListener.getServiceResolvedStream().remove(nsdSubscriber);
+
+                if (useNsd) {
+                    mNsdListener.stop();
+                }
+            }
+        }, "StarDataClient-Thread");
+        t.start();
+    }
+
+    private void setStatus(boolean isError, String message) {
+        mStatus.set(isError, message);
+        mStatusPublisher.publish(mStatus);
     }
 
     public void stopCnx() {
-// FIXME import for JED to be rewritten
-//        mTryToConnect.set(false);
-//        KeyValueClient dataClient = AppGlobals.getDataClient();
-//        if (dataClient != null) {
-//            dataClient.stopAsync();
-//            AppGlobals.setDataClient(null);
-//            mDataStatusText.setText("Data Server: Disconnected.");
-//        }
+        mTryToConnect.set(false);
+        if (mDataClient != null) {
+            mDataClient.stopAsync();
+            mDataClient = null;
+            setStatus(false, "Data Server: Disconnected.");
+        }
     }
 
     public static class DataClientStatus {
         private boolean mIsError;
-        String mText;
+        private String mText;
 
         void set(boolean isError, String text) {
             mIsError = isError;
