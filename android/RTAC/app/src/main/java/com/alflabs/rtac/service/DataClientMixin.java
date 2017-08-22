@@ -1,9 +1,7 @@
 package com.alflabs.rtac.service;
 
 import android.net.nsd.NsdServiceInfo;
-import android.support.annotation.NonNull;
 import android.util.Log;
-import com.alflabs.annotations.Null;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
@@ -13,6 +11,7 @@ import com.alflabs.rx.IStream;
 import com.alflabs.rx.ISubscriber;
 import com.alflabs.rx.Publishers;
 import com.alflabs.rx.Streams;
+import com.alflabs.utils.ILogger;
 import com.alflabs.utils.ServiceMixin;
 
 import javax.inject.Inject;
@@ -34,8 +33,10 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     private KeyValueClient mDataClient;
 
+    @Inject ILogger mLogger;
     @Inject AppPrefsValues mAppPrefsValues;
     @Inject DiscoveryListener mNsdListener;
+    @Inject KVClientListener mKVClientListener;
 
     @Inject
     public DataClientMixin() {
@@ -68,76 +69,91 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         }
 
         mTryToConnect.set(true);
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (mDataClient != null) {
-                    mDataClient.stopSync();
-                    mDataClient = null;
-                }
-
-                ISubscriber<NsdServiceInfo> nsdSubscriber = (stream, serviceInfo) -> {
-                    assert serviceInfo != null;
-                    InetAddress host = serviceInfo.getHost();
-                    int port = serviceInfo.getPort();
-                    if (DEBUG)
-                        Log.e(TAG, "Data Client Loop: onServiceResolved " + host.getHostAddress() + " port " + port);
-                    if (host != null && port > 0) {
-                        mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
-                        mAppPrefsValues.setData_ServerPort(port);
-                    }
-                };
-
-                mNsdListener.getServiceResolvedStream().subscribe(nsdSubscriber);
-
-                boolean useNsd = mNsdListener.start();
-                if (useNsd) {
-                    mAppPrefsValues.setData_ServerHostName("");
-                }
-
-                while (mTryToConnect.get() && mDataClient == null) {
-                    String dataHostname = mAppPrefsValues.getData_ServerHostName();
-                    int dataPort = mAppPrefsValues.getData_ServerPort();
-
-                    if (DEBUG) Log.e(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
-
-                    try {
-                        try {
-                            if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
-                            InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
-                            mDataClient = new KeyValueClient(address);
-                            // TODO FIXME ++ mDataClient.setOnChangeListener(mActivity);
-
-                            if (mDataClient.startSync()) {
-                                mTryToConnect.set(false);
-                                mDataClient.requestAllKeys();
-                            }
-
-                        } catch (UnknownHostException e) {
-                            if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
-                            setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
-                        }
-
-                        if (mTryToConnect.get()) {
-                            if (DEBUG) Log.e(TAG, "Data Client Loop: failed, retry in 2 seconds");
-                            Thread.sleep(2000);
-                        }
-                    } catch (InterruptedException e) {
-                        // data.startSync or thread.sleep got interrupted.
-                        // if mTryToConnect is false, the while loop will terminate
-                        // otherwise we'll retry.
-                    }
-                }
-                if (DEBUG) Log.e(TAG, "Data Client Loop: finished");
-
-                mNsdListener.getServiceResolvedStream().remove(nsdSubscriber);
-
-                if (useNsd) {
-                    mNsdListener.stop();
-                }
-            }
-        }, "StarDataClient-Thread");
+        Thread t = new Thread(this::startCnxOnThread, "DataClient-Thread");
         t.start();
+    }
+
+    private void startCnxOnThread() {
+        if (mDataClient != null) {
+            mDataClient.stopSync();
+            mDataClient = null;
+        }
+
+        ISubscriber<NsdServiceInfo> nsdSubscriber = (stream, serviceInfo) -> onNsdServiceFound(serviceInfo);
+
+        mNsdListener.getServiceResolvedStream().subscribe(nsdSubscriber);
+
+        boolean useNsd = mNsdListener.start();
+        if (useNsd) {
+            mAppPrefsValues.setData_ServerHostName("");
+        }
+
+        connectLoop();
+
+        if (DEBUG) {
+            Log.e(TAG, "Data Client Loop: finished");
+        }
+
+        mNsdListener.getServiceResolvedStream().remove(nsdSubscriber);
+
+        if (useNsd) {
+            mNsdListener.stop();
+        }
+    }
+
+    private void onNsdServiceFound(NsdServiceInfo serviceInfo) {
+        assert serviceInfo != null;
+        InetAddress host = serviceInfo.getHost();
+        int port = serviceInfo.getPort();
+        if (DEBUG) {
+            Log.e(TAG, "Data Client Loop: onServiceResolved " + host.getHostAddress() + " port " + port);
+        }
+        if (host != null && port > 0) {
+            mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
+            mAppPrefsValues.setData_ServerPort(port);
+        }
+    }
+
+    private void connectLoop() {
+        while (mTryToConnect.get() && mDataClient == null) {
+            String dataHostname = mAppPrefsValues.getData_ServerHostName();
+            int dataPort = mAppPrefsValues.getData_ServerPort();
+
+            if (DEBUG) {
+                Log.e(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
+            }
+
+            try {
+                try {
+                    if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
+                    InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
+                    mDataClient = new KeyValueClient(mLogger, address, mKVClientListener);
+                    // TODO FIXME ++ mDataClient.setOnChangeListener(mActivity);
+
+                    if (mDataClient.startSync()) {
+                        mTryToConnect.set(false);
+                        mDataClient.requestAllKeys();
+                    }
+
+                } catch (UnknownHostException e) {
+                    if (DEBUG) {
+                        Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
+                    }
+                    setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
+                }
+
+                if (mTryToConnect.get()) {
+                    if (DEBUG) {
+                        Log.e(TAG, "Data Client Loop: failed, retry in 2 seconds");
+                    }
+                    Thread.sleep(2000);
+                }
+            } catch (InterruptedException e) {
+                // data.startSync or thread.sleep got interrupted.
+                // if mTryToConnect is false, the while loop will terminate
+                // otherwise we'll retry.
+            }
+        }
     }
 
     private void setStatus(boolean isError, String message) {

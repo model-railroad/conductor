@@ -42,6 +42,7 @@ public class DiscoveryListener {
      * This must be done only on the UI thread because we'll use a Looper later.
      * The object can however be used later on other threads, typically any network thread.
      */
+    @Inject
     public DiscoveryListener(@AppQualifier Context context) {
         mContext = context;
     }
