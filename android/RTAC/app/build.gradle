@@ -3,11 +3,8 @@ apply plugin: "com.android.application"
 android {
     compileSdkVersion 26
 
-    if (!gradle.gradleVersion.startsWith("4")) {
-        buildToolsVersion "25.0.2"      // [AS2]
-    } else {
-        buildToolsVersion "26.0.0"      // [AS3]
-    }
+    // [AS2] vs [AS3]
+    buildToolsVersion (gradle.gradleVersion < "4" ? "25.0.2" : "26.0.0")
 
     defaultConfig {
         applicationId "com.alflabs.rtac"
@@ -17,10 +14,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-        if (!gradle.gradleVersion.startsWith("4")) {
+        if (gradle.gradleVersion < "4") {
             // Needed to use Java 1.8 features such as lambdas and and streams [AS2]
             jackOptions {
-                enabled !gradle.gradleVersion.startsWith("4")
+                enabled true
             }
         }
     }
