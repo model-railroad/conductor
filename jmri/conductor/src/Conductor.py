@@ -120,6 +120,10 @@ class JmriSensorAdapter(IJmriSensor):
         """In: boolean; Out: void"""
         print "[Conductor] Ignoring SetActive for sensor ", self._name
 
+    def toString(self):
+        """In: void; Out: String"""
+        return self._name + (self.isActive() and ": ON" or ": OFF")
+
 
 # noinspection PyPep8Naming
 class JmriTurnoutAdapter(IJmriTurnout):

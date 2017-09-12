@@ -94,6 +94,11 @@ public class DevelopmentEntryPoint {
                 public void setActive(boolean active) {
                     mActive = active;
                 }
+
+                @Override
+                public String toString() {
+                    return systemName + ": " + Boolean.toString(mActive);
+                }
             });
         }
 
