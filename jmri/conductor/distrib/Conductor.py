@@ -35,6 +35,10 @@ class JmriThrottleAdapter(IJmriThrottle):
         else:
             return range(0, 2)
 
+    def getDccAddress(self):
+        """In: void; Out: int address"""
+        return self._address
+
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
         print "[Conductor", self._address, "] Speed", speed28
@@ -111,6 +115,14 @@ class JmriSensorAdapter(IJmriSensor):
             print "[Conductor] No Sensor for ", self._name
             return False
         return self._sensor.knownState == jmri.Sensor.ACTIVE
+
+    def setActive(self, active):
+        """In: boolean; Out: void"""
+        print "[Conductor] Ignoring SetActive for sensor ", self._name
+
+    def toString(self):
+        """In: void; Out: String"""
+        return self._name + (self.isActive() and "ON" or "OFF")
 
 
 # noinspection PyPep8Naming
