@@ -10,6 +10,7 @@ import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.manifest.Constants;
 import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
@@ -19,8 +20,6 @@ import java.net.InetSocketAddress;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
-    private static final int KV_SERVER_PORT = 8080;
-
     private Script mScript;
     private ExecEngine mEngine;
     private boolean mStopRequested;
@@ -57,7 +56,7 @@ public class EntryPoint {
 
         // Open the window if a GUI is possible. This can fail.
         try {
-            InetSocketAddress address = mKeyValueServer.start(KV_SERVER_PORT);
+            InetSocketAddress address = mKeyValueServer.start(Constants.KV_SERVER_PORT);
             mLogger.log("[Conductor] KV Server available at " + address);
 
             StatusWnd wnd = StatusWnd.open();
@@ -78,7 +77,7 @@ public class EntryPoint {
     }
 
     protected void onStopAction() {
-        mLogger.log("[Conductor] KV Server stopping, port " + KV_SERVER_PORT);
+        mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
         mKeyValueServer.stopSync();
         mStopRequested = true;
     }
