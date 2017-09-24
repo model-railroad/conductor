@@ -122,7 +122,7 @@ class JmriSensorAdapter(IJmriSensor):
 
     def toString(self):
         """In: void; Out: String"""
-        return self._name + (self.isActive() and "ON" or "OFF")
+        return self._name + (self.isActive() and ": ON" or ": OFF")
 
 
 # noinspection PyPep8Naming
