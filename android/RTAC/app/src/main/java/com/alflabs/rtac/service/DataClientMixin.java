@@ -91,7 +91,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         connectLoop();
 
         if (DEBUG) {
-            Log.e(TAG, "Data Client Loop: finished");
+            Log.i(TAG, "Data Client Loop: finished");
         }
 
         mNsdListener.getServiceResolvedStream().remove(nsdSubscriber);
@@ -106,7 +106,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         InetAddress host = serviceInfo.getHost();
         int port = serviceInfo.getPort();
         if (DEBUG) {
-            Log.e(TAG, "Data Client Loop: onServiceResolved " + host.getHostAddress() + " port " + port);
+            Log.i(TAG, "Data Client Loop: onNsdServiceFound " + host.getHostAddress() + " port " + port);
         }
         if (host != null && port > 0) {
             mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
@@ -119,8 +119,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
             String dataHostname = mAppPrefsValues.getData_ServerHostName();
             int dataPort = mAppPrefsValues.getData_ServerPort();
 
+            setStatus(true, "Data Server connecting to " + dataHostname + ", port " + dataPort);
             if (DEBUG) {
-                Log.e(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
+                Log.i(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
             }
 
             try {
@@ -144,7 +145,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
                 if (mTryToConnect.get()) {
                     if (DEBUG) {
-                        Log.e(TAG, "Data Client Loop: failed, retry in 2 seconds");
+                        Log.i(TAG, "Data Client Loop: failed, retry in 2 seconds");
                     }
                     Thread.sleep(2000);
                 }

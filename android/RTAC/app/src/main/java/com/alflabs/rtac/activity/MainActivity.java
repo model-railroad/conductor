@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -21,6 +22,7 @@ import com.alflabs.rtac.app.MainApp;
 import com.alflabs.rtac.service.RtacService;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.Utils;
+import com.google.common.base.Preconditions;
 
 import javax.inject.Inject;
 
@@ -32,6 +34,7 @@ public class MainActivity extends Activity {
     @Inject ILogger mLogger;
     @Inject AppPrefsValues mAppPrefsValues;
 
+    private IMainActivityComponent mComponent;
     private RtacService.LocalBinder mServiceBinder;
     private boolean mServiceBound;
 
@@ -40,14 +43,14 @@ public class MainActivity extends Activity {
     private final ServiceConnection mServiceConx = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            if (DEBUG) Log.d(TAG, "onServiceConnected: " + name);
+            if (DEBUG) Log.d(TAG, "ServiceConnection::onServiceConnected: " + name);
             mServiceBinder = (RtacService.LocalBinder) service;
             mServiceBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            if (DEBUG) Log.d(TAG, "onServiceDisconnected: " + name);
+            if (DEBUG) Log.d(TAG, "ServiceConnection::onServiceDisconnected: " + name);
             mServiceBinder = null;
             mServiceBound = false;
         }
@@ -56,7 +59,21 @@ public class MainActivity extends Activity {
     //----
 
     protected IMainActivityComponent createComponent() {
+        if (DEBUG) Log.d(TAG, "createComponent");
         return MainApp.getAppComponent(this).create(new ActivityContextModule(this));
+    }
+
+    private IMainActivityComponent getComponent() {
+        if (DEBUG) Log.d(TAG, "getComponent");
+        if (mComponent == null) {
+            mComponent = createComponent();
+        }
+        return mComponent;
+    }
+
+    public static IMainActivityComponent getMainActivityComponent(Context context) {
+        Preconditions.checkArgument(context instanceof MainActivity);
+        return ((MainActivity) context).getComponent();
     }
 
     @Override
@@ -67,9 +84,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main_activity);
         setupActionBar();
 
-        IMainActivityComponent component = createComponent();
-        component.inject(this);
+        getComponent().inject(this);
     }
+
     @Override
     protected void onStart() {
         if (DEBUG) Log.d(TAG, "onStart");

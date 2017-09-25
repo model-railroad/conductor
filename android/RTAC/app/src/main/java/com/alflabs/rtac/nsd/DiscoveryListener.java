@@ -25,7 +25,7 @@ public class DiscoveryListener {
     private static final String TAG = DiscoveryListener.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    private static final String SERVICE_TYPE = "_jd-kv-serv._tcp."; // FIXME change to match server (JMRI, Conductor)
+    private static final String SERVICE_TYPE = "_withrottle._tcp.";
 
     private final Context mContext;
     private final IStream<NsdServiceInfo> mServiceResolvedStream = Streams.stream();
