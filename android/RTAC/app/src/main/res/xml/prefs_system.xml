@@ -17,9 +17,9 @@
 
     <CheckBoxPreference
         android:key="pref_system__enable_nsd"
-        android:title="JD-KV Server Discovery"
-        android:summaryOff="Off: Disable JD KV Server Zero-conf Discovery"
-        android:summaryOn="On: Enable JD KV Server Zero-conf Discovery (default)"
+        android:title="JMRI Server Discovery"
+        android:summaryOff="Off: Disable JMRI Server Zero-conf Discovery"
+        android:summaryOn="On: Enable JMRI Server Zero-conf Discovery (default)"
         android:defaultValue="true" />
 
 </PreferenceScreen>

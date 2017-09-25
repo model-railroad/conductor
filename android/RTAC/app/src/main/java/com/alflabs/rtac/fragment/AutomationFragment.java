@@ -15,6 +15,7 @@ import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
 import com.alflabs.rtac.service.DataClientMixin;
+import com.alflabs.rx.AndroidSchedulers;
 import com.alflabs.rx.ISubscriber;
 
 import javax.inject.Inject;
@@ -98,7 +99,7 @@ public class AutomationFragment extends Fragment {
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
-        mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber);
+        mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override

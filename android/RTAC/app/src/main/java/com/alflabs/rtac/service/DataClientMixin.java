@@ -1,8 +1,12 @@
 package com.alflabs.rtac.service;
 
 import android.net.nsd.NsdServiceInfo;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.os.SystemClock;
 import android.util.Log;
 import com.alflabs.kv.KeyValueClient;
+import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.nsd.DiscoveryListener;
@@ -26,7 +30,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     private static final String TAG = DataClientMixin.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    private final AtomicBoolean mTryToConnect = new AtomicBoolean();
+    private final AtomicBoolean mKeepConnected = new AtomicBoolean();
     private final DataClientStatus mStatus = new DataClientStatus();
     private final IStream<DataClientStatus> mStatusStream = Streams.stream();
     private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
@@ -37,6 +41,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     @Inject AppPrefsValues mAppPrefsValues;
     @Inject DiscoveryListener mNsdListener;
     @Inject KVClientListener mKVClientListener;
+    @Inject WifiManager mWifiManager;
 
     @Inject
     public DataClientMixin() {
@@ -68,7 +73,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
             setStatus(true, "Data Client: Not Started");
         }
 
-        mTryToConnect.set(true);
+        mKeepConnected.set(true);
         Thread t = new Thread(this::startCnxOnThread, "DataClient-Thread");
         t.start();
     }
@@ -90,9 +95,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
         connectLoop();
 
-        if (DEBUG) {
-            Log.i(TAG, "Data Client Loop: finished");
-        }
+        if (DEBUG) Log.i(TAG, "Data Client Loop: finished");
 
         mNsdListener.getServiceResolvedStream().remove(nsdSubscriber);
 
@@ -105,24 +108,22 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         assert serviceInfo != null;
         InetAddress host = serviceInfo.getHost();
         int port = serviceInfo.getPort();
-        if (DEBUG) {
-            Log.i(TAG, "Data Client Loop: onNsdServiceFound " + host.getHostAddress() + " port " + port);
-        }
+        if (DEBUG) Log.i(TAG, "Data Client Loop: onNsdServiceFound " + host.getHostAddress() + " port " + port);
         if (host != null && port > 0) {
             mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
-            mAppPrefsValues.setData_ServerPort(port);
+            // Note: The port reported by the NSD discovery is for the Withrottle service, not the data server.
+            mAppPrefsValues.setData_ServerPort(Constants.KV_SERVER_PORT);
         }
     }
 
     private void connectLoop() {
-        while (mTryToConnect.get() && mDataClient == null) {
+        while (mKeepConnected.get()) {
             String dataHostname = mAppPrefsValues.getData_ServerHostName();
             int dataPort = mAppPrefsValues.getData_ServerPort();
 
-            setStatus(true, "Data Server connecting to " + dataHostname + ", port " + dataPort);
-            if (DEBUG) {
-                Log.i(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
-            }
+            long now = SystemClock.elapsedRealtime();
+            setStatus(false, "Connecting to data server at " + dataHostname + ", port " + dataPort);
+            if (DEBUG) Log.i(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
 
             try {
                 try {
@@ -132,29 +133,42 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                     // TODO FIXME ++ mDataClient.setOnChangeListener(mActivity);
 
                     if (mDataClient.startSync()) {
-                        mTryToConnect.set(false);
+                        setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
                         mDataClient.requestAllKeys();
+                        mDataClient.join();
+                    } else {
+                        long delay1sec = now + 1000 - SystemClock.elapsedRealtime();
+                        if (delay1sec > 0) {
+                            Thread.sleep(delay1sec);
+                        }
                     }
 
                 } catch (UnknownHostException e) {
-                    if (DEBUG) {
-                        Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
-                    }
+                    if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
                     setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
                 }
-
-                if (mTryToConnect.get()) {
-                    if (DEBUG) {
-                        Log.i(TAG, "Data Client Loop: failed, retry in 2 seconds");
-                    }
-                    Thread.sleep(2000);
-                }
             } catch (InterruptedException e) {
-                // data.startSync or thread.sleep got interrupted.
-                // if mTryToConnect is false, the while loop will terminate
-                // otherwise we'll retry.
+                // data.startSync or data.join got interrupted.
+                // if mKeepConnected is false, the while loop will terminate otherwise we'll retry.
+            }
+
+            if (mKeepConnected.get()) {
+                if (!isWifiConnected()) {
+                    setStatus(true, "Connection to data server lost -- Check the Wifi connection");
+                } else {
+                    setStatus(true, "Connection to data server lost");
+                }
+                if (DEBUG) Log.i(TAG, "Data Client Loop: failed, retry after delay");
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ignore) {}
             }
         }
+    }
+
+    private boolean isWifiConnected() {
+        WifiInfo info = mWifiManager.getConnectionInfo();
+        return info != null && info.getNetworkId() != -1;
     }
 
     private void setStatus(boolean isError, String message) {
@@ -163,7 +177,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     public void stopCnx() {
-        mTryToConnect.set(false);
+        mKeepConnected.set(false);
         if (mDataClient != null) {
             mDataClient.stopAsync();
             mDataClient = null;

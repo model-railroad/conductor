@@ -45,6 +45,7 @@ public class DiscoveryListener {
     @Inject
     public DiscoveryListener(@AppQualifier Context context) {
         mContext = context;
+        mServiceResolvedStream.publishWith(mServiceResolvedPublisher);
     }
 
     public IStream<NsdServiceInfo> getServiceResolvedStream() {
@@ -169,7 +170,7 @@ public class DiscoveryListener {
 
     /** For unit tests to override. */
     protected boolean _isDisabledInPrefs() {
-        return mAppPrefsValues.getSystem_EnableNsd();
+        return !mAppPrefsValues.getSystem_EnableNsd();
     }
 
     /** For unit tests to override. */
