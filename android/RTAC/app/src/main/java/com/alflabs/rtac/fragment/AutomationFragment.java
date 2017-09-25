@@ -10,9 +10,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
+import com.alflabs.rtac.service.DataClientMixin;
+import com.alflabs.rx.ISubscriber;
+
+import javax.inject.Inject;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,8 +32,10 @@ public class AutomationFragment extends Fragment {
     private static final String TAG = AutomationFragment.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    @Deprecated
-    private OnFragmentInteractionListener mListener;
+    @Inject DataClientMixin mDataClientMixin;
+
+    @Deprecated private OnFragmentInteractionListener mListener;
+    private TextView mStatusText;
 
     public AutomationFragment() {
         if (DEBUG) Log.d(TAG, "new AutomationFragment");
@@ -82,18 +89,22 @@ public class AutomationFragment extends Fragment {
                              Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView activity=" + getActivity());
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.automation_fragment, container, false);
+        View root = inflater.inflate(R.layout.automation_fragment, container, false);
+        mStatusText = root.findViewById(R.id.automation_status);
+        return root;
     }
 
     @Override
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
+        mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber);
     }
 
     @Override
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
+        mDataClientMixin.getStatusStream().remove(mDataClientStatusSubscriber);
         super.onStop();
     }
 
@@ -102,6 +113,16 @@ public class AutomationFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
+
+    // ----
+
+
+    private final ISubscriber<DataClientMixin.DataClientStatus> mDataClientStatusSubscriber = (stream, dataClientStatus) -> {
+        String text = dataClientStatus.getText();
+        mStatusText.setText(text == null ? "^_^" : text);
+        mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
+    };
+
 
     /**
      * This interface must be implemented by activities that contain this
