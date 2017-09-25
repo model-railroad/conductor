@@ -4,9 +4,9 @@ import android.view.View;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.fragment.IAutomationFragmentComponent;
+import com.alflabs.rtac.fragment.MockAutomationFragmentComponent;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.InjectionValidator;
-import com.alflabs.utils.NotImplementedException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,7 +91,7 @@ public class CustomActivityComponentTest {
 
                 @Override
                 public IAutomationFragmentComponent create() {
-                    throw new NotImplementedException("Implement if needed");
+                    return new MockAutomationFragmentComponent();
                 }
             };
         }

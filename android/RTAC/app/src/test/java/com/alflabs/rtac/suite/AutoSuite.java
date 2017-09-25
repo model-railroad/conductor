@@ -1,6 +1,7 @@
 package com.alflabs.rtac.suite;
 
 import com.alflabs.annotations.LargeTest;
+import com.alflabs.annotations.NonNull;
 import com.google.common.reflect.ClassPath;
 import org.junit.Test;
 import org.junit.runners.Suite;
@@ -17,6 +18,7 @@ public class AutoSuite extends Suite {
         super(klass, getSuiteClasses(klass));
     }
 
+    @NonNull
     public static Class<?>[] getSuiteClasses(Class<?> klass) throws IOException {
         List<Class<?>> collected = new ArrayList<>();
 
