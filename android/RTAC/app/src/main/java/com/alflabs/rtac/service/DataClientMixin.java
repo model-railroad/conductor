@@ -37,14 +37,25 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     private KeyValueClient mDataClient;
 
-    @Inject ILogger mLogger;
-    @Inject AppPrefsValues mAppPrefsValues;
-    @Inject DiscoveryListener mNsdListener;
-    @Inject KVClientListener mKVClientListener;
-    @Inject WifiManager mWifiManager;
+    ILogger mLogger;
+    AppPrefsValues mAppPrefsValues;
+    DiscoveryListener mNsdListener;
+    KVClientListener mKVClientListener;
+    WifiManager mWifiManager;
 
     @Inject
-    public DataClientMixin() {
+    public DataClientMixin(
+            ILogger mLogger,
+            AppPrefsValues mAppPrefsValues,
+            DiscoveryListener mNsdListener,
+            KVClientListener mKVClientListener,
+            WifiManager mWifiManager) {
+        this.mLogger = mLogger;
+        this.mAppPrefsValues = mAppPrefsValues;
+        this.mNsdListener = mNsdListener;
+        this.mKVClientListener = mKVClientListener;
+        this.mWifiManager = mWifiManager;
+
         mStatusStream.publishWith(mStatusPublisher);
     }
 

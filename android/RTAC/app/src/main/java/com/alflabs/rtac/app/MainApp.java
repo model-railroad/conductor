@@ -29,6 +29,7 @@ public class MainApp extends Application {
         return DaggerIAppComponent
                 .builder()
                 .appContextModule(new AppContextModule(getApplicationContext()))
+                .appDataModule(new AppDataModule())
                 .build();
     }
 

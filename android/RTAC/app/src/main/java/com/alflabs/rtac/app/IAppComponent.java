@@ -9,7 +9,7 @@ import dagger.Component;
 import javax.inject.Singleton;
 
 @Singleton
-@Component(modules = { AppContextModule.class, ServiceModule.class} )
+@Component(modules = { AppContextModule.class, AppDataModule.class, ServiceModule.class} )
 @SuppressWarnings("WeakerAccess")
 public interface IAppComponent
     extends IMainActivityComponent.Factory {

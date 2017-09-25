@@ -3,12 +3,16 @@ package com.alflabs.rtac.app;
 import android.app.NotificationManager;
 import android.net.wifi.WifiManager;
 import com.alflabs.annotations.NonNull;
+import com.alflabs.rtac.nsd.DiscoveryListener;
+import com.alflabs.rtac.service.DataClientMixin;
+import com.alflabs.rtac.service.KVClientListener;
 import com.alflabs.utils.ILogger;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AppMockComponent extends MainApp {
@@ -56,9 +60,25 @@ public class AppMockComponent extends MainApp {
             }
         };
 
+        DataClientMixin dataClientMixin = mock(DataClientMixin.class);
+
+        AppDataModule appDataModule = new AppDataModule() {
+            @NonNull
+            @Override
+            public DataClientMixin providesDataClientMixin(
+                    ILogger mLogger,
+                    AppPrefsValues mAppPrefsValues,
+                    DiscoveryListener mNsdListener,
+                    KVClientListener mKVClientListener,
+                    WifiManager mWifiManager) {
+                return dataClientMixin;
+            }
+        };
+
         return DaggerIAppComponent
                 .builder()
                 .appContextModule(mAppContextModule)
+                .appDataModule(appDataModule)
                 .build();
     }
 }
