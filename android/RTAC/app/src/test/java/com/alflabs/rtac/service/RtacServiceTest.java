@@ -35,8 +35,7 @@ import static org.mockito.Mockito.when;
         manifest = "src/main/AndroidManifest.xml",
         application = AppMockComponent.class)
 public class RtacServiceTest {
-    public @Rule
-    MockitoRule mRule = MockitoJUnit.rule();
+    public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     // Note: Do not attempt to mock NotificationCompat.Builder.
     // This generates an infinite loop with repeated exceptions
