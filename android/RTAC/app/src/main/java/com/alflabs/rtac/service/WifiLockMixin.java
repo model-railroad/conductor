@@ -15,10 +15,12 @@ public class WifiLockMixin extends ServiceMixin<RtacService> {
 
     private WifiManager.WifiLock mWifiLock;
 
-    @Inject WifiManager mWifiManager;
+    private WifiManager mWifiManager;
 
     @Inject
-    public WifiLockMixin() {}
+    public WifiLockMixin(WifiManager wifiManager) {
+        mWifiManager = wifiManager;
+    }
 
     @Override
     public void onCreate(RtacService service) {

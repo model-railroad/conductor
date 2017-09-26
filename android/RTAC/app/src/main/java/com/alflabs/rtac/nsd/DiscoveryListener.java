@@ -35,7 +35,7 @@ public class DiscoveryListener {
     private NsdManager.ResolveListener mResolveListener;
     private NsdManager.DiscoveryListener mDiscoveryListener;
 
-    @Inject AppPrefsValues mAppPrefsValues;
+    private AppPrefsValues mAppPrefsValues;
 
     /**
      * Creates a new DiscoveryListener. <br/>
@@ -43,8 +43,11 @@ public class DiscoveryListener {
      * The object can however be used later on other threads, typically any network thread.
      */
     @Inject
-    public DiscoveryListener(@AppQualifier Context context) {
+    public DiscoveryListener(
+            @AppQualifier Context context,
+            AppPrefsValues appPrefsValues) {
         mContext = context;
+        mAppPrefsValues = appPrefsValues;
         mServiceResolvedStream.publishWith(mServiceResolvedPublisher);
     }
 

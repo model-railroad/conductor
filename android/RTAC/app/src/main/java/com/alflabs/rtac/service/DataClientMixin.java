@@ -37,11 +37,11 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     private KeyValueClient mDataClient;
 
-    ILogger mLogger;
-    AppPrefsValues mAppPrefsValues;
-    DiscoveryListener mNsdListener;
-    KVClientListener mKVClientListener;
-    WifiManager mWifiManager;
+    private ILogger mLogger;
+    private AppPrefsValues mAppPrefsValues;
+    private DiscoveryListener mNsdListener;
+    private KVClientListener mKVClientListener;
+    private WifiManager mWifiManager;
 
     @Inject
     public DataClientMixin(
