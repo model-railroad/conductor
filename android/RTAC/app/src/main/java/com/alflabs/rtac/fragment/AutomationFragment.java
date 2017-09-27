@@ -21,12 +21,7 @@ import com.alflabs.rx.ISubscriber;
 import javax.inject.Inject;
 
 /**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link AutomationFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link AutomationFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment showing the automation routes overview.
  */
 public class AutomationFragment extends Fragment {
 
@@ -35,24 +30,12 @@ public class AutomationFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
-    @Deprecated private OnFragmentInteractionListener mListener;
     private TextView mStatusText;
+    private TextView mDebugKVView;
 
     public AutomationFragment() {
         if (DEBUG) Log.d(TAG, "new AutomationFragment");
         // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     */
-    // TODO: Rename and change types and number of parameters
-    @Deprecated
-    public static AutomationFragment newInstance() {
-        if (DEBUG) Log.d(TAG, "newInstance");
-        AutomationFragment fragment = new AutomationFragment();
-        return fragment;
     }
 
     protected IAutomationFragmentComponent createComponent(Context context) {
@@ -92,6 +75,7 @@ public class AutomationFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.automation_fragment, container, false);
         mStatusText = root.findViewById(R.id.automation_status);
+        mDebugKVView = root.findViewById(R.id.automation_debug_kv);
         return root;
     }
 
@@ -123,21 +107,4 @@ public class AutomationFragment extends Fragment {
         mStatusText.setText(text == null ? "^_^" : text);
         mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
     };
-
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    @Deprecated
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
 }
