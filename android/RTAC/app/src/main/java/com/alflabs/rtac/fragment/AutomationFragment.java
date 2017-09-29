@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,8 +16,10 @@ import com.alflabs.rtac.activity.MainActivity;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rx.AndroidSchedulers;
 import com.alflabs.rx.ISubscriber;
+import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 
 /**
  * Fragment showing the automation routes overview.
@@ -84,11 +85,13 @@ public class AutomationFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getKVChangedStream().subscribe(mKVChangedSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
+        mDataClientMixin.getKVChangedStream().remove(mKVChangedSubscriber);
         mDataClientMixin.getStatusStream().remove(mDataClientStatusSubscriber);
         super.onStop();
     }
@@ -106,5 +109,32 @@ public class AutomationFragment extends Fragment {
         String text = dataClientStatus.getText();
         mStatusText.setText(text == null ? "^_^" : text);
         mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
+    };
+
+    private final ISubscriber<RPair<String, String>> mKVChangedSubscriber = (stream, pair) -> {
+        if (pair == null) return;
+        String key = "[" + pair.first + "]";
+        String value = pair.second;
+
+        StringBuilder text = new StringBuilder(mDebugKVView.getText());
+
+        if (text.length() == 0) {
+            ArrayList<String> keys = new ArrayList<>(mDataClientMixin.getDataClient().getKeys());
+            for (String k : keys) {
+                text.append("[").append(k).append("] = ''\n");
+            }
+        }
+
+        int pos = text.indexOf(key);
+        if (pos < 0) {
+            text.append(key).append(" = '" /* len=4 */).append(value).append("'\n");
+        } else {
+            pos += key.length() + 4;
+            int pos2 = text.indexOf("'", pos);
+            text.replace(pos, pos2, value);
+        }
+
+        mDebugKVView.setText(text.toString());
+        mDebugKVView.setVisibility(View.VISIBLE);
     };
 }

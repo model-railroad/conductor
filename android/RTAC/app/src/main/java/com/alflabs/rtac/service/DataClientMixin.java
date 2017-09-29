@@ -5,7 +5,10 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.util.Log;
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.kv.KeyValueClient;
+import com.alflabs.kv.KeyValueProtocol;
 import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
@@ -16,6 +19,7 @@ import com.alflabs.rx.ISubscriber;
 import com.alflabs.rx.Publishers;
 import com.alflabs.rx.Streams;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.RPair;
 import com.alflabs.utils.ServiceMixin;
 
 import javax.inject.Inject;
@@ -36,6 +40,8 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
 
     private KeyValueClient mDataClient;
+    private final IStream<RPair<String, String>> mKVChangedStream = Streams.stream();
+    private final IPublisher<RPair<String, String>> mKVChangedPublisher = Publishers.publisher();
 
     private ILogger mLogger;
     private AppPrefsValues mAppPrefsValues;
@@ -57,10 +63,15 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         this.mWifiManager = mWifiManager;
 
         mStatusStream.publishWith(mStatusPublisher);
+        mKVChangedStream.publishWith(mKVChangedPublisher);
     }
 
     public IStream<DataClientStatus> getStatusStream() {
         return mStatusStream;
+    }
+
+    public IStream<RPair<String, String>> getKVChangedStream() {
+        return mKVChangedStream;
     }
 
     public KeyValueClient getDataClient() {
@@ -141,7 +152,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                     if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
                     InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
                     mDataClient = new KeyValueClient(mLogger, address, mKVClientListener);
-                    // TODO FIXME ++ mDataClient.setOnChangeListener(mActivity);
+                    mDataClient.setOnChangeListener((key, value) -> mKVChangedPublisher.publish(RPair.create(key, value)));
 
                     if (mDataClient.startSync()) {
                         setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
