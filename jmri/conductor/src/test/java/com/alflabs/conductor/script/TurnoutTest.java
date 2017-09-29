@@ -44,7 +44,7 @@ public class TurnoutTest {
 
         mTurnout.onExecStart();
         verify(mJmriProvider).getTurnout("jmriName");
-        verify(mKeyValue).putValue("T:scriptName", "N", true);
+        verify(mKeyValue).putValue("T/scriptName", "N", true);
         reset(mKeyValue);
 
         assertThat(mTurnout.isActive()).isTrue();
@@ -64,7 +64,7 @@ public class TurnoutTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
-        verify(mKeyValue).putValue("T:scriptName", "N", true);
+        verify(mKeyValue).putValue("T/scriptName", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
     }
@@ -77,7 +77,7 @@ public class TurnoutTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
-        verify(mKeyValue).putValue("T:scriptName", "R", true);
+        verify(mKeyValue).putValue("T/scriptName", "R", true);
 
         assertThat(mTurnout.isActive()).isFalse();
     }

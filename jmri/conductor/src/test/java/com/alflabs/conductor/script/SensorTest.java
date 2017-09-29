@@ -46,7 +46,7 @@ public class SensorTest {
 
         mSensor.onExecStart();
         verify(mJmriProvider).getSensor("jmriName");
-        verify(mKeyValue).putValue("S:scriptName", "OFF", true);
+        verify(mKeyValue).putValue("S/scriptName", "OFF", true);
         assertThat(mSensor.getJmriSensor()).isSameAs(mJmriSensor);
     }
 
@@ -65,7 +65,7 @@ public class SensorTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
-        verify(mKeyValue).putValue("S:scriptName", "ON", true);
+        verify(mKeyValue).putValue("S/scriptName", "ON", true);
         verify(mOnChangeRunnable).run();
 
         reset(mKeyValue);
@@ -76,7 +76,7 @@ public class SensorTest {
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mSensor.onExecHandle();
-        verify(mKeyValue).putValue("S:scriptName", "OFF", true);
+        verify(mKeyValue).putValue("S/scriptName", "OFF", true);
         verify(mOnChangeRunnable).run();
     }
 

@@ -45,7 +45,7 @@ public class VarTest {
         mVar.setExported(true);
         mVar.accept(43);
         mVar.onExecHandle();
-        verify(mKeyValue).putValue("V:MyVar", "43", true);
+        verify(mKeyValue).putValue("V/MyVar", "43", true);
     }
 
     @Test

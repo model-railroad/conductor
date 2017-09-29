@@ -316,8 +316,8 @@ public class ScriptParser2Test {
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
-        assertThat(routes).hasFirstEntry("branchline", new RouteInfo("Branchline", "S:bl-toggle", "V:bl-status", "D:200"));
-        assertThat(routes).hasLastEntry("passenger"  , new RouteInfo("Passenger" , "S:pa-toggle", "V:pa-status", "D:100"));
+        assertThat(routes).hasFirstEntry("branchline", new RouteInfo("Branchline", "S/bl-toggle", "V/bl-status", "D/200"));
+        assertThat(routes).hasLastEntry("passenger"  , new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "D/100"));
         assertThat(routes).hasSize(2);
 
         ExecEngine engine = mScriptComponent.getScriptExecEngine();
@@ -337,7 +337,7 @@ public class ScriptParser2Test {
         ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
         verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
         assertThat(keyCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "D:200", "D:100", "S:bl-toggle", "S:pa-toggle", "V:bl-status", "V:pa-status" });
+                { "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status" });
         assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
                 { "0", "0", "OFF", "OFF", "300", "init" });
     }

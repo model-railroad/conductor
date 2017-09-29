@@ -54,7 +54,7 @@ public class ThrottleTest {
         mThrottle.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
         verify(mJmriThrottle, atLeastOnce()).getDccAddress();
-        verify(mKeyValue).putValue("D:42", "0", true);
+        verify(mKeyValue).putValue("D/42", "0", true);
         reset(mKeyValue);
 
         fwd = mThrottle.createFunction(Throttle.Function.FORWARD);
@@ -86,7 +86,7 @@ public class ThrottleTest {
     public void testForward() throws Exception {
         fwd.accept(41);
         verify(mJmriThrottle).setSpeed(41);
-        verify(mKeyValue).putValue("D:42", "41", true);
+        verify(mKeyValue).putValue("D/42", "41", true);
 
         assertThat(isFwd.isActive()).isTrue();
         assertThat(isRev.isActive()).isFalse();
@@ -94,7 +94,7 @@ public class ThrottleTest {
 
         fwd.accept(-43);
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("D:42", "0", true);
+        verify(mKeyValue).putValue("D/42", "0", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -107,7 +107,7 @@ public class ThrottleTest {
     public void testReverse() throws Exception {
         rev.accept(41);
         verify(mJmriThrottle).setSpeed(-41);
-        verify(mKeyValue).putValue("D:42", "-41", true);
+        verify(mKeyValue).putValue("D/42", "-41", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isTrue();
@@ -115,7 +115,7 @@ public class ThrottleTest {
 
         rev.accept(-43);
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("D:42", "0", true);
+        verify(mKeyValue).putValue("D/42", "0", true);
 
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
@@ -128,11 +128,11 @@ public class ThrottleTest {
     public void testStop() throws Exception {
         fwd.accept(41);
         verify(mJmriThrottle).setSpeed(41);
-        verify(mKeyValue).putValue("D:42", "41", true);
+        verify(mKeyValue).putValue("D/42", "41", true);
 
         stop.accept(0); // value is irrelevant
         verify(mJmriThrottle).setSpeed(0);
-        verify(mKeyValue).putValue("D:42", "0", true);
+        verify(mKeyValue).putValue("D/42", "0", true);
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isTrue();

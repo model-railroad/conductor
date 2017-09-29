@@ -53,7 +53,7 @@ public class EnumTest {
         mEnum.setExported(true);
         mEnum.accept("two");
         mEnum.onExecHandle();
-        verify(mKeyValue).putValue("V:MyVar", "two", true);
+        verify(mKeyValue).putValue("V/MyVar", "two", true);
     }
 
     @Test
