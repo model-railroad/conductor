@@ -1,7 +1,6 @@
 package com.alflabs.rtac.activity;
 
 import android.view.View;
-import android.widget.TextView;
 import com.alflabs.rtac.BuildConfig;
 import org.junit.Before;
 import org.junit.Rule;
