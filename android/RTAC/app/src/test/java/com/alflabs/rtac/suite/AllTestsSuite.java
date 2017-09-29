@@ -1,11 +1,10 @@
 package com.alflabs.rtac.suite;
 
-import com.alflabs.annotations.LargeTest;
 import org.junit.runner.RunWith;
 
 /**
  * Dynamic test suite that collects all test classes in "com.alflabs.**" that have at least one
- * method tagged @Test and where the class itself is not tagged @LargeTest.
+ * method tagged @Test, include those tagged with @LargeTest.
  * <p/>
  * To use this in Android Studio:
  * - Run > Edit Configurations > New Android JUnit configuration
@@ -16,10 +15,7 @@ import org.junit.runner.RunWith;
  * - Working Dir: MODULE_DIR
  * - Use classpath of module: app
  * - JRE: 1.8 (not Android)
- * <p/>
- * If you get an error with "LargeTest.class" not found in AS, try forcing a gradle sync. Often it fixes it.
  */
 @RunWith(AutoSuite.class)
-@AutoSuite.SkipAnnotation(LargeTest.class)
 @AutoSuite.PackageRoot("com.alflabs.")
-public class AllSmallTestsSuite { }
+public class AllTestsSuite { }
