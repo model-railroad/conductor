@@ -279,8 +279,8 @@ public class StatusWnd {
 
         mStatus.append("--- [ KV Server ] ---\n");
         mStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
-        for (Map.Entry<String, String> entry : kvServer.getAllValues().entrySet()) {
-            mStatus.append('[').append(entry.getKey()).append("] = ").append(entry.getValue()).append('\n');
+        for (String key : kvServer.getKeys()) {
+            mStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
         }
 
         return mStatus.toString();
