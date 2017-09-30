@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
@@ -116,6 +117,14 @@ public class RoutesFragment extends Fragment {
         String key = "[" + pair.first + "]";
         String value = pair.second;
 
+        if (Constants.Routes.equals(key)) {
+            initializeRoutes(value);
+        }
+
+        debugKVView(key, value);
+    };
+
+    private void debugKVView(final String key, final String value) {
         StringBuilder text = new StringBuilder(mDebugKVView.getText());
 
         if (text.length() == 0) {
@@ -136,5 +145,9 @@ public class RoutesFragment extends Fragment {
 
         mDebugKVView.setText(text.toString());
         mDebugKVView.setVisibility(View.VISIBLE);
-    };
+    }
+
+    private void initializeRoutes(final String jsonRoutes) {
+        //--RouteIn
+    }
 }

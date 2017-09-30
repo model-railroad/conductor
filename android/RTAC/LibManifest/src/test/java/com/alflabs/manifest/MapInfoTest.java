@@ -20,16 +20,4 @@ public class MapInfoTest {
         assertThat(m1.equals(m2)).isTrue();
         assertThat(m1.hashCode()).isEqualTo(m2.hashCode());
     }
-
-    @Test
-    public void testToJson() throws Exception {
-        MapInfo map = new MapInfo("Map Name", "<svg type=\"content\" attribute='something'/>");
-        assertThat(map.toJsonString()).isEqualTo("{\"name\":\"Map Name\",\"svg\":\"<svg type=\\\"content\\\" attribute='something'/>\"}");
-    }
-
-    @Test
-    public void testFromJson() throws Exception {
-        MapInfo map = MapInfo.parseJson("{\"name\":\"Map Name\",\"svg\":\"<svg type=\\\"content\\\" attribute='something'/>\"}");
-        assertThat(map).isEqualTo(new MapInfo("Map Name", "<svg type=\"content\" attribute='something'/>"));
-    }
 }

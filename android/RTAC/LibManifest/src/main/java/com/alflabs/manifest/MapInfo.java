@@ -5,9 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+/**
+ * Information on one Map served by Conductor.
+ * <p/>
+ * This is converted to JSON indirectly via {@link MapInfos}.
+ */
 public class MapInfo {
-    public String name;     // field exported to JSON
-    public String svg;      // field exported to JSON
+    private String name;     // field name exported to JSON
+    private String svg;      // field name exported to JSON
 
     /** Constructor needed by the JSON ObjectMapper. */
     protected MapInfo() {}
@@ -25,23 +30,12 @@ public class MapInfo {
         return svg;
     }
 
-    public static MapInfo parseJson(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, MapInfo.class);
-    }
-
-    public String toJsonString() throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(this);
-    }
-
     @Override
     public String toString() {
-        try {
-            return toJsonString();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return "MapInfo{" +
+                "name='" + name + '\'' +
+                ", svg='" + svg + '\'' +
+                '}';
     }
 
     @Override

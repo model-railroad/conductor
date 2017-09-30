@@ -5,11 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
+/**
+ * Information on one Route served by Conductor.
+ * <p/>
+ * This is converted to JSON indirectly via {@link RouteInfos}.
+ */
 public class RouteInfo {
-    public String name;          // field exported to JSON
-    public String toggleKey;     // field exported to JSON
-    public String statusKey;     // field exported to JSON
-    public String throttleKey;   // field exported to JSON
+    private String name;          // field name exported to JSON
+    private String toggleKey;     // field name exported to JSON
+    private String statusKey;     // field name exported to JSON
+    private String throttleKey;   // field name exported to JSON
 
     /** Constructor needed by the JSON ObjectMapper. */
     protected RouteInfo() {}
@@ -19,7 +24,7 @@ public class RouteInfo {
      * <p/>
      * The route info uses <em>keys</em>, e.g. the names exported in the KV Server with
      * their prefixes. This are not just the raw IDs using in the script. E.g. a sensor
-     * id "B330" would be exported as key "S:B330".
+     * id "B330" would be exported as key "S/B330".
      *
      * @param name The name of the route.
      * @param toggleKey The KV Server key name of the toggle sensor for the route.
@@ -49,23 +54,14 @@ public class RouteInfo {
         return throttleKey;
     }
 
-    public static RouteInfo parseJson(String json) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, RouteInfo.class);
-    }
-
-    public String toJsonString() throws JsonProcessingException {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(this);
-    }
-
     @Override
     public String toString() {
-        try {
-            return toJsonString();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return "RouteInfo{" +
+                "name='" + name + '\'' +
+                ", toggleKey='" + toggleKey + '\'' +
+                ", statusKey='" + statusKey + '\'' +
+                ", throttleKey='" + throttleKey + '\'' +
+                '}';
     }
 
     @Override
