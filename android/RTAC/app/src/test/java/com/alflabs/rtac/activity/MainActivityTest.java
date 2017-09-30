@@ -17,7 +17,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.when;
 
 /**
- * A version of the MainActivity test that used the real IAppComponent and the real IMainActivityComponent.
+ * A version of the MainActivity test that uses the real IAppComponent and the real IMainActivityComponent.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
@@ -30,6 +30,7 @@ public class MainActivityTest {
 
     @Before
     public void setUp() throws Exception {
+        // Setup the activity including create() and visible()
         mActivity = Robolectric.buildActivity(MainActivity.class).setup().get();
     }
 
