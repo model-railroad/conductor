@@ -12,4 +12,6 @@ public final class Constants {
     public static final String Normal = "N";
     public static final String Reverse = "R";
 
+    public static final String Maps = Prefix.Map + "maps";
+    public static final String Routes = Prefix.Route + "routes";
 }

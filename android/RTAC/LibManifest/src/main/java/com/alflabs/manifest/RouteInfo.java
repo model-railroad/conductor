@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 public class RouteInfo {
-    public String name;         // field exported to JSON
+    public String name;          // field exported to JSON
     public String toggleKey;     // field exported to JSON
     public String statusKey;     // field exported to JSON
     public String throttleKey;   // field exported to JSON
