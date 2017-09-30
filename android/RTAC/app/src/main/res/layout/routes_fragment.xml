@@ -2,22 +2,26 @@
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             tools:context="com.alflabs.rtac.fragment.AutomationFragment">
+             tools:context="com.alflabs.rtac.fragment.RoutesFragment">
 
     <TableRow
             android:layout_width="match_parent">
         <include
                 android:id="@+id/cell1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                layout="@layout/automation_cell"/>
+                layout="@layout/route_cell"/>
         <View
             android:background="@color/white"
             android:layout_width="1dp"
             android:layout_height="match_parent" />
         <include
                 android:id="@+id/cell2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                layout="@layout/automation_cell"/>
+                layout="@layout/route_cell"/>
     </TableRow>
 
     <View
@@ -26,7 +30,7 @@
             android:layout_height="1dp" />
 
     <TextView
-            android:id="@+id/automation_status"
+            android:id="@+id/data_client_status"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Data Client Status"
@@ -40,7 +44,7 @@
             android:layout_height="1dp" />
 
     <TextView
-            android:id="@+id/automation_debug_kv"
+            android:id="@+id/data_client_debug_kv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Debug Placeholder"

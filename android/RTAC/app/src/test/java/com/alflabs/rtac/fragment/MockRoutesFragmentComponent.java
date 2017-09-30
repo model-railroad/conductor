@@ -10,20 +10,20 @@ import org.mockito.MockitoAnnotations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MockAutomationFragmentComponent implements IAutomationFragmentComponent {
+public class MockRoutesFragmentComponent implements IRoutesFragmentComponent {
 
     @Mock IStream<DataClientMixin.DataClientStatus> mDataClientStatusStream;
     @Mock IStream<RPair<String, String>> mKVChangedStream;
 
-    public MockAutomationFragmentComponent() {
+    public MockRoutesFragmentComponent() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Override
-    public void inject(AutomationFragment automationFragment) {
-        automationFragment.mDataClientMixin = mock(DataClientMixin.class);
-        when(automationFragment.mDataClientMixin.getStatusStream()).thenReturn(mDataClientStatusStream);
-        when(automationFragment.mDataClientMixin.getKVChangedStream()).thenReturn(mKVChangedStream);
-        InjectionValidator.check(automationFragment);
+    public void inject(RoutesFragment routesFragment) {
+        routesFragment.mDataClientMixin = mock(DataClientMixin.class);
+        when(routesFragment.mDataClientMixin.getStatusStream()).thenReturn(mDataClientStatusStream);
+        when(routesFragment.mDataClientMixin.getKVChangedStream()).thenReturn(mKVChangedStream);
+        InjectionValidator.check(routesFragment);
     }
 }

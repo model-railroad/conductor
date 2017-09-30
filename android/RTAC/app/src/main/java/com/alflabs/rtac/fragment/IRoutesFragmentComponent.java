@@ -6,11 +6,11 @@ import dagger.Subcomponent;
 
 @ActivityScope
 @Subcomponent
-public interface IAutomationFragmentComponent {
+public interface IRoutesFragmentComponent {
 
     interface Factory {
-        IAutomationFragmentComponent create();
+        IRoutesFragmentComponent create();
     }
 
-    void inject(AutomationFragment automationFragment);
+    void inject(RoutesFragment routesFragment);
 }

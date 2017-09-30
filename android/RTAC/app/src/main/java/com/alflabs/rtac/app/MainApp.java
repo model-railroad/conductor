@@ -4,8 +4,6 @@ import android.app.Application;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import com.alflabs.annotations.NonNull;
-import com.alflabs.rtac.fragment.AutomationFragment;
-import com.alflabs.rtac.fragment.IAutomationFragmentComponent;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;

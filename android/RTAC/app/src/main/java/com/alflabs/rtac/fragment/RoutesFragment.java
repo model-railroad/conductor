@@ -24,9 +24,9 @@ import java.util.ArrayList;
 /**
  * Fragment showing the automation routes overview.
  */
-public class AutomationFragment extends Fragment {
+public class RoutesFragment extends Fragment {
 
-    private static final String TAG = AutomationFragment.class.getSimpleName();
+    private static final String TAG = RoutesFragment.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
     @Inject DataClientMixin mDataClientMixin;
@@ -34,12 +34,12 @@ public class AutomationFragment extends Fragment {
     private TextView mStatusText;
     private TextView mDebugKVView;
 
-    public AutomationFragment() {
-        if (DEBUG) Log.d(TAG, "new AutomationFragment");
+    public RoutesFragment() {
+        if (DEBUG) Log.d(TAG, "new RoutesFragment");
         // Required empty public constructor
     }
 
-    protected IAutomationFragmentComponent createComponent(Context context) {
+    protected IRoutesFragmentComponent createComponent(Context context) {
         if (DEBUG) Log.d(TAG, "createComponent");
         return MainActivity.getMainActivityComponent(context).create();
     }
@@ -49,7 +49,7 @@ public class AutomationFragment extends Fragment {
     public void onAttach(Activity activity) {
         if (DEBUG) Log.d(TAG, "onAttach Activity");
         super.onAttach(activity);
-        IAutomationFragmentComponent component = createComponent(activity);
+        IRoutesFragmentComponent component = createComponent(activity);
         component.inject(this);
     }
 
@@ -59,7 +59,7 @@ public class AutomationFragment extends Fragment {
     public void onAttach(Context context) {
         if (DEBUG) Log.d(TAG, "onAttach Context");
         super.onAttach(context);
-        IAutomationFragmentComponent component = createComponent(context);
+        IRoutesFragmentComponent component = createComponent(context);
         component.inject(this);
     }
 
@@ -74,9 +74,9 @@ public class AutomationFragment extends Fragment {
                              Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView activity=" + getActivity());
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.automation_fragment, container, false);
-        mStatusText = root.findViewById(R.id.automation_status);
-        mDebugKVView = root.findViewById(R.id.automation_debug_kv);
+        View root = inflater.inflate(R.layout.routes_fragment, container, false);
+        mStatusText = root.findViewById(R.id.data_client_status);
+        mDebugKVView = root.findViewById(R.id.data_client_debug_kv);
         return root;
     }
 

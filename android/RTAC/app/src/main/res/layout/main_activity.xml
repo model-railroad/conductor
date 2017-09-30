@@ -9,8 +9,8 @@
         android:orientation="vertical">
 
     <fragment
-            android:id="@+id/automation_fragment"
-            android:name="com.alflabs.rtac.fragment.AutomationFragment"
+            android:id="@+id/routes_fragment"
+            android:name="com.alflabs.rtac.fragment.RoutesFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
