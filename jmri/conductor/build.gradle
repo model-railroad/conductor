@@ -1,5 +1,6 @@
 plugins {
     id "java"
+    id "idea"
     // Add the Annotation Processor Plugin to run dagger at build-time.
     id "net.ltgt.apt" version "0.10"
 }
@@ -24,7 +25,7 @@ ext.antlr = [
 ]
 
 ext.dagger = [
-    generatedSrcDir: "../build/generated/source/apt/main"
+    generatedSrcDir: "src/dagger/java"
 ]
 
 sourceSets {
@@ -38,8 +39,8 @@ sourceSets {
     main {
         java {
             srcDirs antlr.antlrGenDir
-            srcDirs dagger.generatedSrcDir
         }
+        output.generatedSourcesDir = dagger.generatedSrcDir
     }
 }
 
@@ -155,11 +156,14 @@ task adjustAntlrGenDir(dependsOn: genAntlrSources) {
 
 compileJava {
     dependsOn adjustAntlrGenDir
+    delete dagger.generatedSrcDir
     source antlr.antlrGenDir
+    source dagger.generatedSrcDir
 }
 
 clean {
     delete antlr.antlrGenDir
+    delete dagger.generatedSrcDir
 }
 
 artifacts {
