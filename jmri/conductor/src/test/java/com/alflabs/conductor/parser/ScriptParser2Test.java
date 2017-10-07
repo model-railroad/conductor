@@ -281,8 +281,8 @@ public class ScriptParser2Test {
         TreeMap<String, MapInfo> maps = script.getMaps();
         assertThat(maps).hasFirstEntry("map-1", new MapInfo("Map-1", "path/to/map1.svg"));
         assertThat(maps).hasLastEntry ("map-2", new MapInfo("Map-2", "path\\to\\map2.svg"));
-        assertThat(maps.get("map-1").toString()).isEqualTo("{\"name\":\"Map-1\",\"svg\":\"path/to/map1.svg\"}");
-        assertThat(maps.get("map-2").toString()).isEqualTo("{\"name\":\"Map-2\",\"svg\":\"path\\\\to\\\\map2.svg\"}");
+        assertThat(maps.get("map-1").toString()).isEqualTo("MapInfo{name='Map-1', svg='path/to/map1.svg'}");
+        assertThat(maps.get("map-2").toString()).isEqualTo("MapInfo{name='Map-2', svg='path\\to\\map2.svg'}");
         assertThat(maps).hasSize(2);
     }
 

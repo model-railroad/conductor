@@ -5,6 +5,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import com.alflabs.dagger.AppQualifier;
+import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rx.IPublisher;
@@ -24,8 +25,6 @@ public class DiscoveryListener {
 
     private static final String TAG = DiscoveryListener.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
-
-    private static final String SERVICE_TYPE = "_withrottle._tcp.";
 
     private final Context mContext;
     private final IStream<NsdServiceInfo> mServiceResolvedStream = Streams.stream();
@@ -108,7 +107,7 @@ public class DiscoveryListener {
                 // A service was found!  Do something with it.
                 if (DEBUG) Log.d(TAG, "Service discovery success: " + service);
 
-                if (!service.getServiceType().equals(SERVICE_TYPE)) {
+                if (!service.getServiceType().equals(Constants.KV_SERVER_SERVICE_TYPE)) {
                     // Service type is the string containing the protocol and
                     // transport layer for this service.
                     Log.d(TAG, "Unknown Service Type: " + service.getServiceType());
@@ -167,7 +166,7 @@ public class DiscoveryListener {
 
         mNsdManager = _getNsdManager();
         assert mNsdManager != null;
-        mNsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
+        mNsdManager.discoverServices(Constants.KV_SERVER_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
         return true;
     }
 

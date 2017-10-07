@@ -14,9 +14,17 @@ import com.alflabs.manifest.Constants;
 import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
+import javax.jmdns.JmDNS;
+import javax.jmdns.NetworkTopologyDiscovery;
+import javax.jmdns.ServiceInfo;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
@@ -24,6 +32,7 @@ public class EntryPoint {
     private ExecEngine mEngine;
     private boolean mStopRequested;
     private IConductorComponent mComponent;
+    private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
     @Inject Logger mLogger;
     @Inject KeyValueServer mKeyValueServer;
@@ -33,7 +42,7 @@ public class EntryPoint {
      *
      * @return True to start the automation, false if there's a problem and it should not start.
      */
-    public boolean setup(IJmriProvider jmriProvider, String scriptFile) {
+    public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
 
         // FIXME: if "DaggerIConductorComponent" cannot be resolved, 2 things are needed.
         // 1- Build the project.
@@ -41,10 +50,11 @@ public class EntryPoint {
         //    generated source folder.
         // For some reason, IJ extracts generated/source/apt/main as a gen folder from the
         // gradle API instead of the proper build/generated/...
+        File scriptFile = new File(scriptPath);
         mComponent = DaggerIConductorComponent
                 .builder()
                 .conductorModule(new ConductorModule(jmriProvider))
-                .scriptFile(new File(scriptFile))
+                .scriptFile(scriptFile)
                 .build();
 
         mComponent.inject(this);
@@ -53,6 +63,8 @@ public class EntryPoint {
         if (loadScript().length() > 0) {
             return false;
         }
+
+        startZeroconfAdvertising(scriptFile.getName());
 
         // Open the window if a GUI is possible. This can fail.
         try {
@@ -76,8 +88,49 @@ public class EntryPoint {
         return true;
     }
 
+    private void startZeroconfAdvertising(String name) {
+        try {
+            mLogger.log("[Conductor] Starting ZeroConf");
+
+            Map<String, String> props = new TreeMap<>();
+            props.put("origin", "conductor");
+            props.put("version", "1");
+            props.put("script", name);
+            final int weight = 0;
+            final int priority = 0;
+
+            final NetworkTopologyDiscovery topology = NetworkTopologyDiscovery.Factory.getInstance();
+            for (InetAddress address : topology.getInetAddresses()) {
+                ServiceInfo info = ServiceInfo.create(
+                        Constants.KV_SERVER_SERVICE_TYPE,
+                        name.replace(".", "-"),
+                        Constants.KV_SERVER_PORT,
+                        weight,
+                        priority,
+                        props);
+
+                JmDNS jmDns = JmDNS.create(address);
+                jmDns.registerService(info);
+                mLogger.log("[Conductor] Started ZeroConf on " + jmDns.getInetAddress());
+                mJmDnsList.add(jmDns);
+            }
+        } catch (IOException e) {
+            // Ignore. continue.
+            mLogger.log("[Conductor] ZeroConf not enabled: ");
+            LogException.logException(mLogger, e);
+        }
+    }
+
     protected void onStopAction() {
         mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
+
+        for (JmDNS jmDns : mJmDnsList) {
+            try {
+                mLogger.log("[Conductor] Teardown ZeroConf on " + jmDns.getInetAddress());
+            } catch (IOException ignore) {}
+            jmDns.unregisterAllServices();
+        }
+
         mKeyValueServer.stopSync();
         mStopRequested = true;
     }
