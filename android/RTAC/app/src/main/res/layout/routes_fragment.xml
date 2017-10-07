@@ -5,6 +5,7 @@
              tools:context="com.alflabs.rtac.fragment.RoutesFragment">
 
     <TableRow
+            android:id="@+id/cells_row"
             android:layout_width="match_parent">
         <include
                 android:id="@+id/cell1"

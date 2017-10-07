@@ -9,8 +9,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TableRow;
 import android.widget.TextView;
 import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.RouteInfo;
+import com.alflabs.manifest.RouteInfos;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
@@ -20,6 +23,7 @@ import com.alflabs.rx.ISubscriber;
 import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -34,6 +38,7 @@ public class RoutesFragment extends Fragment {
 
     private TextView mStatusText;
     private TextView mDebugKVView;
+    private ViewGroup mCellsRow;
 
     public RoutesFragment() {
         if (DEBUG) Log.d(TAG, "new RoutesFragment");
@@ -78,6 +83,7 @@ public class RoutesFragment extends Fragment {
         View root = inflater.inflate(R.layout.routes_fragment, container, false);
         mStatusText = root.findViewById(R.id.data_client_status);
         mDebugKVView = root.findViewById(R.id.data_client_debug_kv);
+        mCellsRow = root.findViewById(R.id.cells_row);
         return root;
     }
 
@@ -117,7 +123,7 @@ public class RoutesFragment extends Fragment {
         String key = "[" + pair.first + "]";
         String value = pair.second;
 
-        if (Constants.Routes.equals(key)) {
+        if (Constants.RoutesKey.equals(key)) {
             initializeRoutes(value);
         }
 
@@ -148,6 +154,34 @@ public class RoutesFragment extends Fragment {
     }
 
     private void initializeRoutes(final String jsonRoutes) {
-        //--RouteIn
+        try {
+            RouteInfos infos = RouteInfos.parseJson(jsonRoutes);
+            if (DEBUG) Log.d(TAG, "Adding " + infos.getRouteInfos().length + " routes");
+
+            mCellsRow.removeAllViews();
+
+            LayoutInflater inflater = LayoutInflater.from(mCellsRow.getContext());
+
+            boolean needsSeparator = false;
+            for (RouteInfo info : infos.getRouteInfos()) {
+                if (needsSeparator) {
+                    View sep = inflater.inflate(R.layout.routes_sep, mCellsRow, false);
+                    mCellsRow.addView(sep);
+                }
+
+                View cellView = inflater.inflate(R.layout.route_cell, mCellsRow, false);
+                cellView.setTag(info);
+                TableRow.LayoutParams params = new TableRow.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        1.0f);
+                mCellsRow.addView(cellView, params);
+
+                needsSeparator = true;
+            }
+
+        } catch (IOException e) {
+            Log.e(TAG, "Parse RouteInfos JSON error", e);
+        }
     }
 }
