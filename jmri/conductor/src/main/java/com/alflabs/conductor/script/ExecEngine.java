@@ -3,8 +3,16 @@ package com.alflabs.conductor.script;
 import com.alflabs.conductor.util.FrequencyMeasurer;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.conductor.util.RateLimiter;
+import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.MapInfo;
+import com.alflabs.manifest.MapInfos;
+import com.alflabs.manifest.RouteInfo;
+import com.alflabs.manifest.RouteInfos;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -15,15 +23,16 @@ public class ExecEngine implements IExecEngine {
     private final CondCache mCondCache = new CondCache();
     private final FrequencyMeasurer mHandleFrequency;
     private final RateLimiter mHandleRateLimiter;
+    private final IKeyValue mKeyValue;
     private Runnable mHandleListener;
 
     @Inject
-    public ExecEngine(Now now, Script script) {
+    public ExecEngine(Now now, Script script, IKeyValue keyValue) {
         mScript = script;
         mHandleFrequency = new FrequencyMeasurer(now);
         mHandleRateLimiter = new RateLimiter(30.0f, now);
+        mKeyValue = keyValue;
     }
-
 
     /**
      * Initializes throttle and sensors before executing the script.
@@ -48,6 +57,27 @@ public class ExecEngine implements IExecEngine {
 
         for (Enum_ enum_ : mScript.getEnums()) {
             enum_.onExecStart();
+        }
+
+        exportMaps(mScript.getMaps().values());
+        exportRoutes(mScript.getRoutes().values());
+    }
+
+    private void exportMaps(Collection<MapInfo> values) {
+        MapInfos maps = new MapInfos(values.toArray(new MapInfo[values.size()]));
+        try {
+            mKeyValue.putValue(Constants.MapsKey, maps.toJsonString(), true);
+        } catch (JsonProcessingException e) {
+            mScript.getLogger().log("[Conductor] Export KV Maps failed: " + e);
+        }
+    }
+
+    private void exportRoutes(Collection<RouteInfo> values) {
+        RouteInfos routes = new RouteInfos(values.toArray(new RouteInfo[values.size()]));
+        try {
+            mKeyValue.putValue(Constants.RoutesKey, routes.toJsonString(), true);
+        } catch (JsonProcessingException e) {
+            mScript.getLogger().log("[Conductor] Export KV Routes failed: " + e);
         }
     }
 

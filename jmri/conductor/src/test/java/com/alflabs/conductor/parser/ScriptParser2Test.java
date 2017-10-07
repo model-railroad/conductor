@@ -300,7 +300,7 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineRoute() throws Exception {
+    public void testDefineRoute_AndExecEngineStart() throws Exception {
         String source = "" +
                 "Throttle PA-100  = 100\n" +
                 "Throttle BLT-200 = 200\n" +
@@ -337,9 +337,13 @@ public class ScriptParser2Test {
         ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
         verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
         assertThat(keyCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status" });
+                { "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status", "M/maps", "R/routes" });
         assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "0", "0", "OFF", "OFF", "300", "init" });
+                { "0", "0", "OFF", "OFF", "300", "init",
+                        "{\"mapInfos\":[]}",
+                        "{\"routeInfos\":[" +
+                                "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"throttleKey\":\"D/200\"}," +
+                                "{\"name\":\"Passenger\",\"toggleKey\":\"S/pa-toggle\",\"statusKey\":\"V/pa-status\",\"throttleKey\":\"D/100\"}]}" });
     }
 
     @Test
