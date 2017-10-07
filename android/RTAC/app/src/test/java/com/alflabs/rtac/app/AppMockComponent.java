@@ -5,7 +5,7 @@ import android.net.wifi.WifiManager;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.rtac.nsd.DiscoveryListener;
 import com.alflabs.rtac.service.DataClientMixin;
-import com.alflabs.rtac.service.KVClientListener;
+import com.alflabs.rtac.service.KVClientStatsListener;
 import com.alflabs.utils.ILogger;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -69,7 +69,7 @@ public class AppMockComponent extends MainApp {
                     ILogger mLogger,
                     AppPrefsValues mAppPrefsValues,
                     DiscoveryListener mNsdListener,
-                    KVClientListener mKVClientListener,
+                    KVClientStatsListener mKVClientListener,
                     WifiManager mWifiManager) {
                 return dataClientMixin;
             }

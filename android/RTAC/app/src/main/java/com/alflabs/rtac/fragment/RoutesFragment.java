@@ -20,7 +20,6 @@ import com.alflabs.rtac.activity.MainActivity;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rx.AndroidSchedulers;
 import com.alflabs.rx.ISubscriber;
-import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -92,13 +91,13 @@ public class RoutesFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber, AndroidSchedulers.mainThread());
-        mDataClientMixin.getKVChangedStream().subscribe(mKVChangedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
-        mDataClientMixin.getKVChangedStream().remove(mKVChangedSubscriber);
+        mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
         mDataClientMixin.getStatusStream().remove(mDataClientStatusSubscriber);
         super.onStop();
     }
@@ -113,15 +112,17 @@ public class RoutesFragment extends Fragment {
 
 
     private final ISubscriber<DataClientMixin.DataClientStatus> mDataClientStatusSubscriber = (stream, dataClientStatus) -> {
+        assert dataClientStatus != null;
         String text = dataClientStatus.getText();
         mStatusText.setText(text == null ? "^_^" : text);
         mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
     };
 
-    private final ISubscriber<RPair<String, String>> mKVChangedSubscriber = (stream, pair) -> {
-        if (pair == null) return;
-        String key = "[" + pair.first + "]";
-        String value = pair.second;
+    private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
+        if (!isVisible()) return;
+        if (mDataClientMixin.getKeyValueClient() == null) return;
+        assert key != null;
+        String value = mDataClientMixin.getKeyValueClient().getValue(key);
 
         if (Constants.RoutesKey.equals(key)) {
             initializeRoutes(value);
@@ -130,16 +131,17 @@ public class RoutesFragment extends Fragment {
         debugKVView(key, value);
     };
 
-    private void debugKVView(final String key, final String value) {
+    private void debugKVView(String key, String value) {
         StringBuilder text = new StringBuilder(mDebugKVView.getText());
 
         if (text.length() == 0) {
-            ArrayList<String> keys = new ArrayList<>(mDataClientMixin.getDataClient().getKeys());
+            ArrayList<String> keys = new ArrayList<>(mDataClientMixin.getKeyValueClient().getKeys());
             for (String k : keys) {
                 text.append("[").append(k).append("] = ''\n");
             }
         }
 
+        key = "[" + key + "]";
         int pos = text.indexOf(key);
         if (pos < 0) {
             text.append(key).append(" = '" /* len=4 */).append(value).append("'\n");

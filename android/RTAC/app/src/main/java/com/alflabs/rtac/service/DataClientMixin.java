@@ -5,6 +5,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.SystemClock;
 import android.util.Log;
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
@@ -16,7 +18,6 @@ import com.alflabs.rx.ISubscriber;
 import com.alflabs.rx.Publishers;
 import com.alflabs.rx.Streams;
 import com.alflabs.utils.ILogger;
-import com.alflabs.utils.RPair;
 import com.alflabs.utils.ServiceMixin;
 
 import javax.inject.Inject;
@@ -36,14 +37,14 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     private final IStream<DataClientStatus> mStatusStream = Streams.stream();
     private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
 
-    private KeyValueClient mDataClient;
-    private final IStream<RPair<String, String>> mKVChangedStream = Streams.stream();
-    private final IPublisher<RPair<String, String>> mKVChangedPublisher = Publishers.publisher();
+    private KeyValueClient mKVClient;
+    private final IStream<String> mKeyChangedStream = Streams.stream();
+    private final IPublisher<String> mKeyChangedPublisher = Publishers.publisher();
 
     private ILogger mLogger;
     private AppPrefsValues mAppPrefsValues;
     private DiscoveryListener mNsdListener;
-    private KVClientListener mKVClientListener;
+    private KVClientStatsListener mKVClientListener;
     private WifiManager mWifiManager;
 
     @Inject
@@ -51,7 +52,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
             ILogger mLogger,
             AppPrefsValues mAppPrefsValues,
             DiscoveryListener mNsdListener,
-            KVClientListener mKVClientListener,
+            KVClientStatsListener mKVClientListener,
             WifiManager mWifiManager) {
         this.mLogger = mLogger;
         this.mAppPrefsValues = mAppPrefsValues;
@@ -60,19 +61,22 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         this.mWifiManager = mWifiManager;
 
         mStatusStream.publishWith(mStatusPublisher);
-        mKVChangedStream.publishWith(mKVChangedPublisher);
+        mKeyChangedStream.publishWith(mKeyChangedPublisher);
     }
 
+    @NonNull
     public IStream<DataClientStatus> getStatusStream() {
         return mStatusStream;
     }
 
-    public IStream<RPair<String, String>> getKVChangedStream() {
-        return mKVChangedStream;
+    @NonNull
+    public IStream<String> getKeyChangedStream() {
+        return mKeyChangedStream;
     }
 
-    public KeyValueClient getDataClient() {
-        return mDataClient;
+    @Null
+    public KeyValueClient getKeyValueClient() {
+        return mKVClient;
     }
 
     @Override
@@ -88,7 +92,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     private void startCnx() {
-        if (mDataClient == null) {
+        if (mKVClient == null) {
             setStatus(true, "Data Client: Not Started");
         }
 
@@ -98,9 +102,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     private void startCnxOnThread() {
-        if (mDataClient != null) {
-            mDataClient.stopSync();
-            mDataClient = null;
+        if (mKVClient != null) {
+            mKVClient.stopSync();
+            mKVClient = null;
         }
 
         ISubscriber<NsdServiceInfo> nsdSubscriber = (stream, serviceInfo) -> onNsdServiceFound(serviceInfo);
@@ -148,13 +152,13 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                 try {
                     if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
                     InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
-                    mDataClient = new KeyValueClient(mLogger, address, mKVClientListener);
-                    mDataClient.setOnChangeListener((key, value) -> mKVChangedPublisher.publish(RPair.create(key, value)));
+                    mKVClient = new KeyValueClient(mLogger, address, mKVClientListener);
+                    mKVClient.getChangedStream().subscribe((stream, key) -> mKeyChangedPublisher.publish(key));
 
-                    if (mDataClient.startSync()) {
+                    if (mKVClient.startSync()) {
                         setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
-                        mDataClient.requestAllKeys();
-                        mDataClient.join();
+                        mKVClient.requestAllKeys();
+                        mKVClient.join();
                     } else {
                         long delay1sec = now + 1000 - SystemClock.elapsedRealtime();
                         if (delay1sec > 0) {
@@ -197,9 +201,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     public void stopCnx() {
         mKeepConnected.set(false);
-        if (mDataClient != null) {
-            mDataClient.stopAsync();
-            mDataClient = null;
+        if (mKVClient != null) {
+            mKVClient.stopAsync();
+            mKVClient = null;
             setStatus(false, "Data Server: Disconnected.");
         }
     }

@@ -7,12 +7,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class KVClientListener implements KeyValueClient.IListener {
+public class KVClientStatsListener implements KeyValueClient.IStatsListener {
     private int mBandwidthTX;
     private int mBandwidthRX;
 
     @Inject
-    public KVClientListener() {
+    public KVClientStatsListener() {
     }
 
     @Override
