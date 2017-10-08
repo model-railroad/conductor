@@ -19,6 +19,8 @@ import javax.jmdns.NetworkTopologyDiscovery;
 import javax.jmdns.ServiceInfo;
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -99,8 +101,16 @@ public class EntryPoint {
             final int weight = 0;
             final int priority = 0;
 
+            boolean gotIpv4 = false;
             final NetworkTopologyDiscovery topology = NetworkTopologyDiscovery.Factory.getInstance();
             for (InetAddress address : topology.getInetAddresses()) {
+                if (!gotIpv4 && address instanceof Inet4Address) {
+                    gotIpv4 = true;
+                }
+                if (gotIpv4 && address instanceof Inet6Address) {
+                    mLogger.log("[Conductor] Skip ZeroConf on " + address + " (already got an IPv4 before).");
+                    continue;
+                }
                 ServiceInfo info = ServiceInfo.create(
                         Constants.KV_SERVER_SERVICE_TYPE,
                         name.replace(".", "-"),
