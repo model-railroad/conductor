@@ -24,6 +24,7 @@ import com.alflabs.rx.ISubscriber;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Fragment showing the automation routes overview.
@@ -38,6 +39,7 @@ public class RoutesFragment extends Fragment {
     private TextView mStatusText;
     private TextView mDebugKVView;
     private ViewGroup mCellsRow;
+    private final List<RouteCell> mRouteCells = new ArrayList<>();
 
     public RoutesFragment() {
         if (DEBUG) Log.d(TAG, "new RoutesFragment");
@@ -128,6 +130,10 @@ public class RoutesFragment extends Fragment {
             initializeRoutes(value);
         }
 
+        for (RouteCell routeCell : mRouteCells) {
+            routeCell.onKVChanged(key, value);
+        }
+
         debugKVView(key, value);
     };
 
@@ -161,6 +167,7 @@ public class RoutesFragment extends Fragment {
             if (DEBUG) Log.d(TAG, "Adding " + infos.getRouteInfos().length + " routes");
 
             mCellsRow.removeAllViews();
+            mRouteCells.clear();
 
             LayoutInflater inflater = LayoutInflater.from(mCellsRow.getContext());
 
@@ -171,13 +178,13 @@ public class RoutesFragment extends Fragment {
                     mCellsRow.addView(sep);
                 }
 
-                View cellView = inflater.inflate(R.layout.route_cell, mCellsRow, false);
-                cellView.setTag(info);
+                RouteCell cell = RouteCell.inflate(inflater, info, mCellsRow, mDataClientMixin.getKeyValueClient());
                 TableRow.LayoutParams params = new TableRow.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         1.0f);
-                mCellsRow.addView(cellView, params);
+                mCellsRow.addView(cell.getView(), params);
+                mRouteCells.add(cell);
 
                 needsSeparator = true;
             }
