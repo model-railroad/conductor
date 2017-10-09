@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
 public class DataClientMixin extends ServiceMixin<RtacService> {
+    public static final String NSD_PREFIX = "[NSD] ";
     private static final String TAG = DataClientMixin.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
@@ -113,7 +114,11 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
         boolean useNsd = mNsdListener.start();
         if (useNsd) {
-            mAppPrefsValues.setData_ServerHostName("");
+            // Only remove the current hostname if it didn't come from NSD
+            String dataHostname = mAppPrefsValues.getData_ServerHostName();
+            if (!dataHostname.startsWith(NSD_PREFIX)) {
+                mAppPrefsValues.setData_ServerHostName("");
+            }
         }
 
         connectLoop();
@@ -133,9 +138,8 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         int port = serviceInfo.getPort();
         if (DEBUG) Log.i(TAG, "Data Client Loop: onNsdServiceFound " + host.getHostAddress() + " port " + port);
         if (host != null && port > 0) {
-            mAppPrefsValues.setData_ServerHostName(host.getHostAddress());
-            // Note: The port reported by the NSD discovery is for the Withrottle service, not the data server.
-            mAppPrefsValues.setData_ServerPort(Constants.KV_SERVER_PORT);
+            mAppPrefsValues.setData_ServerHostName(NSD_PREFIX + host.getHostAddress());
+            mAppPrefsValues.setData_ServerPort(port);
         }
     }
 
@@ -143,6 +147,10 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         while (mKeepConnected.get()) {
             String dataHostname = mAppPrefsValues.getData_ServerHostName();
             int dataPort = mAppPrefsValues.getData_ServerPort();
+
+            if (dataHostname.startsWith(NSD_PREFIX)) {
+                dataHostname = dataHostname.substring(NSD_PREFIX.length());
+            }
 
             long now = SystemClock.elapsedRealtime();
             setStatus(false, "Connecting to data server at " + dataHostname + ", port " + dataPort);
