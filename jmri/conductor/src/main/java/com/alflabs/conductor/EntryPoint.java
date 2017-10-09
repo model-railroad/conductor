@@ -139,6 +139,11 @@ public class EntryPoint {
                 mLogger.log("[Conductor] Teardown ZeroConf on " + jmDns.getInetAddress());
             } catch (IOException ignore) {}
             jmDns.unregisterAllServices();
+            try {
+                jmDns.close();
+            } catch (IOException e) {
+                mLogger.log("[Conductor] Teardown ZeroConf exception: " + e);
+            }
         }
 
         mKeyValueServer.stopSync();
