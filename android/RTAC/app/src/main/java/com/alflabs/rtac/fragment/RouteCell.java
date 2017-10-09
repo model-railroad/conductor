@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.rtac.R;
 
@@ -50,6 +51,10 @@ public class RouteCell {
     public void onKVChanged(String key, String value) {
         if (key.equals(mRouteInfo.getToggleKey())) {
             mToggleText.setText(value);
+
+            int color = mToggleText.getResources().getColor(
+                    Constants.On.equals(value) ? R.color.red : R.color.green);
+            mToggleText.setTextColor(color);
 
         } else if (key.equals(mRouteInfo.getStatusKey())) {
             mStatusText.setText(value);
