@@ -5,7 +5,7 @@ package com.alflabs.manifest;
  */
 public final class Constants {
     public static final String KV_SERVER_SERVICE_TYPE = "_kv-conductor._tcp.";
-    public static final int KV_SERVER_PORT = 8080;
+    public static final int KV_SERVER_PORT = 20006;
 
     public static final String On = "ON";
     public static final String Off = "OFF";
