@@ -37,7 +37,6 @@ public class RoutesFragment extends Fragment {
     @Inject DataClientMixin mDataClientMixin;
 
     private TextView mStatusText;
-    private TextView mDebugKVView;
     private ViewGroup mCellsRow;
     private final List<RouteCell> mRouteCells = new ArrayList<>();
 
@@ -46,7 +45,7 @@ public class RoutesFragment extends Fragment {
         // Required empty public constructor
     }
 
-    protected IRoutesFragmentComponent createComponent(Context context) {
+    protected IFragmentComponent createComponent(Context context) {
         if (DEBUG) Log.d(TAG, "createComponent");
         return MainActivity.getMainActivityComponent(context).create();
     }
@@ -56,7 +55,7 @@ public class RoutesFragment extends Fragment {
     public void onAttach(Activity activity) {
         if (DEBUG) Log.d(TAG, "onAttach Activity");
         super.onAttach(activity);
-        IRoutesFragmentComponent component = createComponent(activity);
+        IFragmentComponent component = createComponent(activity);
         component.inject(this);
     }
 
@@ -66,7 +65,7 @@ public class RoutesFragment extends Fragment {
     public void onAttach(Context context) {
         if (DEBUG) Log.d(TAG, "onAttach Context");
         super.onAttach(context);
-        IRoutesFragmentComponent component = createComponent(context);
+        IFragmentComponent component = createComponent(context);
         component.inject(this);
     }
 
@@ -83,7 +82,6 @@ public class RoutesFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.routes_fragment, container, false);
         mStatusText = root.findViewById(R.id.data_client_status);
-        mDebugKVView = root.findViewById(R.id.data_client_debug_kv);
         mCellsRow = root.findViewById(R.id.cells_row);
         return root;
     }
@@ -128,38 +126,13 @@ public class RoutesFragment extends Fragment {
 
         if (Constants.RoutesKey.equals(key)) {
             initializeRoutes(value);
-        }
 
-        for (RouteCell routeCell : mRouteCells) {
-            routeCell.onKVChanged(key, value);
-        }
-
-        debugKVView(key, value);
-    };
-
-    private void debugKVView(String key, String value) {
-        StringBuilder text = new StringBuilder(mDebugKVView.getText());
-
-        if (text.length() == 0) {
-            ArrayList<String> keys = new ArrayList<>(mDataClientMixin.getKeyValueClient().getKeys());
-            for (String k : keys) {
-                text.append("[").append(k).append("] = ''\n");
+        } else {
+            for (RouteCell routeCell : mRouteCells) {
+                routeCell.onKVChanged(key, value);
             }
         }
-
-        key = "[" + key + "]";
-        int pos = text.indexOf(key);
-        if (pos < 0) {
-            text.append(key).append(" = '" /* len=4 */).append(value).append("'\n");
-        } else {
-            pos += key.length() + 4;
-            int pos2 = text.indexOf("'", pos);
-            text.replace(pos, pos2, value);
-        }
-
-        mDebugKVView.setText(text.toString());
-        mDebugKVView.setVisibility(View.VISIBLE);
-    }
+    };
 
     private void initializeRoutes(final String jsonRoutes) {
         try {

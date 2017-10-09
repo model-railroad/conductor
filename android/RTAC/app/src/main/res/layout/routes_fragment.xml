@@ -26,16 +26,4 @@
             android:minLines="1"
             android:maxLines="1" />
 
-    <View
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="1dp" />
-
-    <TextView
-            android:id="@+id/data_client_debug_kv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="Debug Placeholder"
-            android:visibility="gone" />
-
 </TableLayout>

@@ -18,11 +18,11 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertThat;
 
 /**
- * A version of the {@link RoutesFragment} test that uses the real IAppComponent and the real IMainActivityComponent.
+ * A version of the {@link EStopFragment} test that uses the real IAppComponent and the real IMainActivityComponent.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
-public class RoutesFragmentTest {
+public class EStopFragmentTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
     private MainActivity mActivity;
@@ -32,7 +32,7 @@ public class RoutesFragmentTest {
     public void setUp() throws Exception {
         // Setup the activity including create() and visible()
         mActivity = Robolectric.buildActivity(MainActivity.class).setup().get();
-        mFragment = mActivity.getFragmentManager().findFragmentById(R.id.routes_fragment);
+        mFragment = mActivity.getFragmentManager().findFragmentById(R.id.estop_fragment);
         assertThat(mFragment).isNotNull();
     }
 

@@ -3,8 +3,8 @@ package com.alflabs.rtac.activity;
 import android.view.View;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
-import com.alflabs.rtac.fragment.IRoutesFragmentComponent;
-import com.alflabs.rtac.fragment.MockRoutesFragmentComponent;
+import com.alflabs.rtac.fragment.IFragmentComponent;
+import com.alflabs.rtac.fragment.MockFragmentComponent;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.InjectionValidator;
 import org.junit.Before;
@@ -90,8 +90,8 @@ public class CustomActivityComponentTest {
                 }
 
                 @Override
-                public IRoutesFragmentComponent create() {
-                    return new MockRoutesFragmentComponent();
+                public IFragmentComponent create() {
+                    return new MockFragmentComponent();
                 }
             };
         }
