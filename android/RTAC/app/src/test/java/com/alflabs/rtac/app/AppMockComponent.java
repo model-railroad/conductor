@@ -6,7 +6,9 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.rtac.nsd.DiscoveryListener;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rtac.service.KVClientStatsListener;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.MockClock;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -16,6 +18,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AppMockComponent extends MainApp {
+    private IClock mClock = new MockClock();
     @Mock ILogger mLogger;
     @Mock WifiManager.WifiLock mWifiLock;
     @Mock WifiManager mWifiManager;
@@ -66,12 +69,19 @@ public class AppMockComponent extends MainApp {
             @NonNull
             @Override
             public DataClientMixin providesDataClientMixin(
-                    ILogger mLogger,
-                    AppPrefsValues mAppPrefsValues,
-                    DiscoveryListener mNsdListener,
-                    KVClientStatsListener mKVClientListener,
-                    WifiManager mWifiManager) {
+                    IClock clock,
+                    ILogger logger,
+                    AppPrefsValues appPrefsValues,
+                    DiscoveryListener nsdListener,
+                    KVClientStatsListener kvClientListener,
+                    WifiManager wifiManager) {
                 return dataClientMixin;
+            }
+
+            @NonNull
+            @Override
+            public IClock providesClock() {
+                return mClock;
             }
         };
 

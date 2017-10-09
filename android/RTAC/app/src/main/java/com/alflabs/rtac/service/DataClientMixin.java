@@ -3,12 +3,10 @@ package com.alflabs.rtac.service;
 import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.SystemClock;
 import android.util.Log;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.kv.KeyValueClient;
-import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.nsd.DiscoveryListener;
@@ -17,6 +15,7 @@ import com.alflabs.rx.IStream;
 import com.alflabs.rx.ISubscriber;
 import com.alflabs.rx.Publishers;
 import com.alflabs.rx.Streams;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.ServiceMixin;
 
@@ -42,24 +41,27 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     private final IStream<String> mKeyChangedStream = Streams.stream();
     private final IPublisher<String> mKeyChangedPublisher = Publishers.publisher();
 
-    private ILogger mLogger;
-    private AppPrefsValues mAppPrefsValues;
-    private DiscoveryListener mNsdListener;
-    private KVClientStatsListener mKVClientListener;
-    private WifiManager mWifiManager;
+    private final IClock mClock;
+    private final ILogger mLogger;
+    private final AppPrefsValues mAppPrefsValues;
+    private final DiscoveryListener mNsdListener;
+    private final KVClientStatsListener mKVClientListener;
+    private final WifiManager mWifiManager;
 
     @Inject
     public DataClientMixin(
-            ILogger mLogger,
-            AppPrefsValues mAppPrefsValues,
-            DiscoveryListener mNsdListener,
-            KVClientStatsListener mKVClientListener,
-            WifiManager mWifiManager) {
-        this.mLogger = mLogger;
-        this.mAppPrefsValues = mAppPrefsValues;
-        this.mNsdListener = mNsdListener;
-        this.mKVClientListener = mKVClientListener;
-        this.mWifiManager = mWifiManager;
+            IClock clock,
+            ILogger logger,
+            AppPrefsValues appPrefsValues,
+            DiscoveryListener nsdListener,
+            KVClientStatsListener kvClientListener,
+            WifiManager wifiManager) {
+        mClock = clock;
+        mLogger = logger;
+        mAppPrefsValues = appPrefsValues;
+        mNsdListener = nsdListener;
+        mKVClientListener = kvClientListener;
+        mWifiManager = wifiManager;
 
         mStatusStream.publishWith(mStatusPublisher);
         mKeyChangedStream.publishWith(mKeyChangedPublisher);
@@ -152,7 +154,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                 dataHostname = dataHostname.substring(NSD_PREFIX.length());
             }
 
-            long now = SystemClock.elapsedRealtime();
+            long now = mClock.elapsedRealtime();
             setStatus(false, "Connecting to data server at " + dataHostname + ", port " + dataPort);
             if (DEBUG) Log.i(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
 
@@ -160,7 +162,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                 try {
                     if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
                     InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
-                    mKVClient = new KeyValueClient(mLogger, address, mKVClientListener);
+                    mKVClient = new KeyValueClient(mClock, mLogger, address, mKVClientListener);
                     mKVClient.getChangedStream().subscribe((stream, key) -> mKeyChangedPublisher.publish(key));
 
                     if (mKVClient.startSync()) {
@@ -168,9 +170,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                         mKVClient.requestAllKeys();
                         mKVClient.join();
                     } else {
-                        long delay1sec = now + 1000 - SystemClock.elapsedRealtime();
+                        long delay1sec = now + 1000 - mClock.elapsedRealtime();
                         if (delay1sec > 0) {
-                            Thread.sleep(delay1sec);
+                            mClock.sleep(delay1sec);
                         }
                     }
 
@@ -191,7 +193,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                 }
                 if (DEBUG) Log.i(TAG, "Data Client Loop: failed, retry after delay");
                 try {
-                    Thread.sleep(1000);
+                    mClock.sleep(1000);
                 } catch (InterruptedException ignore) {}
             }
         }

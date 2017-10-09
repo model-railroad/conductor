@@ -5,6 +5,8 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.rtac.nsd.DiscoveryListener;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rtac.service.KVClientStatsListener;
+import com.alflabs.utils.AndroidClock;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import dagger.Module;
 import dagger.Provides;
@@ -19,16 +21,25 @@ public class AppDataModule {
     @Provides
     @Singleton
     public DataClientMixin providesDataClientMixin(
-            ILogger mLogger,
-            AppPrefsValues mAppPrefsValues,
-            DiscoveryListener mNsdListener,
-            KVClientStatsListener mKVClientListener,
-            WifiManager mWifiManager) {
+            IClock clock,
+            ILogger logger,
+            AppPrefsValues appPrefsValues,
+            DiscoveryListener nsdListener,
+            KVClientStatsListener kvClientListener,
+            WifiManager wifiManager) {
         return new DataClientMixin(
-                mLogger,
-                mAppPrefsValues,
-                mNsdListener,
-                mKVClientListener,
-                mWifiManager);
+                clock,
+                logger,
+                appPrefsValues,
+                nsdListener,
+                kvClientListener,
+                wifiManager);
+    }
+
+    @NonNull
+    @Provides
+    @Singleton
+    public IClock providesClock() {
+        return new AndroidClock();
     }
 }
