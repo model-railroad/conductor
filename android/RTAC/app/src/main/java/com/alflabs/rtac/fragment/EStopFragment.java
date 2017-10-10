@@ -2,6 +2,7 @@ package com.alflabs.rtac.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -20,8 +21,6 @@ import com.alflabs.rx.AndroidSchedulers;
 import com.alflabs.rx.ISubscriber;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Fragment showing the E-Stop in Normal / Active / Reset states.
@@ -33,10 +32,13 @@ public class EStopFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
+    private TextView mInstructions;
     private Button mEStopButton;
+    private Button mResetButton;
+    private View mResetGroup;
 
     public EStopFragment() {
-        if (DEBUG) Log.d(TAG, "new DebugFragment");
+        if (DEBUG) Log.d(TAG, "new fragment");
         // Required empty public constructor
     }
 
@@ -71,7 +73,40 @@ public class EStopFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.estop_fragment, container, false);
         mEStopButton = root.findViewById(R.id.estop_button);
+        mResetGroup = root.findViewById(R.id.reset_group);
+        mInstructions = root.findViewById(R.id.reset_instructions_text);
+        mResetButton = root.findViewById(R.id.reset_button);
+
+        Context context = mEStopButton.getContext();
+        mEStopButton.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.estop_alert_title)
+                    .setMessage(R.string.estop_alert_text)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialogInterface, i) -> changeState(Constants.EStopState.ACTIVE))
+                    .setNegativeButton(android.R.string.cancel, null);
+
+            builder.show();
+        });
+
+        mResetButton.setOnClickListener(view -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.estop_alert_title)
+                    .setMessage(R.string.estop_alert_text)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialogInterface, i) -> changeState(Constants.EStopState.RESET))
+                    .setNegativeButton(android.R.string.cancel, null);
+            builder.show();
+        });
+
         return root;
+    }
+
+    private void changeState(Constants.EStopState state) {
+        if (DEBUG) Log.d(TAG, "changeState: " + state);
+        if (mDataClientMixin != null && mDataClientMixin.getKeyValueClient() != null) {
+            mDataClientMixin.getKeyValueClient().broadcastValue(Constants.EStopKey, state.toString());
+        }
     }
 
     @Override
@@ -97,10 +132,16 @@ public class EStopFragment extends Fragment {
     // ----
 
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
-        if (!isVisible()) return;
-        if (mDataClientMixin.getKeyValueClient() == null) return;
-
         if (!Constants.EStopKey.equals(key)) {
+            return;
+        }
+
+        if (!isVisible()) {
+            if (DEBUG) Log.d(TAG, "mKeyChangedSubscriber IGNORED: isVisible is " + isVisible());
+            return;
+        }
+        if (mDataClientMixin.getKeyValueClient() == null) {
+            if (DEBUG) Log.d(TAG, "mKeyChangedSubscriber IGNORED: mDataClientMixin is " + mDataClientMixin);
             return;
         }
 
@@ -108,7 +149,27 @@ public class EStopFragment extends Fragment {
         try {
             Constants.EStopState state = Constants.EStopState.valueOf(value);
             if (DEBUG) Log.d(TAG, "E-STOP state changed to " + state);
-            // TODO do something with that state
+
+            switch (state) {
+            case NORMAL:
+                mEStopButton.setVisibility(View.VISIBLE);
+                mResetGroup.setVisibility(View.GONE);
+                mResetButton.setVisibility(View.GONE);
+                break;
+            case ACTIVE:
+                mEStopButton.setVisibility(View.GONE);
+                mResetGroup.setVisibility(View.VISIBLE);
+                mInstructions.setText(R.string.reset_instructions_text);
+                mResetButton.setVisibility(View.VISIBLE);
+                break;
+            case RESET:
+                mEStopButton.setVisibility(View.GONE);
+                mResetGroup.setVisibility(View.VISIBLE);
+                mInstructions.setText(R.string.reset_pending_text);
+                mResetButton.setVisibility(View.GONE);
+                break;
+            }
+
         } catch (NullPointerException | IllegalArgumentException e) {
             if (DEBUG) Log.d(TAG, "E-STOP state changed to INVALID value " + value);
         }

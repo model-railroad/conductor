@@ -41,7 +41,7 @@ public class RoutesFragment extends Fragment {
     private final List<RouteCell> mRouteCells = new ArrayList<>();
 
     public RoutesFragment() {
-        if (DEBUG) Log.d(TAG, "new RoutesFragment");
+        if (DEBUG) Log.d(TAG, "new fragment");
         // Required empty public constructor
     }
 

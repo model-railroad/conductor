@@ -18,4 +18,42 @@
             android:layout_margin="16dp"
             tools:ignore="HardcodedText" />
 
+    <LinearLayout
+            android:id="@+id/reset_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center"
+            android:layout_margin="8dp"
+            android:padding="8dp"
+            android:background="@color/light_gray"
+            android:visibility="gone">
+
+        <TextView
+                android:id="@+id/reset_instructions_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/reset_instructions_text"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:layout_gravity="center_horizontal"
+                android:textSize="20sp" />
+
+        <Button
+                android:id="@+id/reset_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" RESET "
+                android:background="@color/red"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:padding="4dp"
+                android:layout_margin="16dp"
+                android:layout_gravity="center_horizontal"
+                tools:ignore="HardcodedText" />
+    </LinearLayout>
+
+
 </FrameLayout>

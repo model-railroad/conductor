@@ -33,7 +33,7 @@ public class DebugFragment extends Fragment {
     private TextView mDebugView;
 
     public DebugFragment() {
-        if (DEBUG) Log.d(TAG, "new DebugFragment");
+        if (DEBUG) Log.d(TAG, "new fragment");
         // Required empty public constructor
     }
 

@@ -15,7 +15,6 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 @ScriptScope
 public class ExecEngine implements IExecEngine {
@@ -101,6 +100,8 @@ public class ExecEngine implements IExecEngine {
     public void onExecHandle() {
         mHandleFrequency.ping();
 
+        propagateExecHandle();
+
         if (isEStopNormal()) {
             evalScript();
         }
@@ -130,7 +131,7 @@ public class ExecEngine implements IExecEngine {
         return false;
     }
 
-    private void evalScript() {
+    private void propagateExecHandle() {
         for (Throttle throttle : mScript.getThrottles()) {
             throttle.onExecHandle();
         }
@@ -150,6 +151,9 @@ public class ExecEngine implements IExecEngine {
         for (Enum_ enum_ : mScript.getEnums()) {
             enum_.onExecHandle();
         }
+    }
+
+    private void evalScript() {
 
         mCondCache.clear();
         mActivatedEvents.clear();

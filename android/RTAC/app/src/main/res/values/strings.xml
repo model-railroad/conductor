@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">Randall Train Automation Controller</string>
+
+    <string name="reset_instructions_text">The automation is now stopped.\n
+    To restart, please follow the following steps:\n
+    - Bring all trains to their origin location.\n
+    - Turn all route activation toggles OFF.\n
+    - Then hit the RESET button on this tablet.\n
+    Once the system is properly reset, turn the activation toggles to ON.</string>
+
+    <string name="reset_pending_text">The automation is now resetting.\n
+    Once this message disappears, turn the activation toggles to ON.</string>
+
+    <string name="estop_alert_title">EMERGENCY STOP</string>
+
+    <string name="estop_alert_text">Are you sure you want to STOP the AUTOMATION?\nThis will STOP ALL THE AUTOMATED TRAINS IMMEDIATELY.</string>
+
 </resources>
