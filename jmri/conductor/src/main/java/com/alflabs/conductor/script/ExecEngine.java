@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 @ScriptScope
 public class ExecEngine implements IExecEngine {
@@ -39,6 +40,8 @@ public class ExecEngine implements IExecEngine {
      */
     @Override
     public void onExecStart() {
+        mKeyValue.putValue(Constants.EStopKey, Constants.EStopState.NORMAL.toString(), true);
+
         for (Throttle throttle : mScript.getThrottles()) {
             throttle.onExecStart();
         }
@@ -98,6 +101,36 @@ public class ExecEngine implements IExecEngine {
     public void onExecHandle() {
         mHandleFrequency.ping();
 
+        if (isEStopNormal()) {
+            evalScript();
+        }
+
+        if (mHandleListener != null) {
+            try {
+                mHandleListener.run();
+            } catch (Throwable ignore) {
+            }
+        }
+
+        mHandleRateLimiter.limit();
+    }
+
+    /**
+     * Returns true if The EStop-State is defined and Normal.
+     * <p/>
+     * For a more predictible behavior, the absence of the EStop-State is treated as
+     * a active case. This is one of these "should not happen" scenarios.
+     */
+    private boolean isEStopNormal() {
+        final String value = mKeyValue.getValue(Constants.EStopKey);
+        if (value == null) return false;
+        try {
+            return Constants.EStopState.valueOf(value) == Constants.EStopState.NORMAL;
+        } catch (IllegalArgumentException ignore) {}
+        return false;
+    }
+
+    private void evalScript() {
         for (Throttle throttle : mScript.getThrottles()) {
             throttle.onExecHandle();
         }
@@ -132,15 +165,6 @@ public class ExecEngine implements IExecEngine {
         for (Event event : mActivatedEvents) {
             event.execute();
         }
-
-        if (mHandleListener != null) {
-            try {
-                mHandleListener.run();
-            } catch (Throwable ignore) {
-            }
-        }
-
-        mHandleRateLimiter.limit();
     }
 
     public float getHandleFrequency() {

@@ -106,7 +106,7 @@ public class EStopFragment extends Fragment {
 
         String value = mDataClientMixin.getKeyValueClient().getValue(key);
         try {
-            Constants.EStopState state = Constants.EStopState.valueOf(value.toUpperCase(Locale.US));
+            Constants.EStopState state = Constants.EStopState.valueOf(value);
             if (DEBUG) Log.d(TAG, "E-STOP state changed to " + state);
             // TODO do something with that state
         } catch (NullPointerException | IllegalArgumentException e) {

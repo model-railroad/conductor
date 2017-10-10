@@ -16,6 +16,7 @@ import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.RouteInfo;
 import org.junit.Before;
@@ -60,6 +61,9 @@ public class ScriptParser2Test {
     public void setUp() throws Exception {
 
         when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
+
+        // Enable the ExecEngine by default.
+        when(mKeyValue.getValue(Constants.EStopKey)).thenReturn(Constants.EStopState.NORMAL.toString());
 
         mReporter = new TestReporter();
 
@@ -337,9 +341,9 @@ public class ScriptParser2Test {
         ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
         verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
         assertThat(keyCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status", "M/maps", "R/routes" });
+                { "V/$estop-state$", "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status", "M/maps", "R/routes" });
         assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "0", "0", "OFF", "OFF", "300", "init",
+                { "NORMAL", "0", "0", "OFF", "OFF", "300", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
                                 "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"throttleKey\":\"D/200\"}," +
