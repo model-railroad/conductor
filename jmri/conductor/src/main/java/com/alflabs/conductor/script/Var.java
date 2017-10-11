@@ -6,10 +6,11 @@ import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
 @AutoFactory(allowSubclasses = true)
-public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, IExportable {
+public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, IExportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
+    private final int mInitialValue;
 
     private int mValue;
     private boolean mExported;
@@ -17,9 +18,15 @@ public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, 
     public Var(int value,
                String scriptName,
                @Provided IKeyValue keyValue) {
+        mInitialValue = value;
         mValue = value;
         mKeyName = Prefix.Var + scriptName;
         mKeyValue = keyValue;
+    }
+
+    @Override
+    public void reset() {
+        mValue = mInitialValue;
     }
 
     @Override

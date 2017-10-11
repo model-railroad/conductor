@@ -12,7 +12,7 @@ import com.google.auto.factory.Provided;
  * is either restart or ended.
  */
 @AutoFactory(allowSubclasses = true)
-public class Timer implements IConditional {
+public class Timer implements IConditional, IResettable {
 
     private final Now mNow;
     private final int mDurationSec;
@@ -52,6 +52,7 @@ public class Timer implements IConditional {
         return mEndTS != 0 && now() >= mEndTS;
     }
 
+    @Override
     public void reset() {
         mEndTS = 0;
     }

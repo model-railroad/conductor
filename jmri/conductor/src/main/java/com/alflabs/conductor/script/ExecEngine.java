@@ -102,8 +102,16 @@ public class ExecEngine implements IExecEngine {
 
         propagateExecHandle();
 
-        if (isEStopNormal()) {
+        switch (getEStopState()) {
+        case NORMAL:
             evalScript();
+            break;
+        case ACTIVE:
+            // no-op
+            break;
+        case RESET:
+            reset();
+            break;
         }
 
         if (mHandleListener != null) {
@@ -122,13 +130,13 @@ public class ExecEngine implements IExecEngine {
      * For a more predictible behavior, the absence of the EStop-State is treated as
      * a active case. This is one of these "should not happen" scenarios.
      */
-    private boolean isEStopNormal() {
+    private Constants.EStopState getEStopState() {
         final String value = mKeyValue.getValue(Constants.EStopKey);
-        if (value == null) return false;
+        if (value == null) return Constants.EStopState.ACTIVE;
         try {
-            return Constants.EStopState.valueOf(value) == Constants.EStopState.NORMAL;
+            return Constants.EStopState.valueOf(value);
         } catch (IllegalArgumentException ignore) {}
-        return false;
+        return Constants.EStopState.ACTIVE;
     }
 
     private void propagateExecHandle() {
@@ -154,7 +162,6 @@ public class ExecEngine implements IExecEngine {
     }
 
     private void evalScript() {
-
         mCondCache.clear();
         mActivatedEvents.clear();
         for (Event event : mScript.getEvents()) {
@@ -169,6 +176,30 @@ public class ExecEngine implements IExecEngine {
         for (Event event : mActivatedEvents) {
             event.execute();
         }
+    }
+
+    private void reset() {
+        // for (Throttle throttle : mScript.getThrottles()) : not resettable
+        // for (Turnout turnout : mScript.getTurnouts()) : not resettable
+        // for (Sensor sensor : mScript.getSensors()) : : not resettable
+
+        mScript.getResetTimersFunction().accept(0);
+
+        for (Var var : mScript.getVars()) {
+            var.reset();
+        }
+
+        for (Enum_ enum_ : mScript.getEnums()) {
+            enum_.reset();
+        }
+
+        mCondCache.clear();
+        mActivatedEvents.clear();
+        for (Event event : mScript.getEvents()) {
+            event.resetExecuted();
+        }
+
+        mKeyValue.putValue(Constants.EStopKey, Constants.EStopState.NORMAL.toString(), true);
     }
 
     public float getHandleFrequency() {

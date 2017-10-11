@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Locale;
 
 @AutoFactory(allowSubclasses = true, className = "EnumFactory")
-public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable {
+public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
@@ -36,6 +36,11 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
 
     public List<String> getValues() {
         return mValues;
+    }
+
+    @Override
+    public void reset() {
+        mValue = mValues.get(0);
     }
 
     @Override
