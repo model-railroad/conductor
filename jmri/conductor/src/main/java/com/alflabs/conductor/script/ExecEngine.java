@@ -25,6 +25,7 @@ public class ExecEngine implements IExecEngine {
     private final RateLimiter mHandleRateLimiter;
     private final IKeyValue mKeyValue;
     private Runnable mHandleListener;
+    private Constants.EStopState mLastEStopState;
 
     @Inject
     public ExecEngine(Now now, Script script, IKeyValue keyValue) {
@@ -39,8 +40,6 @@ public class ExecEngine implements IExecEngine {
      */
     @Override
     public void onExecStart() {
-        mKeyValue.putValue(Constants.EStopKey, Constants.EStopState.NORMAL.toString(), true);
-
         for (Throttle throttle : mScript.getThrottles()) {
             throttle.onExecStart();
         }
@@ -61,6 +60,7 @@ public class ExecEngine implements IExecEngine {
             enum_.onExecStart();
         }
 
+        reset();
         exportMaps(mScript.getMaps().values());
         exportRoutes(mScript.getRoutes().values());
     }
@@ -102,17 +102,22 @@ public class ExecEngine implements IExecEngine {
 
         propagateExecHandle();
 
-        switch (getEStopState()) {
+        final Constants.EStopState eStopState = getEStopState();
+        switch (eStopState) {
         case NORMAL:
             evalScript();
             break;
         case ACTIVE:
-            // no-op
+            if (mLastEStopState == Constants.EStopState.NORMAL) {
+                // First time going from NORMAL to ACTIVE E-Stop.
+                eStopAllThrottles();
+            }
             break;
         case RESET:
             reset();
             break;
         }
+        mLastEStopState = eStopState;
 
         if (mHandleListener != null) {
             try {
@@ -199,7 +204,14 @@ public class ExecEngine implements IExecEngine {
             event.resetExecuted();
         }
 
-        mKeyValue.putValue(Constants.EStopKey, Constants.EStopState.NORMAL.toString(), true);
+        mLastEStopState = Constants.EStopState.NORMAL;
+        mKeyValue.putValue(Constants.EStopKey, mLastEStopState.toString(), true);
+    }
+
+    private void eStopAllThrottles() {
+        for (Throttle throttle : mScript.getThrottles()) {
+            throttle.eStop();
+        }
     }
 
     public float getHandleFrequency() {

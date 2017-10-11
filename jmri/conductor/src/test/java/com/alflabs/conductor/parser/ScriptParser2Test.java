@@ -28,6 +28,9 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.TreeMap;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -340,10 +343,20 @@ public class ScriptParser2Test {
         ArgumentCaptor<String> keyCapture = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
         verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
-        assertThat(keyCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "V/$estop-state$", "D/200", "D/100", "S/bl-toggle", "S/pa-toggle", "V/bl-status", "V/pa-status", "M/maps", "R/routes" });
-        assertThat(valueCapture.getAllValues().toArray()).isEqualTo(new String[]
-                { "NORMAL", "0", "0", "OFF", "OFF", "300", "init",
+
+        ArrayList<String> sortedKeys = new ArrayList<>(keyCapture.getAllValues());
+        ArrayList<String> sortedValues = new ArrayList<>(valueCapture.getAllValues());
+        Collections.sort(sortedKeys);
+        Collections.sort(sortedValues);
+
+        assertThat(sortedKeys.toArray()).isEqualTo(new String[]
+                { "D/100", "D/200",
+                        "M/maps", "R/routes",
+                        "S/bl-toggle", "S/pa-toggle",
+                        "V/$estop-state$", "V/bl-status", "V/pa-status" });
+
+        assertThat(sortedValues.toArray()).isEqualTo(new String[]
+                { "0", "0", "300", "NORMAL", "OFF", "OFF", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
                                 "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"throttleKey\":\"D/200\"}," +

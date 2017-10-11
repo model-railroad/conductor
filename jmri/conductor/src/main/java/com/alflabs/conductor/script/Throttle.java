@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
 import com.google.auto.factory.AutoFactory;
@@ -23,6 +24,7 @@ import java.util.List;
 public class Throttle implements IExecEngine {
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
+    private final Logger mLogger;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
 
@@ -60,8 +62,10 @@ public class Throttle implements IExecEngine {
     @Inject
     public Throttle(
             List<Integer> dccAddresses,
+            @Provided Logger logger,
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
+        mLogger = logger;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
         mDccAddresses.addAll(dccAddresses);
@@ -113,13 +117,23 @@ public class Throttle implements IExecEngine {
     public void setSpeed(int speed) {
         mSpeed = speed;
         for (IJmriThrottle jmriThrottle : mJmriThrottles) {
-            jmriThrottle.setSpeed(speed);
-            updateKV(jmriThrottle.getDccAddress(), speed);
+            try {
+                jmriThrottle.setSpeed(speed);
+            } catch (Throwable e) {
+                mLogger.log("Throttle [" + getDccAddressesAsString() + "] setSpeed exception: " + e);
+            }
+            try {
+                updateKV(jmriThrottle.getDccAddress(), speed);
+            } catch (Throwable e) {
+                mLogger.log("Throttle [" + getDccAddressesAsString() + "] getDccAddress exception: " + e);
+            }
         }
         if (mSpeedListener != null) {
             try {
                 mSpeedListener.accept(mSpeed);
-            } catch (Throwable ignore) {}
+            } catch (Throwable e) {
+                mLogger.log("Throttle [" + getDccAddressesAsString() + "] mSpeedListener exception: " + e);
+            }
         }
     }
 
@@ -138,21 +152,33 @@ public class Throttle implements IExecEngine {
         case HORN:
             return on -> {
                 for (IJmriThrottle jmriThrottle : mJmriThrottles) {
-                    jmriThrottle.horn();
+                    try {
+                        jmriThrottle.horn();
+                    } catch (Throwable e) {
+                        mLogger.log("Throttle [" + getDccAddressesAsString() + "] horn exception: " + e);
+                    }
                 }
             };
         case SOUND:
             return on -> {
                 mSound = on != 0;
                 for (IJmriThrottle jmriThrottle : mJmriThrottles) {
-                    jmriThrottle.setSound(mSound);
+                    try {
+                        jmriThrottle.setSound(mSound);
+                    } catch (Throwable e) {
+                        mLogger.log("Throttle [" + getDccAddressesAsString() + "] setSound exception: " + e);
+                    }
                 }
             };
         case LIGHT:
             return on -> {
                 mLight = on != 0;
                 for (IJmriThrottle jmriThrottle : mJmriThrottles) {
-                    jmriThrottle.setLight(mLight);
+                    try {
+                        jmriThrottle.setLight(mLight);
+                    } catch (Throwable e) {
+                        mLogger.log("Throttle [" + getDccAddressesAsString() + "] setLight exception: " + e);
+                    }
                 }
             };
         }
@@ -163,7 +189,11 @@ public class Throttle implements IExecEngine {
         return on -> {
             boolean state = on != 0;
             for (IJmriThrottle jmriThrottle : mJmriThrottles) {
-                jmriThrottle.triggerFunction(fn, state);
+                try {
+                    jmriThrottle.triggerFunction(fn, state);
+                } catch (Throwable e) {
+                    mLogger.log("Throttle [" + getDccAddressesAsString() + "] triggerFunction exception: " + e);
+                }
             }
         };
     }
@@ -187,6 +217,20 @@ public class Throttle implements IExecEngine {
     @Override
     public void onExecHandle() {
         // no-op
+    }
+
+    public void eStop() {
+        // Do a "soft" stop to speed 0. This also sets this object's state properly.
+        setSpeed(0);
+
+        // Ask JMRI to send an e-stop command to all throttles
+        for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+            try {
+                jmriThrottle.eStop();
+            } catch (Throwable e) {
+                mLogger.log("Throttle [" + getDccAddressesAsString() + "] eStop exception: " + e);
+            }
+        }
     }
 
     private void updateKV(int address, int speed) {

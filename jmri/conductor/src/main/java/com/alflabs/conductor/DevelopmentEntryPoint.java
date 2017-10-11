@@ -49,6 +49,11 @@ public class DevelopmentEntryPoint {
         public IJmriThrottle getThrotlle(int dccAddress) {
             return new IJmriThrottle() {
                 @Override
+                public void eStop() {
+                    log(String.format("[%d] E-Stop", dccAddress));
+                }
+
+                @Override
                 public void setSpeed(int speed) {
                     log(String.format("[%d] Speed: %d", dccAddress, speed));
                 }

@@ -3,7 +3,6 @@ package com.alflabs.conductor.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;

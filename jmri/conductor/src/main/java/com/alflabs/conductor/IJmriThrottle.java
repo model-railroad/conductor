@@ -11,6 +11,13 @@ package com.alflabs.conductor;
  */
 public interface IJmriThrottle {
     /**
+     * Send an e-stop command to the throttle. <br/>
+     * This is a specific DCC commands that asks an engine to stop immediately,
+     * regardless of momentum (whereas a {@code setSpeed(0)} respects momentum).
+     */
+    void eStop();
+
+    /**
      * Sets the throttle speed and direction.
      * Positive speed is forward, negative is reverse and 0 is stopped.
      * <p/>
