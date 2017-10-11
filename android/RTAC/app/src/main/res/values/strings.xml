@@ -8,11 +8,19 @@
     - Then hit the RESET button on this tablet.\n
     Once the system is properly reset, turn the activation toggles to ON.</string>
 
+    <string name="estop_alert_title">EMERGENCY STOP</string>
+
+    <string name="estop_button_title">E-STOP</string>
+
+    <string name="estop_alert_text">\nAre you sure you want to stop the automation?\n\nTHIS WILL STOP ALL THE AUTOMATED TRAINS IMMEDIATELY.\n</string>
+
     <string name="reset_pending_text">The automation is now resetting.\n
     Once this message disappears, turn the activation toggles to ON.</string>
 
-    <string name="estop_alert_title">EMERGENCY STOP</string>
+    <string name="reset_alert_title">RESET</string>
 
-    <string name="estop_alert_text">Are you sure you want to STOP the AUTOMATION?\nThis will STOP ALL THE AUTOMATED TRAINS IMMEDIATELY.</string>
+    <string name="reset_button_title">RESET</string>
+
+    <string name="reset_alert_text">\nAre you sure you want to reset the automation?\n\n- Are all trains at their origin location?\n- Are all route activation toggles turned OFF?\n</string>
 
 </resources>

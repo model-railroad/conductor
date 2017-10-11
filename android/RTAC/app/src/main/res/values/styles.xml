@@ -1,12 +1,11 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="@android:style/Theme.Holo">
-    </style>
+    <style name="AppTheme" parent="@android:style/Theme.Holo" />
 
     <!-- Base application theme. -->
-    <style name="ActivityTheme" parent="AppTheme">
-    </style>
+    <style name="ActivityTheme" parent="AppTheme" />
 
+    <style name="InvertedTheme" parent="@android:style/Theme.Holo.Light" />
 
 </resources>

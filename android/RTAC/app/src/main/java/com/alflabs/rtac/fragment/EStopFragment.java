@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -77,12 +78,13 @@ public class EStopFragment extends Fragment {
         mInstructions = root.findViewById(R.id.reset_instructions_text);
         mResetButton = root.findViewById(R.id.reset_button);
 
-        Context context = mEStopButton.getContext();
+        Context context = new ContextThemeWrapper(mEStopButton.getContext(), R.style.InvertedTheme);
+
         mEStopButton.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
             builder.setTitle(R.string.estop_alert_title)
                     .setMessage(R.string.estop_alert_text)
-                    .setPositiveButton(android.R.string.yes,
+                    .setPositiveButton(R.string.estop_button_title,
                             (dialogInterface, i) -> changeState(Constants.EStopState.ACTIVE))
                     .setNegativeButton(android.R.string.cancel, null);
 
@@ -91,9 +93,9 @@ public class EStopFragment extends Fragment {
 
         mResetButton.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setTitle(R.string.estop_alert_title)
-                    .setMessage(R.string.estop_alert_text)
-                    .setPositiveButton(android.R.string.yes,
+            builder.setTitle(R.string.reset_alert_title)
+                    .setMessage(R.string.reset_alert_text)
+                    .setPositiveButton(R.string.reset_button_title,
                             (dialogInterface, i) -> changeState(Constants.EStopState.RESET))
                     .setNegativeButton(android.R.string.cancel, null);
             builder.show();
