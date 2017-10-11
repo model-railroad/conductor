@@ -59,6 +59,7 @@ public class ScriptParser2 {
     private final VarFactory mVarFactory;
     private final Script mScript;
     private final Reporter mReporter;
+    private File mScriptDir;
 
     @Inject
     public ScriptParser2(
@@ -88,6 +89,7 @@ public class ScriptParser2 {
      * @throws IOException if the file is not found or can't be read from.
      */
     public Script parse(File filepath) throws IOException {
+        mScriptDir = filepath.getParentFile();
         String source = Files.toString(filepath, Charsets.UTF_8);
         return parse(source);
     }
@@ -263,7 +265,22 @@ public class ScriptParser2 {
                 return;
             }
 
-            mScript.addMap(mapName, new MapInfo(mapName, mapFilename));
+            // Load the map SVG file
+            File svgFile = mScriptDir == null ? new File(mapFilename) : new File(mScriptDir, mapFilename);
+            if (!svgFile.isFile()) {
+                emitError(ctx, "Map '" + mapName + "' has Invalid SVG file path: '" + svgFile.toString() + "'");
+                return;
+            }
+
+            String svg;
+            try {
+                svg = Files.toString(svgFile, Charsets.UTF_8);
+            } catch (IOException e) {
+                emitError(ctx, "Map '" + mapName + "', Failed to read SVG file '" + svgFile.toString() + "', Exception: " + e);
+                return;
+            }
+
+            mScript.addMap(mapName, new MapInfo(mapName, svg));
         }
 
         @Override

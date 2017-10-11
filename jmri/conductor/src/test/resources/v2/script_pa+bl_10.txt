@@ -38,6 +38,10 @@ Turnout T504        = NT504
 Timer PA-Timer-Acquire-Route = 1
 Timer PA-Timer-Release-Route = 1
 
+# Maps
+
+Map Mainline = "Conductor Map Mainline 1.svg"
+
 # ---------
 # Events PA
 # ---------

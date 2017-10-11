@@ -123,6 +123,7 @@ public class RoutesFragment extends Fragment {
         if (mDataClientMixin.getKeyValueClient() == null) return;
         assert key != null;
         String value = mDataClientMixin.getKeyValueClient().getValue(key);
+        if (value == null) return;
 
         if (Constants.RoutesKey.equals(key)) {
             initializeRoutes(value);
