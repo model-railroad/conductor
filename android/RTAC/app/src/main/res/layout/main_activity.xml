@@ -31,8 +31,8 @@
             android:layout_height="1dp" />
 
     <fragment
-            android:id="@+id/debug_fragment"
-            android:name="com.alflabs.rtac.fragment.DebugFragment"
+            android:id="@+id/map_fragment"
+            android:name="com.alflabs.rtac.fragment.MapFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

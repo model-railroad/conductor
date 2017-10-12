@@ -18,11 +18,11 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertThat;
 
 /**
- * A version of the {@link DebugFragment} test that uses the real IAppComponent and the real IMainActivityComponent.
+ * A version of the {@link MapFragment} test that uses the real IAppComponent and the real IMainActivityComponent.
  */
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
-public class DebugFragmentTest {
+public class MapFragmentTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
     private MainActivity mActivity;
@@ -32,12 +32,14 @@ public class DebugFragmentTest {
     public void setUp() throws Exception {
         // Setup the activity including create() and visible()
         mActivity = Robolectric.buildActivity(MainActivity.class).setup().get();
-        mFragment = mActivity.getFragmentManager().findFragmentById(R.id.debug_fragment);
-        assertThat(mFragment).isNull();
+        mFragment = mActivity.getFragmentManager().findFragmentById(R.id.map_fragment);
+        assertThat(mFragment).isNotNull();
     }
 
     @Test
     public void testFragmentVisible() throws Exception {
-        assertThat(mFragment).isNull();
+        assertThat(mFragment).isNotNull();
+        assertThat(mFragment.getView()).isNotNull();
+        assertThat(mFragment.getView().getVisibility()).isEqualTo(View.VISIBLE);
     }
 }

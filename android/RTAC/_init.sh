@@ -28,3 +28,7 @@ LIB_BRANCH="android-lib-v2"
     fi
 )
 
+if [[ ! -d $ROOT/androidsvg ]]; then
+  $DRY git submodule add git@github.com:ralfoide/androidsvg.git $ROOT/androidsvg
+fi
+$DRY git submodule update --init $ROOT/androidsvg

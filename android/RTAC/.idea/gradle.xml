@@ -11,6 +11,7 @@
             <option value="$PROJECT_DIR$/LibManifest" />
             <option value="$PROJECT_DIR$/LibUtils/LibUtilsAndroid" />
             <option value="$PROJECT_DIR$/LibUtils/LibUtilsJava" />
+            <option value="$PROJECT_DIR$/androidsvg/androidsvg" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

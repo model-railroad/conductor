@@ -58,12 +58,9 @@ dependencies {
     compile project(":LibManifest")
     compile project(":LibUtilsJava")
     compile project(":LibUtilsAndroid")
+    compile project(":androidsvg")
 
-    compile "com.caverock:androidsvg:1.2.1"
     compile "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
-
-    //--compile "com.android.support:appcompat-v7:26.+"
-    //--compile "com.android.support.constraint:constraint-layout:1.0.2"
 
     // Note: annotationProcessor starting with gradle 2.2 replaces the previous APT (annotation processor plugin)
     compile "com.google.dagger:dagger:2.5"

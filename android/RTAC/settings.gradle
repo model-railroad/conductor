@@ -6,3 +6,6 @@ project(":LibUtilsJava").projectDir = new File(rootProject.projectDir, "LibUtils
 
 include ":LibUtilsAndroid"
 project(":LibUtilsAndroid").projectDir = new File(rootProject.projectDir, "LibUtils/LibUtilsAndroid")
+
+include ":androidsvg"
+project(":androidsvg").projectDir = new File(rootProject.projectDir, "androidsvg/androidsvg")
