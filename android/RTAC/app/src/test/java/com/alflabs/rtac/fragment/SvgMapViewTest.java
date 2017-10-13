@@ -2,7 +2,6 @@ package com.alflabs.rtac.fragment;
 
 import android.app.Activity;
 import com.alflabs.rtac.BuildConfig;
-import com.alflabs.rtac.R;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -15,10 +14,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -43,22 +40,17 @@ public class SvgMapViewTest {
 
     @Test
     public void testLoadSvg() throws Exception {
-        String svgSource = getSvgResource("test1.svg");
-        assertThat(svgSource).isNotEmpty();
+        String svgSource = getResource("test1.svg");
+
+        mView.loadSvg(svgSource);
+
     }
 
-    private String getSvgResource(String fileName) throws IOException {
-        //return Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);
-
-        ClassLoader classLoader = this.getClass().getClassLoader();
-
-        URLClassLoader ucl = (URLClassLoader) classLoader;
-        URL[] urLs = ucl.getURLs();
-        assertThat(urLs).isEqualTo("");
-
-        InputStream stream = classLoader.getResourceAsStream(fileName);
-        assertThat(stream).isNotNull();
-
-        return "";
+    private String getResource(String fileName) throws IOException {
+        String dirName = this.getClass().getPackage().getName().replace('.', File.separatorChar);
+        fileName = dirName + File.separator + fileName;
+        String data = Resources.toString(Resources.getResource(fileName), Charsets.UTF_8);
+        assertThat(data).isNotEmpty();
+        return data;
     }
 }
