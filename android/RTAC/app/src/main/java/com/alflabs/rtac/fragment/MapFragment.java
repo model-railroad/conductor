@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfos;
+import com.alflabs.manifest.Prefix;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
@@ -102,8 +103,19 @@ public class MapFragment extends Fragment {
         String value = mDataClientMixin.getKeyValueClient().getValue(key);
         if (value == null) return;
 
+        boolean changed = false;
         if (Constants.MapsKey.equals(key)) {
             initiazeMaps(value);
+
+        } else if (mSvgMapView != null && key.startsWith(Prefix.Sensor)) {
+            changed = mSvgMapView.setToggleColor(key, Constants.On.equals(value));
+
+        } else if (mSvgMapView != null && key.startsWith(Prefix.Turnout)) {
+            changed = mSvgMapView.setToggleColor(key, Constants.Reverse.equals(value));
+        }
+
+        if (changed) {
+            mSvgMapView.invalidate();
         }
     };
 
