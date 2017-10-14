@@ -9,8 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TableRow;
-import android.widget.TextView;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.manifest.RouteInfos;
@@ -36,8 +36,8 @@ public class RoutesFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
-    private ViewGroup mCellsRow;
     private final List<RouteCell> mRouteCells = new ArrayList<>();
+    private LinearLayout mCellsRoot;
 
     public RoutesFragment() {
         if (DEBUG) Log.d(TAG, "new fragment");
@@ -79,9 +79,8 @@ public class RoutesFragment extends Fragment {
                              Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView activity=" + getActivity());
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.routes_fragment, container, false);
-        mCellsRow = root.findViewById(R.id.cells_row);
-        return root;
+        mCellsRoot = (LinearLayout) inflater.inflate(R.layout.routes_fragment, container, false);
+        return mCellsRoot;
     }
 
     @Override
@@ -124,28 +123,24 @@ public class RoutesFragment extends Fragment {
     };
 
     private void initializeRoutes(final String jsonRoutes) {
-        mCellsRow.removeAllViews();
+        mCellsRoot.removeAllViews();
         mRouteCells.clear();
 
         try {
             RouteInfos infos = RouteInfos.parseJson(jsonRoutes);
             if (DEBUG) Log.d(TAG, "Adding " + infos.getRouteInfos().length + " routes");
 
-            LayoutInflater inflater = LayoutInflater.from(mCellsRow.getContext());
+            LayoutInflater inflater = LayoutInflater.from(mCellsRoot.getContext());
 
             boolean needsSeparator = false;
             for (RouteInfo info : infos.getRouteInfos()) {
                 if (needsSeparator) {
-                    View sep = inflater.inflate(R.layout.routes_sep, mCellsRow, false);
-                    mCellsRow.addView(sep);
+                    View sep = inflater.inflate(R.layout.route_sep, mCellsRoot, false);
+                    mCellsRoot.addView(sep);
                 }
 
-                RouteCell cell = RouteCell.inflate(inflater, info, mCellsRow, mDataClientMixin.getKeyValueClient());
-                TableRow.LayoutParams params = new TableRow.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        1.0f);
-                mCellsRow.addView(cell.getView(), params);
+                RouteCell cell = RouteCell.inflate(inflater, info, mCellsRoot, mDataClientMixin.getKeyValueClient());
+                mCellsRoot.addView(cell.getView());
                 mRouteCells.add(cell);
 
                 needsSeparator = true;

@@ -1,15 +1,12 @@
-<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
+              android:orientation="horizontal"
              tools:context="com.alflabs.rtac.fragment.RoutesFragment">
 
-    <TableRow
-            android:id="@+id/cells_row"
-            android:layout_width="match_parent">
-        <!--
-        Will dynamically inflate @layout/route_cell or @layout/route_sep
-        -->
-    </TableRow>
+    <!--
+    Will dynamically inflate @layout/route_cell or @layout/route_sep
+    -->
 
-</TableLayout>
+</LinearLayout>
