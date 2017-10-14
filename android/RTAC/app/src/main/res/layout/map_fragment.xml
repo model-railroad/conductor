@@ -1,13 +1,6 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             tools:context="com.alflabs.rtac.fragment.RoutesFragment">
-
-    <com.alflabs.rtac.fragment.SvgMapView
-            android:id="@+id/svg_map"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/black" />
-
-</ScrollView>
+<com.alflabs.rtac.fragment.SvgMapView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/svg_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/black" />

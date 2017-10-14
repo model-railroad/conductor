@@ -53,6 +53,7 @@ public class SvgMapView extends View {
             }
         }
 
+        forceLayout();
         return mSvg;
     }
 
@@ -74,6 +75,8 @@ public class SvgMapView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         float ratio = mSvg == null ? 1.0f : mSvg.getDocumentAspectRatio();
+        if (ratio == 0) { ratio = 1.0f; }
+        if (DEBUG) if (mSvg != null) Log.d(TAG, String.format("SVG ratio: %f [%f x %f]", mSvg.getDocumentAspectRatio(), mSvg.getDocumentWidth(), mSvg.getDocumentHeight()));
 
         int wMode = MeasureSpec.getMode(widthMeasureSpec);
         int wSize = MeasureSpec.getSize(widthMeasureSpec);
@@ -83,16 +86,30 @@ public class SvgMapView extends View {
         int w = wSize;
         int h = hSize;
 
-        int hDesired = (int) (w * ratio);
+        int hDesired = (int) (w / ratio);
 
-        if (hMode == MeasureSpec.AT_MOST) {
+        if (hMode == MeasureSpec.EXACTLY) {
+            w = (int) (hSize * ratio);
+        } else if (hMode == MeasureSpec.AT_MOST) {
             h = Math.min(hDesired, h);
-        } else if (hMode != MeasureSpec.EXACTLY) {
+            w = (int) (hSize * ratio);
+        } else  {
             h = hDesired;
         }
 
+        if (wMode == MeasureSpec.EXACTLY) {
+            w = wSize;
+        } else if (wMode == MeasureSpec.AT_MOST) {
+            w = Math.min(w, wSize);
+        }
+
         setMeasuredDimension(w, h);
-        if (DEBUG) Log.d(TAG, String.format("onMeasure %f [%d %d] x [%d %d] ==> %d x %d", ratio, wMode, wSize, hMode, hSize, w, h));
+        if (mSvg != null) {
+            mSvg.setDocumentWidth(w);
+            mSvg.setDocumentHeight(h);
+            mSvg.setDocumentPreserveAspectRatio(PreserveAspectRatio.STRETCH);
+        }
+        if (DEBUG) Log.d(TAG, String.format("onMeasure %f [%08x %d] x [%08x %d] ==> %d x %d", ratio, wMode, wSize, hMode, hSize, w, h));
     }
 
     @Override
