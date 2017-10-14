@@ -18,8 +18,8 @@ Sensor BL-Toggle    = NS781      # 49:14
 
 Sensor PA-Toggle    = NS784      # 50:1
 Sensor PA-Run3      = NS785      # 50:2
-Sensor P3.1         = NS786      # 50:3, B503a
-Sensor P3.2         = NS787      # 50:4, B503b
+Sensor B503a        = NS786      # 50:3, B503a
+Sensor B503b        = NS787      # 50:4, B503b
 
 # turnouts
 
@@ -105,7 +105,7 @@ PA-State == Idle & PA-Timer-Stop-Sound-Off -> PA-CONSIST Sound = 0
 # --- PA State: Station
 
 # Departure from Station (going up)
-PA-State == Station & P3.2 & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
+PA-State == Station & B503b & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
     PA-State = Up ;
     Reset Timers
 
@@ -118,7 +118,7 @@ PA-State == Station & !PA-Toggle ->
 # --- PA State: Going Up
 
 Timer PA-Station-Horn = 2
-PA-State == Up & P3.2 & PA-CONSIST Stopped ->
+PA-State == Up & B503b & PA-CONSIST Stopped ->
     PA-CONSIST Light = 1; PA-CONSIST Sound = 1;
     PA-CONSIST F3 = 0 ;
     PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 0 ;
@@ -128,7 +128,7 @@ PA-State == Up & P3.2 & PA-CONSIST Stopped ->
 
 PA-Station-Horn -> PA-CONSIST Horn
 
-PA-State == Up & P3.1 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
+PA-State == Up & B503a & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
 
 # Mid-Station doppler on the way up
 PA-State == Up &  B321 + 27 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
@@ -176,12 +176,12 @@ PA-State == Down & PA-CONSIST Reverse & B321 & PA-Toggle ->
     PA-CONSIST F3 = 0
 
 # Arrival at Station
-PA-State == Down & P3.1 + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
+PA-State == Down & B503a + 5 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
 Timer PA-Timer-Down-Station = 10
-PA-State == Down & PA-CONSIST Reverse & !P3.1 & P3.2 -> PA-Timer-Down-Station Start
+PA-State == Down & PA-CONSIST Reverse & !B503a & B503b -> PA-Timer-Down-Station Start
 PA-Timer-Down-Station ->
     PA-CONSIST Stop ; PA-CONSIST Horn;
-PA-State == Down & P3.2 + 18 & PA-CONSIST Stopped ->
+PA-State == Down & B503b + 18 & PA-CONSIST Stopped ->
     PA-State = Station ;
     PA-CONSIST F6 = 0 ; PA-CONSIST  F9 = 0
 
