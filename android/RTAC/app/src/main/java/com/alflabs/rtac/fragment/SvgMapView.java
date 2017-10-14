@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.rtac.BuildConfig;
 import com.caverock.androidsvg.Colour;
@@ -39,6 +38,11 @@ public class SvgMapView extends View {
         super(context, attrs, defStyleAttr);
     }
 
+    public void removeSvg() {
+        mSvg = null;
+        invalidate();
+    }
+
     public SVG loadSvg(String svgString) throws SVGParseException {
         mSvg = SVG.getFromString(svgString);
         mSvg.setDocumentPreserveAspectRatio(PreserveAspectRatio.UNSCALED);
@@ -54,6 +58,7 @@ public class SvgMapView extends View {
         }
 
         forceLayout();
+        invalidate();
         return mSvg;
     }
 

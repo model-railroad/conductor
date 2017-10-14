@@ -136,12 +136,12 @@ public class RoutesFragment extends Fragment {
     };
 
     private void initializeRoutes(final String jsonRoutes) {
+        mCellsRow.removeAllViews();
+        mRouteCells.clear();
+
         try {
             RouteInfos infos = RouteInfos.parseJson(jsonRoutes);
             if (DEBUG) Log.d(TAG, "Adding " + infos.getRouteInfos().length + " routes");
-
-            mCellsRow.removeAllViews();
-            mRouteCells.clear();
 
             LayoutInflater inflater = LayoutInflater.from(mCellsRow.getContext());
 

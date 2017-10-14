@@ -1,5 +1,6 @@
 package com.alflabs.manifest;
 
+import com.alflabs.annotations.NonNull;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,19 +21,25 @@ public class RouteInfos {
      *
      * @param routeInfos A non-null possibly empty array of {@link RouteInfo}.
      */
-    public RouteInfos(RouteInfo[] routeInfos) {
+    public RouteInfos(@NonNull RouteInfo[] routeInfos) {
         this.routeInfos = routeInfos;
     }
 
+    @NonNull
     public RouteInfo[] getRouteInfos() {
         return routeInfos;
     }
 
+    @NonNull
     public static RouteInfos parseJson(String json) throws IOException {
+        if (json == null || json.isEmpty()) {
+            return new RouteInfos(new RouteInfo[0]);
+        }
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, RouteInfos.class);
     }
 
+    @NonNull
     public String toJsonString() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(this);

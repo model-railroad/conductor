@@ -44,4 +44,13 @@ public class RouteInfosTest {
         RouteInfos es = new RouteInfos(new RouteInfo[] { e1, e2 });
         assertThat(rs).isEqualTo(es);
     }
+
+    @Test
+    public void testFromEmptyJson() throws Exception {
+        RouteInfos r1 = RouteInfos.parseJson(null);
+        assertThat(r1).isEqualTo(new RouteInfos(new RouteInfo[0]));
+
+        RouteInfos r2 = RouteInfos.parseJson("");
+        assertThat(r2).isEqualTo(new RouteInfos(new RouteInfo[0]));
+    }
 }

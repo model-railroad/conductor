@@ -44,4 +44,13 @@ public class MapInfosTest {
         MapInfos es = new MapInfos(new MapInfo[] { e1, e2 });
         assertThat(rs).isEqualTo(es);
     }
+
+    @Test
+    public void testFromEmptyJson() throws Exception {
+        MapInfos m1 = MapInfos.parseJson(null);
+        assertThat(m1).isEqualTo(new MapInfos(new MapInfo[0]));
+
+        MapInfos m2 = MapInfos.parseJson("");
+        assertThat(m2).isEqualTo(new MapInfos(new MapInfo[0]));
+    }
 }

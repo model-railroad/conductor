@@ -120,13 +120,13 @@ public class MapFragment extends Fragment {
     };
 
     private void initiazeMaps(String jsonMaps) {
-        // TODO right now only handle a single map
+        mSvgMapView.removeSvg();
+
         try {
             MapInfos infos = MapInfos.parseJson(jsonMaps);
             if (DEBUG) Log.d(TAG, "Adding 1 out " + infos.getMapInfos().length + " maps");
 
             mSvgMapView.loadSvg(infos.getMapInfos()[0].getSvg());
-            mSvgMapView.invalidate();
         } catch (SVGParseException | IOException e) {
             Log.e(TAG, "Parse MapInfos JSON error", e);
         }
