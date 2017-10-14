@@ -1,6 +1,13 @@
-<com.alflabs.rtac.fragment.SvgMapView
+<FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/svg_map"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/black" />
+        android:background="@color/black" >
+
+    <com.alflabs.rtac.fragment.SvgMapView
+        android:id="@+id/svg_map"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</FrameLayout>
