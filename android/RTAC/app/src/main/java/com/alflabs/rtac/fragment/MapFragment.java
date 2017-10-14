@@ -108,10 +108,10 @@ public class MapFragment extends Fragment {
             initiazeMaps(value);
 
         } else if (mSvgMapView != null && key.startsWith(Prefix.Sensor)) {
-            changed = mSvgMapView.setToggleColor(key, Constants.On.equals(value));
+            changed = mSvgMapView.setSensorColor(key, Constants.On.equals(value));
 
         } else if (mSvgMapView != null && key.startsWith(Prefix.Turnout)) {
-            changed = mSvgMapView.setToggleColor(key, Constants.Reverse.equals(value));
+            changed = mSvgMapView.setSensorColor(key, Constants.Reverse.equals(value));
         }
 
         if (changed) {

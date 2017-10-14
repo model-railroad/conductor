@@ -5,7 +5,6 @@ import com.alflabs.rtac.BuildConfig;
 import com.caverock.androidsvg.Colour;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SvgElement;
-import com.caverock.androidsvg.SvgObject;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -63,7 +62,7 @@ public class SvgMapViewTest {
     }
 
     @Test
-    public void testToggleColor() throws Exception {
+    public void testSensorColor() throws Exception {
         String svgSource = getResource("test1.svg");
         SVG svg = mView.loadSvg(svgSource);
 
@@ -75,23 +74,23 @@ public class SvgMapViewTest {
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFF00FF00);
 
         // set to OFF (default)... no change ==> green
-        assertThat(mView.setToggleColor("S/b321", false)).isFalse();
+        assertThat(mView.setSensorColor("S/b321", false)).isFalse();
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFF00FF00);
 
         // set to ON... changed ==> red
-        assertThat(mView.setToggleColor("S/b321", true)).isTrue();
+        assertThat(mView.setSensorColor("S/b321", true)).isTrue();
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFFFF0000);
 
         // set to ON... no change ==> red
-        assertThat(mView.setToggleColor("S/b321", true)).isFalse();
+        assertThat(mView.setSensorColor("S/b321", true)).isFalse();
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFFFF0000);
 
         // set to OFF... changed ==> green
-        assertThat(mView.setToggleColor("S/b321", false)).isTrue();
+        assertThat(mView.setSensorColor("S/b321", false)).isTrue();
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFF00FF00);
 
         // set to OFF... no change ==> green
-        assertThat(mView.setToggleColor("S/b321", false)).isFalse();
+        assertThat(mView.setSensorColor("S/b321", false)).isFalse();
         assertThat(((Colour) e.style.stroke).colour).isEqualTo(0xFF00FF00);
     }
 
