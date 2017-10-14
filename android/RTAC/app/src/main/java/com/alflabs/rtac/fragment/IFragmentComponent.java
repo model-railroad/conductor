@@ -12,6 +12,7 @@ public interface IFragmentComponent {
         IFragmentComponent create();
     }
 
+    void inject(StatusFragment statusFragment);
     void inject(RoutesFragment routesFragment);
     void inject(EStopFragment eStopFragment);
     void inject(MapFragment mapFragment);

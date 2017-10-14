@@ -36,7 +36,6 @@ public class RoutesFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
-    private TextView mStatusText;
     private ViewGroup mCellsRow;
     private final List<RouteCell> mRouteCells = new ArrayList<>();
 
@@ -81,7 +80,6 @@ public class RoutesFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onCreateView activity=" + getActivity());
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.routes_fragment, container, false);
-        mStatusText = root.findViewById(R.id.data_client_status);
         mCellsRow = root.findViewById(R.id.cells_row);
         return root;
     }
@@ -90,7 +88,6 @@ public class RoutesFragment extends Fragment {
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
-        mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber, AndroidSchedulers.mainThread());
         mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
     }
 
@@ -98,7 +95,6 @@ public class RoutesFragment extends Fragment {
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
         mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
-        mDataClientMixin.getStatusStream().remove(mDataClientStatusSubscriber);
         super.onStop();
     }
 
@@ -109,14 +105,6 @@ public class RoutesFragment extends Fragment {
     }
 
     // ----
-
-
-    private final ISubscriber<DataClientMixin.DataClientStatus> mDataClientStatusSubscriber = (stream, dataClientStatus) -> {
-        assert dataClientStatus != null;
-        String text = dataClientStatus.getText();
-        mStatusText.setText(text == null ? "^_^" : text);
-        mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
-    };
 
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
         if (!isVisible()) return;

@@ -12,18 +12,4 @@
         -->
     </TableRow>
 
-    <View
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="1dp" />
-
-    <TextView
-            android:id="@+id/data_client_status"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="Data Client Status"
-            android:gravity="center_horizontal"
-            android:minLines="1"
-            android:maxLines="1" />
-
 </TableLayout>
