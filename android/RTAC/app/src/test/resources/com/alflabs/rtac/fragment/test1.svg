@@ -101,11 +101,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.0000001"
-     inkscape:cx="297.20742"
-     inkscape:cy="94.736326"
+     inkscape:zoom="4.0000002"
+     inkscape:cx="158.45743"
+     inkscape:cy="107.73633"
      inkscape:document-units="px"
-     inkscape:current-layer="layer4"
+     inkscape:current-layer="layer11"
      showgrid="true"
      units="px"
      inkscape:window-width="1858"
@@ -156,7 +156,8 @@
      id="layer5"
      inkscape:label="Black Bg"
      style="display:inline"
-     transform="translate(-38,-694.51641)">
+     transform="translate(-38,-694.51641)"
+     sodipodi:insensitive="true">
     <rect
        style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
        id="rect5385"
@@ -170,23 +171,26 @@
      id="layer13"
      inkscape:label="Tunnels"
      style="display:inline"
-     transform="translate(-38,-154.51641)">
+     transform="translate(-38,-154.51641)"
+     sodipodi:insensitive="true">
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#6c5d53;stroke-width:16;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 288,229.51642 50,0"
-       id="path5470-5"
+       id="tunnel-320"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
+       sodipodi:nodetypes="cc"
+       inkscape:label="" />
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="Turnout Indicators"
      style="display:inline"
-     transform="translate(-75,-139.99993)">
+     transform="translate(-75,-139.99993)"
+     sodipodi:insensitive="true">
     <circle
        style="display:inline;fill:#999999;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       id="path6612-31-2"
+       id="bg-t330"
        cx="150"
        cy="214.92331"
        r="9.9233503"
@@ -197,7 +201,8 @@
      id="layer10"
      inkscape:label="Track &amp; Labels"
      style="display:inline"
-     transform="translate(-75,-139.99993)">
+     transform="translate(-75,-139.99993)"
+     sodipodi:insensitive="true">
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 300,214.99993 150,1e-5"
@@ -213,14 +218,14 @@
        inkscape:label="" />
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 300,214.99993 -130,0"
+       d="m 300,214.99993 -115.00001,6e-5"
        id="S-b320"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc"
        inkscape:label="" />
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 165,214.99993 -15,0"
+       d="M 179.99999,214.99999 150,214.99993"
        id="T-t330"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc"
@@ -231,39 +236,50 @@
      id="layer4"
      inkscape:label="Track Mainline"
      style="display:inline"
-     transform="translate(-38,-154.51641)">
+     transform="translate(-38,-154.51641)"
+     sodipodi:insensitive="true">
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 133,209.51641 5,-5 275,1e-5"
-       id="S-b321"
+       d="M 109.99999,50.000065 375,50.00001"
+       id="path8054"
+       transform="translate(38,154.51641)"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccc"
-       inkscape:label="" />
+       sodipodi:nodetypes="cc" />
+    <path
+       style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 95,55 5,-5 5,10e-7"
+       id="S-b321"
+       transform="translate(38,154.51641)"
+       inkscape:connector-curvature="0" />
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        d="m 413,204.51642 50,0 25,25 0,25 c 0,11.25 -0.0304,17.86701 0,50 l -25,25 -20,0"
        id="path6044-6-4-1"
        inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cccsccc" />
+       sodipodi:nodetypes="cccsccc"
+       inkscape:label="" />
     <path
        style="display:inline;fill:none;fill-opacity:1;stroke:#00ff00;stroke-width:6;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-       d="m 62.999999,229.51646 35,0 15.000001,0 15,-15"
+       d="m 62.999999,229.51646 35,0 15.000001,0 20,-19.99999"
        id="path4403"
-       inkscape:connector-curvature="0" />
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cccc" />
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Turnout Labels"
      style="display:inline"
-     transform="translate(-75,-139.99993)">
+     transform="translate(-75,-139.99993)"
+     sodipodi:insensitive="true">
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#00ffff;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="425.14893"
        y="208.63516"
-       id="text7258-4"
-       sodipodi:linespacing="125%"><tspan
+       id="LT-t322"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan7260-7"
          x="425.14893"
@@ -273,8 +289,9 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#00ffff;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="200.15381"
        y="208.63516"
-       id="text7266-0"
-       sodipodi:linespacing="125%"><tspan
+       id="LT-t326"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan7268-8"
          x="200.15381"
@@ -284,8 +301,9 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#00ffff;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="150.17334"
        y="233.63516"
-       id="text7270-5"
-       sodipodi:linespacing="125%"><tspan
+       id="LT-t330"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan7272-0"
          x="150.17334"
@@ -295,9 +313,10 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#00ffff;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="255.17325"
        y="-481.36475"
-       id="text7250-1-5-0"
+       id="LT-t320"
        sodipodi:linespacing="125%"
-       transform="matrix(0,1,-1,0,0,0)"><tspan
+       transform="matrix(0,1,-1,0,0,0)"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan7252-6-7-1"
          x="255.17325"
@@ -308,7 +327,8 @@
      id="layer1"
      inkscape:label="Block Labels"
      style="display:inline"
-     transform="translate(-75,-139.99993)">
+     transform="translate(-75,-139.99993)"
+     sodipodi:insensitive="true">
     <path
        style="display:inline;fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 170,592.49997 -45,0"
@@ -319,8 +339,9 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ffff00;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="284.90723"
        y="178.63522"
-       id="text6069-86-2"
-       sodipodi:linespacing="125%"><tspan
+       id="LS-b322"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan6071-78-3"
          x="284.90723"
@@ -330,8 +351,9 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ffff00;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="284.90723"
        y="203.63516"
-       id="text6069-1-9"
-       sodipodi:linespacing="125%"><tspan
+       id="LS-b321"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan6071-92-4"
          x="284.90723"
@@ -341,11 +363,38 @@
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:10px;line-height:125%;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';text-align:center;writing-mode:lr-tb;text-anchor:middle;display:inline;fill:#ffff00;fill-opacity:1;stroke:none;stroke-width:6;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        x="284.90723"
        y="228.63516"
-       id="text6069-9-1"
-       sodipodi:linespacing="125%"><tspan
+       id="LS-b320"
+       sodipodi:linespacing="125%"
+       inkscape:label=""><tspan
          sodipodi:role="line"
          id="tspan6071-98-5"
          x="284.90723"
          y="228.63516">320</tspan></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer11"
+     inkscape:label="Turnout N"
+     style="display:inline;opacity:1">
+    <path
+       style="color:#000000;clip-rule:nonzero;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       d="m 94.999995,60.000065 -5,-5 -19.999999,16.749999 24.249999,0 z"
+       id="T-t330N"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:label="" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer12"
+     inkscape:label="Turnout R"
+     style="display:inline">
+    <path
+       style="color:#000000;clip-rule:nonzero;display:inline;overflow:visible;visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;color-interpolation:sRGB;color-interpolation-filters:linearRGB;solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:6;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;image-rendering:auto;shape-rendering:auto;text-rendering:auto;enable-background:accumulate"
+       d="m 99.999995,70.000064 -15,0 -9.999999,10 24.999999,0 z"
+       id="T-t330R"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:label="" />
   </g>
 </svg>
