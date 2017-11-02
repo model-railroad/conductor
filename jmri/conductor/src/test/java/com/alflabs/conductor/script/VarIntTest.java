@@ -15,47 +15,47 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class VarTest {
+public class VarIntTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IKeyValue mKeyValue;
 
-    private Var mVar;
+    private VarInt mVarInt;
 
     @Before
     public void setUp() throws Exception {
-        VarFactory factory = new VarFactory(InstanceFactory.create(mKeyValue));
-        mVar = factory.create(42, "MyVar");
+        VarIntFactory factory = new VarIntFactory(InstanceFactory.create(mKeyValue));
+        mVarInt = factory.create(42, "MyVar");
 
-        mVar.onExecStart();
+        mVarInt.onExecStart();
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
     }
 
     @Test
     public void testGetSetValue() throws Exception {
-        assertThat(mVar.getAsInt()).isEqualTo(42);
+        assertThat(mVarInt.getAsInt()).isEqualTo(42);
 
-        mVar.accept(-32);
-        assertThat(mVar.getAsInt()).isEqualTo(-32);
+        mVarInt.accept(-32);
+        assertThat(mVarInt.getAsInt()).isEqualTo(-32);
     }
 
     @Test
     public void testSetExported() throws Exception {
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
-        mVar.setExported(true);
-        mVar.accept(43);
-        mVar.onExecHandle();
+        mVarInt.setExported(true);
+        mVarInt.accept(43);
+        mVarInt.onExecHandle();
         verify(mKeyValue).putValue("V/MyVar", "43", true);
     }
 
     @Test
     public void testIsActive() throws Exception {
-        assertThat(mVar.isActive()).isTrue();
+        assertThat(mVarInt.isActive()).isTrue();
 
-        mVar.accept(0);
-        assertThat(mVar.isActive()).isFalse();
+        mVarInt.accept(0);
+        assertThat(mVarInt.isActive()).isFalse();
 
-        mVar.accept(-12);
-        assertThat(mVar.isActive()).isTrue();
+        mVarInt.accept(-12);
+        assertThat(mVarInt.isActive()).isTrue();
     }
 }

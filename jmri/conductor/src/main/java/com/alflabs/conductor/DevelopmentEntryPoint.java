@@ -20,7 +20,7 @@ public class DevelopmentEntryPoint {
                 keepRunning.set(false);
             }
         };
-        String filePath = "src/test/resources/v2/script_pa+bl_10.txt";
+        String filePath = "src/test/resources/v2/script_pa+bl_11.txt";
         boolean parsed = entryPoint.setup(jmriProvider, filePath);
         Truth.assertThat(parsed).isTrue();
         if (parsed) {

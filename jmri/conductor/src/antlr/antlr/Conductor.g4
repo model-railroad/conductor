@@ -9,7 +9,7 @@ defStrLine: defStrType ID '=' ID;
 defStrType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_VAR  | KW_TIMER;
+defIntType: KW_INT | KW_TIMER;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
@@ -85,7 +85,8 @@ KW_TIMER:   'timer';
 KW_TIMERS:  'timers';
 KW_TOGGLE:  'toggle';
 KW_TURNOUT: 'turnout';
-KW_VAR:     'var';
+KW_INT:     'int';
+KW_STRING:  'string';
 KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
 fragment KW_F0 :      'f'  [0-9] ;
 fragment KW_F10:      'f1' [0-9] ;

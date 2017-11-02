@@ -12,7 +12,7 @@ import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
-import com.alflabs.conductor.script.Var;
+import com.alflabs.conductor.script.VarInt;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.IKeyValue;
@@ -29,7 +29,6 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 
@@ -100,39 +99,39 @@ public class ScriptParser2Test {
     @Test
     public void testValidId() throws Exception {
         String source = "" +
-                "Var id = 1\n" +
-                "Var _  = 2\n" +
-                "Var My-Var = 3\n" +
-                "var id2=4\n" +
-                "var __id3__=5\n";
+                "VarInt id = 1\n" +
+                "VarInt _  = 2\n" +
+                "VarInt My-Var = 3\n" +
+                "int id2=4\n" +
+                "int __id3__=5\n";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("id").getAsInt()).isEqualTo(1);
-        assertThat(script.getVar("_").getAsInt()).isEqualTo(2);
-        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(3);
-        assertThat(script.getVar("id2").getAsInt()).isEqualTo(4);
-        assertThat(script.getVar("__id3__").getAsInt()).isEqualTo(5);
+        assertThat(script.getVarInt("id").getAsInt()).isEqualTo(1);
+        assertThat(script.getVarInt("_").getAsInt()).isEqualTo(2);
+        assertThat(script.getVarInt("my-var").getAsInt()).isEqualTo(3);
+        assertThat(script.getVarInt("id2").getAsInt()).isEqualTo(4);
+        assertThat(script.getVarInt("__id3__").getAsInt()).isEqualTo(5);
     }
 
     @Test
-    public void testDefineVar() throws Exception {
-        String source = "  Var VALUE    = 5201 # d&rgw ";
+    public void testDefineVarInt() throws Exception {
+        String source = "  Int VALUE    = 5201 # d&rgw ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("value")).isNotNull();
-        Var var = script.getVar("Value");
-        assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(script.getVarInt("value")).isNotNull();
+        VarInt varInt = script.getVarInt("Value");
+        assertThat(varInt.getAsInt()).isEqualTo(5201);
     }
 
     @Test
-    public void testDefineVar_missingId() throws Exception {
-        String source = "  Var = 5201 ";
+    public void testDefineVarInt_missingId() throws Exception {
+        String source = "  Int = 5201 ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: missing ID at '='.");
@@ -140,15 +139,15 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineVar_alreadyDefined() throws Exception {
+    public void testDefineVarInt_alreadyDefined() throws Exception {
         String source = "" +
-                "  Var VALUE    = 5201 \n " +
-                "var value = 42";
+                "  INT VALUE    = 5201 \n " +
+                "int value = 42";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'value' is already defined.\n" +
-                "  Line 2: 'var value = 42'");
+                "  Line 2: 'int value = 42'");
         assertThat(script).isNotNull();
     }
 
@@ -312,7 +311,7 @@ public class ScriptParser2Test {
                 "Throttle PA-100  = 100\n" +
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
-                "Var  BL-Status   = 300\n" +
+                "VarInt  BL-Status   = 300\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
@@ -369,7 +368,7 @@ public class ScriptParser2Test {
                 "Throttle PA-100  = 100\n" +
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
-                "Var  BL-Status   = 300\n" +
+                "VarInt  BL-Status   = 300\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
@@ -461,14 +460,14 @@ public class ScriptParser2Test {
         // Note that IDs can use "-" and "-" can also be part of "->".
         // "->" needs a space before otherwise the "-" is parsed as part of the previous ID.
         String source = "" +
-                "Var My-Var=1\n" +
+                "VarInt My-Var=1\n" +
                 "my-var->my-var=2\n";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(1);
+        assertThat(script.getVarInt("my-var").getAsInt()).isEqualTo(1);
     }
 
     @Test
@@ -561,7 +560,7 @@ public class ScriptParser2Test {
         // never both.
         String source = "" +
                 "throttle T1 = 42 \n " +
-                "var speed = 5 \n " +
+                "int speed = 5 \n " +
                 "t1 stopped -> t1 forward = speed \n" +
                 "t1 forward -> t1 stop";
 
@@ -592,7 +591,7 @@ public class ScriptParser2Test {
     public void testStopForwardSequence() throws Exception {
         String source = "" +
                 "throttle T1 = 42 \n " +
-                "var speed = 5 \n " +
+                "int speed = 5 \n " +
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
@@ -624,7 +623,7 @@ public class ScriptParser2Test {
     public void testStopForwardSequence_MultiThrottle() throws Exception {
         String source = "" +
                 "throttle T1 = 42 43 44 45 \n " +
-                "var speed = 5 \n " +
+                "int speed = 5 \n " +
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
@@ -754,7 +753,7 @@ public class ScriptParser2Test {
 
         String source = "" +
                 "throttle T1=42\n " +
-                "var myVar=5\n " +
+                "int myVar=5\n " +
                 "t1 stopped ->myVar=0\n" +
                 "t1 forward ->myVar=1 ";
 
@@ -766,16 +765,16 @@ public class ScriptParser2Test {
 
         engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
-        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
+        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(5);
 
         // Execute with throttle defaulting to speed 0 (stopped).
         engine.onExecHandle();
-        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
+        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(0);
 
         // Execute with throttle at speed 5
         script.getThrottle("t1").setSpeed(5);
         engine.onExecHandle();
-        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
+        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(1);
     }
 
     @Test

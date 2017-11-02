@@ -52,8 +52,8 @@ public class ExecEngine implements IExecEngine {
             sensor.onExecStart();
         }
 
-        for (Var var : mScript.getVars()) {
-            var.onExecStart();
+        for (VarInt varInt : mScript.getVarInts()) {
+            varInt.onExecStart();
         }
 
         for (Enum_ enum_ : mScript.getEnums()) {
@@ -157,8 +157,8 @@ public class ExecEngine implements IExecEngine {
             sensor.onExecHandle();
         }
 
-        for (Var var : mScript.getVars()) {
-            var.onExecHandle();
+        for (VarInt varInt : mScript.getVarInts()) {
+            varInt.onExecHandle();
         }
 
         for (Enum_ enum_ : mScript.getEnums()) {
@@ -190,8 +190,8 @@ public class ExecEngine implements IExecEngine {
 
         mScript.getResetTimersFunction().accept(0);
 
-        for (Var var : mScript.getVars()) {
-            var.reset();
+        for (VarInt varInt : mScript.getVarInts()) {
+            varInt.reset();
         }
 
         for (Enum_ enum_ : mScript.getEnums()) {

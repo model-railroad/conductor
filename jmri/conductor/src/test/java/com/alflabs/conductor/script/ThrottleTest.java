@@ -2,6 +2,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
@@ -27,6 +28,7 @@ public class ThrottleTest {
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
     @Mock IKeyValue mKeyValue;
+    @Mock Logger mLogger;
 
     private Throttle mThrottle;
     private IIntFunction fwd;
@@ -45,6 +47,7 @@ public class ThrottleTest {
         when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
         ThrottleFactory factory = new ThrottleFactory(
+                InstanceFactory.create(mLogger),
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
         mThrottle = factory.create(Collections.singletonList(42));
