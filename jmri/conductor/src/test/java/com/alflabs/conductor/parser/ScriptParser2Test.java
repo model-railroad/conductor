@@ -19,6 +19,8 @@ import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.utils.FileOps;
+import com.google.common.base.Charsets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +31,6 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 
@@ -54,6 +55,7 @@ public class ScriptParser2Test {
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
     @Mock IKeyValue mKeyValue;
+    @Mock FileOps mFileOps;
 
     private FakeNow mNow;
     private TestReporter mReporter;
@@ -74,7 +76,12 @@ public class ScriptParser2Test {
         file.deleteOnExit();
 
         IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .conductorModule(new ConductorModule(mJmriProvider))
+                .conductorModule(new ConductorModule(mJmriProvider) {
+                    @Override
+                    public FileOps provideFileOps() {
+                        return mFileOps;
+                    }
+                })
                 .scriptFile(file)
                 .build();
 
@@ -88,6 +95,10 @@ public class ScriptParser2Test {
                     @Override
                     public Now provideNowProvider() {
                         return mNow;
+                    }
+                    @Override
+                    public FileOps provideFileOps() {
+                        return mFileOps;
                     }
                 })
                 .scriptFile(file)
@@ -280,16 +291,23 @@ public class ScriptParser2Test {
         String source = "" +
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
                 "  Map Map-2 = \"path\\to\\map2.svg\" ";
+
+        when(mFileOps.isFile(new File("path/to/map1.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("path/to/map1.svg"), Charsets.UTF_8)).thenReturn("<svg1/>");
+
+        when(mFileOps.isFile(new File("path\\to\\map2.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("path\\to\\map2.svg"), Charsets.UTF_8)).thenReturn("<svg2/>");
+
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
         TreeMap<String, MapInfo> maps = script.getMaps();
-        assertThat(maps).hasFirstEntry("map-1", new MapInfo("Map-1", "path/to/map1.svg"));
-        assertThat(maps).hasLastEntry ("map-2", new MapInfo("Map-2", "path\\to\\map2.svg"));
-        assertThat(maps.get("map-1").toString()).isEqualTo("MapInfo{name='Map-1', svg='path/to/map1.svg'}");
-        assertThat(maps.get("map-2").toString()).isEqualTo("MapInfo{name='Map-2', svg='path\\to\\map2.svg'}");
+        assertThat(maps).hasFirstEntry("map-1", new MapInfo("Map-1", "<svg1/>"));
+        assertThat(maps).hasLastEntry ("map-2", new MapInfo("Map-2", "<svg2/>"));
+        assertThat(maps.get("map-1").toString()).isEqualTo("MapInfo{name='Map-1', svg='<svg1/>'}");
+        assertThat(maps.get("map-2").toString()).isEqualTo("MapInfo{name='Map-2', svg='<svg2/>'}");
         assertThat(maps).hasSize(2);
     }
 
@@ -298,6 +316,13 @@ public class ScriptParser2Test {
         String source = "" +
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
                 "  Map Map-1 = \"path\\to\\map2.svg\" ";
+
+        when(mFileOps.isFile(new File("path/to/map1.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("path/to/map1.svg"), Charsets.UTF_8)).thenReturn("<svg1/>");
+
+        when(mFileOps.isFile(new File("path\\to\\map2.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("path\\to\\map2.svg"), Charsets.UTF_8)).thenReturn("<svg2/>");
+
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(

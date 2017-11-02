@@ -24,6 +24,7 @@ import com.alflabs.conductor.script.VarFactory;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.utils.FileOps;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
@@ -57,6 +58,7 @@ public class ScriptParser2 {
     private final TimerFactory mTimerFactory;
     private final EnumFactory mEnumFactory;
     private final VarFactory mVarFactory;
+    private final FileOps mFileOps;
     private final Script mScript;
     private final Reporter mReporter;
     private File mScriptDir;
@@ -70,7 +72,8 @@ public class ScriptParser2 {
             SensorFactory sensorFactory,
             TimerFactory timerFactory,
             EnumFactory enumFactory,
-            VarFactory varFactory) {
+            VarFactory varFactory,
+            FileOps fileOps) {
         mReporter = reporter;
         mScript = script;
         mThrottleFactory = throttleFactory;
@@ -79,6 +82,7 @@ public class ScriptParser2 {
         mTimerFactory = timerFactory;
         mEnumFactory = enumFactory;
         mVarFactory = varFactory;
+        mFileOps = fileOps;
     }
 
     /**
@@ -267,14 +271,14 @@ public class ScriptParser2 {
 
             // Load the map SVG file
             File svgFile = mScriptDir == null ? new File(mapFilename) : new File(mScriptDir, mapFilename);
-            if (!svgFile.isFile()) {
+            if (!mFileOps.isFile(svgFile)) {
                 emitError(ctx, "Map '" + mapName + "' has Invalid SVG file path: '" + svgFile.toString() + "'");
                 return;
             }
 
             String svg;
             try {
-                svg = Files.toString(svgFile, Charsets.UTF_8);
+                svg = mFileOps.toString(svgFile, Charsets.UTF_8);
             } catch (IOException e) {
                 emitError(ctx, "Map '" + mapName + "', Failed to read SVG file '" + svgFile.toString() + "', Exception: " + e);
                 return;

@@ -1,5 +1,6 @@
 package com.alflabs.conductor;
 
+import com.alflabs.utils.FileOps;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
@@ -39,6 +40,12 @@ public class ConductorModule {
     @Provides
     public KeyValueServer provideKeyValueServer(ILogger logger) {
         return new KeyValueServer(logger);
+    }
+
+    @Singleton
+    @Provides
+    public FileOps provideFileOps() {
+        return new FileOps();
     }
 
     @Singleton

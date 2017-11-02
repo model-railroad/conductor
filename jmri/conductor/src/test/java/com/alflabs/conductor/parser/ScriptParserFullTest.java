@@ -8,6 +8,7 @@ import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
+import com.alflabs.utils.FileOps;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -32,6 +33,7 @@ public class ScriptParserFullTest {
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
+    @Mock FileOps mFileOps;
 
     private TestReporter mReporter;
     private IScriptComponent mScriptComponent;
@@ -46,7 +48,12 @@ public class ScriptParserFullTest {
         file.deleteOnExit();
 
         IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .conductorModule(new ConductorModule(mJmriProvider))
+                .conductorModule(new ConductorModule(mJmriProvider) {
+                    @Override
+                    public FileOps provideFileOps() {
+                        return mFileOps;
+                    }
+                })
                 .scriptFile(file)
                 .build();
 
@@ -83,6 +90,12 @@ public class ScriptParserFullTest {
 
     @Test
     public void testScript5() throws Exception {
+        when(mFileOps.isFile(new File("maps\\filename1.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("maps\\filename1.svg"), Charsets.UTF_8)).thenReturn("svg1");
+
+        when(mFileOps.isFile(new File("maps\\filename2.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("maps\\filename2.svg"), Charsets.UTF_8)).thenReturn("svg2");
+
         String source = getFileSource("script5.txt");
         assertThat(source).isNotNull();
         Script script = mScriptComponent.getScriptParser2().parse(source);
