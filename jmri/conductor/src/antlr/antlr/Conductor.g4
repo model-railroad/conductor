@@ -11,7 +11,7 @@ defIdType: KW_SENSOR | KW_TURNOUT;
 defIntLine: defIntType ID '=' NUM;
 defIntType: KW_INT | KW_TIMER;
 
-defStrLine: defStrType ID '=' STR;
+defStrLine: defStrType ID '=' ( STR | STR_BLOCK );
 defStrType: KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
@@ -98,6 +98,7 @@ fragment KW_F20:      'f2' [0-8] ;
 ID:      IdCharStart ( IdCharFull* IdCharLast )? ;
 NUM:     IdNum+ ;      // An int literal
 STR:     '"' ~["\r\n]* '"';
+STR_BLOCK: '\'\'\'' ~[']* '\'\'\'';
 
 fragment IdCharStart: IdUnreserved | IdLetter ;
 fragment IdCharFull:  IdUnreserved | IdLetter | IdNum | IdDash ;

@@ -167,21 +167,34 @@ public class ScriptParser2 {
 
         @Override
         public void exitDefStrLine(ConductorParser.DefStrLineContext ctx) {
-            if (ctx.defStrType() == null || ctx.ID() == null || ctx.STR() == null) {
+            if (ctx.defStrType() == null || ctx.ID() == null ||
+                    (ctx.STR() == null && ctx.STR_BLOCK() == null)) {
                 return;
             }
             String type = ctx.defStrType().getText().toLowerCase(Locale.US);
             String varName  = ctx.ID().getText();
-            String value = ctx.STR().getText();
 
             if (mScript.isExistingName(varName)) {
                 emitError(ctx, "Name '" + varName + "' is already defined.");
                 return;
             }
 
-            // Remove start/end quotes from the string
-            if (value.startsWith("\"") && value.endsWith("\"")) {
-                value = value.substring(1, value.length() - 1);
+            String value;
+
+            if (ctx.STR() != null) {
+                value = ctx.STR().getText();
+
+                // Remove start/end quotes from the string
+                if (value.startsWith("\"") && value.endsWith("\"")) {
+                    value = value.substring(1, value.length() - 1);
+                }
+            } else {
+                value = ctx.STR_BLOCK().getText();
+
+                // Remove start/end quotes from the string
+                if (value.startsWith("'''") && value.endsWith("'''")) {
+                    value = value.substring(3, value.length() - 3);
+                }
             }
 
             switch (type) {

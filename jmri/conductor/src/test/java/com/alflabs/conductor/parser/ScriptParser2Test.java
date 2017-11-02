@@ -177,6 +177,26 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testDefineString_MultiLine() throws Exception {
+        String source = "  String SingleLineString = \"This is a free string. It is not used in the script.\"\n" +
+                "    String MultiLineString = '''This string can\n" +
+                "    be split on as many lines as needed. It cannot\n" +
+                "    however contain any \"single-quotes\" (for grammar\n" +
+                "    simplification).''' ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("SingleLineString")).isNotNull();
+        assertThat(script.getVar("SingleLineString").get()).contains("free string");
+        assertThat(script.getVar("SingleLineString").get()).doesNotContain("\"");
+        assertThat(script.getVar("MultiLineString")).isNotNull();
+        assertThat(script.getVar("MultiLineString").get()).contains("many lines");
+        assertThat(script.getVar("MultiLineString").get()).doesNotContain("'''");
+    }
+
+    @Test
     public void testDefineString_missingId() throws Exception {
         String source = "  String = \"Address 5201\" ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
