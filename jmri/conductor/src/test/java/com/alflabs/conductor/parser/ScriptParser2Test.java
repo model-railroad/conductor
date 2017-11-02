@@ -129,7 +129,7 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineVar() throws Exception {
+    public void testDefineInt() throws Exception {
         String source = "  Int VALUE    = 5201 # d&rgw ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
@@ -142,7 +142,7 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineVar_missingId() throws Exception {
+    public void testDefineInt_missingId() throws Exception {
         String source = "  Int = 5201 ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
@@ -151,7 +151,7 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineVar_alreadyDefined() throws Exception {
+    public void testDefineInt_alreadyDefined() throws Exception {
         String source = "" +
                 "  INT VALUE    = 5201 \n " +
                 "int value = 42";
@@ -160,6 +160,41 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'value' is already defined.\n" +
                 "  Line 2: 'int value = 42'");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testDefineString() throws Exception {
+        String source = "  String VALUE    = \"5201 # d&rgw\" ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.get()).isEqualTo("5201 # d&rgw");
+    }
+
+    @Test
+    public void testDefineString_missingId() throws Exception {
+        String source = "  String = \"Address 5201\" ";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("Error at line 1: missing ID at '='.");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
+    public void testDefineString_alreadyDefined() throws Exception {
+        String source = "" +
+                "  String VALUE    = \"Address 5201\" \n " +
+                "String value = \"Address 42\"";
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 2: Name 'value' is already defined.\n" +
+                        "  Line 2: 'String value = \"Address 42\"'");
         assertThat(script).isNotNull();
     }
 

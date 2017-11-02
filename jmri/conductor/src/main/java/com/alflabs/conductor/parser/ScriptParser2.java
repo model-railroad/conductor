@@ -134,14 +134,14 @@ public class ScriptParser2 {
         }
 
         @Override
-        public void exitDefStrLine(ConductorParser.DefStrLineContext ctx) {
+        public void exitDefIdLine(ConductorParser.DefIdLineContext ctx) {
             // Note: we don't need to log errors, that would have been done already by the parser.
             // The tree walker will call every node even if it had parsing errors so we just need
             // to be defensive and give up early.
-            if (ctx.defStrType() == null || ctx.ID().size() != 2) {
+            if (ctx.defIdType() == null || ctx.ID().size() != 2) {
                 return;
             }
-            String type = ctx.defStrType().getText().toLowerCase(Locale.US);
+            String type = ctx.defIdType().getText().toLowerCase(Locale.US);
             String varName  = ctx.ID(0).getText();
             String jmriName = ctx.ID(1).getText();
 
@@ -158,6 +158,54 @@ public class ScriptParser2 {
             case "turnout":
                 Turnout turnout = mTurnoutFactory.create(jmriName, varName.toLowerCase(Locale.US));
                 mScript.addTurnout(varName, turnout);
+                break;
+            default:
+                emitError(ctx, "Unsupported type '" + type + "'.");
+                break;
+            }
+        }
+
+        @Override
+        public void exitDefStrLine(ConductorParser.DefStrLineContext ctx) {
+            if (ctx.defStrType() == null || ctx.ID() == null || ctx.STR() == null) {
+                return;
+            }
+            String type = ctx.defStrType().getText().toLowerCase(Locale.US);
+            String varName  = ctx.ID().getText();
+            String value = ctx.STR().getText();
+
+            if (mScript.isExistingName(varName)) {
+                emitError(ctx, "Name '" + varName + "' is already defined.");
+                return;
+            }
+
+            // Remove start/end quotes from the string
+            if (value.startsWith("\"") && value.endsWith("\"")) {
+                value = value.substring(1, value.length() - 1);
+            }
+
+            switch (type) {
+            case "string":
+                 Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                 mScript.addVar(varName, var);
+                break;
+            case "map":
+                // Load the map SVG file
+                File svgFile = mScriptDir == null ? new File(value) : new File(mScriptDir, value);
+                if (!mFileOps.isFile(svgFile)) {
+                    emitError(ctx, "Map '" + varName + "' has Invalid SVG file path: '" + svgFile.toString() + "'");
+                    return;
+                }
+
+                String svg;
+                try {
+                    svg = mFileOps.toString(svgFile, Charsets.UTF_8);
+                } catch (IOException e) {
+                    emitError(ctx, "Map '" + varName + "', Failed to read SVG file '" + svgFile.toString() + "', Exception: " + e);
+                    return;
+                }
+
+                mScript.addMap(varName, new MapInfo(varName, svg));
                 break;
             default:
                 emitError(ctx, "Unsupported type '" + type + "'.");
@@ -251,43 +299,6 @@ public class ScriptParser2 {
             mScript.addEnum(varName, enum_);
         }
 
-        @Override
-        public void exitDefMapLine(ConductorParser.DefMapLineContext ctx) {
-            if (ctx.ID() == null || ctx.STR() == null) {
-                return;
-            }
-            String mapName  = ctx.ID().getText();
-            String mapFilename = ctx.STR().getText();
-
-            // Remove start/end quotes from the string
-            if (mapFilename.startsWith("\"") && mapFilename.endsWith("\"")) {
-                mapFilename = mapFilename.substring(1, mapFilename.length() - 1);
-            }
-
-            if (mScript.isExistingName(mapName)) {
-                emitError(ctx, "Name '" + mapName + "' is already defined.");
-                return;
-            }
-
-            // Load the map SVG file
-            File svgFile = mScriptDir == null ? new File(mapFilename) : new File(mScriptDir, mapFilename);
-            if (!mFileOps.isFile(svgFile)) {
-                emitError(ctx, "Map '" + mapName + "' has Invalid SVG file path: '" + svgFile.toString() + "'");
-                return;
-            }
-
-            String svg;
-            try {
-                svg = mFileOps.toString(svgFile, Charsets.UTF_8);
-            } catch (IOException e) {
-                emitError(ctx, "Map '" + mapName + "', Failed to read SVG file '" + svgFile.toString() + "', Exception: " + e);
-                return;
-            }
-
-            mScript.addMap(mapName, new MapInfo(mapName, svg));
-        }
-
-        @Override
         public void exitDefRouteLine(ConductorParser.DefRouteLineContext ctx) {
             if (ctx.ID() == null) {
                 return;

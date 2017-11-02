@@ -3,20 +3,21 @@ grammar Conductor;
 script     : scriptLine ( EOL scriptLine )* EOL? EOF;
 scriptLine : ( defLine | eventLine )? SB_COMMENT?;
 
-defLine: defStrLine | defIntLine | defThrottleLine | defEnumLine | defMapLine | defRouteLine;
+defLine: defIdLine | defStrLine | defIntLine | defThrottleLine | defEnumLine | defRouteLine;
 
-defStrLine: defStrType ID '=' ID;
-defStrType: KW_SENSOR | KW_TURNOUT;
+defIdLine: defIdType ID '=' ID;
+defIdType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
 defIntType: KW_INT | KW_TIMER;
+
+defStrLine: defStrType ID '=' STR;
+defStrType: KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
 defEnumLine: KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
-
-defMapLine: KW_MAP ID '=' STR;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
 routeInfoList: routeInfo ( ',' routeInfo )* ','? ;

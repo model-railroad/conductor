@@ -28,6 +28,8 @@ Map Map2 = "maps/filename2.svg"
 Route Passenger  = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
 Route Branchline = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
 
+String StringValue1 = "This is a free string. It is not used in the script."
+
 # ---------
 # Events PA
 # ---------

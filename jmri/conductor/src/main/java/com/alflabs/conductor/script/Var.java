@@ -6,42 +6,78 @@ import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
 @AutoFactory(allowSubclasses = true)
-public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, IExportable, IResettable {
+public class Var implements IConditional, IIntFunction, IIntValue, IStringValue, IExecEngine, IExportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
-    private final int mInitialValue;
+    private final int mInitialIntValue;
+    private final String mInitialStringValue;
 
-    private int mValue;
+    private int mIntValue;
+    private String mStringValue;
     private boolean mExported;
 
-    public Var(int value,
+    public Var(int intValue,
                String scriptName,
                @Provided IKeyValue keyValue) {
-        mInitialValue = value;
-        mValue = value;
+        mInitialStringValue = null;
+        mInitialIntValue = intValue;
+        mIntValue = intValue;
+        mKeyName = Prefix.Var + scriptName;
+        mKeyValue = keyValue;
+    }
+
+    public Var(String stringValue,
+               String scriptName,
+               @Provided IKeyValue keyValue) {
+        mInitialStringValue = stringValue;
+        mInitialIntValue = 0;
+        mStringValue = stringValue;
         mKeyName = Prefix.Var + scriptName;
         mKeyValue = keyValue;
     }
 
     @Override
     public void reset() {
-        mValue = mInitialValue;
+        mIntValue = mInitialIntValue;
+        mStringValue = mInitialStringValue;
     }
 
     @Override
     public boolean isActive() {
-        return mValue != 0;
+        return mIntValue != 0;
+    }
+
+    public boolean isInt() {
+        return mInitialStringValue == null;
+    }
+
+    public boolean isString() {
+        return mInitialStringValue != null;
     }
 
     @Override
     public int getAsInt() {
-        return mValue;
+        if (mStringValue != null) {
+            try {
+                return Integer.parseInt(mStringValue);
+            } catch (Exception ignore) {}
+        }
+        return mIntValue;
+    }
+
+    /** Gets the value as a String. */
+    @Override
+    public String get() {
+        if (mStringValue != null) {
+            return mStringValue;
+        }
+        return Integer.toString(mIntValue);
     }
 
     @Override
     public void accept(int value) {
-        mValue = value;
+        mIntValue = value;
     }
 
     @Override
@@ -57,7 +93,7 @@ public class Var implements IConditional, IIntFunction, IIntValue, IExecEngine, 
     @Override
     public void onExecHandle() {
         if (mExported) {
-            mKeyValue.putValue(mKeyName, Integer.toString(mValue), true /*broadcast*/);
+            mKeyValue.putValue(mKeyName, Integer.toString(mIntValue), true /*broadcast*/);
         }
     }
 }
