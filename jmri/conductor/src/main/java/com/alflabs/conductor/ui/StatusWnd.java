@@ -10,7 +10,7 @@ import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
-import com.alflabs.conductor.script.VarInt;
+import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.RPair;
@@ -25,6 +25,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import javax.swing.*;
@@ -267,9 +268,9 @@ public class StatusWnd {
 
         mStatus.append("--- [ VARS ] ---\n");
         i = 0;
-        for (String name : script.getVarIntNames()) {
-            VarInt varInt = script.getVarInt(name);
-            mStatus.append(name).append(':').append(varInt.getAsInt());
+        for (String name : script.getVarNames()) {
+            Var var = script.getVar(name);
+            mStatus.append(name).append(':').append(var.getAsInt());
             mStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         if (mStatus.charAt(mStatus.length() - 1) != '\n') {

@@ -2,9 +2,9 @@
 Throttle T1 = 1201
 Throttle T2 = 1202
 
-Var Var-1       = 1
-Var Half-Speed  = 4
-Var Full-Speed  = 8
+Int Var-1       = 1
+Int Half-Speed  = 4
+Int Full-Speed  = 8
 
 # define alias for sensors
 Sensor Alias   = NS784

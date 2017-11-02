@@ -5,11 +5,11 @@ Throttle REAR  = 209
 
 # states
 
-Var PA-Enable       = 1
-Var PA-Half-Speed   = 8
-Var PA-Summit-Speed   = 12
-Var PA-Sonora-Speed   = 12
-Var PA-Full-Speed   = 20
+Int PA-Enable       = 1
+Int PA-Half-Speed   = 8
+Int PA-Summit-Speed   = 12
+Int PA-Sonora-Speed   = 12
+Int PA-Full-Speed   = 20
 
 # sensors
 

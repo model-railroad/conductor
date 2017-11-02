@@ -12,7 +12,7 @@ import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
-import com.alflabs.conductor.script.VarInt;
+import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.util.FakeNow;
 import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.IKeyValue;
@@ -29,6 +29,7 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.TreeMap;
 
@@ -99,9 +100,9 @@ public class ScriptParser2Test {
     @Test
     public void testValidId() throws Exception {
         String source = "" +
-                "VarInt id = 1\n" +
-                "VarInt _  = 2\n" +
-                "VarInt My-Var = 3\n" +
+                "Int id = 1\n" +
+                "Int _  = 2\n" +
+                "Int My-Var = 3\n" +
                 "int id2=4\n" +
                 "int __id3__=5\n";
         Script script = mScriptComponent.getScriptParser2().parse(source);
@@ -109,28 +110,28 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVarInt("id").getAsInt()).isEqualTo(1);
-        assertThat(script.getVarInt("_").getAsInt()).isEqualTo(2);
-        assertThat(script.getVarInt("my-var").getAsInt()).isEqualTo(3);
-        assertThat(script.getVarInt("id2").getAsInt()).isEqualTo(4);
-        assertThat(script.getVarInt("__id3__").getAsInt()).isEqualTo(5);
+        assertThat(script.getVar("id").getAsInt()).isEqualTo(1);
+        assertThat(script.getVar("_").getAsInt()).isEqualTo(2);
+        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(3);
+        assertThat(script.getVar("id2").getAsInt()).isEqualTo(4);
+        assertThat(script.getVar("__id3__").getAsInt()).isEqualTo(5);
     }
 
     @Test
-    public void testDefineVarInt() throws Exception {
+    public void testDefineVar() throws Exception {
         String source = "  Int VALUE    = 5201 # d&rgw ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVarInt("value")).isNotNull();
-        VarInt varInt = script.getVarInt("Value");
-        assertThat(varInt.getAsInt()).isEqualTo(5201);
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.getAsInt()).isEqualTo(5201);
     }
 
     @Test
-    public void testDefineVarInt_missingId() throws Exception {
+    public void testDefineVar_missingId() throws Exception {
         String source = "  Int = 5201 ";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
@@ -139,7 +140,7 @@ public class ScriptParser2Test {
     }
 
     @Test
-    public void testDefineVarInt_alreadyDefined() throws Exception {
+    public void testDefineVar_alreadyDefined() throws Exception {
         String source = "" +
                 "  INT VALUE    = 5201 \n " +
                 "int value = 42";
@@ -311,7 +312,7 @@ public class ScriptParser2Test {
                 "Throttle PA-100  = 100\n" +
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
-                "VarInt  BL-Status   = 300\n" +
+                "Int  BL-Status   = 300\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
@@ -368,7 +369,7 @@ public class ScriptParser2Test {
                 "Throttle PA-100  = 100\n" +
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
-                "VarInt  BL-Status   = 300\n" +
+                "Int  BL-Status   = 300\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
@@ -460,14 +461,14 @@ public class ScriptParser2Test {
         // Note that IDs can use "-" and "-" can also be part of "->".
         // "->" needs a space before otherwise the "-" is parsed as part of the previous ID.
         String source = "" +
-                "VarInt My-Var=1\n" +
+                "Int My-Var=1\n" +
                 "my-var->my-var=2\n";
         Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVarInt("my-var").getAsInt()).isEqualTo(1);
+        assertThat(script.getVar("my-var").getAsInt()).isEqualTo(1);
     }
 
     @Test
@@ -765,16 +766,16 @@ public class ScriptParser2Test {
 
         engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
-        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(5);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(5);
 
         // Execute with throttle defaulting to speed 0 (stopped).
         engine.onExecHandle();
-        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(0);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(0);
 
         // Execute with throttle at speed 5
         script.getThrottle("t1").setSpeed(5);
         engine.onExecHandle();
-        assertThat(script.getVarInt("myvar").getAsInt()).isEqualTo(1);
+        assertThat(script.getVar("myvar").getAsInt()).isEqualTo(1);
     }
 
     @Test

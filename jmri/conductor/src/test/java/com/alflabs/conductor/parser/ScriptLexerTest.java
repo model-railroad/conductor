@@ -3,6 +3,7 @@ package com.alflabs.conductor.parser;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.junit.Before;
 import org.junit.Test;
 
 import static com.google.common.truth.Truth.assertThat;

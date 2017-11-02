@@ -61,10 +61,10 @@ Enum PA-State = Idle Station Up Summit Down
 
 Route Passenger = Toggle: PA-Toggle, Status: PA-State, Throttle: PA-CONSIST
 
-Var PA-Station-Speed    = 8
-Var PA-Summit-Speed     = 12
-Var PA-Sonora-Speed     = 14
-Var PA-Full-Speed       = 16
+Int PA-Station-Speed    = 8
+Int PA-Summit-Speed     = 12
+Int PA-Sonora-Speed     = 14
+Int PA-Full-Speed       = 16
 
 # --- Routes
 
@@ -210,8 +210,8 @@ PA-State == Down & B503b + 18 & PA-CONSIST Stopped ->
 
 Throttle BL = 10
 
-Var BL-Station-Speed = 12
-Var BL-Full-Speed    = 20
+Int BL-Station-Speed = 12
+Int BL-Full-Speed    = 20
 
 Enum BL-State = Idle Up Down
 

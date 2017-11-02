@@ -19,8 +19,8 @@ import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.TimerFactory;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
-import com.alflabs.conductor.script.VarInt;
-import com.alflabs.conductor.script.VarIntFactory;
+import com.alflabs.conductor.script.Var;
+import com.alflabs.conductor.script.VarFactory;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
@@ -56,7 +56,7 @@ public class ScriptParser2 {
     private final SensorFactory mSensorFactory;
     private final TimerFactory mTimerFactory;
     private final EnumFactory mEnumFactory;
-    private final VarIntFactory mVarIntFactory;
+    private final VarFactory mVarFactory;
     private final Script mScript;
     private final Reporter mReporter;
     private File mScriptDir;
@@ -70,7 +70,7 @@ public class ScriptParser2 {
             SensorFactory sensorFactory,
             TimerFactory timerFactory,
             EnumFactory enumFactory,
-            VarIntFactory varIntFactory) {
+            VarFactory varFactory) {
         mReporter = reporter;
         mScript = script;
         mThrottleFactory = throttleFactory;
@@ -78,7 +78,7 @@ public class ScriptParser2 {
         mSensorFactory = sensorFactory;
         mTimerFactory = timerFactory;
         mEnumFactory = enumFactory;
-        mVarIntFactory = varIntFactory;
+        mVarFactory = varFactory;
     }
 
     /**
@@ -184,8 +184,8 @@ public class ScriptParser2 {
 
             switch (type) {
             case "int":
-                VarInt varInt = mVarIntFactory.create(value, varName.toLowerCase(Locale.US));
-                mScript.addVar(varName, varInt);
+                Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                mScript.addVar(varName, var);
                 break;
             case "timer":
                 Timer timer = mTimerFactory.create(value);
@@ -340,9 +340,9 @@ public class ScriptParser2 {
                     return;
                 }
 
-                VarInt varInt = mScript.getVarInt(value);
-                if (varInt != null) {
-                    varInt.setExported(true);
+                Var var = mScript.getVar(value);
+                if (var != null) {
+                    var.setExported(true);
                 }
                 Enum_ enum_ = mScript.getEnum(value);
                 if (enum_ != null) {
@@ -495,7 +495,7 @@ public class ScriptParser2 {
                 } else {
                     node = ctx.funcValue().ID();
                     if (node != null) {
-                        intValue = mScript.getVarInt(node.getText());
+                        intValue = mScript.getVar(node.getText());
                     }
                 }
                 if (intValue == null) {
@@ -579,7 +579,7 @@ public class ScriptParser2 {
             if (intFunction == null) {
                 // If it's not an op for a throttle/turnout/timer, it must be a variable in the
                 // syntax of "var = value".
-                intFunction = mScript.getVarInt(id);
+                intFunction = mScript.getVar(id);
 
                 if (intFunction == null) {
                     emitError(ctx, "Expected var ID but found '" + id + "'.");
@@ -627,7 +627,7 @@ public class ScriptParser2 {
          * Returns the new timer condition itself.
          * <p/>
          * "name" is the ANTLR4 text representation of the full condition without spaces
-         * e.g. "!My-VarInt+2". Convert it to "$~my-var$2$", which the script or test
+         * e.g. "!My-Var+2". Convert it to "$~my-var$2$", which the script or test
          * can then reference. The syntax is deemed part of the API.
          * Both '~' and '$' are valid ID characters in a script.
          * <pre>
@@ -639,7 +639,7 @@ public class ScriptParser2 {
          *   $~my-var$2$    -> actions...
          * </pre>
          * Note that the created timer is never a negated condition.
-         * The syntax "!My-VarInt+2" is equivalent to "(!My-VarInt) + 2".
+         * The syntax "!My-Var+2" is equivalent to "(!My-Var) + 2".
          */
         private IConditional createDelayedConditional(
                 String name,

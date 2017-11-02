@@ -6,8 +6,8 @@ Throttle REAR  = 209
 
 # states
 
-Var Init  = 1
-Var Speed = 8
+Int Init  = 1
+Int Speed = 8
 
 
 # sensors

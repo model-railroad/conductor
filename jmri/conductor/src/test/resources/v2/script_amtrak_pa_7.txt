@@ -8,16 +8,16 @@ Throttle PA-CONSIST = 204
 
 # states
 
-Var PA-State-Stop     = 1
-Var PA-State-Station = 0
-Var PA-State-Up      = 0
-Var PA-State-Summit  = 0
-Var PA-State-Down    = 0
+Int PA-State-Stop     = 1
+Int PA-State-Station = 0
+Int PA-State-Up      = 0
+Int PA-State-Summit  = 0
+Int PA-State-Down    = 0
 
-Var PA-Station-Speed    = 8
-Var PA-Summit-Speed     = 12
-Var PA-Sonora-Speed     = 12
-Var PA-Full-Speed       = 20
+Int PA-Station-Speed    = 8
+Int PA-Summit-Speed     = 12
+Int PA-Sonora-Speed     = 12
+Int PA-Full-Speed       = 20
 
 # sensors
 

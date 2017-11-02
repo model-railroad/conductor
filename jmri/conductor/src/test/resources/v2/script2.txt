@@ -5,11 +5,11 @@ Throttle BL = 1202
 
 # states
 
-Var PA-Enable       = 1
-Var PA-Half-Speed   = 4
-Var PA-Full-Speed   = 8
-Var BL-Half-Speed   = 4
-Var BL-Full-Speed   = 12
+Int PA-Enable       = 1
+Int PA-Half-Speed   = 4
+Int PA-Full-Speed   = 8
+Int BL-Half-Speed   = 4
+Int BL-Full-Speed   = 12
 
 # sensors
 

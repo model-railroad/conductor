@@ -5,7 +5,7 @@ Throttle CONSIST = 204
 # states
 
 Enum State = Init Idle Fwd Rev      # Enum is initialized with its first value.
-Var Speed = 8
+Int Speed = 8
 
 
 # sensors

@@ -52,16 +52,16 @@ Timer PA-Timer-Release-Route = 1
 # F9 = Red Markers (end unit)
 Throttle PA-CONSIST = 204
 
-Var PA-State-Stop     = 1
-Var PA-State-Station = 0
-Var PA-State-Up      = 0
-Var PA-State-Summit  = 0
-Var PA-State-Down    = 0
+Int PA-State-Stop     = 1
+Int PA-State-Station = 0
+Int PA-State-Up      = 0
+Int PA-State-Summit  = 0
+Int PA-State-Down    = 0
 
-Var PA-Station-Speed    = 8
-Var PA-Summit-Speed     = 12
-Var PA-Sonora-Speed     = 12
-Var PA-Full-Speed       = 16
+Int PA-Station-Speed    = 8
+Int PA-Summit-Speed     = 12
+Int PA-Sonora-Speed     = 12
+Int PA-Full-Speed       = 16
 
 # --- Routes
 
@@ -220,12 +220,12 @@ PA-State-Down    & PA-Run3 & !PA-CONSIST Stopped -> PA-CONSIST Horn
 # F9 for red markers on the "end" side
 Throttle BL = 10
 
-Var BL-Station-Speed = 12
-Var BL-Full-Speed    = 20
+Int BL-Station-Speed = 12
+Int BL-Full-Speed    = 20
 
-Var BL-State-Stop    = 1
-Var BL-State-Up      = 0
-Var BL-State-Down    = 0
+Int BL-State-Stop    = 1
+Int BL-State-Up      = 0
+Int BL-State-Down    = 0
 
 # --- State: Setup at reverse station
 

@@ -38,7 +38,7 @@ public class Script {
     private final Logger mLogger;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Enum_> mEnums = new TreeMap<>();
-    private final TreeMap<String, VarInt> mVarInts = new TreeMap<>();
+    private final TreeMap<String, Var> mVars = new TreeMap<>();
     private final TreeMap<String, Sensor> mSensors = new TreeMap<>();
     private final TreeMap<String, Turnout> mTurnouts = new TreeMap<>();
     private final TreeMap<String, Timer> mTimers = new TreeMap<>();
@@ -75,8 +75,8 @@ public class Script {
         return mEnums.values();
     }
 
-    public Collection<VarInt> getVarInts() {
-        return mVarInts.values();
+    public Collection<Var> getVars() {
+        return mVars.values();
     }
 
     public void addThrottle(String name, Throttle throttle) {
@@ -87,8 +87,8 @@ public class Script {
         mEnums.put(name.toLowerCase(Locale.US), enum_);
     }
 
-    public void addVar(String name, VarInt varInt) {
-        mVarInts.put(name.toLowerCase(Locale.US), varInt);
+    public void addVar(String name, Var var) {
+        mVars.put(name.toLowerCase(Locale.US), var);
     }
 
     public void addSensor(String name, Sensor sensor) {
@@ -123,8 +123,8 @@ public class Script {
         return mEnums.get(name.toLowerCase(Locale.US));
     }
 
-    public VarInt getVarInt(String name) {
-        return mVarInts.get(name.toLowerCase(Locale.US));
+    public Var getVar(String name) {
+        return mVars.get(name.toLowerCase(Locale.US));
     }
 
     public Sensor getSensor(String name) {
@@ -141,8 +141,8 @@ public class Script {
 
     public IConditional getConditional(String name) {
         name = name.toLowerCase(Locale.US);
-        if (mVarInts.containsKey(name)) {
-            return mVarInts.get(name);
+        if (mVars.containsKey(name)) {
+            return mVars.get(name);
 
         } else if (mSensors.containsKey(name)) {
             return mSensors.get(name);
@@ -173,8 +173,8 @@ public class Script {
         return new ArrayList<>(mSensors.keySet());
     }
 
-    public List<String> getVarIntNames() {
-        return new ArrayList<>(mVarInts.keySet());
+    public List<String> getVarNames() {
+        return new ArrayList<>(mVars.keySet());
     }
 
     public List<String> getEnumNames() {
@@ -202,7 +202,7 @@ public class Script {
         if (mThrottles.containsKey(name)) {
             return Prefix.DccThrottle + name;
         }
-        if (mVarInts.containsKey(name) || mEnums.containsKey(name)) {
+        if (mVars.containsKey(name) || mEnums.containsKey(name)) {
             return Prefix.Var + name;
         }
         if (mMaps.containsKey(name)) {
@@ -217,7 +217,7 @@ public class Script {
     public boolean isExistingName(String name) {
         name = name.toLowerCase(Locale.US);
         return mThrottles.containsKey(name)
-                || mVarInts.containsKey(name)
+                || mVars.containsKey(name)
                 || mEnums.containsKey(name)
                 || mMaps.containsKey(name)
                 || mRoutes.containsKey(name)
