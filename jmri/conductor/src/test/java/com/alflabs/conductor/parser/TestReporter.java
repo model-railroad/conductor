@@ -1,6 +1,6 @@
 package com.alflabs.conductor.parser;
 
-class TestReporter extends Reporter {
+public class TestReporter extends Reporter {
     private String mReport = "";
 
     public TestReporter() {

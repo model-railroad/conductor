@@ -55,26 +55,32 @@ public class Script {
         return mLogger;
     }
 
+    @NonNull
     Collection<Throttle> getThrottles() {
         return mThrottles.values();
     }
 
+    @NonNull
     Collection<Sensor> getSensors() {
         return mSensors.values();
     }
 
+    @NonNull
     Collection<Turnout> getTurnouts() {
         return mTurnouts.values();
     }
 
+    @NonNull
     Collection<Event> getEvents() {
         return mEvents;
     }
 
+    @NonNull
     public Collection<Enum_> getEnums() {
         return mEnums.values();
     }
 
+    @NonNull
     public Collection<Var> getVars() {
         return mVars.values();
     }
@@ -115,30 +121,37 @@ public class Script {
         mRoutes.put(routeName.toLowerCase(Locale.US), routeInfo);
     }
 
+    @Null
     public Throttle getThrottle(String name) {
         return mThrottles.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public Enum_ getEnum(String name) {
         return mEnums.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public Var getVar(String name) {
         return mVars.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public Sensor getSensor(String name) {
         return mSensors.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public Turnout getTurnout(String name) {
         return mTurnouts.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public Timer getTimer(String name) {
         return mTimers.get(name.toLowerCase(Locale.US));
     }
 
+    @Null
     public IConditional getConditional(String name) {
         name = name.toLowerCase(Locale.US);
         if (mVars.containsKey(name)) {
@@ -157,34 +170,42 @@ public class Script {
         return null;
     }
 
+    @NonNull
     public List<String> getThrottleNames() {
         return new ArrayList<>(mThrottles.keySet());
     }
 
+    @NonNull
     public List<String> getTurnoutNames() {
         return new ArrayList<>(mTurnouts.keySet());
     }
-    
+
+    @NonNull
     public List<String> getTimerNames() {
         return new ArrayList<>(mTimers.keySet());
     }
 
+    @NonNull
     public List<String> getSensorNames() {
         return new ArrayList<>(mSensors.keySet());
     }
 
+    @NonNull
     public List<String> getVarNames() {
         return new ArrayList<>(mVars.keySet());
     }
 
+    @NonNull
     public List<String> getEnumNames() {
         return new ArrayList<>(mEnums.keySet());
     }
 
+    @Null
     public TreeMap<String, MapInfo> getMaps() {
         return mMaps;
     }
 
+    @Null
     public TreeMap<String, RouteInfo> getRoutes() {
         return mRoutes;
     }
