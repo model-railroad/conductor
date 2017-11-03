@@ -312,12 +312,11 @@ BL-State == Down & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 # Simulations
 # ------------------
 
-String Simul-1 = '''
-Name Passenger
-Loco 204
+String Simulation-Passenger = '''
+Loco PA-CONSIST
 
 # Station
-Fwd 0
+Stop
 Set  On B503b
 Wait On PA-Toggle; Wait On PA-Run3; Wait 8s
 
@@ -333,8 +332,8 @@ Set Off B311; Set On B321; Wait 30s
 # Curve slow down is at 330+12, horn at 330+26
 Set On B330; Set Off B321; Wait 30s
 
-Set On B340; Set Off B330; Wait 8s
-Set On B350; Set Off B340; Wait 8s
+Set On B340; Set Off B330; Wait 4s
+Set On B350; Set Off B340; Wait 4s
 Set On B360; Set Off B350; Wait 8s
 
 # Summit slow down at 370+9, stop at +14, reverse at +22
@@ -344,13 +343,12 @@ Set On B370; Set Off B360; Wait 40s
 
 # Full reverse down at 360+12
 Set On  B360; Set Off B370; Wait 40s
-Set On  B350; Set Off B360; Wait 8s
-Set On  B340; Set Off B350; Wait 8s
-Set On  B330; Set Off B340; Wait 8s
+Set On  B350; Set Off B360; Wait 4s
+Set On  B340; Set Off B350; Wait 4s
+Set On  B330; Set Off B340; Wait 30s
 Set On  B321; Set Off B330; Wait 30s
-Set On  B311; Set Off B321; Wait 30s
-Set On B311; Wait 4s
-Set On B503a; Wait 8s
+Set On  B311; Set Off B321; Wait 8s
+Set On B503a; Set Off B311; Wait 8s
 # Station stop at 503b+10
 Set Off B503a; Set On B503b; Wait 15s
 End

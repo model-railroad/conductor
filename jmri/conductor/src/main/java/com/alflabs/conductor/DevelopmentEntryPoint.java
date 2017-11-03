@@ -1,6 +1,8 @@
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.utils.ILogger;
 import com.google.common.truth.Truth;
 
 import java.util.Map;
@@ -13,11 +15,27 @@ public class DevelopmentEntryPoint {
     public static void main(String[] args) {
         FakeJmriProvider jmriProvider = new FakeJmriProvider();
         AtomicBoolean keepRunning = new AtomicBoolean(true);
+        ILogger logger = new ILogger() {
+            @Override
+            public void d(String tag, String message) {
+                System.out.println("[" + tag + "] " + message);
+            }
+
+            @Override
+            public void d(String tag, String message, Throwable tr) {
+                System.out.println("[" + tag + "] " + message + ": " + tr);
+            }
+        };
         EntryPoint entryPoint = new EntryPoint() {
             @Override
             protected void onStopAction() {
                 super.onStopAction();
                 keepRunning.set(false);
+            }
+
+            @Override
+            protected Simulator getSimulator(IConductorComponent component) {
+                return new Simulator(logger, component.getNow());
             }
         };
         String filePath = "src/test/resources/v2/script_pa+bl_11.txt";

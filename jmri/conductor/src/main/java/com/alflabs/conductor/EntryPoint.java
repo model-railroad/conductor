@@ -6,6 +6,7 @@ import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
+import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
@@ -79,7 +80,8 @@ public class EntryPoint {
                     mScript,
                     mEngine,
                     this::onReloadAction,
-                    this::onStopAction);
+                    this::onStopAction,
+                    getSimulator(mComponent));
 
         } catch (Exception e) {
             // Ignore. continue.
@@ -88,6 +90,10 @@ public class EntryPoint {
         }
 
         return true;
+    }
+
+    protected Simulator getSimulator(IConductorComponent component) {
+        return null;
     }
 
     private void startZeroconfAdvertising(String name) {

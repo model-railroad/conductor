@@ -11,6 +11,7 @@ import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.Var;
+import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.RPair;
@@ -18,18 +19,26 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
-import java.awt.Dimension;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
-import javax.swing.*;
-
+/*
+ * Note to use the form generator in IJ:
+ * - Settings > Build > Build Tools > Gradle
+ * - Deactivate the "Delegate IDE build to gradle".
+ * - Build Project
+ * - Reactivate the "Delegate IDE build to gradle".
+ */
 public class StatusWnd {
     private final JFrame mFrame;
     private JPanel mRootPanel;
@@ -47,6 +56,7 @@ public class StatusWnd {
     private JSeparator mSepThrottles;
     private JSeparator mSepConsole;
     private JPanel mSensorPanel;
+    private JPanel mSimulationPanel;
     private String mLastError;
 
     private StatusWnd(JFrame frame) {
@@ -72,7 +82,8 @@ public class StatusWnd {
             Script script,
             ExecEngine engine,
             Supplier<RPair<Script, String>> onReloadAction,
-            Runnable onStopAction) {
+            Runnable onStopAction,
+            Simulator optionalSimulator) {
         mTextScriptName.setText(component.getScriptFile().getAbsolutePath());
         initScript(component, script, engine);
 
@@ -103,6 +114,16 @@ public class StatusWnd {
             }
         });
 
+        createSensorPanel(script);
+
+        if (optionalSimulator != null) {
+            createSimulationPanel(optionalSimulator, script);
+        }
+
+        mFrame.pack();
+    }
+
+    private void createSensorPanel(Script script) {
         List<String> sensorNames = script.getSensorNames();
         final int numCol = 6;
         final int numRow = (int) Math.ceil(sensorNames.size() / (double) numCol);
@@ -129,14 +150,66 @@ public class StatusWnd {
             });
             sensor.setOnChangedListener(() -> box.setSelected(sensor.isActive()));
 
-            mSensorPanel.add(box, new GridConstraints(row, col, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+            mSensorPanel.add(box,
+                    new GridConstraints(row, col, 1, 1,
+                            GridConstraints.ANCHOR_WEST,
+                            GridConstraints.FILL_NONE,
+                            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
+                            GridConstraints.SIZEPOLICY_FIXED,
+                            null, null, null, 0, false));
             col++;
             if (col == numCol) {
                 col = 0;
                 row++;
             }
         }
-        mFrame.pack();
+    }
+
+    private void createSimulationPanel(Simulator simulator, Script script) {
+        List<String> simuVars = new ArrayList<>();
+        for (String varName : script.getVarNames()) {
+            if (varName.toLowerCase(Locale.US).startsWith("simulation-")) {
+                simuVars.add(varName);
+            }
+        }
+        if (simuVars.isEmpty()) {
+            return;
+        }
+
+        final int numCol = 4;
+        final int numRow = (int) Math.ceil(simuVars.size() / (double) numCol);
+        int col = 0;
+        int row = 0;
+        mSimulationPanel.setLayout(new GridLayoutManager(
+                numRow,
+                numCol,
+                new Insets(0, 0, 0, 0), -1, -1));
+        for (String varName : simuVars) {
+
+            JButton button = new JButton();
+            button.setText(varName.split("[-]")[1]);
+            button.setToolTipText(varName);
+
+            button.addActionListener(new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    simulator.startAsync(script, varName);
+                }
+            });
+
+            mSimulationPanel.add(button,
+                    new GridConstraints(row, col, 1, 1,
+                            GridConstraints.ANCHOR_WEST,
+                            GridConstraints.FILL_NONE,
+                            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
+                            GridConstraints.SIZEPOLICY_FIXED,
+                            null, null, null, 0, false));
+            col++;
+            if (col == numCol) {
+                col = 0;
+                row++;
+            }
+        }
     }
 
     private void showError(String error) {
@@ -302,7 +375,7 @@ public class StatusWnd {
      */
     private void $$$setupUI$$$() {
         mRootPanel = new JPanel();
-        mRootPanel.setLayout(new GridLayoutManager(9, 7, new Insets(10, 10, 10, 10), -1, -1));
+        mRootPanel.setLayout(new GridLayoutManager(10, 7, new Insets(10, 10, 10, 10), -1, -1));
         final JLabel label1 = new JLabel();
         label1.setText("Script");
         mRootPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -356,6 +429,9 @@ public class StatusWnd {
         mSensorPanel = new JPanel();
         mSensorPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         mRootPanel.add(mSensorPanel, new GridConstraints(8, 0, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        mSimulationPanel = new JPanel();
+        mSimulationPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        mRootPanel.add(mSimulationPanel, new GridConstraints(9, 0, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
     }
 
     /**
