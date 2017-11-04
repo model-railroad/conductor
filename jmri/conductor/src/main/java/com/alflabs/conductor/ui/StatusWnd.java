@@ -15,6 +15,7 @@ import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.RPair;
+import com.alflabs.utils.StringUtils;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -28,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.function.Supplier;
 
 /*
@@ -187,7 +186,7 @@ public class StatusWnd {
         for (String varName : simuVars) {
 
             JButton button = new JButton();
-            button.setText(varName.split("[-]")[1]);
+            button.setText(StringUtils.capitalize(varName.split("[-]")[1]));
             button.setToolTipText(varName);
 
             button.addActionListener(new AbstractAction() {

@@ -20,7 +20,7 @@ Throttle PA-CONSIST = 204
 # ---------
 
 String Simulator-1 = '''
-Loco PA-CONSIST
+Throttle PA-CONSIST
 
 # Station
 Stop

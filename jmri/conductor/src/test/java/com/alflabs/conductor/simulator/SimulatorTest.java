@@ -100,11 +100,11 @@ public class SimulatorTest {
     }
 
     @Test
-    public void testLocoStop() throws Exception {
+    public void testThrottleStop() throws Exception {
         String source = "" +
                 "Throttle T1 = 42\n" +
                 "String simu = '''\n" +
-                "Loco T1\n" +
+                "Throttle T1\n" +
                 "Stop\n" +
                 "'''";
 

@@ -313,7 +313,7 @@ BL-State == Down & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 # ------------------
 
 String Simulation-Passenger = '''
-Loco PA-CONSIST
+Throttle PA-CONSIST
 
 # Station
 Stop
@@ -354,6 +354,26 @@ Set Off B503a; Set On B503b; Wait 15s
 End
 '''
 
+String Simulation-Branchline = '''
+Throttle BL
 
+# Station
+Stop
+Set On BLParked
+Wait On BL-Toggle; Wait On BLRun; Wait 5s
+
+# Up to station,  at least 18s with go+pause+leave
+Set On BLStation; Set Off BLParked; Wait 20s
+# up between station and tunnel... takes at least 40s (bridge horn is at +16~20s)
+Set Off BLStation; Wait 40s
+Set On  BLTunnel ; Wait  8s
+# at reverse station: at least 6s going in, 15s pause, 3s+ going out
+Set On  BLReverse; Set Off BLTunnel; Wait 30s
+Set On  BLTunnel ; Set Off BLReverse; Wait 8s
+Set Off BLTunnel ; Wait 40s
+Set On  BLStation; Wait 20s
+Set On  BLParked ; Set Off BLStation; Wait 8s
+
+'''
 
 # ---------

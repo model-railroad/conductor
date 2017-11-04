@@ -9,12 +9,14 @@ import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Simulator {
     private final String TAG = "Simu";
     private final ILogger mLogger;
     private final IClock mClock;
-    private volatile Thread mCurrentThread;
+    private Map<String, Thread> mThreads = new ConcurrentHashMap<>(2, 0.75f, 2);
     private volatile boolean mStopRequested;
 
     @Inject
@@ -26,59 +28,63 @@ public class Simulator {
     }
 
     public void startAsync(Script script, String varName) {
-        if (mCurrentThread != null) {
-            mLogger.d(TAG, "Error: Can't start with a current simu thread running.");
+        final String tag = TAG + " " + varName.replace("simulation-", "");
+        Thread thread = mThreads.get(varName);
+        if (thread != null) {
+            mLogger.d(tag, "Error: Can't start with a current simu thread running.");
             return;
         }
 
         Var scriptVar = script.getVar(varName);
         if (scriptVar == null) {
-            mLogger.d(TAG, "Error: no simu var named " + varName);
+            mLogger.d(tag, "Error: no simu var named " + varName);
             return;
         }
 
         String source = scriptVar.get();
         if (source == null || source.isEmpty()) {
-            mLogger.d(TAG, "Error: simu var empty for " + varName);
+            mLogger.d(tag, "Error: simu var empty for " + varName);
             return;
         }
 
         mStopRequested = false;
-        mCurrentThread = new Thread(() -> {
-            asyncExec(script, source);
-            mCurrentThread = null;
+        thread = new Thread(() -> {
+            asyncExec(tag, script, source);
+            mThreads.remove(varName);
         });
-        mCurrentThread.start();
+        mThreads.put(varName, thread);
+        thread.start();
     }
 
     public void stop() {
-        if (mCurrentThread != null) {
+        if (mThreads.isEmpty()) {
+            mLogger.d(TAG, "Warning: Nothing to stop");
+        } else {
             mLogger.d(TAG, "Stop requested");
             mStopRequested = true;
-        } else {
-            mLogger.d(TAG, "Error: Nothing to stop");
         }
     }
 
     public void join() throws InterruptedException {
-        Thread t = mCurrentThread;
-        if (t != null) {
-            mLogger.d(TAG, "Join requested");
-            t.join();
+        if (mThreads.isEmpty()) {
+            mLogger.d(TAG, "Warning: Nothing to join");
         } else {
-            mLogger.d(TAG, "Error: Nothing to join");
+            mLogger.d(TAG, "Join requested");
+            for (Thread thread : mThreads.values()) {
+                thread.join();
+            }
         }
     }
 
-    private void asyncExec(Script script, String source) {
-        mLogger.d(TAG, "Started");
+    private void asyncExec(String tag, Script script, String source) {
+        mLogger.d(tag, "Started");
 
         String[] instructions = source.split("[;\r\n]");
         Throttle throttle = null;
 
         nextInstruction: for (String instruction : instructions) {
             if (mStopRequested) {
-                mLogger.d(TAG, "Stop requested done");
+                mLogger.d(tag, "Stop requested done");
                 return;
             }
 
@@ -102,29 +108,29 @@ public class Simulator {
             switch (keyword.toLowerCase(Locale.US)) {
             case "end":
                 break nextInstruction;
-            case "loco":
+            case "throttle":
                 name = words.length > 1 ? words[1] : "[missing]";
                 throttle = script.getThrottle(name);
                 if (throttle == null) {
-                    mLogger.d(TAG, "Error: Unknown throttle '" + name + "' in '" + instruction + "'");
+                    mLogger.d(tag, "Error: Unknown throttle '" + name + "' in '" + instruction + "'");
                 }
                 break;
             case "stop":
                 if (throttle != null) {
                     throttle.setSpeed(0);
                 } else {
-                    mLogger.d(TAG, "Error: No throttle defined for '" + instruction + "'");
+                    mLogger.d(tag, "Error: No throttle defined for '" + instruction + "'");
                 }
                 break;
             case "wait":
                 if (words.length == 2 && words[1].endsWith("s")) {
-                    waitOnTimer(instruction, words);
+                    waitOnTimer(tag, instruction, words);
 
                 } else if (words.length == 3 && words[1].equalsIgnoreCase("on")) {
-                    waitOnSensorName(script, instruction, words);
+                    waitOnSensorName(tag, script, instruction, words);
 
                 } else {
-                    mLogger.d(TAG, "Error: Invalid format '" + instruction + "'");
+                    mLogger.d(tag, "Error: Invalid format '" + instruction + "'");
                 }
                 break;
             case "set":
@@ -138,44 +144,45 @@ public class Simulator {
                         state = false;
                         break;
                     default:
-                        mLogger.d(TAG, "Error: Expected 'on' or 'off' in '" + instruction + "'");
+                        mLogger.d(tag, "Error: Expected 'on' or 'off' in '" + instruction + "'");
                         break nextInstruction;
                     }
 
-                    setSensorState(script, instruction, words, state);
+                    setSensorState(tag, script, instruction, words, state);
                     break ;
 
                 } else {
-                    mLogger.d(TAG, "Error: Invalid format '" + instruction + "'");
+                    mLogger.d(tag, "Error: Invalid format '" + instruction + "'");
                 }
                 break;
             default:
-                mLogger.d(TAG, "Error: Unknown keyword '" + keyword + "' in '" + instruction + "'");
+                mLogger.d(tag, "Error: Unknown keyword '" + keyword + "' in '" + instruction + "'");
                 break;
             }
         }
 
-        mLogger.d(TAG, "Script end");
+        mLogger.d(tag, "Script end");
     }
 
-    private void setSensorState(Script script, String instruction, String[] words, boolean state) {
+    private void setSensorState(String tag, Script script, String instruction, String[] words, boolean state) {
         String name = words[2];
         Sensor sensor = script.getSensor(name);
         if (sensor == null) {
-            mLogger.d(TAG, "Error: Unknown sensor '" + name + "' in '" + instruction + "'");
+            mLogger.d(tag, "Error: Unknown sensor '" + name + "' in '" + instruction + "'");
             return;
         }
 
         // This only works with the DevelopmentEntryPoint and not with a real JMRI provider.
+        mLogger.d(tag, "Set sensor '" + name + "' to " + (state ? "ON" : "OFF"));
         sensor.getJmriSensor().setActive(state);
     }
 
-    private void waitOnTimer(String instruction, String[] words) {
+    private void waitOnTimer(String tag, String instruction, String[] words) {
         float seconds;
         try {
             seconds = Float.parseFloat(words[1].substring(0, words[1].length() - 1));
         } catch (NumberFormatException e) {
-            mLogger.d(TAG, "Error: Invalid wait time in '" + instruction + "'");
+            mLogger.d(tag, "Error: Invalid wait time in '" + instruction + "'");
             return;
         }
 
@@ -191,13 +198,13 @@ public class Simulator {
             now = mClock.elapsedRealtime();
 
             if (interrupted || mStopRequested) {
-                mLogger.d(TAG, instruction + " interrupted.");
+                mLogger.d(tag, instruction + " interrupted.");
                 break;
             }
         }
     }
 
-    private void waitOnSensorName(Script script, String instruction, String[] words) {
+    private void waitOnSensorName(String tag, Script script, String instruction, String[] words) {
         String name = words[2];
         Sensor sensor = script.getSensor(name);
         if (sensor == null) {
@@ -205,7 +212,7 @@ public class Simulator {
             return;
         }
 
-        mLogger.d(TAG, "Wait for sensor '" + name + "'");
+        mLogger.d(tag, "Wait for sensor '" + name + "'");
         while (!sensor.isActive()) {
             boolean interrupted = false;
             try {
@@ -215,7 +222,7 @@ public class Simulator {
             }
 
             if (interrupted || mStopRequested) {
-                mLogger.d(TAG, instruction + " interrupted.");
+                mLogger.d(tag, instruction + " interrupted.");
                 break;
             }
         }
