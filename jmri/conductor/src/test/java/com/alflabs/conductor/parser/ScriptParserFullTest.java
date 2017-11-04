@@ -90,11 +90,11 @@ public class ScriptParserFullTest {
 
     @Test
     public void testScript5() throws Exception {
-        when(mFileOps.isFile(new File("maps\\filename1.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("maps\\filename1.svg"), Charsets.UTF_8)).thenReturn("svg1");
+        when(mFileOps.isFile(new File("maps/filename1.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("maps/filename1.svg"), Charsets.UTF_8)).thenReturn("svg1");
 
-        when(mFileOps.isFile(new File("maps\\filename2.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("maps\\filename2.svg"), Charsets.UTF_8)).thenReturn("svg2");
+        when(mFileOps.isFile(new File("maps/filename2.svg"))).thenReturn(true);
+        when(mFileOps.toString(new File("maps/filename2.svg"), Charsets.UTF_8)).thenReturn("svg2");
 
         String source = getFileSource("script5.txt");
         assertThat(source).isNotNull();
