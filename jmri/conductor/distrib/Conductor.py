@@ -26,6 +26,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._address = address
         self._throttle = throttle
         self._provider = provider
+        # Note that JMRI NceThrottle.java ignores setSpeedStepMode (see setSpeed below for details).
         if self._throttle is not None:
             self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
 
@@ -39,13 +40,32 @@ class JmriThrottleAdapter(IJmriThrottle):
         """In: void; Out: int address"""
         return self._address
 
+    def eStop(self):
+        """In: int void; Out: void"""
+        print "[Conductor", self._address, "] E-STOP"
+        if self._throttle is None:
+            print "[Conductor] No Throttle for ", self._address
+            return
+        # Any negative value sends an E-Stop.
+        self._throttle.setSpeedSetting(-1.)
+
     def setSpeed(self, speed28):
         """In: int speed; Out: void"""
+
+        # From JMRI NceThrottle.java:
+        # - The DccThrottle.setSpeedStepMode() is actually improperly used.
+        # - setSpeedSetting() takes a float which is then multiplied by 126 and _then_ that value
+        #   is used either with a "128 speed" or "28 speed" command, which is clearly wrong.
+        # - The only sane way to set a speed with JMRI and an NceThrottle is to use the 128 speed
+        #   mode _and_ not send anything more than 1.0.
+        # - Negative values send an E-Stop FWD or REV command (0xA2 0x06 or 0xA2 0x05 respectively).
+
         print "[Conductor", self._address, "] Speed", speed28
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
-        self._throttle.setIsForward(speed28 >= 0)
+        if speed28 != 0:
+            self._throttle.setIsForward(speed28 >= 0)
         absv28 = speed28
         if absv28 < 0:
             absv28 = -absv28
