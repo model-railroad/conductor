@@ -8,6 +8,7 @@ HO-scale model train layout at the Randall Museum in San Francisco.
 It is designed to integrate with JMRI and not to run as a standalone application.
 
 Features of Conductor:
+
 - Conductor is a Java app that integrates with JMRI.
 - It has access to the turnouts, sensors and throttles defined in JMRI.
 - Conductor is controlled using an automation script with a custom
@@ -102,6 +103,7 @@ expand the features of the application as the project matures.
 ## Dependencies
 
 __Conductor__ depends on one additional git submodule:
+
 - The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
 
 
@@ -177,6 +179,7 @@ To build and use this from IntelliJ using the Community Edition:
 
 Issue: On Windows with DPI scaling, the Java UI does not scale properly.
 Solution from SO:
+
 - For JRE 1.6, add -Dsun.java2d.dpiaware=false or -Dsun.java2d.uiScale=2.5
 - For JRE 1.8, find the JRE/bin/java.exe > Properties > Compatibility > override dpi scaling. Meh.
 - My solution is to just run it under Linux and avoid Windows' broken DPI scaling.

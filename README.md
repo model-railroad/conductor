@@ -37,12 +37,14 @@ Here's a non-exhaustive list of projects or folders available here:
 ## Dependencies
 
 __Conductor__ and __RTAC__ depend on 2 additional git submodules:
+
 - The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
 - A fork of the [AndroidSVG](https://github.com/ralfoide/androidsvg) project.
 
 ## License
 
 Various projects use different licenses:
+
 - __Conductor__, __RTAC__, and __LibUtils__ are licensed under the __GNU GPL v3 license__.
 - __AndroidSVG__ is licensed under the __Apache license__.
 - Some arduino or pic16f files are licensed under the __MIT license__.

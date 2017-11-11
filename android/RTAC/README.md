@@ -8,6 +8,7 @@ application that displays the state of the Randall Automation software.
 It works by connecting to a server hosted by the Conductor application.
 
 Features of RTAC:
+
 - It is a custom Android app that runs on one or more tablets.
 - It is synchronized with Conductor to display the automation status
   and the track occupancy.
@@ -64,6 +65,7 @@ expand the features of the application as the project matures.
 ## Dependencies
 
 __RTAC__ depends on 2 additional git submodules:
+
 - The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
 - A fork of the [AndroidSVG](https://github.com/ralfoide/androidsvg) project.
 
