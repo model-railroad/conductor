@@ -43,7 +43,7 @@ __Conductor__ and __RTAC__ depend on 2 additional git submodules:
 ## License
 
 Various projects use different licenses:
-* __Conductor__, __RTAC__, and __LibUtils__ are licensed under the __GNU GPL v3 license__.
-* __AndroidSVG__ is licensed under the __Apache license__.
-* Some arduino or pic16f files are licensed under the __MIT license__.
-* This list is not exhaustive. Consult each project as needed.
+ * __Conductor__, __RTAC__, and __LibUtils__ are licensed under the __GNU GPL v3 license__.
+ * __AndroidSVG__ is licensed under the __Apache license__.
+ * Some arduino or pic16f files are licensed under the __MIT license__.
+ * This list is not exhaustive. Consult each project as needed.

@@ -8,15 +8,15 @@ application that displays the state of the Randall Automation software.
 It works by connecting to a server hosted by the Conductor application.
 
 Features of RTAC:
-* It is a custom Android app that runs on one or more tablets.
-* It is synchronized with Conductor to display the automation status
-  and the track occupancy.
-* It automatically finds and connects to the Conductor server using
-  the Zeroconf protocol.
-* It features an “Emergency Stop” which users can use to stop the
-  automation, for example if a train derails. Once the Conductor software
-  goes in emergency stop, either tablet can be used to reset the system
-  with some clear indication on screen of what to do.
+ * It is a custom Android app that runs on one or more tablets.
+ * It is synchronized with Conductor to display the automation status
+   and the track occupancy.
+ * It automatically finds and connects to the Conductor server using
+   the Zeroconf protocol.
+ * It features an “Emergency Stop” which users can use to stop the
+   automation, for example if a train derails. Once the Conductor software
+   goes in emergency stop, either tablet can be used to reset the system
+   with some clear indication on screen of what to do.
 
 Both tablets are synchronized so that the display is the same on both
 and either can be used to trigger the emergency stop or reset the

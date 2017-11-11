@@ -8,16 +8,16 @@ HO-scale model train layout at the Randall Museum in San Francisco.
 It is designed to integrate with JMRI and not to run as a standalone application.
 
 Features of Conductor:
-* Conductor is a Java app that integrates with JMRI.
-* It has access to the turnouts, sensors and throttles defined in JMRI.
-* Conductor is controlled using an automation script with a custom
-  language that I developed for that purpose.
-* The script responds to sensor events and controls DCC turnouts and DCC
-  engines via JMRI.
-* This allows the automation to be easily modified without recompiling
-  the program.
-* It acts as a data server for the "RTAC" Android application to display
-  the automation state on remote tablet displays.
+ * Conductor is a Java app that integrates with JMRI.
+ * It has access to the turnouts, sensors and throttles defined in JMRI.
+ * Conductor is controlled using an automation script with a custom
+   language that I developed for that purpose.
+ * The script responds to sensor events and controls DCC turnouts and DCC
+   engines via JMRI.
+ * This allows the automation to be easily modified without recompiling
+   the program.
+ * It acts as a data server for the "RTAC" Android application to display
+   the automation state on remote tablet displays.
 
 The Conductor app is invoked from JMRI using its Jython extension bridge.
 Conductor’s main role is to run a script that drives the automation.
