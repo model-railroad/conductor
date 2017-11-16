@@ -18,8 +18,8 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.IClock;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,8 +60,8 @@ public class IConductorComponentTest {
 
     @Test
     public void testNowProviderIsSingleton() throws Exception {
-        Now np1 = mComponent.getNow();
-        Now np2 = mComponent.getNow();
+        IClock np1 = mComponent.getClock();
+        IClock np2 = mComponent.getClock();
         assertThat(np1).isNotNull();
         assertThat(np1).isSameAs(np2);
     }

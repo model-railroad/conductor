@@ -20,8 +20,8 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.ScriptModule;
-import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.IClock;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -33,7 +33,7 @@ import java.io.File;
 @Component(modules = {ConductorModule.class})
 public interface IConductorComponent {
 
-    Now getNow();
+    IClock getClock();
     KeyValueServer getKeyValueServer();
     IJmriProvider getJmriProvider();
     @Named("script") File getScriptFile();

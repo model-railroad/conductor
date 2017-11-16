@@ -20,9 +20,10 @@ package com.alflabs.conductor;
 
 import com.alflabs.utils.FileOps;
 import com.alflabs.conductor.util.Logger;
-import com.alflabs.conductor.util.Now;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.JavaClock;
 import dagger.Module;
 import dagger.Provides;
 
@@ -38,8 +39,8 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public Now provideNowProvider() {
-        return new Now();
+    public IClock provideClock() {
+        return new JavaClock();
     }
 
     @Singleton

@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.util.FakeNow;
+import com.alflabs.utils.FakeClock;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,12 +31,12 @@ import static com.google.common.truth.Truth.assertThat;
 public class TimerTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    private FakeNow mNow;
+    private FakeClock mNow;
     private Timer mTimer;
 
     @Before
     public void setUp() throws Exception {
-        mNow = new FakeNow(100*1000);
+        mNow = new FakeClock(100*1000);
 
         TimerFactory factory = new TimerFactory(InstanceFactory.create(mNow));
         mTimer = factory.create(42);
@@ -66,7 +66,7 @@ public class TimerTest {
 
     @Test
     public void testTimerReset() throws Exception {
-        FakeNow now = new FakeNow(100*1000);
+        FakeClock now = new FakeClock(100*1000);
         Timer timer = new Timer(42, now);
 
         assertThat(timer.isActive()).isFalse();

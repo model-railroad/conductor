@@ -31,13 +31,13 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.FakeNow;
-import com.alflabs.conductor.util.Now;
+import com.alflabs.utils.FakeClock;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
 import com.google.common.base.Charsets;
 import org.junit.Before;
 import org.junit.Rule;
@@ -75,7 +75,7 @@ public class ScriptParser2Test {
     @Mock IKeyValue mKeyValue;
     @Mock FileOps mFileOps;
 
-    private FakeNow mNow;
+    private FakeClock mClock;
     private TestReporter mReporter;
     private IScriptComponent mScriptComponent;
     private IScriptComponent mFakeNowScriptComponent;
@@ -106,14 +106,15 @@ public class ScriptParser2Test {
         mScriptComponent = realNowComponent.newScriptComponent(
                 new ScriptModule(mReporter, mKeyValue));
 
-        mNow = new FakeNow(1000);
+        mClock = new FakeClock(1000);
 
         IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
                 .conductorModule(new ConductorModule(mJmriProvider) {
                     @Override
-                    public Now provideNowProvider() {
-                        return mNow;
+                    public IClock provideClock() {
+                        return mClock;
                     }
+
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
@@ -1140,20 +1141,20 @@ public class ScriptParser2Test {
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // t1 is active 5 seconds later
-        mNow.add(5*1000 - 1);
+        mClock.add(5*1000 - 1);
         engine.onExecHandle();
         assertThat(script.getTimer("t1").isActive()).isFalse();
 
         // Note: timer is still active because the "t1 ->" does not reset it with end yet.
         // A timer remains active till it is either restarted or ended.
-        mNow.add(1);
+        mClock.add(1);
         engine.onExecHandle();
         verify(mJmriThrottle).horn();
         verify(mJmriThrottle, never()).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isTrue();
 
         // t2 is active 2 seconds later. Both t1 gets reset as soon as t2 becomes active.
-        mNow.add(2*1000);
+        mClock.add(2*1000);
         engine.onExecHandle();
         verify(mJmriThrottle).setSpeed(anyInt());
         assertThat(script.getTimer("t1").isActive()).isFalse();
@@ -1187,19 +1188,19 @@ public class ScriptParser2Test {
         assertThat(script.getTimer("t9").isActive()).isFalse();
 
         // t2 is active 5 seconds later
-        mNow.add(2*1000);
+        mClock.add(2*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isTrue();
         verify(mJmriThrottle).horn();
 
         // t5 is active 3 seconds later
-        mNow.add(3*1000);
+        mClock.add(3*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t5").isActive()).isTrue();
         verify(mJmriThrottle).setSound(true);
 
         // t9 is active 4 seconds later
-        mNow.add(4*1000);
+        mClock.add(4*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t9").isActive()).isTrue();
         verify(mJmriThrottle).setLight(true);
@@ -1234,19 +1235,19 @@ public class ScriptParser2Test {
         assertThat(script.getTimer("t9").isActive()).isFalse();
 
         // t2 is active 5 seconds later and has just been reset
-        mNow.add(2*1000);
+        mClock.add(2*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t2").isActive()).isFalse();
         verify(throttle).horn();
 
         // t5 is not executed 3 seconds later as it was reset
-        mNow.add(3*1000);
+        mClock.add(3*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t5").isActive()).isFalse();
         verify(throttle, never()).setSound(true);
 
         // t9 is not executed 4 seconds later as it was reset
-        mNow.add(4*1000);
+        mClock.add(4*1000);
         engine.onExecHandle();
         assertThat(script.getTimer("t9").isActive()).isFalse();
         verify(throttle, never()).setLight(true);
@@ -1299,12 +1300,12 @@ public class ScriptParser2Test {
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         // Line 1 : !b1 is active 2 seconds later
-        mNow.add(2*1000 - 1);
+        mClock.add(2*1000 - 1);
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
-        mNow.add(1);
+        mClock.add(1);
         engine.onExecHandle();
         verify(mJmriThrottle).setLight(false);
         verify(mJmriThrottle, never()).setSound(anyBoolean());
@@ -1312,7 +1313,7 @@ public class ScriptParser2Test {
 
         // Line 3 : !b2 is active 4 seconds after the start.
         // However b1 is still negative so the line doesn't yet trigger.
-        mNow.add(2 * 1000);
+        mClock.add(2 * 1000);
         reset(mJmriThrottle);
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
@@ -1321,20 +1322,20 @@ public class ScriptParser2Test {
         // Trigger b1. Note this is now "!b2 + 5" and thus does not trigger (because !b2 + 4
         // has auto-reset as soon as it became active).
         when(sensor1.isActive()).thenReturn(true);
-        mNow.add(1 * 1000);
+        mClock.add(1 * 1000);
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(false);
 
         // Line 2: b1 + 3 is now becoming active.
-        mNow.add(3 * 1000);
+        mClock.add(3 * 1000);
         reset(mJmriThrottle);
         engine.onExecHandle();
         verify(mJmriThrottle).setLight(true);
         verify(mJmriThrottle, never()).setSound(anyBoolean());
 
         // Line 4: b1 + 5 becomes active. But b2 is still negative so the line doesn't trigger.
-        mNow.add(2 * 1000);
+        mClock.add(2 * 1000);
         reset(mJmriThrottle);
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
@@ -1351,7 +1352,7 @@ public class ScriptParser2Test {
         // Then skip 6 seconds. b2+6 becomes active. This is now 11 seconds after
         // b1 became active and b1+5 is no longer active since the delayed timer auto-resets.
         // Bottom line: we can't write a rule that uses 2 delayed timers.
-        mNow.add(6 * 1000);
+        mClock.add(6 * 1000);
         assertThat(script.getTimer("$b1$5$").isActive()).isFalse();
         reset(mJmriThrottle);
         engine.onExecHandle();
@@ -1360,7 +1361,7 @@ public class ScriptParser2Test {
 
         // Line 5: b2+7 becomes active.
         // But since b1+5 has been reset as soon as it became active.
-        mNow.add(1 * 1000);
+        mClock.add(1 * 1000);
         reset(mJmriThrottle);
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());

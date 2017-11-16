@@ -209,7 +209,7 @@ public class Simulator {
         while (now < end) {
             boolean interrupted = false;
             try {
-                mClock.sleep(Math.min(500, end - now));
+                mClock.sleepWithInterrupt(Math.min(500, end - now));
             } catch (InterruptedException e) {
                 interrupted = true;
             }
@@ -234,7 +234,7 @@ public class Simulator {
         while (!sensor.isActive()) {
             boolean interrupted = false;
             try {
-                mClock.sleep(250);
+                mClock.sleepWithInterrupt(250);
             } catch (InterruptedException e) {
                 interrupted = true;
             }

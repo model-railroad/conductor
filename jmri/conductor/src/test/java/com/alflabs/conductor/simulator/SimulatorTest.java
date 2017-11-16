@@ -29,8 +29,7 @@ import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
-import com.alflabs.conductor.util.FakeNow;
-import com.alflabs.conductor.util.Now;
+import com.alflabs.utils.FakeClock;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -41,14 +40,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -72,7 +68,7 @@ public class SimulatorTest {
     @Mock FileOps mFileOps;
     @Mock IClock mClock;
 
-    private FakeNow mNow;
+    private FakeClock mFakeClock;
     private TestReporter mReporter;
     private IScriptComponent mScriptComponent;
 
@@ -96,14 +92,15 @@ public class SimulatorTest {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
-        mNow = new FakeNow(1000);
+        mFakeClock = new FakeClock(1000);
 
         IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
                 .conductorModule(new ConductorModule(mJmriProvider) {
                     @Override
-                    public Now provideNowProvider() {
-                        return mNow;
+                    public IClock provideClock() {
+                        return mFakeClock;
                     }
+
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
@@ -201,14 +198,14 @@ public class SimulatorTest {
             sleepCount.incrementAndGet();
             when(jmriSensor1.isActive()).thenReturn(true);
             return null;
-        }).when(mClock).sleep(250);
+        }).when(mClock).sleepWithInterrupt(250);
 
         mSimulator.startAsync(script, "simu");
         mSimulator.join();
 
         assertThat(sleepCount.get()).isEqualTo(1);
         verify(jmriSensor1, atLeastOnce()).isActive();
-        verify(mClock).sleep(250);
+        verify(mClock).sleepWithInterrupt(250);
         verifyNoMoreInteractions(mClock);
     }
 
@@ -229,13 +226,13 @@ public class SimulatorTest {
         doAnswer(invocation -> {
             elapsedTime.addAndGet(500L);
             return null;
-        }).when(mClock).sleep(500);
+        }).when(mClock).sleepWithInterrupt(500);
 
         mSimulator.startAsync(script, "simu");
         mSimulator.join();
 
         assertThat(elapsedTime.get()).isEqualTo(1000 + 5500);
-        verify(mClock, times(11)).sleep(500);
+        verify(mClock, times(11)).sleepWithInterrupt(500);
         verify(mClock, times(12)).elapsedRealtime();
         verifyNoMoreInteractions(mClock);
     }

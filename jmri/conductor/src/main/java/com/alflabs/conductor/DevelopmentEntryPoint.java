@@ -53,7 +53,7 @@ public class DevelopmentEntryPoint {
 
             @Override
             protected Simulator getSimulator(IConductorComponent component) {
-                return new Simulator(logger, component.getNow());
+                return new Simulator(logger, component.getClock());
             }
         };
         String filePath = "src/test/resources/v2/script_pa+bl_11.txt";

@@ -18,18 +18,20 @@
 
 package com.alflabs.conductor.util;
 
+import com.alflabs.utils.IClock;
+
 public class FrequencyMeasurer {
 
-    private final Now mNow;
+    private final IClock mClock;
     private long mLastPingMs;
     private long mDelayMs;
 
-    public FrequencyMeasurer(Now now) {
-        mNow = now;
+    public FrequencyMeasurer(IClock clock) {
+        mClock = clock;
     }
 
     public void ping() {
-        long now = mNow.now();
+        long now = mClock.elapsedRealtime();
         if (mLastPingMs != 0) {
             long delay = now - mLastPingMs;
             // simple averaging: 1/3rd last delay, 2/3rd new delay

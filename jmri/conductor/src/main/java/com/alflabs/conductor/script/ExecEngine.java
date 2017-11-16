@@ -19,7 +19,6 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.util.FrequencyMeasurer;
-import com.alflabs.conductor.util.Now;
 import com.alflabs.conductor.util.RateLimiter;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
@@ -27,6 +26,7 @@ import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.MapInfos;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.manifest.RouteInfos;
+import com.alflabs.utils.IClock;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.inject.Inject;
@@ -46,10 +46,10 @@ public class ExecEngine implements IExecEngine {
     private Constants.EStopState mLastEStopState;
 
     @Inject
-    public ExecEngine(Now now, Script script, IKeyValue keyValue) {
+    public ExecEngine(IClock clock, Script script, IKeyValue keyValue) {
         mScript = script;
-        mHandleFrequency = new FrequencyMeasurer(now);
-        mHandleRateLimiter = new RateLimiter(30.0f, now);
+        mHandleFrequency = new FrequencyMeasurer(clock);
+        mHandleRateLimiter = new RateLimiter(30.0f, clock);
         mKeyValue = keyValue;
     }
 

@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.util.Now;
+import com.alflabs.utils.IClock;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -32,7 +32,7 @@ import com.google.auto.factory.Provided;
 @AutoFactory(allowSubclasses = true)
 public class Timer implements IConditional, IResettable {
 
-    private final Now mNow;
+    private final IClock mClock;
     private final int mDurationSec;
     private long mEndTS;
 
@@ -45,9 +45,9 @@ public class Timer implements IConditional, IResettable {
         END
     }
 
-    public Timer(int durationSec, @Provided Now now) {
+    public Timer(int durationSec, @Provided IClock clock) {
         mDurationSec = durationSec;
-        mNow = now;
+        mClock = clock;
         mEndTS = 0;
     }
 
@@ -76,7 +76,7 @@ public class Timer implements IConditional, IResettable {
     }
 
     private long now() {
-        return mNow.now();
+        return mClock.elapsedRealtime();
     }
 
 }
