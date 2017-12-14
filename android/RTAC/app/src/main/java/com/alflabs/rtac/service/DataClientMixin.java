@@ -210,9 +210,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                     setStatus(true, "Connection to data server lost");
                 }
                 if (DEBUG) Log.i(TAG, "Data Client Loop: failed, retry after delay");
-                try {
-                    mClock.sleep(1000);
-                } catch (InterruptedException ignore) {}
+                mClock.sleep(1000);
             }
         }
     }
