@@ -29,7 +29,7 @@ buildscript {
         // [AS2] vs [AS3]
         String version = (gradle.gradleVersion < "4"
                 ? "com.android.tools.build:gradle:2.3.1"
-                : "com.android.tools.build:gradle:3.0.0-beta6")
+                : "com.android.tools.build:gradle:3.0.1")
         classpath version
 
         // NOTE: Do not place your application dependencies here; they belong
