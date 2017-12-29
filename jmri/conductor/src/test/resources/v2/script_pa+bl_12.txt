@@ -1,0 +1,403 @@
+#
+# Project: Conductor
+# Copyright (C) 2017 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# sensors
+
+Sensor BLParked     = NS752      # 48:1
+Sensor BLStation    = NS753      # 48:2
+Sensor BLTunnel     = NS754      # 48:3
+Sensor BLReverse    = NS755      # 48:4
+Sensor BLRun        = NS765      # 48:14
+
+Sensor B310         = NS768      # 49:1
+Sensor B311         = NS769      # 49:2
+Sensor B320         = NS770      # 49:3
+Sensor B321         = NS771      # 49:4
+Sensor B330         = NS773      # 49:6
+Sensor B340         = NS774      # 49:7
+Sensor B360         = NS775      # 49:8
+Sensor B370         = NS776      # 49:9
+Sensor BL-Toggle    = NS781      # 49:14
+
+Sensor PA-Toggle    = NS784      # 50:1
+Sensor PA-Run3      = NS785      # 50:2
+Sensor B503a        = NS786      # 50:3, B503a
+Sensor B503b        = NS787      # 50:4, B503b
+
+# turnouts
+
+Turnout T311        = NT311
+Turnout T320        = NT320
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T324        = NT324
+Turnout T326        = NT326
+Turnout T330        = NT330
+Turnout T370        = NT370
+Turnout T504        = NT504
+
+# Generic timers
+
+Timer PA-Timer-Acquire-Route = 1
+Timer PA-Timer-Release-Route = 1
+
+# Maps
+
+Map Mainline = "Conductor Map Mainline 1.svg"
+
+# ---------
+# Events PA
+# ---------
+
+# PA engines: Rapido F40PH, both on address 204
+# F0 is light (use PA Light)
+# F1 is bell
+# F2 is horn (use PA Horn)
+# F3 = horn doppler effect (use F3 1 to 0)
+# F6 = Strobe lights
+# F8 1/0 for Sound (use PA Sound)
+# F9 = Red Markers (end unit)
+
+Throttle PA-CONSIST = 204
+
+Enum PA-State = Idle Station Up Summit Down
+
+Route Passenger = Toggle: PA-Toggle, Status: PA-State, Throttle: PA-CONSIST
+
+Int PA-Station-Speed    = 8
+Int PA-Summit-Speed     = 12
+Int PA-Sonora-Speed     = 14
+Int PA-Reduction-Speed  = 8
+Int PA-Full-Speed       = 16
+
+# --- Routes
+
+PA-Timer-Acquire-Route ->
+    T504 Normal ;
+    T311 Reverse;
+    T320 Normal ;
+    T321 Normal ;
+    T322 Normal ;
+    T326 Normal ;
+    T330 Reverse;
+    T370 Normal
+
+PA-Timer-Release-Route ->
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
+
+# --- PA State: Idle
+
+Timer PA-Timer-Stop-Sound-Off = 30
+
+PA-State == Idle & PA-Toggle ->
+    PA-CONSIST Sound = 1; PA-CONSIST Light = 1;
+    PA-CONSIST Stop ;
+    PA-State = Station ;
+    PA-Timer-Release-Route Start
+
+PA-State == Idle & !PA-Toggle ->
+    PA-CONSIST Light = 0;
+    PA-CONSIST Stop ;
+    PA-Timer-Stop-Sound-Off Start ;
+    PA-Timer-Release-Route Start
+
+PA-State == Idle & PA-Timer-Stop-Sound-Off -> PA-CONSIST Sound = 0
+
+
+# --- PA State: Station
+
+# Departure from Station (going up)
+PA-State == Station & B503b & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
+    PA-State = Up ;
+    Reset Timers
+
+PA-State == Station & !PA-Toggle ->
+    PA-CONSIST Stop ;
+    PA-State = Idle ;
+    Reset Timers ;
+
+
+# --- PA State: Going Up
+
+Timer PA-Station-Horn = 2
+PA-State == Up & B503b & PA-CONSIST Stopped ->
+    PA-CONSIST Light = 1; PA-CONSIST Sound = 1;
+    PA-CONSIST F3 = 0 ;
+    PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 0 ;
+    PA-CONSIST Reverse = PA-Station-Speed ;
+    PA-CONSIST Horn ; PA-Station-Horn Start ;
+    PA-Timer-Acquire-Route Start
+
+PA-Station-Horn -> PA-CONSIST Horn
+
+PA-State == Up & B503a & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Full-Speed
+
+# Mid-Station doppler on the way up
+PA-State == Up &  B321 + 27 & PA-CONSIST Reverse -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+# Sonora speed reduction
+PA-State == Up &  B330 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Sonora-Speed
+PA-State == Up &  B330 + 12 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Full-Speed ; PA-CONSIST Horn
+# After tunnel on the way up
+PA-State == Up &  B330 + 26 & PA-CONSIST Reverse -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
+
+PA-State == Up & B360 ->
+    PA-State = Summit
+
+
+# PA-Toggle off reverts train to down
+PA-State == Up & !PA-Toggle & PA-CONSIST Reverse ->
+    PA-State = Down ;
+    PA-CONSIST Forward = PA-Summit-Speed
+
+# --- PA State: Summit
+
+PA-State == Summit & B370 +  9 & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Summit-Speed
+PA-State == Summit & B370 + 14 & PA-CONSIST Reverse ->
+    PA-CONSIST Stop ;
+    PA-CONSIST Horn ;
+    PA-CONSIST F6 = 0 ; PA-CONSIST F9 = 0 ;
+PA-State == Summit & B370 + 22 ->
+    PA-CONSIST Horn;
+    PA-CONSIST Forward = PA-Summit-Speed ;
+    PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
+
+PA-State == Summit & !B370 & B360 & PA-CONSIST Forward ->
+    PA-State = Down ;
+    PA-Timer-Acquire-Route Start
+
+
+# --- PA State: Going Down
+
+Timer PA-Timer-Full-Reverse = 12
+Timer PA-Timer-Reduction-Down = 22
+PA-State == Down & PA-CONSIST Forward ->
+    PA-Timer-Full-Reverse Start ;
+    PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
+PA-State == Down & PA-CONSIST Forward & PA-Timer-Full-Reverse -> PA-CONSIST Forward = PA-Full-speed
+PA-State == Down & PA-CONSIST Forward & B321 & PA-Toggle ->
+    PA-CONSIST F3 = 1 ;
+    PA-CONSIST F3 = 0 ;
+    PA-Timer-Reduction-Down Start
+PA-State == Down & PA-CONSIST Forward & B321 & PA-Timer-Reduction-Down -> PA-CONSIST Forward = PA-Reduction-Speed
+
+# Arrival at Station
+PA-State == Down & B503a + 5 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Station-Speed ;
+Timer PA-Timer-Down-Station = 10
+Timer PA-Timer-Down-Station-Lights-Off = 3
+PA-State == Down & PA-CONSIST Forward & !B503a & B503b -> PA-Timer-Down-Station Start
+PA-Timer-Down-Station ->
+    PA-CONSIST Stop ; PA-CONSIST Horn;
+    PA-Timer-Down-Station-Lights-Off Start
+PA-Timer-Down-Station-Lights-Off ->
+    PA-State = Station ;
+    PA-CONSIST F6 = 0 ; PA-CONSIST  F9 = 0
+
+
+# --- PA Horn
+# Horn when button is pressed during move
+#
+#PA-State == Up     & PA-Run3 -> PA-CONSIST Horn
+#PA-State == Summit & PA-Run3 -> PA-CONSIST Horn
+#PA-State == Down   & PA-Run3 -> PA-CONSIST Horn
+
+
+# ---------
+# Events BL
+# ---------
+
+# On the RDC SP-10:
+# F0 is light (use BL Light)
+# F1 is bell
+# F2 is horn (use BL Horn)
+# F5 is a doppler horn, too long so not using it
+# F6 is disabled (function used by ESU PowerPack)
+# F7 for dim lights for stations
+# F8 1/0 for Sound (use BL Sound)
+# F9 for red markers on the "end" side
+
+Throttle BL = 10
+
+Int BL-Station-Speed = 12
+Int BL-Full-Speed    = 20
+
+Enum BL-State = Idle Up Down
+
+Route Branchline = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
+
+# --- BL State: Setup at reverse station
+
+!BL-Toggle -> BL Sound = 0
+BL-Toggle -> BL Sound = 1
+
+BL-State == Idle & !BLParked & BLReverse & BLRun & !BL-Toggle ->
+    BL F1 = 1 ;
+    BL Light = 0;
+    BL Reverse = BL-Station-Speed ;
+    BL-State = Down
+
+BL-State == Down & BLParked & BL Stopped & !BL-Toggle ->
+    BL F9 = 0 ;
+    BL Light = 0;
+    BL-State = Idle
+
+BL-State == Idle & BLParked & BL-Toggle ->
+    BL F9 = 1 ;
+    BL Light = 1
+
+# --- BL State: Stopped
+
+BL-State == Idle & BLParked & BLRun & BL-Toggle ->
+    BL F1 = 0 ;
+    BL F8 = 1 ;
+    BL F9 = 1 ;
+    BL Light = 1;
+    BL-State = Up
+
+# --- BL State: Up (front)
+
+BL-State == Up -> BL Forward = BL-Station-Speed ; T324 Normal
+
+BL-State == Up & BLStation +  9 -> BL F1 = 1
+BL-State == Up & BLStation + 11 -> BL Stop
+BL-State == Up & BLStation + 18 -> BL F1 = 0 ; BL Horn ; BL Forward = BL-Full-Speed
+BL-State == Up & BLStation + 37 -> BL Horn
+BL-State == Up & BLStation + 41 -> BL Horn
+
+BL-State == Up & BLTunnel  + 6 -> BL Forward = BL-Station-Speed
+BL-State == Up & BLReverse + 2 -> BL F1 = 1
+BL-State == Up & BLReverse + 6 -> BL Stop ; BL Horn ;
+    BL-State = Down
+
+BL-State == Up & !BL Stopped & BLRun & BL-Toggle -> BL Horn
+
+BL-State == Up & !BL-Toggle ->
+    BL Reverse = BL-Station-Speed ;
+    BL-State = Down
+
+# --- BL State: Down (reverse)
+
+BL-State == Down + 15 -> BL Reverse = BL-Station-Speed ;
+BL-State == Down + 16 & BL-Toggle -> BL F8 = 1;
+BL-State == Down + 17 & BL-Toggle -> BL Horn
+
+BL-State == Down & BLTunnel ->
+    BL F1 = 0;
+    BL Reverse = BL-Full-Speed
+
+BL-State == Down & !BLTunnel + 14 & BL-Toggle -> BL Horn
+BL-State == Down & !BLTunnel + 16 & BL-Toggle -> BL Horn
+BL-State == Down & BLStation     -> T324 Normal
+BL-State == Down & BLStation + 2 -> BL F1 = 1
+
+
+
+BL-State == Down & BLStation + 5 & BL-Toggle -> BL Stop
+BL-State == Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
+
+
+BL-State == Down & BLParked + 2  -> BL Stop
+BL-State == Down & BLParked + 6 ->
+    BL F9 = 0 ;
+    BL Light = 0;
+    BL-State = Idle
+
+BL-State == Down & !BL Stopped & BLRun & BL-Toggle -> BL Horn
+
+
+# ------------------
+# Automatic Turnouts
+# ------------------
+
+# If automation is off, T330 is automatically selected:
+# B320 -> B330 via T330 Normal
+# B321 -> B330 via T330 Reverse
+
+!PA-Toggle & !B330 & B320 -> T330 Normal
+!PA-Toggle & !B330 & B321 -> T330 Reverse
+
+# ------------------
+# Simulations
+# ------------------
+
+String Simulation-Passenger = '''
+Throttle PA-CONSIST
+
+# Station
+Stop
+Set  On B503b
+Wait On PA-Toggle; Wait On PA-Run3; Wait 8s
+
+# Going up
+Set On B503a; Set Off B503b; Wait 8s
+
+Set Off B503a; Wait 4s
+Set On B311; Wait 8s
+
+# Midstation horn is at 321+27s
+Set Off B311; Set On B321; Wait 30s
+
+# Curve slow down is at 330+12, horn at 330+26
+Set On B330; Set Off B321; Wait 30s
+
+Set On B340; Set Off B330; Wait 4s
+Set On B350; Set Off B340; Wait 4s
+Set On B360; Set Off B350; Wait 8s
+
+# Summit slow down at 370+9, stop at +14, reverse at +22
+Set On B370; Set Off B360; Wait 40s
+
+# Going down
+
+# Full reverse down at 360+12
+Set On  B360; Set Off B370; Wait 40s
+Set On  B350; Set Off B360; Wait 4s
+Set On  B340; Set Off B350; Wait 4s
+Set On  B330; Set Off B340; Wait 30s
+Set On  B321; Set Off B330; Wait 30s
+Set On  B311; Set Off B321; Wait 8s
+Set On B503a; Set Off B311; Wait 8s
+# Station stop at 503b+10
+Set Off B503a; Set On B503b; Wait 15s
+End
+'''
+
+String Simulation-Branchline = '''
+Throttle BL
+
+# Station
+Stop
+Set On BLParked
+Wait On BL-Toggle; Wait On BLRun; Wait 5s
+
+# Up to station,  at least 18s with go+pause+leave
+Set On BLStation; Set Off BLParked; Wait 20s
+# up between station and tunnel... takes at least 40s (bridge horn is at +16~20s)
+Set Off BLStation; Wait 40s
+Set On  BLTunnel ; Wait  8s
+# at reverse station: at least 6s going in, 15s pause, 3s+ going out
+Set On  BLReverse; Set Off BLTunnel; Wait 30s
+Set On  BLTunnel ; Set Off BLReverse; Wait 8s
+Set Off BLTunnel ; Wait 40s
+Set On  BLStation; Wait 20s
+Set On  BLParked ; Set Off BLStation; Wait 8s
+
+'''
+
+# ---------
