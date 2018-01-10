@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
@@ -53,6 +55,7 @@ public class EntryPoint {
     private ExecEngine mEngine;
     private boolean mStopRequested;
     private IConductorComponent mComponent;
+    private CountDownLatch mJmDNSLatch;
     private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
     @Inject Logger mLogger;
@@ -85,7 +88,7 @@ public class EntryPoint {
             return false;
         }
 
-        startZeroconfAdvertising(scriptFile.getName());
+        new Thread(() -> startZeroconfAdvertising(scriptFile.getName())).start();
 
         // Open the window if a GUI is possible. This can fail.
         try {
@@ -115,6 +118,7 @@ public class EntryPoint {
     }
 
     private void startZeroconfAdvertising(String name) {
+        mJmDNSLatch = new CountDownLatch(1);
         try {
             mLogger.log("[Conductor] Starting ZeroConf");
 
@@ -152,11 +156,18 @@ public class EntryPoint {
             // Ignore. continue.
             mLogger.log("[Conductor] ZeroConf not enabled: ");
             LogException.logException(mLogger, e);
+        } finally {
+            mJmDNSLatch.countDown();
         }
     }
 
     protected void onStopAction() {
         mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
+        if (mJmDNSLatch != null) {
+            try {
+                mJmDNSLatch.await(1, TimeUnit.MINUTES);
+            } catch (InterruptedException ignore) {}
+        }
 
         for (JmDNS jmDns : mJmDnsList) {
             try {

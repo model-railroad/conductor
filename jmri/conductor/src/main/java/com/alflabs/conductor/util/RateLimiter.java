@@ -39,7 +39,9 @@ public class RateLimiter {
             long actual = mClock.elapsedRealtime() - mLastTimeMs;
             // Assuming "actual" time was less than target, how long to sleep?
             long pause = mTargetTimeMs - actual;
-            mClock.sleep(pause);
+            if (pause > 0) {
+                mClock.sleep(pause);
+            }
         }
         // Checkpoint. This should occur every mTargetTimeMs.
         mLastTimeMs = mClock.elapsedRealtime();
