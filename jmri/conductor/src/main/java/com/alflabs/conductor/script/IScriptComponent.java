@@ -25,6 +25,6 @@ import dagger.Subcomponent;
 @Subcomponent(modules = { ScriptModule.class })
 public interface IScriptComponent {
 
-    ScriptParser2 getScriptParser2();
-    ExecEngine getScriptExecEngine();
+    ScriptParser2 createScriptParser2();
+    ExecEngine createScriptExecEngine();
 }

@@ -61,6 +61,14 @@ public class EntryPoint {
     @Inject Logger mLogger;
     @Inject KeyValueServer mKeyValueServer;
 
+    public Script getScript() {
+        return mScript;
+    }
+
+    public ExecEngine getEngine() {
+        return mEngine;
+    }
+
     /**
      * Invoked when the JMRI automation is being setup, from the Jython script.
      *
@@ -165,6 +173,7 @@ public class EntryPoint {
         mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
         if (mJmDNSLatch != null) {
             try {
+                mLogger.log("[Conductor] Waiting for ZeroConf");
                 mJmDNSLatch.await(1, TimeUnit.MINUTES);
             } catch (InterruptedException ignore) {}
         }
@@ -185,13 +194,12 @@ public class EntryPoint {
         mStopRequested = true;
     }
 
-    protected RPair<Script, String> onReloadAction() {
+    protected RPair<EntryPoint, String> onReloadAction() {
         String error = loadScript();
-        return RPair.create(mScript, error);
+        return RPair.create(this, error);
     }
 
     private String loadScript() {
-
         StringBuilder error = new StringBuilder();
         Reporter reporter = new Reporter(mLogger) {
             private boolean mIsReport;
@@ -219,11 +227,11 @@ public class EntryPoint {
                 new ScriptModule(reporter, mKeyValueServer));
 
         try {
-            ScriptParser2 parser = scriptComponent.getScriptParser2();
+            ScriptParser2 parser = scriptComponent.createScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
             mScript = parser.parse(mComponent.getScriptFile());
-            mEngine = scriptComponent.getScriptExecEngine();
+            mEngine = scriptComponent.createScriptExecEngine();
             mEngine.onExecStart();
         } catch (IOException e) {
             mLogger.log("[Conductor] Script Path: " + mComponent.getScriptFile().getAbsolutePath());
@@ -256,5 +264,4 @@ public class EntryPoint {
         // For testing purposes.
         StatusWnd.open();
     }
-
 }

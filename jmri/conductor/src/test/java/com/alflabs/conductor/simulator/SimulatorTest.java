@@ -126,8 +126,8 @@ public class SimulatorTest {
         IJmriThrottle jmriThrottle = mock(IJmriThrottle.class);
         when(mJmriProvider.getThrotlle(42)).thenReturn(jmriThrottle);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getScriptExecEngine();
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -156,8 +156,8 @@ public class SimulatorTest {
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
         when(mJmriProvider.getSensor("NS43")).thenReturn(jmriSensor2);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getScriptExecEngine();
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -182,8 +182,8 @@ public class SimulatorTest {
         IJmriSensor jmriSensor1 = mock(IJmriSensor.class);
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getScriptExecEngine();
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -214,7 +214,7 @@ public class SimulatorTest {
         String source = "" +
                 "String simu = '''Wait 5.5s ; End'''";
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -241,7 +241,7 @@ public class SimulatorTest {
     public void testSimul1() throws Exception {
         String source = getFileSource("simul1.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script script = mScriptComponent.createScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 

@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.ui;
 
+import com.alflabs.conductor.EntryPoint;
 import com.alflabs.conductor.IConductorComponent;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
@@ -75,6 +76,7 @@ public class StatusWnd {
     private JPanel mSensorPanel;
     private JPanel mSimulationPanel;
     private String mLastError;
+    private Runnable mEngineHandleListener;
 
     private StatusWnd(JFrame frame) {
         mFrame = frame;
@@ -98,7 +100,7 @@ public class StatusWnd {
             IConductorComponent component,
             Script script,
             ExecEngine engine,
-            Supplier<RPair<Script, String>> onReloadAction,
+            Supplier<RPair<EntryPoint, String>> onReloadAction,
             Runnable onStopAction,
             Simulator optionalSimulator) {
         mTextScriptName.setText(component.getScriptFile().getAbsolutePath());
@@ -106,13 +108,13 @@ public class StatusWnd {
 
         mButtonReload.addActionListener(actionEvent -> {
             mLastError = null;
-            RPair<Script, String> pair = onReloadAction.get();
+            RPair<EntryPoint, String> pair = onReloadAction.get();
             if (pair.second != null) {
                 mLastError = pair.second;
                 showError(mLastError);
             }
             if (pair.first != null) {
-                initScript(component, pair.first, engine);
+                initScript(component, pair.first.getScript(), pair.first.getEngine());
             }
         });
 

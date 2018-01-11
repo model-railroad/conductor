@@ -33,6 +33,7 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ScriptScope
 public class ExecEngine implements IExecEngine {
@@ -137,10 +138,12 @@ public class ExecEngine implements IExecEngine {
         }
         mLastEStopState = eStopState;
 
-        if (mHandleListener != null) {
+        Runnable listener = mHandleListener;
+        if (listener != null) {
             try {
-                mHandleListener.run();
-            } catch (Throwable ignore) {
+                listener.run();
+            } catch (Throwable e) {
+                mScript.getLogger().log("[Conductor] Handle Listener: " + e);
             }
         }
 
