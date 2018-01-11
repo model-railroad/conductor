@@ -88,14 +88,14 @@ Int PA-Full-Speed       = 16
 # --- Routes
 
 PA-Timer-Acquire-Route ->
-    T504 Normal ;
     T311 Reverse;
-    T320 Normal ;
+    T320 Reverse ;
     T321 Normal ;
     T322 Normal ;
     T326 Normal ;
-    T330 Reverse;
-    T370 Normal
+    T330 Normal ;
+    T370 Normal ;
+    T504 Normal ;
 
 PA-Timer-Release-Route ->
     T311 Normal ;
