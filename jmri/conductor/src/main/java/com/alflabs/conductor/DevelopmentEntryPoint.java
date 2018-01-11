@@ -73,8 +73,10 @@ public class DevelopmentEntryPoint {
         logger.log("[Main] End thread");
     }
 
-    private static class FakeJmriProvider implements IJmriProvider {
+    public static class FakeJmriProvider implements IJmriProvider {
         final Map<String, IJmriSensor> mSensors = new TreeMap<>();
+        final Map<String, IJmriTurnout> mTurnouts = new TreeMap<>();
+        final Map<Integer, IJmriThrottle> mThrottles = new TreeMap<>();
 
         @Override
         public void log(String msg) {
@@ -83,7 +85,7 @@ public class DevelopmentEntryPoint {
 
         @Override
         public IJmriThrottle getThrotlle(int dccAddress) {
-            return new IJmriThrottle() {
+            return mThrottles.computeIfAbsent(dccAddress, key -> new IJmriThrottle() {
                 @Override
                 public void eStop() {
                     log(String.format("[%d] E-Stop", dccAddress));
@@ -118,7 +120,7 @@ public class DevelopmentEntryPoint {
                 public int getDccAddress() {
                     return dccAddress;
                 }
-            };
+            });
         }
 
         @Override
@@ -145,9 +147,20 @@ public class DevelopmentEntryPoint {
 
         @Override
         public IJmriTurnout getTurnout(String systemName) {
-            return normal -> {
-                log(String.format("[%s] Turnout: %s", systemName, normal ? "Normal" : "Reverse"));
-            };
+            return mTurnouts.computeIfAbsent(systemName, key -> new IJmriTurnout() {
+                private boolean mKnownState = true;
+
+                @Override
+                public boolean isNormal() {
+                    return mKnownState;
+                }
+
+                @Override
+                public void setTurnout(boolean normal) {
+                    mKnownState = normal;
+                    log(String.format("[%s] Turnout: %s", systemName, normal ? "Normal" : "Reverse"));
+                }
+            });
         }
     }
 

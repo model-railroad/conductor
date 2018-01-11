@@ -23,6 +23,9 @@ public interface IJmriTurnout {
     boolean NORMAL = true;
     boolean REVERSE = false;
 
+    /** Query the JMRI *known* state of the turnout: true is normal, false is diverted/reverse. */
+    boolean isNormal();
+
     /** Sets the turnout position: true is normal, false is diverted/reverse. */
     void setTurnout(boolean normal);
 }

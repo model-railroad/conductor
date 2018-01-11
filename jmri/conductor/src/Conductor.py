@@ -156,6 +156,7 @@ class JmriSensorAdapter(IJmriSensor):
 
     def setActive(self, active):
         """In: boolean; Out: void"""
+        # Note: setActive is designed for the dev simulator and is to be ignored for JMRI.
         print "[Conductor] Ignoring SetActive for sensor ", self._name
 
     def toString(self):
@@ -168,6 +169,15 @@ class JmriTurnoutAdapter(IJmriTurnout):
     def __init__(self, name, turnout):
         self._name = name
         self._turnout = turnout
+
+    def isNormal(self):
+        """In: void; Out: boolean normal. """
+        if self._turnout is None:
+            print "[Conductor] No Turnout for ", self._name
+            return True
+        # Note: JMRI has 2 states for turnouts; Conductor always sets the "commanded state"
+        # and it always reads the "known state". The latter can reflect turnout feedback.
+        return self._turnout.knownState == jmri.Turnout.CLOSED
 
     def setTurnout(self, normal):
         """In: boolean normal; Out: void"""

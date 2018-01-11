@@ -103,6 +103,9 @@ public class Turnout implements IConditional, IExecEngine {
 
     @Override
     public void onExecHandle() {
+        if (mTurnout != null) {
+            mIsNormal = mTurnout.isNormal();
+        }
         mKeyValue.putValue(mKeyName, mIsNormal ? Constants.Normal : Constants.Reverse, true /*broadcast*/);
     }
 }

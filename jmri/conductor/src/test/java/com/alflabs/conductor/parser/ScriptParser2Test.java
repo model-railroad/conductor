@@ -1092,6 +1092,8 @@ public class ScriptParser2Test {
         IJmriTurnout turnout2 = mock(IJmriTurnout.class);
         when(mJmriProvider.getTurnout("NT42")).thenReturn(turnout1);
         when(mJmriProvider.getTurnout("NT43")).thenReturn(turnout2);
+        when(turnout1.isNormal()).thenReturn(IJmriTurnout.NORMAL);
+        when(turnout2.isNormal()).thenReturn(IJmriTurnout.NORMAL);
 
         engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
@@ -1101,6 +1103,7 @@ public class ScriptParser2Test {
         engine.onExecHandle();
         verify(turnout1).setTurnout(IJmriTurnout.NORMAL);
         verify(turnout2).setTurnout(IJmriTurnout.REVERSE);
+        when(turnout2.isNormal()).thenReturn(IJmriTurnout.REVERSE);
         verify(mJmriThrottle).setSound(false);
         // Note: line "!t2->..." is not invoked at first because t2 was true in this onExecHandle call.
         // The "t2 = reverse" action will only be noticed at the next onExecHandle call.

@@ -52,6 +52,7 @@ public class TurnoutTest {
     @Before
     public void setUp() throws Exception {
         mJmriTurnout = mock(IJmriTurnout.class);
+        when(mJmriTurnout.isNormal()).thenReturn(IJmriTurnout.NORMAL);
 
         when(mJmriProvider.getTurnout("jmriName")).thenReturn(mJmriTurnout);
 
@@ -61,6 +62,8 @@ public class TurnoutTest {
         mTurnout = factory.create("jmriName", "scriptName");
 
         mTurnout.onExecStart();
+        verify(mJmriTurnout).isNormal();
+        reset(mJmriTurnout);
         verify(mJmriProvider).getTurnout("jmriName");
         verify(mKeyValue).putValue("T/scriptName", "N", true);
         reset(mKeyValue);
@@ -79,9 +82,11 @@ public class TurnoutTest {
         mTurnout.createFunction(Turnout.Function.NORMAL).accept(0);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.REVERSE);
+        when(mJmriTurnout.isNormal()).thenReturn(IJmriTurnout.NORMAL);
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
+        verify(mJmriTurnout).isNormal();
         verify(mKeyValue).putValue("T/scriptName", "N", true);
 
         assertThat(mTurnout.isActive()).isTrue();
@@ -92,9 +97,11 @@ public class TurnoutTest {
         mTurnout.createFunction(Turnout.Function.REVERSE).accept(0);
         verify(mJmriTurnout, never()).setTurnout(IJmriTurnout.NORMAL);
         verify(mJmriTurnout).setTurnout(IJmriTurnout.REVERSE);
+        when(mJmriTurnout.isNormal()).thenReturn(IJmriTurnout.REVERSE);
 
         verify(mKeyValue, never()).putValue(anyString(), anyString(), anyBoolean());
         mTurnout.onExecHandle();
+        verify(mJmriTurnout).isNormal();
         verify(mKeyValue).putValue("T/scriptName", "R", true);
 
         assertThat(mTurnout.isActive()).isFalse();
