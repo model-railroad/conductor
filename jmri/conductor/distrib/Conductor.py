@@ -1,5 +1,23 @@
 # Ralf Automation phase 0
 # vim: ai ts=4 sts=4 et sw=4 ft=python
+#
+# Project: Conductor
+# Copyright (C) 2017 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 
 import sys
 print "Jython Path:", sys.path      # debug
@@ -138,6 +156,7 @@ class JmriSensorAdapter(IJmriSensor):
 
     def setActive(self, active):
         """In: boolean; Out: void"""
+        # Note: setActive is designed for the dev simulator and is to be ignored for JMRI.
         print "[Conductor] Ignoring SetActive for sensor ", self._name
 
     def toString(self):
@@ -150,6 +169,15 @@ class JmriTurnoutAdapter(IJmriTurnout):
     def __init__(self, name, turnout):
         self._name = name
         self._turnout = turnout
+
+    def isNormal(self):
+        """In: void; Out: boolean normal. """
+        if self._turnout is None:
+            print "[Conductor] No Turnout for ", self._name
+            return True
+        # Note: JMRI has 2 states for turnouts; Conductor always sets the "commanded state"
+        # and it always reads the "known state". The latter can reflect turnout feedback.
+        return self._turnout.knownState == jmri.Turnout.CLOSED
 
     def setTurnout(self, normal):
         """In: boolean normal; Out: void"""
