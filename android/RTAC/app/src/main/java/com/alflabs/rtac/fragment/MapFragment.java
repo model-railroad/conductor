@@ -27,6 +27,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfos;
 import com.alflabs.manifest.Prefix;
@@ -35,6 +36,7 @@ import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rx.AndroidSchedulers;
+import com.alflabs.rx.IStream;
 import com.alflabs.rx.ISubscriber;
 import com.caverock.androidsvg.SVGParseException;
 
@@ -89,6 +91,7 @@ public class MapFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.map_fragment, container, false);
         mSvgMapView = root.findViewById(R.id.svg_map);
+
         return root;
     }
 
@@ -97,6 +100,29 @@ public class MapFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public void onResume() {
+        if (DEBUG) Log.d(TAG, "onResume");
+        super.onResume();
+
+        KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
+        if (kvClient != null && kvClient.getValue(Constants.MapsKey) != null) {
+            View.OnAttachStateChangeListener[] listener = new View.OnAttachStateChangeListener[1];
+            listener[0] = new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    mSvgMapView.removeOnAttachStateChangeListener(listener[0]);
+                    mKeyChangedSubscriber.onReceive(mDataClientMixin.getKeyChangedStream(), Constants.MapsKey);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                }
+            };
+            mSvgMapView.addOnAttachStateChangeListener(listener[0]);
+        }
     }
 
     @Override
@@ -114,26 +140,31 @@ public class MapFragment extends Fragment {
 
     // ----
 
-    private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
-        if (!isVisible()) return;
-        if (mDataClientMixin.getKeyValueClient() == null) return;
-        assert key != null;
-        String value = mDataClientMixin.getKeyValueClient().getValue(key);
-        if (value == null) return;
+    private final ISubscriber<String> mKeyChangedSubscriber = new ISubscriber<String>() {
+        @Override
+        public void onReceive(IStream<? extends String> stream, String key) {
+            if (!isVisible()) return;
+            if (mSvgMapView == null) return;
+            if (mDataClientMixin.getKeyValueClient() == null) return;
+            assert key != null;
+            String value = mDataClientMixin.getKeyValueClient().getValue(key);
+            if (value == null) return;
 
-        boolean changed = false;
-        if (Constants.MapsKey.equals(key)) {
-            initiazeMaps(value);
+            boolean changed = false;
 
-        } else if (mSvgMapView != null && key.startsWith(Prefix.Sensor)) {
-            changed = mSvgMapView.setBlockOccupancy(key, Constants.On.equals(value));
+            if (Constants.MapsKey.equals(key)) {
+                initiazeMaps(value);
 
-        } else if (mSvgMapView != null && key.startsWith(Prefix.Turnout)) {
-            changed = mSvgMapView.setTurnoutVisibility(key, Constants.Normal.equals(value));
-        }
+            } else if (key.startsWith(Prefix.Sensor)) {
+                changed = mSvgMapView.setBlockOccupancy(key, Constants.On.equals(value));
 
-        if (changed) {
-            mSvgMapView.invalidate();
+            } else if (key.startsWith(Prefix.Turnout)) {
+                changed = mSvgMapView.setTurnoutVisibility(key, Constants.Normal.equals(value));
+            }
+
+            if (changed) {
+                mSvgMapView.invalidate();
+            }
         }
     };
 
@@ -145,6 +176,26 @@ public class MapFragment extends Fragment {
             if (DEBUG) Log.d(TAG, "Adding 1 out " + infos.getMapInfos().length + " maps");
 
             mSvgMapView.loadSvg(infos.getMapInfos()[0].getSvg());
+
+            // Update initial state of all known sensors and turnouts
+            KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
+
+            for (String key : kvClient.getKeys()) {
+                if (key.startsWith(Prefix.Sensor)) {
+                    String value = kvClient.getValue(key);
+                    if (value != null) {
+                        mSvgMapView.setBlockOccupancy(key, Constants.On.equals(value));
+                    }
+                } else if (key.startsWith(Prefix.Turnout)) {
+                    String value = kvClient.getValue(key);
+                    if (value != null) {
+                        mSvgMapView.setTurnoutVisibility(key, Constants.Normal.equals(value));
+                    }
+                }
+            }
+
+            mSvgMapView.invalidate();
+
         } catch (SVGParseException | IOException e) {
             Log.e(TAG, "Parse MapInfos JSON error", e);
         }
