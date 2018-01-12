@@ -16,11 +16,12 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:textStyle="bold"
-            android:textSize="40sp"
+            android:textSize="@dimen/route_name_text_size"
             android:layout_marginBottom="8dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textAllCaps="true"
+            tools:text="- 28"
             tools:ignore="HardcodedText" />
 
     <TextView
@@ -31,7 +32,7 @@
             android:layout_below="@id/route_name"
             android:layout_alignEnd="@id/route_name"
             android:textStyle="bold"
-            android:textSize="60sp"
+            android:textSize="@dimen/route_speed_text_size"
             android:layout_marginBottom="8dp" />
 
     <TextView
@@ -43,7 +44,7 @@
             android:layout_below="@id/route_name"
             android:layout_alignStart="@id/route_name"
             android:layout_alignEnd="@id/route_speed"
-            android:textSize="30sp"
+            android:textSize="@dimen/route_status_text_size"
             android:textAllCaps="true"
             android:layout_marginStart="4dp" />
 
@@ -56,7 +57,7 @@
             android:layout_below="@id/route_toggle"
             android:layout_alignStart="@id/route_toggle"
             android:layout_alignEnd="@id/route_speed"
-            android:textSize="30sp"
+            android:textSize="@dimen/route_status_text_size"
             android:textAllCaps="true"
             android:layout_marginStart="4dp" />
 
