@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TableRow;
+import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.manifest.RouteInfos;
@@ -121,6 +122,35 @@ public class RoutesFragment extends Fragment {
         super.onDestroy();
     }
 
+
+    @Override
+    public void onResume() {
+        if (DEBUG) Log.d(TAG, "onResume");
+        super.onResume();
+
+        // When resuming after a screen orientation change, restore the state using the information
+        // from the KV client by sending a Constants.RoutesKey. It is however necessary to defer this
+        // using a view attach-state listener because the view is not attached yet.
+
+        final View view = getView();
+        KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
+        if (view != null && kvClient != null && kvClient.getValue(Constants.RoutesKey) != null) {
+            View.OnAttachStateChangeListener[] listener = new View.OnAttachStateChangeListener[1];
+            listener[0] = new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    view.removeOnAttachStateChangeListener(listener[0]);
+                    mKeyChangedSubscriber.onReceive(mDataClientMixin.getKeyChangedStream(), Constants.RoutesKey);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                }
+            };
+            view.addOnAttachStateChangeListener(listener[0]);
+        }
+    }
+
     // ----
 
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
@@ -161,11 +191,19 @@ public class RoutesFragment extends Fragment {
                 mCellsRoot.addView(cell.getView());
                 mRouteCells.add(cell);
 
+                updateCell(cell, info.getStatusKey());
+                updateCell(cell, info.getThrottleKey());
+                updateCell(cell, info.getToggleKey());
+
                 needsSeparator = true;
             }
 
         } catch (IOException e) {
             Log.e(TAG, "Parse RouteInfos JSON error", e);
         }
+    }
+
+    private void updateCell(RouteCell cell, String key) {
+        cell.onKVChanged(key, mDataClientMixin.getKeyValueClient().getValue(key));
     }
 }

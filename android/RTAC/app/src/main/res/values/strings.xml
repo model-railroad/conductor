@@ -2,11 +2,11 @@
     <string name="app_name">Randall Train Automation Controller</string>
 
     <string name="reset_instructions_text">The automation is now stopped.\n
-    To restart, please follow the following steps:\n
-    - Bring all trains to their origin location.\n
-    - Turn all route activation toggles OFF.\n
-    - Then hit the RESET button on this tablet.\n
-    Once the system is properly reset, turn the activation toggles to ON.</string>
+    To restart, please follow the following steps in this order:\n
+    1- Bring all trains to their origin location using an NCE Cab.\n
+    2- Then turn all route activation toggles OFF.\n
+    3- Then hit the RESET button on this tablet.\n
+    4- Once the system is properly reset, turn the activation toggles to ON.</string>
 
     <string name="estop_alert_title">EMERGENCY STOP</string>
 

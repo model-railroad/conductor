@@ -31,6 +31,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
@@ -147,6 +148,35 @@ public class EStopFragment extends Fragment {
     public void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
         super.onDestroy();
+    }
+
+
+    @Override
+    public void onResume() {
+        if (DEBUG) Log.d(TAG, "onResume");
+        super.onResume();
+
+        // When resuming after a screen orientation change, restore the state using the information
+        // from the KV client by sending a Constants.EStopKey. It is however necessary to defer this
+        // using a view attach-state listener because the view is not attached yet.
+
+        final View view = getView();
+        KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
+        if (view != null && kvClient != null && kvClient.getValue(Constants.EStopKey) != null) {
+            View.OnAttachStateChangeListener[] listener = new View.OnAttachStateChangeListener[1];
+            listener[0] = new View.OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View v) {
+                    view.removeOnAttachStateChangeListener(listener[0]);
+                    mKeyChangedSubscriber.onReceive(mDataClientMixin.getKeyChangedStream(), Constants.EStopKey);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View v) {
+                }
+            };
+            view.addOnAttachStateChangeListener(listener[0]);
+        }
     }
 
     // ----

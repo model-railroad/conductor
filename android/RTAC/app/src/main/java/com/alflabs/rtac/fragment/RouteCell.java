@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
@@ -66,7 +67,10 @@ public class RouteCell {
         return mRoot;
     }
 
-    public void onKVChanged(String key, String value) {
+    public void onKVChanged(@NonNull String key, @Null String value) {
+        if (value == null) {
+            return;
+        }
         if (key.equals(mRouteInfo.getToggleKey())) {
             mToggleText.setText(value);
 

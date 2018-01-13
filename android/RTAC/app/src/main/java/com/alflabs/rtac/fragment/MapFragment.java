@@ -107,6 +107,10 @@ public class MapFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onResume");
         super.onResume();
 
+        // When resuming after a screen orientation change, restore the state using the information
+        // from the KV client by sending a Constants.MapsKey. It is however necessary to defer this
+        // using a view attach-state listener because the view is not attached yet.
+
         KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
         if (kvClient != null && kvClient.getValue(Constants.MapsKey) != null) {
             View.OnAttachStateChangeListener[] listener = new View.OnAttachStateChangeListener[1];
