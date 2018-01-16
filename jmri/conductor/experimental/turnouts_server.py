@@ -10,7 +10,7 @@ HOST = "localhost"
 PORT = 20004
 
 JMRI_HOST = "localhost"
-JMRI_JSON_PORT = "2056"
+JMRI_JSON_PORT = "12080"
 JMRI_WEB_PORT = "12080"
 
 SVG_ROOT = "../src/test/resources/v2"
