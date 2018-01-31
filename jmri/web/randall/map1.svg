@@ -781,7 +781,7 @@
      inkscape:groupmode="layer"
      id="layer8"
      inkscape:label="Sensors On"
-     style="display:none">
+     style="display:inline">
     <g
        id="Sensor-BL-Toggle"
        inkscape:label="Sensor-BL-Toggle">
