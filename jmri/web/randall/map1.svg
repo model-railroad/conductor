@@ -783,8 +783,8 @@
      inkscape:label="Sensors On"
      style="display:inline">
     <g
-       id="Sensor-BL-Toggle"
-       inkscape:label="Sensor-BL-Toggle">
+       id="Sensor-BLToggle"
+       inkscape:label="Sensor-BLToggle">
       <rect
          y="368"
          x="1160"
@@ -804,8 +804,8 @@
            sodipodi:role="line">ON</tspan></text>
     </g>
     <g
-       id="Sensor-PA-Toggle"
-       inkscape:label="Sensor-PA-Toggle">
+       id="Sensor-PAToggle"
+       inkscape:label="Sensor-PAToggle">
       <rect
          y="548"
          x="1160"

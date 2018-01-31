@@ -2,14 +2,15 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Randall Layout</title>
+<title>JMRI Map Randall Layout</title>
 
 <style type="text/css">
 
 body {
     margin: 0;
-    background: #002400;
+    background: #112b00;
     color: #FFF;
+    overflow: hidden;
 }
 
 .svg {
@@ -73,8 +74,9 @@ function loadSvg() {
         $("#svg_container").fadeIn();
         $("#loader").fadeOut();
 
-        $("[id^='TN']").hide();
-        $("[id^='TR']").hide();
+        $("[id^='TN-']").hide();
+        $("[id^='TR-']").hide();
+        $("[id^='Sensor-']").hide();
 
         setupJmri();
     }, "xml");
