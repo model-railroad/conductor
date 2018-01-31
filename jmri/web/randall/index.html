@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Randall Layout</title>
+
+<style type="text/css">
+
+body {
+    margin: 0;
+    background: #002400;
+    color: #FFF;
+}
+
+.svg {
+    margin: auto;
+    width: 100%;
+    height: 100%;
+}
+
+.load {
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    font-size: xx-large;
+}
+
+</style>
+
+</head>
+
+<body>
+<div id="svg_container" class="svg"></div>
+<div id="loader" class="load">Please wait, loading...</div>
+</body>
+
+
+<!-- Source for local copy of svg-2.6.3.min.js comes from: -->
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.3/svg.min.js"></script-->
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.3/svg.js"></script-->
+
+
+<script src="/js/jquery-1.11.2.min.js"></script>
+<script src="/js/json2.js"></script>
+<script src="/js/jquery.websocket.js"></script>
+<script src="/js/jquery.jmri.js"></script>
+
+<script src="svg-2.6.3.min.js"></script>
+
+<script>
+
+var svgUrl  = "map1.svg";
+var jmriUrl = "http://" + window.location.host + "/json/";
+
+var svgDoc;
+var jmri;
+
+function loadSvg() {
+    console.log( "document loaded" );
+    $("#svg_container").hide();
+    svgDoc = SVG("svg_container");
+    $.get(svgUrl, function(contents) {
+        var _tmp = $("svg", contents);
+
+        svgDoc.attr('viewBox',  _tmp.attr('viewBox'));
+        svgDoc.attr('width',    _tmp.attr('width'));
+        svgDoc.attr('height',   _tmp.attr('height'));
+
+        svgDoc.svg(_tmp.html());
+
+        console.log( "SVG loaded" );
+
+        $("#svg_container").fadeIn();
+        $("#loader").fadeOut();
+
+        $("[id^='TN']").hide();
+        $("[id^='TR']").hide();
+
+        setupJmri();
+    }, "xml");
+}
+
+function setupJmri() {
+    jmri = $.JMRI(jmriUrl, {
+        open : function() { console.log("JMRI: open "); },
+        close: function() { console.log("JMRI: close"); },
+        console: function(data) { console.log("JMRI: " + data); },
+        goodbye : function() { console.log("JMRI: goodbye "); },
+        didReconnect : function() { console.log("JMRI: didReconnect "); },
+        failedReconnect  : function() { console.log("JMRI: failedReconnect  "); },
+
+        hello : function() {
+            console.log("JMRI: hello");
+
+            svgDoc.select("[id^='Sensor-']").each(function () {
+                setupSensor(this);
+            });
+
+            svgDoc.select("[id^='TR-']").each(function () {
+                setupTurnout(this);
+            });
+        },
+        
+        sensor: function (name, state, data) {
+            var userName = data.userName;
+            $("#Sensor-" + userName).fadeTo(250, (state === jmri.CLOSED) ? 1 : 0);
+        },
+
+        turnout: function (name, state, data) {
+            var userName = data.userName;
+            var idNormal = "TN-" + userName;
+            var idThrown = "TR-" + userName;
+
+            $("#" + idNormal).fadeTo(250, (state === jmri.CLOSED) ? 1 : 0);
+            $("#" + idThrown).fadeTo(250, (state === jmri.THROWN) ? 1 : 0);
+        }
+    })
+    jmri.connect();
+}
+
+function setupSensor(t) {
+    var userName = t.attr("id").substring("Sensor-".length);
+    console.log("Setup sensor: " + userName);
+    t.style("visibility", "visible");
+    t.style("opacity", "0");
+    jmri.getSensor(userName);
+}
+
+function setupTurnout(t) {
+    var userName = t.attr("id").substring("TR-".length);
+    console.log("Setup turnout: " + userName);
+    t.style("visibility", "visible");
+    t.style("opacity", "0");
+    jmri.getTurnout(userName);
+}
+
+
+$( document ).ready(loadSvg);
+</script>
+
+</html>
