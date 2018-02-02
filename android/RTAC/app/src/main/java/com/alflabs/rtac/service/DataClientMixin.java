@@ -61,6 +61,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     private final IClock mClock;
     private final ILogger mLogger;
+    private final WakeWifiLockMixin mWakeWifiLockMixin;
     private final AppPrefsValues mAppPrefsValues;
     private final DiscoveryListener mNsdListener;
     private final KVClientStatsListener mKVClientListener;
@@ -70,12 +71,14 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     public DataClientMixin(
             IClock clock,
             ILogger logger,
+            WakeWifiLockMixin wakeWifiLockMixin,
             AppPrefsValues appPrefsValues,
             DiscoveryListener nsdListener,
             KVClientStatsListener kvClientListener,
             WifiManager wifiManager) {
         mClock = clock;
         mLogger = logger;
+        mWakeWifiLockMixin = wakeWifiLockMixin;
         mAppPrefsValues = appPrefsValues;
         mNsdListener = nsdListener;
         mKVClientListener = kvClientListener;
@@ -185,7 +188,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
                     if (mKVClient.startSync()) {
                         setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
+                        mWakeWifiLockMixin.lock(); // released in finally block
                         mKVClient.requestAllKeys();
+                        // Block till we loose the kv client connection
                         mKVClient.join();
                     } else {
                         long delay1sec = now + 1000 - mClock.elapsedRealtime();
@@ -197,6 +202,9 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                 } catch (UnknownHostException e) {
                     if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
                     setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
+
+                } finally {
+                    mWakeWifiLockMixin.release();
                 }
             } catch (InterruptedException e) {
                 // data.startSync or data.join got interrupted.

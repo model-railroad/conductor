@@ -23,6 +23,7 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.rtac.nsd.DiscoveryListener;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rtac.service.KVClientStatsListener;
+import com.alflabs.rtac.service.WakeWifiLockMixin;
 import com.alflabs.utils.AndroidClock;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
@@ -41,6 +42,7 @@ public class AppDataModule {
     public DataClientMixin providesDataClientMixin(
             IClock clock,
             ILogger logger,
+            WakeWifiLockMixin wakeWifiLockMixin,
             AppPrefsValues appPrefsValues,
             DiscoveryListener nsdListener,
             KVClientStatsListener kvClientListener,
@@ -48,6 +50,7 @@ public class AppDataModule {
         return new DataClientMixin(
                 clock,
                 logger,
+                wakeWifiLockMixin,
                 appPrefsValues,
                 nsdListener,
                 kvClientListener,

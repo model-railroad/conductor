@@ -21,6 +21,7 @@ package com.alflabs.rtac.app;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
+import android.os.PowerManager;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.dagger.AppQualifier;
 import com.alflabs.utils.AndroidLogger;
@@ -70,6 +71,13 @@ public class AppContextModule {
     @Singleton
     public WifiManager providesWifiManager() {
         return (WifiManager) mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+    }
+
+    @NonNull
+    @Provides
+    @Singleton
+    public PowerManager providesPowerManager() {
+        return (PowerManager) mContext.getApplicationContext().getSystemService(Context.POWER_SERVICE);
     }
 
     @NonNull
