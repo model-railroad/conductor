@@ -19,6 +19,7 @@
 package com.alflabs.rtac.service;
 
 import android.net.wifi.WifiManager;
+import android.os.PowerManager;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppMockComponent;
 import org.junit.Before;
@@ -36,6 +37,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,36 +47,54 @@ import static org.mockito.Mockito.when;
         sdk = 19,
         manifest = "src/main/AndroidManifest.xml",
         application = AppMockComponent.class)
-public class WifiLockMixinTest {
+public class WakeWifiLockMixinTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock RtacService mRtacService;
     @Mock WifiManager.WifiLock mWifiLock;
-    private WifiLockMixin mMixin;
+    private WakeWifiLockMixin mMixin;
     private WifiManager mWifiManager;
+    private PowerManager mPowerManager;
 
     @Before
     public void setUp() throws Exception {
         AppMockComponent appMockComponent = (AppMockComponent) RuntimeEnvironment.application;
         mWifiManager = appMockComponent.getAppContextModule().providesWifiManager();
+        mPowerManager = appMockComponent.getAppContextModule().providesPowerManager();
         assertThat(mWifiManager).isNotNull();
+        assertThat(mPowerManager).isNotNull();
 
         when(mWifiManager.createWifiLock(anyInt(), anyString())).thenReturn(mWifiLock);
 
-        mMixin = appMockComponent.getAppComponent().getWifiLockMixin();
+        // We can't mock PowerManage or WakeLock because they are both final.
+        // --when(mPowerManager.newWakeLock(anyInt(), anyString())).thenReturn(mWakeLock);
+
+        mMixin = appMockComponent.getAppComponent().getWakeWifiLockMixin();
         assertThat(mMixin).isNotNull();
     }
 
     @Test
     public void testOnCreate() throws Exception {
         mMixin.onCreate(mRtacService);
+        verify(mWifiManager, never()).createWifiLock(eq(WifiManager.WIFI_MODE_FULL_HIGH_PERF), anyString());
+        verify(mWifiLock, never()).acquire();
+    }
+
+    @Test
+    public void testLock() throws Exception {
+        mMixin.onCreate(mRtacService);
+        mMixin.lock();
         verify(mWifiManager).createWifiLock(eq(WifiManager.WIFI_MODE_FULL_HIGH_PERF), anyString());
         verify(mWifiLock).acquire();
+
+        mMixin.release();
+        verify(mWifiLock).release();
     }
 
     @Test
     public void testOnDestroy() throws Exception {
         mMixin.onCreate(mRtacService);
+        mMixin.lock();
         reset(mWifiLock);
         mMixin.onDestroy();
         verify(mWifiLock).release();

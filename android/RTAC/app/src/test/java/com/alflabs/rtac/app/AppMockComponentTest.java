@@ -54,7 +54,7 @@ public class AppMockComponentTest {
         IAppComponent component = MainApp.getAppComponent(RuntimeEnvironment.application);
         assertThat(component).isInstanceOf(IAppComponent.class);
         assertThat(component.getAppPrefsValues()).isNotNull();
-        assertThat(component.getWifiLockMixin()).isNotNull();
+        assertThat(component.getWakeWifiLockMixin()).isNotNull();
     }
 
     @Test
