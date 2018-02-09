@@ -65,6 +65,9 @@ class JmriThrottleAdapter(IJmriThrottle):
             print "[Conductor] No Throttle for ", self._address
             return
         # Any negative value sends an E-Stop.
+        for i in self.repeat():
+            self._throttle.setSpeedSetting(-1.)
+            self._provider.waitMsec(250)
         self._throttle.setSpeedSetting(-1.)
 
     def setSpeed(self, speed28):
@@ -88,6 +91,9 @@ class JmriThrottleAdapter(IJmriThrottle):
         if absv28 < 0:
             absv28 = -absv28
         # Script uses 0..28 steps; setSpeedSetting takes a float 0..1
+        for i in self.repeat():
+            self._throttle.setSpeedSetting(absv28 / 28.)
+            self._provider.waitMsec(250)
         self._throttle.setSpeedSetting(absv28 / 28.)
 
     def setSound(self, on):

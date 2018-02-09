@@ -308,9 +308,15 @@ BL-State == Up & !BL-Toggle ->
 
 # --- BL State: Down (reverse)
 
-BL-State == Down + 15 -> BL Reverse = BL-Station-Speed ;
-BL-State == Down + 16 & BL-Toggle -> BL F8 = 1;
+Timer BL-Timer-Reverse-Check = 10
+BL-State == Down + 15 ->
+	BL Reverse = BL-Station-Speed ;
+	BL-Timer-Reverse-Check Start
+BL-State == Down + 16 & BL-Toggle -> BL F8 = 1
 BL-State == Down + 17 & BL-Toggle -> BL Horn
+
+BL-State == Down & BL-Timer-Reverse-Check & BLReverse ->
+	BL Reverse = BL-Station-Speed
 
 BL-State == Down & BLTunnel ->
     BL F1 = 0;
@@ -323,9 +329,14 @@ BL-State == Down & BLStation + 2 -> BL F1 = 1
 
 
 
+Timer BL-Timer-Station-Check = 10
 BL-State == Down & BLStation + 5 & BL-Toggle -> BL Stop
-BL-State == Down & BLStation + 18 -> BL Reverse = BL-Station-Speed ; BL F1 = 0
-
+BL-State == Down & BLStation + 18 ->
+	BL Reverse = BL-Station-Speed ; 
+	BL F1 = 0 ;
+	BL-Timer-Station-Check Start
+BL-State == Down & BLStation & BL-Timer-Station-Check ->
+	BL Reverse = BL-Station-Speed
 
 BL-State == Down & BLParked + 2  -> BL Stop
 BL-State == Down & BLParked + 6 ->
