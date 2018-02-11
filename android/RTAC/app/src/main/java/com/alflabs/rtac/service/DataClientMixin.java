@@ -39,9 +39,12 @@ import com.alflabs.utils.ServiceMixin;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
@@ -52,6 +55,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
     private final AtomicBoolean mKeepConnected = new AtomicBoolean();
     private final DataClientStatus mStatus = new DataClientStatus();
+    private final List<HostPort> mHostPorts = new CopyOnWriteArrayList<>();
     private final IStream<DataClientStatus> mStatusStream = Streams.stream();
     private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
 
@@ -135,14 +139,18 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
         mNsdListener.getServiceResolvedStream().subscribe(nsdSubscriber);
 
-        boolean useNsd = mNsdListener.start();
-        if (useNsd) {
-            // Only remove the current hostname if it didn't come from NSD
-            String dataHostname = mAppPrefsValues.getData_ServerHostName();
-            if (!dataHostname.startsWith(NSD_PREFIX)) {
-                mAppPrefsValues.setData_ServerHostName("");
+        // Add existing data server host/port if any in the preferences
+        String dataHostname = mAppPrefsValues.getData_ServerHostName();
+        int dataPort = mAppPrefsValues.getData_ServerPort();
+        if (!dataHostname.isEmpty() && !dataHostname.equals("localhost")) {
+            HostPort hostPort = new HostPort(dataHostname, dataPort, false);
+            if (!mHostPorts.contains(hostPort)) {
+                mHostPorts.add(0, hostPort);
             }
         }
+
+        boolean useNsd = mNsdListener.start();
+        if (DEBUG) Log.d(TAG, "Data Client Loop: Using NSD = " + useNsd);
 
         connectLoop();
 
@@ -161,66 +169,109 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         int port = serviceInfo.getPort();
         if (DEBUG) Log.i(TAG, "Data Client Loop: onNsdServiceFound " + host.getHostAddress() + " port " + port);
         if (host != null && port > 0) {
-            mAppPrefsValues.setData_ServerHostName(NSD_PREFIX + host.getHostAddress());
-            mAppPrefsValues.setData_ServerPort(port);
+            HostPort hostPort = new HostPort(host.getHostAddress(), port, true);
+            if (!mHostPorts.contains(hostPort)) {
+                if (DEBUG) Log.d(TAG, "Data: Add NSD " + hostPort);
+                mHostPorts.add(hostPort);
+            }
         }
     }
 
     private void connectLoop() {
         while (mKeepConnected.get()) {
-            String dataHostname = mAppPrefsValues.getData_ServerHostName();
-            int dataPort = mAppPrefsValues.getData_ServerPort();
-
-            if (dataHostname.startsWith(NSD_PREFIX)) {
-                dataHostname = dataHostname.substring(NSD_PREFIX.length());
+            mClock.sleep(1000);
+            if (mHostPorts.isEmpty()) {
+                setStatus(true, "Data Server: No host discovered yet. Please check settings.");
+                continue;
             }
 
-            long now = mClock.elapsedRealtime();
-            setStatus(false, "Connecting to data server at " + dataHostname + ", port " + dataPort);
-            if (DEBUG) Log.i(TAG, "Data Client Loop: connecting to: " + dataHostname + " port " + dataPort);
+            for (HostPort hostPort : mHostPorts) {
+                if (connectToHost(hostPort)) {
+                    // The connection was successful to this port and has now terminated.
+                    if (DEBUG) Log.i(TAG, "Data Client Loop: End of connection with " + hostPort);
 
-            try {
-                try {
-                    if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
-                    InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
-                    mKVClient = new KeyValueClient(mClock, mLogger, address, mKVClientListener);
-                    mKVClient.getChangedStream().subscribe((stream, key) -> mKeyChangedPublisher.publish(key));
+                    // Move the hostport to the top of the list so that we retry it first the next time.
+                    mHostPorts.remove(hostPort);
+                    mHostPorts.add(0, hostPort);
 
-                    if (mKVClient.startSync()) {
-                        setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
-                        mWakeWifiLockMixin.lock(); // released in finally block
-                        mKVClient.requestAllKeys();
-                        // Block till we loose the kv client connection
-                        mKVClient.join();
-                    } else {
-                        long delay1sec = now + 1000 - mClock.elapsedRealtime();
-                        if (delay1sec > 0) {
-                            mClock.sleep(delay1sec);
+                    // Since obviously we got disconnected from a good host, try to figure why and
+                    // most important, clearly state we are not connected anymore.
+                    if (mKeepConnected.get()) {
+                        if (!isWifiConnected()) {
+                            setStatus(true, "Connection to data server lost -- Check the Wifi connection");
+                        } else {
+                            setStatus(true, "Connection to data server lost");
                         }
                     }
-
-                } catch (UnknownHostException e) {
-                    if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
-                    setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
-
-                } finally {
-                    mWakeWifiLockMixin.release();
-                }
-            } catch (InterruptedException e) {
-                // data.startSync or data.join got interrupted.
-                // if mKeepConnected is false, the while loop will terminate otherwise we'll retry.
-            }
-
-            if (mKeepConnected.get()) {
-                if (!isWifiConnected()) {
-                    setStatus(true, "Connection to data server lost -- Check the Wifi connection");
+                    break;
                 } else {
-                    setStatus(true, "Connection to data server lost");
+                    setStatus(true, "Failed to connect to data server at " + hostPort.getHostAddress() + ", port " + hostPort.getPort());
+                    mClock.sleep(1000);
                 }
-                if (DEBUG) Log.i(TAG, "Data Client Loop: failed, retry after delay");
-                mClock.sleep(1000);
             }
         }
+    }
+
+    /**
+     * Tries to connect to a host/port.
+     *
+     * @param hostPort The non-null host port.
+     * @return True if we managed to connect and the caller should stop iterating on hosts..
+     *      False to signal to the caller to move on the next host.
+     */
+    private boolean connectToHost(@NonNull HostPort hostPort) {
+        boolean success = false;
+        if (DEBUG) Log.i(TAG, "Data Client Loop: Try connecting to " + hostPort);
+        String dataHostname = hostPort.getHostAddress();
+        int dataPort = hostPort.getPort();
+        setStatus(false, "Connecting to data server at " + dataHostname + ", port " + dataPort + (hostPort.isNsd() ? " [NSD]" : ""));
+
+        try {
+            try {
+                if (dataHostname.isEmpty()) throw new UnknownHostException("Empty KV Server HostName");
+                InetSocketAddress address = new InetSocketAddress(InetAddress.getByName(dataHostname), dataPort);
+
+                if (address.getAddress() instanceof Inet6Address) {
+                    // Do we accept IPv6?
+                    if (!mAppPrefsValues.getSystem_EnableNsdIpv6()) {
+                        if (DEBUG) Log.i(TAG, "Data Client Loop: Reject IPv6 " + hostPort);
+                        return false;
+                    }
+                }
+
+                // Create a KV client. We are not connected yet.
+                mKVClient = new KeyValueClient(mClock, mLogger, address, mKVClientListener);
+                mKVClient.getChangedStream().subscribe((stream, key) -> mKeyChangedPublisher.publish(key));
+
+                // Start connecting synchronously. Returns true if the connection worked (and has been forked)
+                if (mKVClient.startSync()) {
+                    success = true;
+                    setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
+
+                    mWakeWifiLockMixin.lock(); // released in finally block
+
+                    // Update the settings
+                    mAppPrefsValues.setData_ServerHostName(hostPort.getHostAddressWithNsdPrefix());
+                    mAppPrefsValues.setData_ServerPort(hostPort.getPort());
+
+                    mKVClient.requestAllKeys();
+                    // Block till we loose the KV client connection
+                    mKVClient.join();
+                }
+
+            } catch (UnknownHostException e) {
+                if (DEBUG) Log.e(TAG, "Data Client Loop: KeyValueClient: ", e);
+                setStatus(true, "Data Server: Invalid Hostname. Please check settings.");
+
+            } finally {
+                mWakeWifiLockMixin.release();
+            }
+        } catch (InterruptedException e) {
+            // data.startSync or data.join got interrupted.
+            // if mKeepConnected is false, the caller loop will terminate otherwise we'll retry.
+        }
+
+        return success;
     }
 
     private boolean isWifiConnected() {
@@ -257,6 +308,64 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
         public String getText() {
             return mText;
+        }
+    }
+
+    private static class HostPort {
+        private final String mHostAddress;
+        private final int mPort;
+        private final boolean mIsNsd;
+
+        public HostPort(@NonNull String hostAddress, int port, boolean isNsd) {
+            if (hostAddress.startsWith(NSD_PREFIX)) {
+                hostAddress = hostAddress.substring(NSD_PREFIX.length());
+                isNsd = true;
+            }
+
+            mHostAddress = hostAddress;
+            mPort = port;
+            mIsNsd = isNsd;
+        }
+
+        @NonNull
+        public String getHostAddress() {
+            return mHostAddress;
+        }
+
+        @NonNull
+        public String getHostAddressWithNsdPrefix() {
+            return (mIsNsd ? NSD_PREFIX : "") + mHostAddress;
+        }
+
+        public int getPort() {
+            return mPort;
+        }
+
+        public boolean isNsd() {
+            return mIsNsd;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            HostPort hostPort = (HostPort) o;
+
+            if (mPort != hostPort.mPort) return false;
+            return mHostAddress.equals(hostPort.mHostAddress);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = mHostAddress.hashCode();
+            result = 31 * result + mPort;
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "HostPort {"+ mHostAddress + ':' + mPort + (mIsNsd ? " [NSD]" : "") + '}';
         }
     }
 }

@@ -17,9 +17,16 @@
 
     <CheckBoxPreference
         android:key="pref_system__enable_nsd"
-        android:title="JMRI Server Discovery"
-        android:summaryOff="Off: Disable JMRI Server Zero-conf Discovery"
-        android:summaryOn="On: Enable JMRI Server Zero-conf Discovery (default)"
+        android:title="Enable Zero-conf Server Discovery"
+        android:summaryOff="Off: Disable JMRI and Data Server Zero-conf Discovery"
+        android:summaryOn="On: Enable JMRI and Data Server Zero-conf Discovery (default)"
         android:defaultValue="true" />
+
+    <CheckBoxPreference
+            android:key="pref_system__enable_nsd_ipv6"
+            android:title="Enable Zero-conf over IPv6"
+            android:summaryOff="Off: Disable Zero-conf Discovery over IPv6 (default)"
+            android:summaryOn="On: Enable Zero-conf Discovery over IPv6"
+            android:defaultValue="false" />
 
 </PreferenceScreen>
