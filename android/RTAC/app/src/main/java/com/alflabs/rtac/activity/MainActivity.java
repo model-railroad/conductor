@@ -171,13 +171,13 @@ public class MainActivity extends Activity {
                 askDisconnect();
                 return true;
 
-            case R.id.action_setup: {
     // FIXME enable SetupActivity or remove
+    //        case R.id.action_setup: {
     //            Intent i = new Intent(this, SetupActivity.class);
     //            i.putExtra(SetupActivity.EXTRA_BOOL_SHOW_CALIBRATE, true);
     //            startActivity(i);
-                return true;
-            }
+    //            return true;
+    //        }
 
             case R.id.action_settings: {
                 Intent i = new Intent(this, PrefsActivity.class);
