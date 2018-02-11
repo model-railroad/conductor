@@ -18,6 +18,8 @@
 
 package com.alflabs.rtac.fragment;
 
+import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,11 +33,14 @@ import com.alflabs.rtac.R;
 
 public class RouteCell {
 
+    private static final String TAG = RouteCell.class.getSimpleName();
+
     private final RouteInfo mRouteInfo;
     private final View mRoot;
     private final TextView mToggleText;
     private final TextView mStatusText;
     private final TextView mSpeedText;
+    private final TextView mDirText;
 
     public static RouteCell inflate(
             LayoutInflater inflater,
@@ -57,6 +62,7 @@ public class RouteCell {
         mToggleText = root.findViewById(R.id.route_toggle);
         mStatusText = root.findViewById(R.id.route_status);
         mSpeedText = root.findViewById(R.id.route_speed);
+        mDirText = root.findViewById(R.id.route_dir);
 
         TextView titleText = root.findViewById(R.id.route_name);
         titleText.setText(routeInfo.getName());
@@ -67,6 +73,7 @@ public class RouteCell {
         return mRoot;
     }
 
+    @SuppressLint("SetTextI18n")
     public void onKVChanged(@NonNull String key, @Null String value) {
         if (value == null) {
             return;
@@ -82,7 +89,13 @@ public class RouteCell {
             mStatusText.setText(value);
 
         } else if (key.equals(mRouteInfo.getThrottleKey())) {
-            mSpeedText.setText(value);
+            try {
+                int speed = Integer.parseInt(value);
+                mSpeedText.setText(Integer.toString(Math.abs(speed)));
+                mDirText.setText(speed < 0 ? "Rev" : (speed > 0 ? "Fwd" : "Stop"));
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to parse speed: '" + value + "'", e);
+            }
         }
     }
 }

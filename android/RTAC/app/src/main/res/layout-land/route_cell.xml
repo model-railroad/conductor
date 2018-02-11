@@ -10,7 +10,7 @@
 
     <TextView
             android:id="@+id/route_name"
-            android:text="Name"
+            tools:text="Name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
@@ -21,19 +21,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:textAllCaps="true"
-            tools:text="- 28"
             tools:ignore="HardcodedText" />
-
-    <TextView
-            android:id="@+id/route_speed"
-            tools:text="speed"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/route_name"
-            android:layout_alignEnd="@id/route_name"
-            android:textStyle="bold"
-            android:textSize="@dimen/route_speed_text_size"
-            android:layout_marginBottom="8dp" />
 
     <TextView
             android:id="@+id/route_toggle"
@@ -43,7 +31,6 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/route_name"
             android:layout_alignStart="@id/route_name"
-            android:layout_alignEnd="@id/route_speed"
             android:textSize="@dimen/route_status_text_size"
             android:textAllCaps="true"
             android:layout_marginStart="4dp" />
@@ -56,9 +43,29 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/route_toggle"
             android:layout_alignStart="@id/route_toggle"
-            android:layout_alignEnd="@id/route_speed"
             android:textSize="@dimen/route_status_text_size"
+            android:textAllCaps="true" />
+
+    <TextView
+            android:id="@+id/route_dir"
+            tools:text="FWD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_status"
+            android:layout_alignStart="@id/route_toggle"
+            android:textSize="@dimen/route_dir_text_size"
             android:textAllCaps="true"
-            android:layout_marginStart="4dp" />
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp" />
+
+    <TextView
+            android:id="@+id/route_speed"
+            tools:text="12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/route_dir"
+            android:layout_toEndOf="@id/route_dir"
+            android:textStyle="bold"
+            android:textSize="@dimen/route_speed_text_size" />
 
 </RelativeLayout>
