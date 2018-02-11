@@ -52,7 +52,7 @@ public class EStopFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
-    private Boolean mIsConnected;
+    private boolean mIsConnected;
 
     private TextView mInstructions;
     private Button mEStopButton;
@@ -192,7 +192,7 @@ public class EStopFragment extends Fragment {
             return;
         }
 
-        if (!isVisible()) {
+        if (!isVisible() || isDetached() || getView() == null) {
             if (DEBUG) Log.d(TAG, "mKeyChangedSubscriber IGNORED: isVisible is " + isVisible());
             return;
         }

@@ -53,6 +53,8 @@ public class MapFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
+    private boolean mIsConnected;
+
     private SvgMapView mSvgMapView;
 
     public MapFragment() {
@@ -100,6 +102,7 @@ public class MapFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override
@@ -133,6 +136,7 @@ public class MapFragment extends Fragment {
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
         mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
+        mDataClientMixin.getConnectedStream().remove(mConnectedSubscriber);
         super.onStop();
     }
 
@@ -144,10 +148,17 @@ public class MapFragment extends Fragment {
 
     // ----
 
+    private final ISubscriber<Boolean> mConnectedSubscriber = (stream, key) -> {
+        mIsConnected = key;
+        if (isVisible() && !isDetached() && getView() != null) {
+            getView().setAlpha(mIsConnected ? 1.0f : 0.25f);
+        }
+    };
+
     private final ISubscriber<String> mKeyChangedSubscriber = new ISubscriber<String>() {
         @Override
         public void onReceive(IStream<? extends String> stream, String key) {
-            if (!isVisible()) return;
+            if (!isVisible() || isDetached() || getView() == null) return;
             if (mSvgMapView == null) return;
             if (mDataClientMixin.getKeyValueClient() == null) return;
             assert key != null;
