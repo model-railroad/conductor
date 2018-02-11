@@ -52,10 +52,13 @@ public class EStopFragment extends Fragment {
 
     @Inject DataClientMixin mDataClientMixin;
 
+    private Boolean mIsConnected;
+
     private TextView mInstructions;
     private Button mEStopButton;
     private Button mResetButton;
     private View mResetGroup;
+    private View mNoCnxText;
 
     public EStopFragment() {
         if (DEBUG) Log.d(TAG, "new fragment");
@@ -93,6 +96,7 @@ public class EStopFragment extends Fragment {
         // Inflate the layout for this fragment
         View root = inflater.inflate(R.layout.estop_fragment, container, false);
         mEStopButton = root.findViewById(R.id.estop_button);
+        mNoCnxText = root.findViewById(R.id.not_connected_text);
         mResetGroup = root.findViewById(R.id.reset_group);
         mInstructions = root.findViewById(R.id.reset_instructions_text);
         mResetButton = root.findViewById(R.id.reset_button);
@@ -135,12 +139,14 @@ public class EStopFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
         mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
+        mDataClientMixin.getConnectedStream().remove(mConnectedSubscriber);
         super.onStop();
     }
 
@@ -190,12 +196,22 @@ public class EStopFragment extends Fragment {
             if (DEBUG) Log.d(TAG, "mKeyChangedSubscriber IGNORED: isVisible is " + isVisible());
             return;
         }
+
+        if (!mIsConnected) {
+            mNoCnxText.setVisibility(View.VISIBLE);
+            mEStopButton.setVisibility(View.GONE);
+            mResetGroup.setVisibility(View.GONE);
+            mResetButton.setVisibility(View.GONE);
+            return;
+        }
+
         if (mDataClientMixin.getKeyValueClient() == null) {
             if (DEBUG) Log.d(TAG, "mKeyChangedSubscriber IGNORED: mDataClientMixin is " + mDataClientMixin);
             return;
         }
 
         String value = mDataClientMixin.getKeyValueClient().getValue(key);
+        mNoCnxText.setVisibility(View.GONE);
         try {
             Constants.EStopState state = Constants.EStopState.valueOf(value);
             if (DEBUG) Log.d(TAG, "E-STOP state changed to " + state);
@@ -224,4 +240,10 @@ public class EStopFragment extends Fragment {
             if (DEBUG) Log.d(TAG, "E-STOP state changed to INVALID value " + value);
         }
     };
+
+    private final ISubscriber<Boolean> mConnectedSubscriber = (stream, key) -> {
+        mIsConnected = key;
+        mKeyChangedSubscriber.onReceive(null, Constants.EStopKey);
+    };
+
 }

@@ -56,10 +56,15 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     private final AtomicBoolean mKeepConnected = new AtomicBoolean();
     private final DataClientStatus mStatus = new DataClientStatus();
     private final List<HostPort> mHostPorts = new CopyOnWriteArrayList<>();
+    /** Stream that broadcasts the client status' error message. */
     private final IStream<DataClientStatus> mStatusStream = Streams.stream();
     private final IPublisher<DataClientStatus> mStatusPublisher = Publishers.latest();
+    /** Stream that broadcasts whether the client is connected. */
+    private final IStream<Boolean> mConnectedStream = Streams.stream();
+    private final IPublisher<Boolean> mConnectedPublisher = Publishers.latest();
 
     private KeyValueClient mKVClient;
+    /** Stream that re-broadcasts the key changes from the KV client. */
     private final IStream<String> mKeyChangedStream = Streams.stream();
     private final IPublisher<String> mKeyChangedPublisher = Publishers.publisher();
 
@@ -89,14 +94,23 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         mWifiManager = wifiManager;
 
         mStatusStream.publishWith(mStatusPublisher);
+        mConnectedStream.publishWith(mConnectedPublisher);
         mKeyChangedStream.publishWith(mKeyChangedPublisher);
     }
 
+    /** Stream that broadcasts the client status' error message. */
     @NonNull
     public IStream<DataClientStatus> getStatusStream() {
         return mStatusStream;
     }
 
+    /** Stream that broadcasts whether the client is connected. */
+    @NonNull
+    public IStream<Boolean> getConnectedStream() {
+        return mConnectedStream;
+    }
+
+    /** Stream that re-broadcasts the key changes from the KV client. */
     @NonNull
     public IStream<String> getKeyChangedStream() {
         return mKeyChangedStream;
@@ -182,6 +196,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
             mClock.sleep(1000);
             if (mHostPorts.isEmpty()) {
                 setStatus(true, "Data Server: No host discovered yet. Please check settings.");
+                mConnectedPublisher.publish(false);
                 continue;
             }
 
@@ -196,6 +211,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
                     // Since obviously we got disconnected from a good host, try to figure why and
                     // most important, clearly state we are not connected anymore.
+                    mConnectedPublisher.publish(false);
                     if (mKeepConnected.get()) {
                         if (!isWifiConnected()) {
                             setStatus(true, "Connection to data server lost -- Check the Wifi connection");
@@ -203,9 +219,11 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
                             setStatus(true, "Connection to data server lost");
                         }
                     }
+                    // Done iterating through hosts.
                     break;
                 } else {
                     setStatus(true, "Failed to connect to data server at " + hostPort.getHostAddress() + ", port " + hostPort.getPort());
+                    mConnectedPublisher.publish(false);
                     mClock.sleep(1000);
                 }
             }
@@ -245,10 +263,11 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
 
                 // Start connecting synchronously. Returns true if the connection worked (and has been forked)
                 if (mKVClient.startSync()) {
+                    mWakeWifiLockMixin.lock(); // released in finally block
+
                     success = true;
                     setStatus(false, "Connected to data server at " + dataHostname + ", port " + dataPort);
-
-                    mWakeWifiLockMixin.lock(); // released in finally block
+                    mConnectedPublisher.publish(true);
 
                     // Update the settings
                     mAppPrefsValues.setData_ServerHostName(hostPort.getHostAddressWithNsdPrefix());
