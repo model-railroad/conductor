@@ -10,14 +10,17 @@
           app:showAsAction="ifRoom"
         />
 
+    <!-- There is no JED Setup yet.
+         When re-enabling this, please edit MainActivity#onOptionsItemSelected()
     <item android:id="@+id/action_setup"
-          android:title="Setup"
+          android:title="JED Setup"
           android:orderInCategory="100"
           app:showAsAction="never"
         />
+    -->
 
     <item android:id="@+id/action_settings"
-          android:title="All Settings"
+          android:title="Settings"
           android:orderInCategory="100"
           app:showAsAction="never"
         />

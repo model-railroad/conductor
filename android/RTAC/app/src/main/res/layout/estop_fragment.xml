@@ -9,7 +9,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text=" E-STOP "
+            android:text=" Emergency STOP "
             android:background="@color/red"
             android:textColor="@color/white"
             android:textStyle="bold"
@@ -17,6 +17,21 @@
             android:padding="4dp"
             android:layout_margin="16dp"
             tools:ignore="HardcodedText" />
+
+    <TextView
+            android:id="@+id/not_connected_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text=" NOT CONNECTED "
+            android:background="@color/red"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:padding="4dp"
+            android:layout_margin="16dp"
+            android:visibility="gone"
+            />
 
     <LinearLayout
             android:id="@+id/reset_group"

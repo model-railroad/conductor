@@ -39,8 +39,9 @@ public class AppPrefsValues extends BasePrefsValues {
     }
 
     public static final String PREF_SYSTEM__HIDE_NAVIGATION = "pref_system__hide_navigation";
-    public static final String PREF_SYSTEM__BOOT_ACTION = "pref_system__boot_action";
-    public static final String PREF_SYSTEM__ENABLE_NSD = "pref_system__enable_nsd";
+    public static final String PREF_SYSTEM__BOOT_ACTION     = "pref_system__boot_action";
+    public static final String PREF_SYSTEM__ENABLE_NSD      = "pref_system__enable_nsd";
+    public static final String PREF_SYSTEM__ENABLE_NSD_IPV6 = "pref_system__enable_nsd_ipv6";
 
     public static final String PREF_DATA__SERVER_HOSTNAME = "pref_data__server_hostname";
     public static final String PREF_DATA__SERVER_PORT     = "pref_data__server_port";
@@ -91,6 +92,10 @@ public class AppPrefsValues extends BasePrefsValues {
 
     public boolean getSystem_EnableNsd() {
         return mPrefs.getBoolean(PREF_SYSTEM__ENABLE_NSD, true);
+    }
+
+    public boolean getSystem_EnableNsdIpv6() {
+        return mPrefs.getBoolean(PREF_SYSTEM__ENABLE_NSD_IPV6, false);
     }
 
     @NonNull

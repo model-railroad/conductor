@@ -28,7 +28,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.TableRow;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
@@ -54,6 +53,8 @@ public class RoutesFragment extends Fragment {
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
     @Inject DataClientMixin mDataClientMixin;
+
+    private boolean mIsConnected;
 
     private final List<RouteCell> mRouteCells = new ArrayList<>();
     private LinearLayout mCellsRoot;
@@ -107,12 +108,14 @@ public class RoutesFragment extends Fragment {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
         mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
     }
 
     @Override
     public void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
         mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
+        mDataClientMixin.getConnectedStream().remove(mConnectedSubscriber);
         super.onStop();
     }
 
@@ -153,8 +156,15 @@ public class RoutesFragment extends Fragment {
 
     // ----
 
+    private final ISubscriber<Boolean> mConnectedSubscriber = (stream, key) -> {
+        mIsConnected = key;
+        if (isVisible() && !isDetached() && getView() != null) {
+            getView().setAlpha(mIsConnected ? 1.0f : 0.25f);
+        }
+    };
+
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
-        if (!isVisible()) return;
+        if (!isVisible() || isDetached() || getView() == null) return;
         if (mDataClientMixin.getKeyValueClient() == null) return;
         assert key != null;
         String value = mDataClientMixin.getKeyValueClient().getValue(key);
