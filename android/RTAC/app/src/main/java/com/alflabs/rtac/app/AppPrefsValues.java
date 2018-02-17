@@ -42,6 +42,7 @@ public class AppPrefsValues extends BasePrefsValues {
     public static final String PREF_SYSTEM__BOOT_ACTION     = "pref_system__boot_action";
     public static final String PREF_SYSTEM__ENABLE_NSD      = "pref_system__enable_nsd";
     public static final String PREF_SYSTEM__ENABLE_NSD_IPV6 = "pref_system__enable_nsd_ipv6";
+    public static final String PREF_SYSTEM__WIFI_SSID       = "pref_system__wifi_ssid";
 
     public static final String PREF_DATA__SERVER_HOSTNAME = "pref_data__server_hostname";
     public static final String PREF_DATA__SERVER_PORT     = "pref_data__server_port";
@@ -96,6 +97,10 @@ public class AppPrefsValues extends BasePrefsValues {
 
     public boolean getSystem_EnableNsdIpv6() {
         return mPrefs.getBoolean(PREF_SYSTEM__ENABLE_NSD_IPV6, false);
+    }
+
+    public String getSystem_WifiSsid() {
+        return mPrefs.getString(PREF_SYSTEM__WIFI_SSID, "");
     }
 
     @NonNull

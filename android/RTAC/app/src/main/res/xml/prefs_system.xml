@@ -29,4 +29,12 @@
             android:summaryOn="On: Enable Zero-conf Discovery over IPv6"
             android:defaultValue="false" />
 
+    <EditTextPreference
+            android:key="pref_system__wifi_ssid"
+            android:title="SSID of Wifi Network to monitor"
+            android:selectAllOnFocus="false"
+            android:inputType="text"
+            android:singleLine="true"
+            android:maxLines="1" />
+
 </PreferenceScreen>

@@ -79,8 +79,8 @@ public class RtacService extends android.app.Service {
 
     @Inject NotificationManager mNotificationManager;
     @Inject DataClientMixin mDataClientMixin;
-    @Inject
-    WakeWifiLockMixin mWakeWifiLockMixin;
+    @Inject WifiMonitorMixin mWifiMonitorMixin;
+    @Inject WakeWifiLockMixin mWakeWifiLockMixin;
 
     @VisibleForTesting
     boolean isRunning() {
@@ -115,6 +115,7 @@ public class RtacService extends android.app.Service {
         MainApp.getAppComponent(appContext).inject(this);
 
         mWakeWifiLockMixin.onCreate(this);
+        mWifiMonitorMixin.onCreate(this);
         mDataClientMixin.onCreate(this);
     }
 
@@ -132,6 +133,7 @@ public class RtacService extends android.app.Service {
 
         mDataClientMixin.onDestroy();
         mWakeWifiLockMixin.onDestroy();
+        mWifiMonitorMixin.onDestroy();
 
         super.onDestroy();
     }

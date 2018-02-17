@@ -140,6 +140,7 @@ public class PrefsActivity extends PreferenceActivity {
     private static void bindAllTextFields(@Nullable PreferenceManager manager) {
         if (manager == null) return;
         bindPreferenceSummaryToValue(manager, AppPrefsValues.PREF_SYSTEM__BOOT_ACTION);
+        bindPreferenceSummaryToValue(manager, AppPrefsValues.PREF_SYSTEM__WIFI_SSID);
 
         bindPreferenceSummaryToValue(manager, AppPrefsValues.PREF_JMRI__THROTTLE_NAME);
         bindPreferenceSummaryToValue(manager, AppPrefsValues.PREF_JMRI__SERVER_HOSTNAME);
