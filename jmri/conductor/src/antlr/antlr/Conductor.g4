@@ -57,7 +57,7 @@ action:     EOL? ( idAction | fnAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
 fnAction:   KW_RESET KW_TIMERS;
 
-throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN;
+throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
 timerOp:    KW_START | KW_END;
 
@@ -85,6 +85,7 @@ KW_SEMI:    ';';
 // uses ctx.getText(), it will get the original case of the source file.
 KW_END:     'end';
 KW_ENUM:    'enum';
+KW_REPEAT:  'repeat';
 KW_FORWARD: 'forward';
 KW_HORN:    'horn';
 KW_LIGHT:   'light';

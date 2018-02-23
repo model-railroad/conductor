@@ -58,6 +58,7 @@ public class ThrottleTest {
     private IIntFunction stop;
     private IIntFunction sound;
     private IIntFunction light;
+    private IIntFunction repeat;
     private IConditional isFwd;
     private IConditional isRev;
     private IConditional isStop;
@@ -90,6 +91,7 @@ public class ThrottleTest {
         stop = mThrottle.createFunction(Throttle.Function.STOP);
         sound = mThrottle.createFunction(Throttle.Function.SOUND);
         light = mThrottle.createFunction(Throttle.Function.LIGHT);
+        repeat = mThrottle.createFunction(Throttle.Function.REPEAT);
         isFwd = mThrottle.createCondition(Throttle.Condition.FORWARD);
         isRev = mThrottle.createCondition(Throttle.Condition.REVERSE);
         isStop = mThrottle.createCondition(Throttle.Condition.STOPPED);
@@ -220,10 +222,25 @@ public class ThrottleTest {
     }
 
     @Test
+    public void testRepeatFunction() throws Exception {
+        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+
+        repeat.accept(0);
+        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+
+        repeat.accept(1);
+        assertThat(mThrottle.isRepeatSpeed()).isTrue();
+
+        repeat.accept(0);
+        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+    }
+
+    @Test
     public void testRepeatSpeed() throws Exception {
         fwd.accept(41);
         mThrottle.repeatSpeed();
         verify(mJmriThrottle, times(1)).setSpeed(41);
+        verify(mKeyValue, times(1)).putValue("D/42", "41", true);
 
         mClock.sleep(500);
         mThrottle.repeatSpeed();
@@ -232,6 +249,9 @@ public class ThrottleTest {
         mClock.sleep(500);
         mThrottle.repeatSpeed();
         verify(mJmriThrottle, times(2)).setSpeed(41);
-        verify(mKeyValue).putValue("D/42", "41", true);
+        verify(mKeyValue, times(2)).putValue("D/42", "41", true);
+
+        reset(mJmriThrottle);
+        reset(mKeyValue);
     }
 }

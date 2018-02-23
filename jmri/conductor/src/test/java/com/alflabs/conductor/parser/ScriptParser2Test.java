@@ -815,6 +815,33 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testThrottleRepeat() throws Exception {
+        String source = "" +
+                "throttle T1 = 42 \n " +
+                "t1 stopped -> t1 Repeat = 1 \n" +
+                "t1 forward -> t1 repeat = 0  ";
+
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+        verify(mJmriProvider).getThrotlle(42);
+        assertThat(script.getThrottle("t1").isRepeatSpeed()).isFalse();
+
+        // Execute t1 stopped case
+        engine.onExecHandle();
+        assertThat(script.getThrottle("t1").isRepeatSpeed()).isTrue();
+
+        // Execute t1 forward case
+        script.getThrottle("t1").setSpeed(5);
+        engine.onExecHandle();
+        assertThat(script.getThrottle("t1").isRepeatSpeed()).isFalse();
+    }
+
+    @Test
     public void testActionEnum() throws Exception {
         String source = "" +
                 "throttle T1=42\n " +

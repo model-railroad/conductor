@@ -26,7 +26,6 @@ import com.alflabs.manifest.Prefix;
 import com.alflabs.utils.IClock;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
-import dagger.Provides;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -55,6 +54,7 @@ public class Throttle implements IExecEngine {
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
+    private boolean mRepeatSpeed;
     private long mLastJmriTS;
     private IIntFunction mSpeedListener;
 
@@ -81,6 +81,7 @@ public class Throttle implements IExecEngine {
         HORN,
         SOUND,
         LIGHT,
+        REPEAT,
     }
 
     /** Creates a new throttle for one or more DCC addresses. */
@@ -140,12 +141,18 @@ public class Throttle implements IExecEngine {
     /**
      * Repeats the current speed if the specified delay as expired between now and the
      * last command sent to JMRI for this throttle.
+     * <p/>
+     * Callers should only call this if {@link #isRepeatSpeed()} is true.
      */
     public void repeatSpeed() {
         long elapsedMs = mClock.elapsedRealtime() - mLastJmriTS;
         if (elapsedMs >= REPEAT_SPEED_ELAPSED_MS) {
             setSpeed(mSpeed);
         }
+    }
+
+    public boolean isRepeatSpeed() {
+        return mRepeatSpeed;
     }
 
     /**
@@ -224,6 +231,10 @@ public class Throttle implements IExecEngine {
                     }
                 }
                 mLastJmriTS = mClock.elapsedRealtime();
+            };
+        case REPEAT:
+            return on -> {
+                mRepeatSpeed = on != 0;
             };
         }
         throw new IllegalArgumentException();
