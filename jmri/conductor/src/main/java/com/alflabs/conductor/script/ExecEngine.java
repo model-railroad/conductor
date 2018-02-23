@@ -33,7 +33,6 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @ScriptScope
 public class ExecEngine implements IExecEngine {
@@ -125,6 +124,7 @@ public class ExecEngine implements IExecEngine {
         switch (eStopState) {
         case NORMAL:
             evalScript();
+            repeatSpeed();
             break;
         case ACTIVE:
             if (mLastEStopState == Constants.EStopState.NORMAL) {
@@ -201,6 +201,12 @@ public class ExecEngine implements IExecEngine {
         }
         for (Event event : mActivatedEvents) {
             event.execute();
+        }
+    }
+
+    private void repeatSpeed() {
+        for (Throttle throttle : mScript.getThrottles()) {
+            throttle.repeatSpeed();
         }
     }
 

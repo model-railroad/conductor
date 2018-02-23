@@ -47,12 +47,11 @@ class JmriThrottleAdapter(IJmriThrottle):
         # Note that JMRI NceThrottle.java ignores setSpeedStepMode (see setSpeed below for details).
         if self._throttle is not None:
             self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
+        # How many times to repeat commands.
+        self._repeat = range(0, 1)
 
     def repeat(self):
-        if self._address == 537:
-            return range(0, 3)
-        else:
-            return range(0, 2)
+        return self._repeat
 
     def getDccAddress(self):
         """In: void; Out: int address"""

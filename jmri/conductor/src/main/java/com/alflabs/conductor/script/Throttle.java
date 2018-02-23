@@ -23,8 +23,10 @@ import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
+import com.alflabs.utils.IClock;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
+import dagger.Provides;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -40,8 +42,12 @@ import java.util.List;
  */
 @AutoFactory(allowSubclasses = true)
 public class Throttle implements IExecEngine {
+    /** Delay in milliseconds after the last command sent to JMRI before repeating the current speed. */
+    private static final int REPEAT_SPEED_ELAPSED_MS = 1000;
+
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
+    private final IClock mClock;
     private final Logger mLogger;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
@@ -49,6 +55,7 @@ public class Throttle implements IExecEngine {
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
+    private long mLastJmriTS;
     private IIntFunction mSpeedListener;
 
     /**
@@ -80,9 +87,11 @@ public class Throttle implements IExecEngine {
     @Inject
     public Throttle(
             List<Integer> dccAddresses,
+            @Provided IClock clock,
             @Provided Logger logger,
             @Provided IJmriProvider jmriProvider,
             @Provided IKeyValue keyValue) {
+        mClock = clock;
         mLogger = logger;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
@@ -129,6 +138,17 @@ public class Throttle implements IExecEngine {
     }
 
     /**
+     * Repeats the current speed if the specified delay as expired between now and the
+     * last command sent to JMRI for this throttle.
+     */
+    public void repeatSpeed() {
+        long elapsedMs = mClock.elapsedRealtime() - mLastJmriTS;
+        if (elapsedMs >= REPEAT_SPEED_ELAPSED_MS) {
+            setSpeed(mSpeed);
+        }
+    }
+
+    /**
      * Sets the throttle speed and direction.
      * Speed 0 means stopped, a positive number for forward and a negative number for reverse.
      */
@@ -146,6 +166,9 @@ public class Throttle implements IExecEngine {
                 mLogger.log("Throttle [" + getDccAddressesAsString() + "] getDccAddress exception: " + e);
             }
         }
+
+        mLastJmriTS = mClock.elapsedRealtime();
+
         if (mSpeedListener != null) {
             try {
                 mSpeedListener.accept(mSpeed);
@@ -176,6 +199,7 @@ public class Throttle implements IExecEngine {
                         mLogger.log("Throttle [" + getDccAddressesAsString() + "] horn exception: " + e);
                     }
                 }
+                mLastJmriTS = mClock.elapsedRealtime();
             };
         case SOUND:
             return on -> {
@@ -187,6 +211,7 @@ public class Throttle implements IExecEngine {
                         mLogger.log("Throttle [" + getDccAddressesAsString() + "] setSound exception: " + e);
                     }
                 }
+                mLastJmriTS = mClock.elapsedRealtime();
             };
         case LIGHT:
             return on -> {
@@ -198,6 +223,7 @@ public class Throttle implements IExecEngine {
                         mLogger.log("Throttle [" + getDccAddressesAsString() + "] setLight exception: " + e);
                     }
                 }
+                mLastJmriTS = mClock.elapsedRealtime();
             };
         }
         throw new IllegalArgumentException();
@@ -213,6 +239,7 @@ public class Throttle implements IExecEngine {
                     mLogger.log("Throttle [" + getDccAddressesAsString() + "] triggerFunction exception: " + e);
                 }
             }
+            mLastJmriTS = mClock.elapsedRealtime();
         };
     }
 

@@ -22,6 +22,7 @@ import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.utils.MockClock;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -36,6 +37,7 @@ import java.util.Collections;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -49,6 +51,8 @@ public class ThrottleTest {
     @Mock Logger mLogger;
 
     private Throttle mThrottle;
+    private MockClock mClock;
+
     private IIntFunction fwd;
     private IIntFunction rev;
     private IIntFunction stop;
@@ -60,11 +64,14 @@ public class ThrottleTest {
     private IConditional isSound;
     private IConditional isLight;
 
+
     @Before
     public void setUp() throws Exception {
+        mClock = new MockClock();
         when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
         ThrottleFactory factory = new ThrottleFactory(
+                InstanceFactory.create(mClock),
                 InstanceFactory.create(mLogger),
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue));
@@ -210,5 +217,21 @@ public class ThrottleTest {
 
         mThrottle.createFnFunction(28).accept(0);
         verify(mJmriThrottle).triggerFunction(28, false);
+    }
+
+    @Test
+    public void testRepeatSpeed() throws Exception {
+        fwd.accept(41);
+        mThrottle.repeatSpeed();
+        verify(mJmriThrottle, times(1)).setSpeed(41);
+
+        mClock.sleep(500);
+        mThrottle.repeatSpeed();
+        verify(mJmriThrottle, times(1)).setSpeed(41);
+
+        mClock.sleep(500);
+        mThrottle.repeatSpeed();
+        verify(mJmriThrottle, times(2)).setSpeed(41);
+        verify(mKeyValue).putValue("D/42", "41", true);
     }
 }
