@@ -18,6 +18,7 @@
 
 package com.alflabs.rtac.app;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.net.wifi.WifiManager;
@@ -64,6 +65,13 @@ public class AppContextModule {
     @Singleton
     public ILogger providesLogger() {
         return new AndroidLogger();
+    }
+
+    @NonNull
+    @Provides
+    @Singleton
+    public AlarmManager providesAlarmManager() {
+        return (AlarmManager) mContext.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
     }
 
     @NonNull

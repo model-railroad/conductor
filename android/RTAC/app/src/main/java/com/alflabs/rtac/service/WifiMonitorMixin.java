@@ -15,7 +15,15 @@ import com.alflabs.utils.ServiceMixin;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
+/**
+ * Monitors wifi to auto-connect to the desired network (by SSID name set in the settings).
+ * <p/>
+ * The check happens at app start, when the screen is turned on.
+ * <p/>
+ * Note that this only auto-connects to a *known* SSID. The user must have connected to the wifi and
+ * saved the required auth settings in the Android Wifi Settings first. The code here does not deal
+ * with authentication at all.
+ */
 @Singleton
 public class WifiMonitorMixin extends ServiceMixin<RtacService> {
     private static final String TAG = WifiMonitorMixin.class.getSimpleName();
