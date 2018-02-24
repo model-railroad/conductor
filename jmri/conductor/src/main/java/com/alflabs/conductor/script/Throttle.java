@@ -41,9 +41,6 @@ import java.util.List;
  */
 @AutoFactory(allowSubclasses = true)
 public class Throttle implements IExecEngine {
-    /** Delay in milliseconds after the last command sent to JMRI before repeating the current speed. */
-    private static final int REPEAT_SPEED_ELAPSED_MS = 1000;
-
     private final List<Integer> mDccAddresses = new ArrayList<>();
     private final List<IJmriThrottle> mJmriThrottles = new ArrayList<>();
     private final IClock mClock;
@@ -54,7 +51,7 @@ public class Throttle implements IExecEngine {
     private int mSpeed;
     private boolean mSound;
     private boolean mLight;
-    private boolean mRepeatSpeed;
+    private int mRepeatSpeedSeconds;
     private long mLastJmriTS;
     private IIntFunction mSpeedListener;
 
@@ -134,6 +131,7 @@ public class Throttle implements IExecEngine {
         return sb.toString().trim();
     }
 
+    /** The last speed set for this engine. */
     public int getSpeed() {
         return mSpeed;
     }
@@ -142,17 +140,21 @@ public class Throttle implements IExecEngine {
      * Repeats the current speed if the specified delay as expired between now and the
      * last command sent to JMRI for this throttle.
      * <p/>
-     * Callers should only call this if {@link #isRepeatSpeed()} is true.
+     * The call does nothing if {@link #getRepeatSpeedSeconds()} <= 0.
      */
     public void repeatSpeed() {
+        if (mRepeatSpeedSeconds < 1) {
+            return;
+        }
         long elapsedMs = mClock.elapsedRealtime() - mLastJmriTS;
-        if (elapsedMs >= REPEAT_SPEED_ELAPSED_MS) {
+        if (elapsedMs >= 1000 * mRepeatSpeedSeconds) {
             setSpeed(mSpeed);
         }
     }
 
-    public boolean isRepeatSpeed() {
-        return mRepeatSpeed;
+    /** Delay in seconds after the last command sent to JMRI before repeating the current speed. */
+    public int getRepeatSpeedSeconds() {
+        return mRepeatSpeedSeconds;
     }
 
     /**
@@ -234,7 +236,8 @@ public class Throttle implements IExecEngine {
             };
         case REPEAT:
             return on -> {
-                mRepeatSpeed = on != 0;
+                // The value passed is the repeat delay in seconds.
+                mRepeatSpeedSeconds = on;
             };
         }
         throw new IllegalArgumentException();

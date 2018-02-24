@@ -818,7 +818,7 @@ public class ScriptParser2Test {
     public void testThrottleRepeat() throws Exception {
         String source = "" +
                 "throttle T1 = 42 \n " +
-                "t1 stopped -> t1 Repeat = 1 \n" +
+                "t1 stopped -> t1 Repeat = 2 \n" +
                 "t1 forward -> t1 repeat = 0  ";
 
         Script script = mScriptComponent.createScriptParser2().parse(source);
@@ -829,16 +829,16 @@ public class ScriptParser2Test {
 
         engine.onExecStart();
         verify(mJmriProvider).getThrotlle(42);
-        assertThat(script.getThrottle("t1").isRepeatSpeed()).isFalse();
+        assertThat(script.getThrottle("t1").getRepeatSpeedSeconds()).isEqualTo(0);
 
         // Execute t1 stopped case
         engine.onExecHandle();
-        assertThat(script.getThrottle("t1").isRepeatSpeed()).isTrue();
+        assertThat(script.getThrottle("t1").getRepeatSpeedSeconds()).isEqualTo(2);
 
         // Execute t1 forward case
         script.getThrottle("t1").setSpeed(5);
         engine.onExecHandle();
-        assertThat(script.getThrottle("t1").isRepeatSpeed()).isFalse();
+        assertThat(script.getThrottle("t1").getRepeatSpeedSeconds()).isEqualTo(0);
     }
 
     @Test

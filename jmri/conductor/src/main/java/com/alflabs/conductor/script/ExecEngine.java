@@ -206,9 +206,7 @@ public class ExecEngine implements IExecEngine {
 
     private void repeatSpeed() {
         for (Throttle throttle : mScript.getThrottles()) {
-            if (throttle.isRepeatSpeed()) {
-                throttle.repeatSpeed();
-            }
+            throttle.repeatSpeed();
         }
     }
 

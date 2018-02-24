@@ -223,20 +223,21 @@ public class ThrottleTest {
 
     @Test
     public void testRepeatFunction() throws Exception {
-        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
 
         repeat.accept(0);
-        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
 
-        repeat.accept(1);
-        assertThat(mThrottle.isRepeatSpeed()).isTrue();
+        repeat.accept(2);
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(2);
 
         repeat.accept(0);
-        assertThat(mThrottle.isRepeatSpeed()).isFalse();
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
     }
 
     @Test
     public void testRepeatSpeed() throws Exception {
+        repeat.accept(1);
         fwd.accept(41);
         mThrottle.repeatSpeed();
         verify(mJmriThrottle, times(1)).setSpeed(41);
