@@ -144,7 +144,8 @@ public class Simulator {
                 if (words.length == 2 && words[1].endsWith("s")) {
                     waitOnTimer(tag, instruction, words);
 
-                } else if (words.length == 3 && words[1].equalsIgnoreCase("on")) {
+                } else if (words.length == 3
+                        && (words[1].equalsIgnoreCase("on") || words[1].equalsIgnoreCase("off"))) {
                     waitOnSensorName(tag, script, instruction, words);
 
                 } else {
@@ -222,7 +223,12 @@ public class Simulator {
         }
     }
 
-    private void waitOnSensorName(String tag, Script script, String instruction, String[] words) {
+    private void waitOnSensorName(
+            String tag,
+            Script script,
+            String instruction,
+            String[] words) {
+        boolean desiredState = words[1].equalsIgnoreCase("on");
         String name = words[2];
         Sensor sensor = script.getSensor(name);
         if (sensor == null) {
@@ -231,7 +237,7 @@ public class Simulator {
         }
 
         mLogger.d(tag, "Wait for sensor '" + name + "'");
-        while (!sensor.isActive()) {
+        while (sensor.isActive() != desiredState) {
             boolean interrupted = false;
             try {
                 mClock.sleepWithInterrupt(250);
