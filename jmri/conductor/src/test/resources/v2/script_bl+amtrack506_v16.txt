@@ -82,7 +82,7 @@ Route Passenger = Toggle: PA-Toggle, Status: PA-State, Throttle: PA-CONSIST
 Int PA-Station-Speed    = 12
 Int PA-Summit-Speed     = 12
 Int PA-Sonora-Speed     = 20
-Int PA-Reduction-Speed  = 16
+Int PA-Crossover-Speed  = 12
 Int PA-Full-Speed       = 24
 
 # --- Routes
@@ -109,7 +109,7 @@ Timer PA-Timer-Stop-Sound-Off = 10
 PA-State == Idle & PA-Toggle ->
     PA-CONSIST Sound = 1; PA-CONSIST Light = 1;
     PA-CONSIST Stop ;
-    PA-CONSIST Repeat = 1 ;
+    PA-CONSIST Repeat = 2 ;
     PA-State = Station ;
     PA-Timer-Release-Route Start
 
@@ -121,7 +121,7 @@ PA-State == Idle & !PA-Toggle ->
 
 PA-State == Idle & PA-Timer-Stop-Sound-Off -> PA-CONSIST Sound = 0
 
-PA-Toggle  -> PA-CONSIST Repeat = 1
+PA-Toggle  -> PA-CONSIST Repeat = 2
 
 !PA-Toggle -> PA-CONSIST Repeat = 0
 
@@ -151,7 +151,9 @@ PA-State == Up & B503b & PA-CONSIST Stopped ->
 
 PA-Station-Horn -> PA-CONSIST Horn
 
-PA-State == Up & B503a & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
+PA-State == Up & B503a & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Crossover-Speed
+
+PA-State == Up & B320 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full-Speed
 
 # Mid-Station doppler on the way up
 PA-State == Up &  B320 + 27 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
@@ -161,8 +163,7 @@ PA-State == Up &  B330 + 12 & PA-CONSIST Forward -> PA-CONSIST Forward = PA-Full
 # After tunnel on the way up
 PA-State == Up &  B330 + 26 & PA-CONSIST Forward -> PA-CONSIST F3 = 1 ; PA-CONSIST F3 = 0
 
-PA-State == Up & B360 ->
-    PA-State = Summit
+PA-State == Up & B360 -> PA-State = Summit
 
 
 # PA-Toggle off reverts train to down
@@ -195,34 +196,20 @@ PA-State == Down & PA-CONSIST Reverse ->
     PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
 PA-State == Down & PA-CONSIST Reverse & B360 & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
 
-# Stop down at midstation
-#Timer PA-Timer-Midstation-Pause = 11
-#Timer PA-Timer-Horn-Down = 5
-#PA-State == Down & PA-CONSIST Reverse & B320 & B330 ->
-#    PA-CONSIST Stop ;
-#    PA-CONSIST Horn ;
-#    PA-Timer-Midstation-Pause Start
-#PA-State == Down & B320 & PA-Timer-Midstation-Pause ->
-#    PA-CONSIST Horn ;
-#    PA-CONSIST Reverse = PA-Reduction-Speed ;
-#    PA-Timer-Horn-Down Start
-#PA-State == Down & PA-CONSIST Reverse & B320 & PA-Timer-Horn-Down ->
-#    PA-CONSIST F3 = 1 ;
-#    PA-CONSIST F3 = 0
+# Do not stop down at midstation
+
 # Reduce speed at signal bridge after midstation down
-Timer PA-Timer-Reduction-Down = 14
-PA-State == Down & PA-CONSIST Reverse & B320 & PA-Toggle ->
-    PA-Timer-Reduction-Down Start
-PA-State == Down & PA-CONSIST Reverse & B320 & PA-Timer-Reduction-Down -> PA-CONSIST Reverse = PA-Reduction-Speed
+PA-State == Down & PA-CONSIST Reverse & B320 + 14 -> PA-CONSIST Reverse = PA-Crossover-Speed
 
 
 # Arrival at Station
-PA-State == Down & B503a & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed ;
+PA-State == Down & B503a & PA-CONSIST Reverse -> PA-CONSIST Reverse = PA-Station-Speed
 Timer PA-Timer-Down-Station-Lights-Off = 3
-PA-State == Down & PA-CONSIST Reverse & B503b + 4 ->
-    PA-CONSIST Stop ; PA-CONSIST Horn;
+PA-State == Down & PA-CONSIST Reverse & B503b + 5 ->
+    PA-CONSIST Stop ;
+    PA-CONSIST Horn ;
     PA-Timer-Down-Station-Lights-Off Start
-PA-Timer-Down-Station-Lights-Off ->
+PA-State == Down & PA-Timer-Down-Station-Lights-Off ->
     PA-State = Station ;
     PA-CONSIST F6 = 0 ; PA-CONSIST  F9 = 0
 
@@ -263,7 +250,7 @@ Route Branchline = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
 Timer BL-Timer-Stop-Sound-Off = 10
 
 BL-Toggle ->
-    BL Repeat = 1
+    BL Repeat = 2
 
 !BL-Toggle ->
     BL F1 = 0 ;
@@ -305,7 +292,7 @@ BL-State == Idle & BLParked & BLRun & BL-Toggle ->
     BL F8 = 1 ;
     BL F9 = 1 ;
     BL Light = 1 ;
-    BL Repeat = 1 ;
+    BL Repeat = 2 ;
     BL-State = Up
 
 # --- BL State: Up (front)
@@ -407,10 +394,10 @@ Set Off B503a; Wait 4s
 Set On B311; Wait 8s
 
 # Midstation horn is at 321+27s
-Set Off B311; Set On B321; Wait 30s
+Set On B320; Set Off B311; Wait 30s
 
 # Curve slow down is at 330+12, horn at 330+26
-Set On B330; Set Off B321; Wait 30s
+Set On B330; Set Off B320; Wait 30s
 
 Set On B340; Set Off B330; Wait 4s
 Set On B350; Set Off B340; Wait 4s
@@ -426,8 +413,8 @@ Set On  B360; Set Off B370; Wait 40s
 Set On  B350; Set Off B360; Wait 4s
 Set On  B340; Set Off B350; Wait 4s
 Set On  B330; Set Off B340; Wait 30s
-Set On  B321; Set Off B330; Wait 30s
-Set On  B311; Set Off B321; Wait 8s
+Set On  B320; Set Off B330; Wait 30s
+Set On  B311; Set Off B320; Wait 8s
 Set On B503a; Set Off B311; Wait 8s
 # Station stop at 503b+10
 Set Off B503a; Set On B503b; Wait 15s
