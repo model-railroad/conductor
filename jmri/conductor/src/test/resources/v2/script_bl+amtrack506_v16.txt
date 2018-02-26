@@ -196,10 +196,23 @@ PA-State == Down & PA-CONSIST Reverse ->
     PA-CONSIST F6 = 1 ; PA-CONSIST F9 = 1
 PA-State == Down & PA-CONSIST Reverse & B360 & PA-Timer-Full-Reverse -> PA-CONSIST Reverse = PA-Full-speed
 
-# Do not stop down at midstation
+# Stop down at midstation
+Timer PA-Timer-Midstation-Pause = 5
+Timer PA-Timer-Horn-Down = 5
+PA-State == Down & PA-CONSIST Reverse & B320 & B330 ->
+    PA-CONSIST Stop ;
+    PA-CONSIST Horn ;
+    PA-Timer-Midstation-Pause Start
+PA-State == Down & B320 & PA-Timer-Midstation-Pause ->
+    PA-CONSIST Horn ;
+    PA-CONSIST Reverse = PA-Crossover-Speed ;
+    PA-Timer-Horn-Down Start
+PA-State == Down & PA-CONSIST Reverse & B320 & PA-Timer-Horn-Down ->
+    PA-CONSIST F3 = 1 ;
+    PA-CONSIST F3 = 0
 
-# Reduce speed at signal bridge after midstation down
-PA-State == Down & PA-CONSIST Reverse & B320 + 14 -> PA-CONSIST Reverse = PA-Crossover-Speed
+# Reduce speed at signal bridge after midstation down (handled by pause at station)
+# PA-State == Down & PA-CONSIST Reverse & B320 + 14 -> PA-CONSIST Reverse = PA-Crossover-Speed
 
 
 # Arrival at Station
@@ -235,13 +248,15 @@ PA-State == Down & PA-Timer-Down-Station-Lights-Off ->
 # F7 for dim lights for stations
 # F8 1/0 for Sound (use BL Sound)
 # F9 for red markers on the "end" side
+#
+# Timings for NCE Momentum #3
 
 Throttle BL = 10
 
 Int BL-Station-Speed = 12
 Int BL-Full-Speed    = 20
 
-Enum BL-State = Parked Station Up Down
+Enum BL-State = Parked Station Up Reversal Down
 
 Route Branchline = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
 
@@ -253,6 +268,7 @@ BL-Toggle ->
 !BL-Toggle ->
     BL F1 = 0 ;
     BL Sound = 0 ;
+    BL F8 = 0 ;
     BL Repeat = 0
 
 # --- BL State: Setup at reverse station
@@ -276,13 +292,14 @@ BL-State == Parked & !BLParked & BLStation & BLRun & !BL-Toggle ->
     BL Light = 0;
     BL Reverse = BL-Station-Speed
 
-BL-State == Parked & BLParked & !BL-Toggle ->
+BL-State == Parked & BLParked & !BLStation & !BL-Toggle ->
     BL Stop ;
     BL Horn ;
-    BL Sound = 0 ;
     BL F1 = 0 ;
     BL F9 = 0 ;
-    BL Light = 0
+    BL Light = 0 ;
+    BL F8 = 0 ;
+    BL Sound = 0
 
 # --- BL State: Parked to Station
 
@@ -322,6 +339,7 @@ BL-State == Station & BLStation & !BL-Toggle ->
 
 BL-State == Station & BLStation & BLRun & BL-Toggle ->
     BL Sound = 1 ;
+    BL Horn ;
     BL F1 = 0 ;
     BL F9 = 1 ;
     BL Light = 1 ;
@@ -334,14 +352,24 @@ BL-State == Station & BLStation & BLRun & BL-Toggle ->
 
 BL-State == Up & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
 
-BL-State == Up & BLStation + 20 -> BL Horn
-BL-State == Up & BLStation + 30 -> BL Horn
+Timer BL-Timer-Horn-Up = 18
+BL-State == Up -> BL-Timer-Horn-Up Start
+BL-State == Up & BL-Timer-Horn-Up     -> BL Horn
+BL-State == Up & BL-Timer-Horn-Up + 5 -> BL Horn
 
 BL-State == Up & BLTunnel  + 6 -> BL Forward = BL-Station-Speed
-BL-State == Up & BLReverse + 2 -> BL F1 = 1
-BL-State == Up & BLReverse + 6 ->
-    BL Stop ;
-    BL Horn ;
+BL-State == Up & BLReverse -> BL-State = Reversal
+
+# --- BL State: Reverse
+
+BL-State == Reversal & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
+
+Timer BL-Timer-Reverse = 2
+BL-State == Reversal -> BL-Timer-Reverse Start
+BL-State == Reversal & BL-Toggle & BL-Timer-Reverse     -> BL F1 = 1
+BL-State == Reversal & BL-Toggle & BL-Timer-Reverse + 4 -> BL Horn ; BL Stop
+
+BL-State == Reversal & BL-Timer-Reverse + 13 ->
     BL-State = Down
 
 # Don't blow horn on button
@@ -351,23 +379,27 @@ BL-State == Up & BLReverse + 6 ->
 
 BL-State == Down & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
 
-BL-State == Down + 15 & BL-Toggle -> BL Reverse = BL-Station-Speed
-BL-State == Down + 16 & BL-Toggle -> BL Horn
-BL-State == Down + 17 & BL-Toggle -> BL Horn
+BL-State == Down + 1 & BL-Toggle -> BL Horn
+BL-State == Down + 3 & BL-Toggle -> BL Horn
+BL-State == Down + 4 & BL-Toggle -> BL Reverse = BL-Station-Speed
+BL-State == Down + 5 & BL-Toggle -> BL F1 = 0
 
+Timer BL-Timer-Horn-Down = 28
 BL-State == Down & BLTunnel ->
     BL F1 = 0;
-    BL Reverse = BL-Full-Speed
+    BL Reverse = BL-Full-Speed ;
+    BL-Timer-Horn-Down Start
 
-BL-State == Down & !BLTunnel + 14 & BL-Toggle -> BL Horn
-BL-State == Down & !BLTunnel + 16 & BL-Toggle -> BL Horn
+BL-State == Down & BL-Timer-Horn-Down     & BL-Toggle -> BL Horn
+BL-State == Down & BL-Timer-Horn-Down + 4 & BL-Toggle -> BL Horn
 BL-State == Down & BLStation     -> T324 Normal
 BL-State == Down & BLStation + 2 -> BL F1 = 1
 
-BL-State == Down & BLStation + 5 & BL-Toggle ->
+BL-State == Down & BLStation + 6 & BL-Toggle ->
     BL Stop ;
 	BL F1 = 0 ;
-    BL-Timer-Stop-Sound-Off Start ;
+    BL-Timer-Stop-Sound-Off Start
+BL-State == Down & BLStation + 12 & BL-Toggle ->
     BL-State = Station
 
 # Don't blow horn on button
@@ -382,8 +414,8 @@ BL-State == Down & BLStation + 5 & BL-Toggle ->
 # B320 -> B330 via T330 Normal
 # B321 -> B330 via T330 Reverse
 
-!PA-Toggle & !B330 & B320 -> T330 Normal
-!PA-Toggle & !B330 & B321 -> T330 Reverse
+!PA-Toggle & !B330 &  B320 & !B321 -> T330 Normal
+!PA-Toggle & !B330 & !B320 &  B321 -> T330 Reverse
 
 # ------------------
 # Simulations
