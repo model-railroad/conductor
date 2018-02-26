@@ -116,7 +116,7 @@ public class ExecEngine implements IExecEngine {
      */
     @Override
     public void onExecHandle() {
-        mHandleFrequency.ping();
+        mHandleFrequency.startWork();
 
         propagateExecHandle();
 
@@ -147,6 +147,7 @@ public class ExecEngine implements IExecEngine {
             }
         }
 
+        mHandleFrequency.endWork();
         mHandleRateLimiter.limit();
     }
 
@@ -241,8 +242,12 @@ public class ExecEngine implements IExecEngine {
         }
     }
 
-    public float getHandleFrequency() {
-        return mHandleFrequency.getFrequency();
+    public float getActualFrequency() {
+        return mHandleFrequency.getActualFrequency();
+    }
+
+    public float getMaxFrequency() {
+        return mHandleFrequency.getMaxFrequency();
     }
 
     public void setHandleListener(Runnable handleListener) {

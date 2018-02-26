@@ -306,8 +306,9 @@ public class StatusWnd {
         mStatus.setLength(0);
 
         mStatus.append("Freq: ");
-        float freq = engine.getHandleFrequency();
-        mStatus.append(String.format("%.1f Hz\n\n", freq));
+        mStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
+                engine.getActualFrequency(),
+                engine.getMaxFrequency()));
 
         if (mLastError != null) {
             mStatus.append("--- [ LAST ERROR ] ---\n");

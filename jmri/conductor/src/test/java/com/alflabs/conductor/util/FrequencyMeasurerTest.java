@@ -37,46 +37,46 @@ public class FrequencyMeasurerTest {
 
     @Test
     public void testFreq1() throws Exception {
-        assertThat(mFreq.getFrequency()).isWithin(0.f).of(0.f);
+        assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
 
-        mFreq.ping();
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(0.f).of(0.f);
+        mFreq.startWork();
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
 
         mClock.add(1000);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(1.f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(1.f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(2.5f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(2.5f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(5.f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(5.f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(7.5f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(7.5f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(9.0f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.0f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(9.7f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.7f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(9.9f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.9f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(10.f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
 
         mClock.add(100);
-        mFreq.ping();
-        assertThat(mFreq.getFrequency()).isWithin(.1f).of(10.f);
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
     }
 }

@@ -25,12 +25,13 @@ public class FrequencyMeasurer {
     private final IClock mClock;
     private long mLastPingMs;
     private long mDelayMs;
+    private long mWorkMs;
 
     public FrequencyMeasurer(IClock clock) {
         mClock = clock;
     }
 
-    public void ping() {
+    public void startWork() {
         long now = mClock.elapsedRealtime();
         if (mLastPingMs != 0) {
             long delay = now - mLastPingMs;
@@ -40,7 +41,20 @@ public class FrequencyMeasurer {
         mLastPingMs = now;
     }
 
-    public float getFrequency() {
+    public void endWork() {
+        if (mLastPingMs != 0) {
+            long now = mClock.elapsedRealtime();
+            long delay = now - mLastPingMs;
+            // simple averaging: 1/3rd last delay, 2/3rd new delay
+            mWorkMs = mWorkMs <= 0 ? delay : (mWorkMs + 2 * delay) / 3;
+        }
+    }
+
+    public float getActualFrequency() {
         return mDelayMs <= 0 ? 0 : (1000.0f / mDelayMs);
+    }
+
+    public float getMaxFrequency() {
+        return mWorkMs <= 0 ? 0 : (1000.0f / mWorkMs);
     }
 }
