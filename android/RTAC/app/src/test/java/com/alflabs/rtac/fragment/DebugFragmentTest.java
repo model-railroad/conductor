@@ -19,7 +19,6 @@
 package com.alflabs.rtac.fragment;
 
 import android.app.Fragment;
-import android.view.View;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;

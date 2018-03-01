@@ -51,7 +51,7 @@ gradle.projectsEvaluated {
                 def variationName = "${productFlavorName}${buildTypeName}"
 
                 if (task.name.contains(variationName)) {
-                    def variationPath = variant.buildType.name;
+                    def variationPath = variant.buildType.name
 
                     if (StringUtils.isNotEmpty(productFlavorName)) {
                         variationPath = StringUtils.uncapitalize(productFlavorName) + "/" + variationPath
