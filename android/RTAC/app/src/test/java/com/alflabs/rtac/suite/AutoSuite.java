@@ -21,7 +21,6 @@ package com.alflabs.rtac.suite;
 import com.alflabs.annotations.LargeTest;
 import com.alflabs.annotations.NonNull;
 import com.google.common.reflect.ClassPath;
-import org.bouncycastle.crypto.util.Pack;
 import org.junit.Test;
 import org.junit.runners.Suite;
 import org.junit.runners.model.InitializationError;

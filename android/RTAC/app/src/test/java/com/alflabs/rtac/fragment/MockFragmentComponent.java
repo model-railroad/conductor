@@ -30,12 +30,14 @@ public class MockFragmentComponent implements IFragmentComponent {
 
     @Mock IStream<DataClientMixin.DataClientStatus> mDataClientStatusStream;
     @Mock IStream<String> mKVChangedStream;
+    @Mock IStream<Boolean> mConnectedStream;
     @Mock DataClientMixin mDataClientMixin;
 
     public MockFragmentComponent() {
         MockitoAnnotations.initMocks(this);
         when(mDataClientMixin.getStatusStream()).thenReturn(mDataClientStatusStream);
         when(mDataClientMixin.getKeyChangedStream()).thenReturn(mKVChangedStream);
+        when(mDataClientMixin.getConnectedStream()).thenReturn(mConnectedStream);
     }
 
     @Override
