@@ -51,11 +51,6 @@ Turnout T330        = NT330
 Turnout T370        = NT370
 Turnout T504        = NT504
 
-# Generic timers
-
-Timer PA-Timer-Acquire-Route = 1
-Timer PA-Timer-Release-Route = 1
-
 # Maps
 
 Map Mainline = "Conductor Map Mainline 1.svg"
@@ -85,7 +80,12 @@ Int PA-Sonora-Speed     = 20
 Int PA-Crossover-Speed  = 12
 Int PA-Full-Speed       = 24
 
+Int PA-Start-Counter = 0
+
 # --- Routes
+
+Timer PA-Timer-Acquire-Route = 1
+Timer PA-Timer-Release-Route = 1
 
 PA-Timer-Acquire-Route ->
     T311 Reverse;
@@ -129,6 +129,7 @@ PA-Toggle  -> PA-CONSIST Repeat = 2
 
 # Departure from Station (going up)
 PA-State == Station & B503b & PA-Toggle & PA-CONSIST Stopped & PA-Run3 ->
+    PA-Start-Counter += 1 ;
     PA-State = Up ;
     Reset Timers
 
@@ -256,6 +257,8 @@ Throttle BL = 10
 Int BL-Station-Speed = 12
 Int BL-Full-Speed    = 20
 
+Int BL-Start-Counter = 0
+
 Enum BL-State = Parked Station Up Reversal Down
 
 Route Branchline = Toggle: BL-Toggle, Status: BL-State, Throttle: BL
@@ -327,10 +330,10 @@ BL-Timer-Stop-Sound-Off & BL Stopped & BLStation ->
 # --- BL State: Station to Parked
 
 BL-State == Station & BLStation & !BL-Toggle ->
+    T324 Normal ;
     BL Sound = 1 ;
     BL F1 = 1 ;
     BL Light = 1 ;
-    T324 Normal ;
     BL Reverse = BL-Station-Speed ;
     BL-State = Parked
 
@@ -338,13 +341,14 @@ BL-State == Station & BLStation & !BL-Toggle ->
 # --- BL State: Station to Up
 
 BL-State == Station & BLStation & BLRun & BL-Toggle ->
+    T324 Normal ;
     BL Sound = 1 ;
     BL Horn ;
     BL F1 = 0 ;
     BL F9 = 1 ;
     BL Light = 1 ;
     BL Repeat = 2 ;
-    T324 Normal ;
+    BL-Start-Counter += 1 ;
     BL Forward = BL-Full-Speed ;
     BL-State = Up
 

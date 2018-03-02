@@ -54,14 +54,15 @@ condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 
 actionList: action ( ';' action )* ';'? ;
 action:     EOL? ( idAction | fnAction ) ;
-idAction:   ID ( throttleOp | turnoutOp | timerOp )? funcValue? ;
+idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
 fnAction:   KW_RESET KW_TIMERS;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
 timerOp:    KW_START | KW_END;
 
-funcValue:  '=' ( NUM | ID ) ;
+funcValue:  '='  ( NUM | ID ) ;
+funcInt:    ( KW_INC | KW_DEC ) ( NUM | ID ) ;
 
 
 WS:  [ \t\u000C]+ -> skip ;   // from https://github.com/antlr/grammars-v4/blob/master/java/Java.g4
@@ -72,6 +73,8 @@ SB_COMMENT: '#' ~[\r\n]*;
 KW_ARROW:   '->';
 KW_IS_EQ:   '==';
 KW_IS_NEQ:  '!=';
+KW_INC:     '+=';
+KW_DEC:     '-=';
 KW_EQUAL:   '=';
 KW_AND:     '&';
 KW_NOT:     '!';
@@ -115,7 +118,7 @@ fragment KW_F20:      'f2' [0-8] ;
 // An ID. Can be 1 or more characters. Some specific non-alpha chars are accepted.
 // An ID can contain a dash in the middle but not start or end with one (to avoid conflict with ->).
 ID:      IdCharStart ( IdCharFull* IdCharLast )? ;
-NUM:     IdNum+ ;      // An int literal
+NUM:     IdNum+ ;      // An *positive* int literal
 STR:     '"' ~["\r\n]* '"';
 STR_BLOCK: '\'\'\'' ~[']* '\'\'\'';
 

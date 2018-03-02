@@ -28,9 +28,11 @@ import com.alflabs.conductor.script.IConditional;
 import com.alflabs.conductor.script.IIntFunction;
 import com.alflabs.conductor.script.IIntValue;
 import com.alflabs.conductor.script.IStringValue;
+import com.alflabs.conductor.script.IntAction;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.Sensor;
 import com.alflabs.conductor.script.SensorFactory;
+import com.alflabs.conductor.script.StringAction;
 import com.alflabs.conductor.script.Throttle;
 import com.alflabs.conductor.script.ThrottleFactory;
 import com.alflabs.conductor.script.Timer;
@@ -498,8 +500,14 @@ public class ScriptParser2 {
 
             // Parse simplified case for enums
             Enum_ enum_ = mScript.getEnum(id);
-            if (enum_ != null && ctx.funcValue() != null) {
-                TerminalNode node = ctx.funcValue().ID();
+            ConductorParser.FuncIntContext funcInt = ctx.funcInt();
+            ConductorParser.FuncValueContext funcValue = ctx.funcValue();
+            if (enum_ != null && funcInt != null) {
+                emitError(ctx, "Invalid integer function after enum '" + id + "'. Expected '='");
+                return;
+            }
+            if (enum_ != null && funcValue != null) {
+                TerminalNode node = funcValue.ID();
                 IStringValue stringValue = null;
                 String value = node == null ? null : node.getText().toLowerCase(Locale.US);
 
@@ -519,12 +527,12 @@ public class ScriptParser2 {
                         return;
                     }
 
-                    mEvent.addStringAction(enum_, stringValue);
+                    mEvent.addAction(StringAction.create(enum_, stringValue));
                     return;
                 }
 
                 if (node == null) {
-                    node = ctx.funcValue().NUM();
+                    node = funcValue.NUM();
                     value = node == null ? null : node.getText();
                 }
                 emitError(ctx, "Invalid value '" + value + "' for enum '" + id + "'. Expected: " +
@@ -534,19 +542,53 @@ public class ScriptParser2 {
 
             // Parse optional value
             IIntValue intValue = null;
-            if (ctx.funcValue() != null) {
-                TerminalNode node = ctx.funcValue().NUM();
+            IIntFunction intFunction = null;
+
+            if (funcValue != null) {
+                TerminalNode node = funcValue.NUM();
                 if (node != null) {
                     intValue = new LiteralInt(Integer.parseInt(node.getText()));
                 } else {
-                    node = ctx.funcValue().ID();
+                    node = funcValue.ID();
                     if (node != null) {
                         intValue = mScript.getVar(node.getText());
                     }
                 }
                 if (intValue == null) {
-                    String text = node != null ? node.getText() : ctx.funcValue().getText();
+                    String text = node != null ? node.getText() : funcValue.getText();
                     emitError(ctx, "Expected NUM or ID argument for '" + id + "' but found '" + text + "'.");
+                    return;
+                }
+            } else if (funcInt != null) {
+                TerminalNode node = funcInt.NUM();
+                if (node != null) {
+                    intValue = new LiteralInt(Integer.parseInt(node.getText()));
+                } else {
+                    node = funcInt.ID();
+                    if (node != null) {
+                        intValue = mScript.getVar(node.getText());
+                    }
+                }
+                if (intValue == null) {
+                    String text = node != null ? node.getText() : funcValue.getText();
+                    emitError(ctx, "Expected NUM or ID argument for '" + id + "' but found '" + text + "'.");
+                    return;
+                }
+
+                Var var = mScript.getVar(id);
+                if (var != null) {
+                    if (funcInt.KW_INC() != null) {
+                        intFunction = var.createIncFunction();
+                    } else if (funcInt.KW_DEC() != null) {
+                        intFunction = var.createDecFunction();
+                    } else {
+                        emitError(ctx, "Unknown int operation. Expected += or -=.");
+                        return;
+                    }
+                }
+
+                if (intFunction == null) {
+                    emitError(ctx, "Expected var ID but found '" + id + "'.");
                     return;
                 }
             }
@@ -555,7 +597,6 @@ public class ScriptParser2 {
             }
 
             // Parse optional operation, which gives a specific function if valid.
-            IIntFunction intFunction = null;
 
             // Note: KW_REVERSE is used for both throttle op and turnout op.
             // When present, a throttle op gets evaluated first even though the id might be turnout.
@@ -623,9 +664,10 @@ public class ScriptParser2 {
             }
 
             if (intFunction == null) {
-                // If it's not an op for a throttle/turnout/timer, it must be a variable in the
+                // If it's not an op or a throttle/turnout/timer, it must be a variable in the
                 // syntax of "var = value".
-                intFunction = mScript.getVar(id);
+                Var var = mScript.getVar(id);
+                intFunction = var == null ? null : var.createSetterFunction();
 
                 if (intFunction == null) {
                     emitError(ctx, "Expected var ID but found '" + id + "'.");
@@ -633,13 +675,14 @@ public class ScriptParser2 {
                 }
             }
 
-            mEvent.addIntAction(intFunction, intValue);
+            mEvent.addAction(IntAction.create(intFunction, intValue));
         }
 
         @Override
         public void exitFnAction(ConductorParser.FnActionContext ctx) {
             if (ctx.KW_RESET() != null && ctx.KW_TIMERS() != null) {
-                mEvent.addIntAction(mScript.getResetTimersFunction(), new LiteralInt(0));
+                mEvent.addAction(
+                        IntAction.create(mScript.getResetTimersFunction(), new LiteralInt(0)));
             } else {
                 emitError(ctx, "Unexpected call.");
             }
@@ -704,17 +747,17 @@ public class ScriptParser2 {
                 // create an event that will trigger the timer
                 Event triggerEvent = new Event(mScript.getLogger(), timerName + " trigger");
                 triggerEvent.addConditional(cond, negated);
-                triggerEvent.addIntAction(
+                triggerEvent.addAction(IntAction.create(
                         timer.createFunction(Timer.Function.START),
-                        new LiteralInt(0));
+                        new LiteralInt(0)));
                 mScript.addEvent(triggerEvent);
 
                 // create an event that clears the timer
                 Event endEvent = new Event(mScript.getLogger(), timerName + " end");
                 endEvent.addConditional(timer, false);
-                endEvent.addIntAction(
+                endEvent.addAction(IntAction.create(
                         timer.createFunction(Timer.Function.END),
-                        new LiteralInt(0));
+                        new LiteralInt(0)));
                 mScript.addEvent(endEvent);
             }
 

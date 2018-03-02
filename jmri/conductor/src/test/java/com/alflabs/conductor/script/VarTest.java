@@ -39,11 +39,18 @@ public class VarTest {
     @Mock IKeyValue mKeyValue;
 
     private Var mVar;
+    private IIntFunction mFuncSet;
+    private IIntFunction mFuncInc;
+    private IIntFunction mFuncDec;
 
     @Before
     public void setUp() throws Exception {
         VarFactory factory = new VarFactory(InstanceFactory.create(mKeyValue));
         mVar = factory.create(42, "MyVar");
+
+        mFuncSet = mVar.createSetterFunction();
+        mFuncInc = mVar.createIncFunction();
+        mFuncDec = mVar.createDecFunction();
 
         mVar.onExecStart();
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
@@ -53,15 +60,37 @@ public class VarTest {
     public void testGetSetValue() throws Exception {
         assertThat(mVar.getAsInt()).isEqualTo(42);
 
-        mVar.accept(-32);
+        mFuncSet.accept(-32);
         assertThat(mVar.getAsInt()).isEqualTo(-32);
+    }
+
+    @Test
+    public void testIncValue() throws Exception {
+        assertThat(mVar.getAsInt()).isEqualTo(42);
+
+        mFuncInc.accept(12);
+        assertThat(mVar.getAsInt()).isEqualTo(54);
+
+        mFuncInc.accept(-32);
+        assertThat(mVar.getAsInt()).isEqualTo(22);
+    }
+
+    @Test
+    public void testDecValue() throws Exception {
+        assertThat(mVar.getAsInt()).isEqualTo(42);
+
+        mFuncDec.accept(12);
+        assertThat(mVar.getAsInt()).isEqualTo(30);
+
+        mFuncDec.accept(-32);
+        assertThat(mVar.getAsInt()).isEqualTo(62);
     }
 
     @Test
     public void testSetExported() throws Exception {
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
         mVar.setExported(true);
-        mVar.accept(43);
+        mFuncSet.accept(43);
         mVar.onExecHandle();
         verify(mKeyValue).putValue("V/MyVar", "43", true);
     }
@@ -70,10 +99,10 @@ public class VarTest {
     public void testIsActive() throws Exception {
         assertThat(mVar.isActive()).isTrue();
 
-        mVar.accept(0);
+        mFuncSet.accept(0);
         assertThat(mVar.isActive()).isFalse();
 
-        mVar.accept(-12);
+        mFuncSet.accept(-12);
         assertThat(mVar.isActive()).isTrue();
     }
 }

@@ -183,6 +183,46 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testDefineIncInt() throws Exception {
+        String source = "" +
+                " Sensor A = NS1 \n" +
+                " Sensor B = NS2 \n" +
+                "  Int VALUE  = 5201 # d&rgw \n" +
+                " A -> value += 1 \n" +
+                " A -> value -= 12 \n" +
+                " B -> value += value ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.getAsInt()).isEqualTo(5201);
+    }
+
+    @Test
+    public void testDefineIncInt_missingId() throws Exception {
+        String source = "" +
+                " Sensor A = NS1 \n" +
+                " Sensor B = NS2 \n" +
+                "  Int VALUE  = 5201 # d&rgw \n" +
+                " A -> value += 42.43 \n" +
+                " A -> value += -12 \n" +  // Note negative values aren't parsed yet
+                " B -> value -= invalid-id ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo(
+                "Error at line 4: extraneous input '.43' expecting {<EOF>, EOL, SB_COMMENT, ';'}.\n" +
+                "Error at line 5: token recognition error at: '-1'.\n" +
+                "Error at line 4: Unexpected symbol: '.43'.\n" +
+                "  Line 4: 'A -> value += 42.43'\n" +
+                "Error at line 6: Expected NUM or ID argument for 'value' but found 'invalid-id'.\n" +
+                "  Line 6: 'B -> value -= invalid-id'");
+        assertThat(script).isNotNull();
+    }
+
+    @Test
     public void testDefineString() throws Exception {
         String source = "  String VALUE    = \"5201 # d&rgw\" ";
         Script script = mScriptComponent.createScriptParser2().parse(source);
@@ -576,11 +616,72 @@ public class ScriptParser2Test {
                 "Enum State = Init Idle Fwd Rev\n" +
                 "State == INIT -> State = Idle\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
+        engine.onExecStart();
+
         assertThat(script.getEnum("State").get()).isEqualTo("init");
+
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("idle");
+    }
+
+    @Test
+    public void testActionInt() throws Exception {
+        String source = "" +
+                "Enum State = Init Set\n" +
+                "Int Value = 0 \n" +
+                "State == Init -> value = 1 \n" +
+                "State == Set  -> value = 2";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").getAsInt()).isEqualTo(0);
+
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").getAsInt()).isEqualTo(1);
+    }
+
+    @Test
+    public void testActionIncDecInt() throws Exception {
+        String source = "" +
+                "Enum State = Init Set\n" +
+                "Int Value = 1 \n" +
+                "State == Init -> value += 1 \n" +
+                "State == Set  -> value -= 5";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").getAsInt()).isEqualTo(1);
+
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").getAsInt()).isEqualTo(2);
+
+        script.getEnum("State").accept("set");
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("set");
+        assertThat(script.getVar ("Value").getAsInt()).isEqualTo(-3);
     }
 
     @Test

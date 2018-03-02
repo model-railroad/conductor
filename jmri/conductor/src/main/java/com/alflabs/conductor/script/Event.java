@@ -42,12 +42,8 @@ public class Event {
         mConditions.add(new Cond(condition, negated));
     }
 
-    public void addIntAction(IIntFunction function, IIntValue value) {
-        mActions.add(new IntAction(function, value));
-    }
-
-    public void addStringAction(IStringFunction function, IStringValue value) {
-        mActions.add(new StringAction(function, value));
+    public void addAction(IAction action) {
+        mActions.add(action);
     }
 
     boolean evalConditions(CondCache condCache) {

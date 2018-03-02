@@ -21,9 +21,13 @@ package com.alflabs.conductor.script;
 /**
  * Represents one action, which is composed of a function (setter) and value (getter).
  */
-class StringAction implements IAction {
+public class StringAction implements IAction {
     private final IStringFunction mFunction;
     private final IStringValue mValue;
+
+    public static IAction create(IStringFunction function, IStringValue value) {
+        return new StringAction(function, value);
+    }
 
     StringAction(IStringFunction function, IStringValue value) {
         mFunction = function;

@@ -18,13 +18,14 @@
 
 package com.alflabs.conductor.script;
 
+import com.alflabs.annotations.NonNull;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
 @AutoFactory(allowSubclasses = true)
-public class Var implements IConditional, IIntFunction, IIntValue, IStringValue, IExecEngine, IExportable, IResettable {
+public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, IExportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
@@ -93,9 +94,19 @@ public class Var implements IConditional, IIntFunction, IIntValue, IStringValue,
         return Integer.toString(mIntValue);
     }
 
-    @Override
-    public void accept(int value) {
-        mIntValue = value;
+    @NonNull
+    public IIntFunction createSetterFunction() {
+        return value -> mIntValue = value;
+    }
+
+    @NonNull
+    public IIntFunction createIncFunction() {
+        return value -> mIntValue += value;
+    }
+
+    @NonNull
+    public IIntFunction createDecFunction() {
+        return value -> mIntValue -= value;
     }
 
     @Override
