@@ -44,6 +44,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.internal.matchers.Not;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -452,18 +453,22 @@ public class ScriptParser2Test {
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
                 "Int  BL-Status   = 300\n" +
+                "Int  PA-Counter  = 1\n" +
+                "Int  BL-Counter  = 2\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
-                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
-                "Route Branchline=toggle:bl-toggle,status:bl-status,throttle:blt-200\n";
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n" +
+                "Route Branchline=toggle:bl-toggle,status:bl-status,counter:bl-counter,throttle:blt-200\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
-        assertThat(routes).hasFirstEntry("branchline", new RouteInfo("Branchline", "S/bl-toggle", "V/bl-status", "D/200"));
-        assertThat(routes).hasLastEntry("passenger"  , new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "D/100"));
+        assertThat(routes).hasFirstEntry("branchline",
+                new RouteInfo("Branchline", "S/bl-toggle", "V/bl-status", "V/bl-counter", "D/200"));
+        assertThat(routes).hasLastEntry("passenger"  ,
+                new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "V/pa-counter", "D/100"));
         assertThat(routes).hasSize(2);
 
         ExecEngine engine = mScriptComponent.createScriptExecEngine();
@@ -492,14 +497,16 @@ public class ScriptParser2Test {
                 { "D/100", "D/200",
                         "M/maps", "R/routes",
                         "S/bl-toggle", "S/pa-toggle",
-                        "V/$estop-state$", "V/bl-status", "V/pa-status" });
+                        "V/$estop-state$",
+                        "V/bl-counter", "V/bl-status",
+                        "V/pa-counter", "V/pa-status" });
 
         assertThat(sortedValues.toArray()).isEqualTo(new String[]
-                { "0", "0", "300", "NORMAL", "OFF", "OFF", "init",
+                { "0", "0", "1", "2", "300", "NORMAL", "OFF", "OFF", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
-                                "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"throttleKey\":\"D/200\"}," +
-                                "{\"name\":\"Passenger\",\"toggleKey\":\"S/pa-toggle\",\"statusKey\":\"V/pa-status\",\"throttleKey\":\"D/100\"}]}" });
+                                "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"counterKey\":\"V/bl-counter\",\"throttleKey\":\"D/200\"}," +
+                                "{\"name\":\"Passenger\",\"toggleKey\":\"S/pa-toggle\",\"statusKey\":\"V/pa-status\",\"counterKey\":\"V/pa-counter\",\"throttleKey\":\"D/100\"}]}" });
     }
 
     @Test
@@ -509,15 +516,17 @@ public class ScriptParser2Test {
                 "Throttle BLT-200 = 200\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
                 "Int  BL-Status   = 300\n" +
+                "Int  PA-Counter  = 1\n" +
+                "Int  BL-Counter  = 2\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor BL-Toggle = NS430\n" +
-                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n" +
-                "Route Passenger  = toggle:bl-toggle,status:bl-status,throttle:blt-200\n";
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n" +
+                "Route Passenger  = toggle:bl-toggle,status:bl-status,counter:bl-counter,throttle:blt-200\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
-                "Error at line 8: Name 'Passenger' is already defined.\n" +
-                "  Line 8: 'Route Passenger  = toggle:bl-toggle,status:bl-status,throttle:blt-200'");
+                "Error at line 10: Name 'Passenger' is already defined.\n" +
+                "  Line 10: 'Route Passenger  = toggle:bl-toggle,status:bl-status,counter:bl-counter,throttle:blt-200'");
         assertThat(script).isNotNull();
     }
 
@@ -526,12 +535,12 @@ public class ScriptParser2Test {
         String source = "" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
                 "Sensor PA-Toggle = NS420\n" +
-                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: Route 'Passenger': Id 'PA-100' for argument 'throttle' is not defined.\n" +
-                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle'");
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
@@ -543,13 +552,14 @@ public class ScriptParser2Test {
     public void testDefineRoute_MissingStatus() throws Exception {
         String source = "" +
                 "Throttle PA-100  = 100\n" +
+                "Int  PA-Counter  = 1\n" +
                 "Sensor PA-Toggle = NS420\n" +
-                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
-                "Error at line 3: Route 'Passenger': Id 'PA-Status' for argument 'status' is not defined.\n" +
-                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+                "Error at line 4: Route 'Passenger': Id 'PA-Status' for argument 'status' is not defined.\n" +
+                "  Line 4: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle'");
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
@@ -561,13 +571,14 @@ public class ScriptParser2Test {
     public void testDefineRoute_MissingToggle() throws Exception {
         String source = "" +
                 "Throttle PA-100  = 100\n" +
+                "Int  PA-Counter  = 1\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
-                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+                "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
-                "Error at line 3: Route 'Passenger': Id 'PA-Toggle' for argument 'toggle' is not defined.\n" +
-                "  Line 3: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+                "Error at line 4: Route 'Passenger': Id 'PA-Toggle' for argument 'toggle' is not defined.\n" +
+                "  Line 4: 'Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle'");
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
@@ -580,14 +591,15 @@ public class ScriptParser2Test {
         String source = "" +
                 "Throttle PA-100  = 100\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
+                "Int  PA-Counter  = 1\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor MyToggle  = NS421\n" +
-                "Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle\n";
+                "Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
-                "Error at line 5: Route 'Passenger': Argument 'toggle' is already defined.\n" +
-                "  Line 5: 'Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Toggle: PA-Toggle'");
+                "Error at line 6: Route 'Passenger': Argument 'toggle' is already defined.\n" +
+                "  Line 6: 'Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle'");
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();

@@ -341,10 +341,12 @@ public class ScriptParser2 {
 
             final String TOGGLE = "toggle";
             final String STATUS = "status";
+            final String COUNTER = "counter";
             final String THROTTLE = "throttle";
             Map<String, String> arguments = new TreeMap<>();
             arguments.put(TOGGLE, null);
             arguments.put(STATUS, null);
+            arguments.put(COUNTER, null);
             arguments.put(THROTTLE, null);
 
             for (ConductorParser.RouteInfoContext routeCtx : ctx.routeInfoList().routeInfo()) {
@@ -402,7 +404,7 @@ public class ScriptParser2 {
 
             for (Map.Entry<String, String> entry : arguments.entrySet()) {
                 if (entry.getValue() == null || entry.getValue().trim().isEmpty()) {
-                    emitError(ctx, "Route '" + routeName + "': Argument '" + entry.getValue() + "' is not defined");
+                    emitError(ctx, "Route '" + routeName + "': Argument '" + entry.getKey() + "' is not defined");
                     return;
                 }
             }
@@ -416,6 +418,7 @@ public class ScriptParser2 {
                     routeName,
                     arguments.get(TOGGLE),
                     arguments.get(STATUS),
+                    arguments.get(COUNTER),
                     arguments.get(THROTTLE)));
         }
 

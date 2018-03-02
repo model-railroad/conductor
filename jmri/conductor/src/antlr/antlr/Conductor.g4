@@ -40,7 +40,7 @@ defEnumValues: ( ID )+;
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
 routeInfoList: routeInfo ( ',' routeInfo )* ','? ;
 routeInfo:     routeInfoOp ':' ID;
-routeInfoOp:   KW_TOGGLE | KW_STATUS | KW_THROTTLE;
+routeInfoOp:   KW_TOGGLE | KW_STATUS | KW_COUNTER | KW_THROTTLE;
 
 eventLine: condList '->' actionList;
 
@@ -101,6 +101,7 @@ KW_SENSOR:  'sensor';
 KW_SOUND:   'sound';
 KW_START:   'start';
 KW_STATUS:  'status';
+KW_COUNTER: 'counter';
 KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
 KW_THROTTLE:'throttle';

@@ -30,13 +30,14 @@ public class RouteInfoTest {
 
     @Test
     public void testGetSet() throws Exception {
-        RouteInfo r1 = new RouteInfo("Route Name", "S/PA-Toggle", "V/PA-State", "D/204");
+        RouteInfo r1 = new RouteInfo("Route Name", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
         assertThat(r1.getName()).isEqualTo("Route Name");
         assertThat(r1.getToggleKey()).isEqualTo("S/PA-Toggle");
         assertThat(r1.getStatusKey()).isEqualTo("V/PA-State");
+        assertThat(r1.getCounterKey()).isEqualTo("V/PA-Counter");
         assertThat(r1.getThrottleKey()).isEqualTo("D/204");
 
-        RouteInfo r2 = new RouteInfo("Route Name", "S/PA-Toggle", "V/PA-State", "D/204");
+        RouteInfo r2 = new RouteInfo("Route Name", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
         assertThat(r1.equals(r2)).isTrue();
         assertThat(r1.hashCode()).isEqualTo(r2.hashCode());
     }

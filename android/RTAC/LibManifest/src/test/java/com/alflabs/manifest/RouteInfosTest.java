@@ -30,12 +30,12 @@ public class RouteInfosTest {
 
     @Test
     public void testGetSet() throws Exception {
-        RouteInfo r1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "D/204");
-        RouteInfo r2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "D/10");
+        RouteInfo r1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
+        RouteInfo r2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "V/BL-Counter", "D/10");
         RouteInfos rs = new RouteInfos(new RouteInfo[] { r1, r2 });
 
-        RouteInfo e1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "D/204");
-        RouteInfo e2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "D/10");
+        RouteInfo e1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
+        RouteInfo e2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "V/BL-Counter", "D/10");
         RouteInfos es = new RouteInfos(new RouteInfo[] { e1, e2 });
 
         assertThat(rs.getRouteInfos()).isEqualTo(new RouteInfo[] { r1, r2 });
@@ -47,18 +47,46 @@ public class RouteInfosTest {
 
     @Test
     public void testToJson() throws Exception {
-        RouteInfo r1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "D/204");
-        RouteInfo r2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "D/10");
+        RouteInfo r1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
+        RouteInfo r2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "V/BL-Counter", "D/10");
         RouteInfos rs = new RouteInfos(new RouteInfo[] { r1, r2 });
-        assertThat(rs.toJsonString()).isEqualTo("{\"routeInfos\":[{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"throttleKey\":\"D/204\"},{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"throttleKey\":\"D/10\"}]}");
+        assertThat(rs.toJsonString()).isEqualTo("{\"routeInfos\":[" +
+                "{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"counterKey\":\"V/PA-Counter\",\"throttleKey\":\"D/204\"}," +
+                "{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"counterKey\":\"V/BL-Counter\",\"throttleKey\":\"D/10\"}]}");
+    }
+
+    @Test
+    public void testFromJson1() throws Exception {
+        RouteInfos rs = RouteInfos.parseJson("{\"routeInfos\":[" +
+                "{\"name\":\"Route 1\"}," +
+                "{\"name\":\"Route 2\"}]}");
+
+        RouteInfo e1 = new RouteInfo("Route 1", null, null, null, null);
+        RouteInfo e2 = new RouteInfo("Route 2", null, null, null, null);
+        RouteInfos es = new RouteInfos(new RouteInfo[] { e1, e2 });
+        assertThat(rs).isEqualTo(es);
+    }
+
+    @Test
+    public void testFromJson2() throws Exception {
+        RouteInfos rs = RouteInfos.parseJson("{\"routeInfos\":[" +
+                "{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"throttleKey\":\"D/204\"}," +
+                "{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"throttleKey\":\"D/10\"}]}");
+
+        RouteInfo e1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", null, "D/204");
+        RouteInfo e2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", null, "D/10");
+        RouteInfos es = new RouteInfos(new RouteInfo[] { e1, e2 });
+        assertThat(rs).isEqualTo(es);
     }
 
     @Test
     public void testFromJson() throws Exception {
-        RouteInfos rs = RouteInfos.parseJson("{\"routeInfos\":[{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"throttleKey\":\"D/204\"},{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"throttleKey\":\"D/10\"}]}");
+        RouteInfos rs = RouteInfos.parseJson("{\"routeInfos\":[" +
+                "{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"counterKey\":\"V/PA-Counter\",\"throttleKey\":\"D/204\"}," +
+                "{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"counterKey\":\"V/BL-Counter\",\"throttleKey\":\"D/10\"}]}");
 
-        RouteInfo e1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "D/204");
-        RouteInfo e2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "D/10");
+        RouteInfo e1 = new RouteInfo("Route 1", "S/PA-Toggle", "V/PA-State", "V/PA-Counter", "D/204");
+        RouteInfo e2 = new RouteInfo("Route 2", "S/BL-Toggle", "V/BL-State", "V/BL-Counter", "D/10");
         RouteInfos es = new RouteInfos(new RouteInfo[] { e1, e2 });
         assertThat(rs).isEqualTo(es);
     }

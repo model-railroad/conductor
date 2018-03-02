@@ -27,6 +27,7 @@ public class RouteInfo {
     private String name;          // field name exported to JSON
     private String toggleKey;     // field name exported to JSON
     private String statusKey;     // field name exported to JSON
+    private String counterKey;    // field name exported to JSON
     private String throttleKey;   // field name exported to JSON
 
     /** Constructor needed by the JSON ObjectMapper. */
@@ -42,12 +43,14 @@ public class RouteInfo {
      * @param name The name of the route.
      * @param toggleKey The KV Server key name of the toggle sensor for the route.
      * @param statusKey The KV Server key name of the status enum for the route.
+     * @param counterKey The KV Server key name of the counter var for the route.
      * @param throttleKey The KV Server key name of the DCC address for the route's speed.
      */
-    public RouteInfo(String name, String toggleKey, String statusKey, String throttleKey) {
+    public RouteInfo(String name, String toggleKey, String statusKey, String counterKey, String throttleKey) {
         this.name = name;
         this.toggleKey = toggleKey;
         this.statusKey = statusKey;
+        this.counterKey = counterKey;
         this.throttleKey = throttleKey;
     }
 
@@ -63,6 +66,10 @@ public class RouteInfo {
         return statusKey;
     }
 
+    public String getCounterKey() {
+        return counterKey;
+    }
+
     public String getThrottleKey() {
         return throttleKey;
     }
@@ -73,6 +80,7 @@ public class RouteInfo {
                 "name='" + name + '\'' +
                 ", toggleKey='" + toggleKey + '\'' +
                 ", statusKey='" + statusKey + '\'' +
+                ", counterKey='" + counterKey + '\'' +
                 ", throttleKey='" + throttleKey + '\'' +
                 '}';
     }
@@ -80,22 +88,38 @@ public class RouteInfo {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof RouteInfo)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         RouteInfo routeInfo = (RouteInfo) o;
 
-        if (!name.equals(routeInfo.name)) return false;
-        if (!toggleKey.equals(routeInfo.toggleKey)) return false;
-        if (!statusKey.equals(routeInfo.statusKey)) return false;
-        return throttleKey.equals(routeInfo.throttleKey);
+        if (name != null ? !name.equals(routeInfo.name) : routeInfo.name != null) return false;
+        if (toggleKey != null ?
+                !toggleKey.equals(routeInfo.toggleKey) :
+                routeInfo.toggleKey != null) {
+            return false;
+        }
+        if (statusKey != null ?
+                !statusKey.equals(routeInfo.statusKey) :
+                routeInfo.statusKey != null) {
+            return false;
+        }
+        if (counterKey != null ?
+                !counterKey.equals(routeInfo.counterKey) :
+                routeInfo.counterKey != null) {
+            return false;
+        }
+        return throttleKey != null ?
+                throttleKey.equals(routeInfo.throttleKey) :
+                routeInfo.throttleKey == null;
     }
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + toggleKey.hashCode();
-        result = 31 * result + statusKey.hashCode();
-        result = 31 * result + throttleKey.hashCode();
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (toggleKey != null ? toggleKey.hashCode() : 0);
+        result = 31 * result + (statusKey != null ? statusKey.hashCode() : 0);
+        result = 31 * result + (counterKey != null ? counterKey.hashCode() : 0);
+        result = 31 * result + (throttleKey != null ? throttleKey.hashCode() : 0);
         return result;
     }
 }
