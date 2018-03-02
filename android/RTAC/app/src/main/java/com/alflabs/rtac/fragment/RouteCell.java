@@ -41,6 +41,7 @@ public class RouteCell {
     private final TextView mStatusText;
     private final TextView mSpeedText;
     private final TextView mDirText;
+    private final TextView mCounterText;
 
     public static RouteCell inflate(
             LayoutInflater inflater,
@@ -49,10 +50,18 @@ public class RouteCell {
             IKeyValue keyValue) {
         View cellView = inflater.inflate(R.layout.route_cell, root, false);
         RouteCell cell = new RouteCell(routeInfo, cellView);
-        cell.onKVChanged(routeInfo.getToggleKey(), keyValue.getValue(routeInfo.getToggleKey()));
-        cell.onKVChanged(routeInfo.getStatusKey(), keyValue.getValue(routeInfo.getStatusKey()));
-        cell.onKVChanged(routeInfo.getThrottleKey(), keyValue.getValue(routeInfo.getThrottleKey()));
+
+        subscribe(cell, keyValue, routeInfo.getToggleKey());
+        subscribe(cell, keyValue, routeInfo.getStatusKey());
+        subscribe(cell, keyValue, routeInfo.getCounterKey());
+        subscribe(cell, keyValue, routeInfo.getThrottleKey());
         return cell;
+    }
+
+    private static void subscribe(RouteCell cell, IKeyValue keyValue, String key) {
+        if (key != null) {
+            cell.onKVChanged(key, keyValue.getValue(key));
+        }
     }
 
     RouteCell(RouteInfo routeInfo, View root) {
@@ -61,6 +70,7 @@ public class RouteCell {
 
         mToggleText = root.findViewById(R.id.route_toggle);
         mStatusText = root.findViewById(R.id.route_status);
+        mCounterText = root.findViewById(R.id.route_counter);
         mSpeedText = root.findViewById(R.id.route_speed);
         mDirText = root.findViewById(R.id.route_dir);
 
@@ -96,6 +106,10 @@ public class RouteCell {
             } catch (Exception e) {
                 Log.e(TAG, "Failed to parse speed: '" + value + "'", e);
             }
+
+        } else if (key.equals(mRouteInfo.getCounterKey())) {
+            mCounterText.setText(value + " Activations");
+
         }
     }
 }

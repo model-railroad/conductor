@@ -76,7 +76,6 @@ public class StatusWnd {
     private JPanel mSensorPanel;
     private JPanel mSimulationPanel;
     private String mLastError;
-    private Runnable mEngineHandleListener;
 
     private StatusWnd(JFrame frame) {
         mFrame = frame;
@@ -299,7 +298,7 @@ public class StatusWnd {
 
     private StringBuilder mStatus = new StringBuilder();
 
-    private String generateVarStatus(
+    public String generateVarStatus(
             Script script,
             ExecEngine engine,
             KeyValueServer kvServer) {

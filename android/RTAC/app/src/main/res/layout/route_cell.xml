@@ -66,4 +66,13 @@
             android:textAllCaps="true"
             android:layout_marginEnd="8dp" />
 
+    <TextView
+            android:id="@+id/route_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_dir"
+            android:layout_alignStart="@id/route_toggle"
+            android:layout_marginTop="8dp"
+            tools:text="42 Activations" />
+
 </RelativeLayout>
