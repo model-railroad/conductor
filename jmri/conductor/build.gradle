@@ -16,12 +16,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+// Add the Annotation Processor Plugin to run dagger at build-time.
+// Doing it this way (instead of just using the "plugins" block) allows it to be cached
+// for offline usage.
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "net.ltgt.apt:net.ltgt.apt.gradle.plugin:0.10"
+    }
+}
 plugins {
     id "java"
     id "idea"
-    // Add the Annotation Processor Plugin to run dagger at build-time.
-    id "net.ltgt.apt" version "0.10"
 }
+// Add the Annotation Processor Plugin to run dagger at build-time.
+apply plugin: "net.ltgt.apt"
 
 group "com.alflabs.conductor"
 version "1.0-SNAPSHOT"
