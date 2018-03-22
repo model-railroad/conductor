@@ -93,11 +93,12 @@ Int PA-Start-Counter = 0
 Route Amtrak = Toggle: PA-Toggle, Status: PA-State,  Counter: PA-Start-Counter, Throttle: AM
 Route RDC-Main = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, Throttle: RDC
 
+Int AM-Leaving-Speed    = 8
 Int AM-Station-Speed    = 12
 Int AM-Summit-Speed     = 12
-Int AM-Sonora-Speed     = 20
+Int AM-Sonora-Speed     = 12
 Int AM-Crossover-Speed  = 12
-Int AM-Full-Speed       = 24
+Int AM-Full-Speed       = 20
 
 Int RDC-Full-Speed      = 20
 Int RDC-Station-Speed   = 12
@@ -189,7 +190,7 @@ PA-State == Station & !PA-Toggle ->
 Timer AM-Delayed-Horn = 2
 PA-State == AM-Up & B503b & AM Stopped ->
     AM Light = 1; AM Sound = 1;
-    AM Forward = AM-Station-Speed ;
+    AM Forward = AM-Leaving-Speed ;
     AM Horn ; AM-Delayed-Horn Start ;
     AM-Timer-Acquire-Route Start ;
     AM F1 = 1
@@ -197,7 +198,7 @@ PA-State == AM-Up & B503b & AM Stopped ->
 AM-Delayed-Horn -> AM Horn
 
 PA-State == AM-Up & B503a & AM Forward ->
-    AM Forward = AM-Crossover-Speed ;
+    AM Forward = AM-Leaving-Speed ;
     AM F1 = 0
 
 PA-State == AM-Up & B321 & AM Forward -> AM Forward = AM-Full-Speed
@@ -208,7 +209,7 @@ PA-State == AM-Up &  B321 + 27 & AM Forward -> AM Horn
 PA-State == AM-Up &  B330 & AM Forward -> AM Forward = AM-Sonora-Speed
 PA-State == AM-Up &  B330 + 12 & AM Forward -> AM Forward = AM-Full-Speed ; AM Horn
 # After tunnel on the way up
-PA-State == AM-Up &  B330 + 26 & AM Forward -> AM Horn
+PA-State == AM-Up &  B330 + 30 & AM Forward -> AM Horn
 
 PA-State == AM-Up & B360 -> PA-State = AM-Summit
 
@@ -225,10 +226,10 @@ PA-State == AM-Up & !PA-Toggle & AM Forward & B503b ->
 PA-State == AM-Summit & B370 +  4 & AM Forward ->
     AM Forward = AM-Summit-Speed ;
     AM F1 = 1
-PA-State == AM-Summit & B370 + 10 & AM Forward ->
+PA-State == AM-Summit & B370 + 18 & AM Forward ->
     AM Stop ;
     AM Horn
-PA-State == AM-Summit & B370 + 22 ->
+PA-State == AM-Summit & B370 + 30 ->
     AM F1 = 0 ;
     AM Horn;
     AM Reverse = AM-Summit-Speed
