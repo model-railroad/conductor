@@ -176,8 +176,8 @@ PA-State == Starting ->
     PA-Start-Counter += 1 ;
     Reset Timers
 # TODO NOT STARTING THE AM YET
-# PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
-PA-State == Starting & PA-Train == Amtrak -> PA-State = RDC-Up 
+PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
+# PA-State == Starting & PA-Train == Amtrak -> PA-State = RDC-Up 
 PA-State == Starting & PA-Train == RDC    -> PA-State = RDC-Up
 
 PA-State == Station & !PA-Toggle ->
