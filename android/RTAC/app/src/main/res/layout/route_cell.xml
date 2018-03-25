@@ -16,6 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
             android:textStyle="bold"
             android:textSize="@dimen/route_name_text_size"
             android:textAllCaps="true"
@@ -31,7 +32,6 @@
             android:layout_alignStart="@id/route_name"
             android:textSize="@dimen/route_status_text_size"
             android:textAllCaps="true"
-            android:layout_marginTop="8dp"
             android:layout_marginStart="4dp" />
 
     <TextView
@@ -70,9 +70,8 @@
             android:id="@+id/route_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/route_dir"
-            android:layout_alignStart="@id/route_toggle"
-            android:layout_marginTop="8dp"
+            android:layout_below="@id/route_name"
+            android:layout_alignEnd="@id/route_speed"
             tools:text="42 Activations" />
 
 </RelativeLayout>
