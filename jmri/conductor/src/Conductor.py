@@ -102,8 +102,7 @@ class JmriThrottleAdapter(IJmriThrottle):
             print "[Conductor] No Throttle for ", self._address
             return
         if self._address == 537:
-            for i in self.repeat():
-                self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
+            self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
         elif self._address == 204 or self._address == 209 or self._address == 10:
             self._throttle.setF8(on)          # F8 true to sound on these LokSelect decoders
         else:
