@@ -121,6 +121,18 @@ public class ScriptParserFullTest {
         assertThat(script).isNotNull();
     }
 
+    @Test
+    public void testScript7() throws Exception {
+        when(mFileOps.isFile(new File("~/rtac_ga_tracking_id.txt"))).thenReturn(true);
+        when(mFileOps.toString(new File("~/rtac_ga_tracking_id.txt"), Charsets.UTF_8)).thenReturn("GA-ID");
+
+        String source = getFileSource("script7.txt");
+        assertThat(source).isNotNull();
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+    }
+
     private String getFileSource(String fileName) throws IOException {
         String path = new File("v2", fileName).getPath();
         return Resources.toString(Resources.getResource(path), Charsets.UTF_8);

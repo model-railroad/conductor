@@ -21,6 +21,7 @@ package com.alflabs.conductor.parser;
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.script.AnalyticEventAction;
 import com.alflabs.conductor.script.EnumFactory;
 import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.Event;
@@ -41,6 +42,7 @@ import com.alflabs.conductor.script.Turnout;
 import com.alflabs.conductor.script.TurnoutFactory;
 import com.alflabs.conductor.script.Var;
 import com.alflabs.conductor.script.VarFactory;
+import com.alflabs.conductor.util.Analytics;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
@@ -78,6 +80,7 @@ public class ScriptParser2 {
     private final TimerFactory mTimerFactory;
     private final EnumFactory mEnumFactory;
     private final VarFactory mVarFactory;
+    private final Analytics mAnalytics;
     private final FileOps mFileOps;
     private final Script mScript;
     private final Reporter mReporter;
@@ -93,6 +96,7 @@ public class ScriptParser2 {
             TimerFactory timerFactory,
             EnumFactory enumFactory,
             VarFactory varFactory,
+            Analytics analytics,
             FileOps fileOps) {
         mReporter = reporter;
         mScript = script;
@@ -102,6 +106,7 @@ public class ScriptParser2 {
         mTimerFactory = timerFactory;
         mEnumFactory = enumFactory;
         mVarFactory = varFactory;
+        mAnalytics = analytics;
         mFileOps = fileOps;
     }
 
@@ -688,6 +693,83 @@ public class ScriptParser2 {
                         IntAction.create(mScript.getResetTimersFunction(), new LiteralInt(0)));
             } else {
                 emitError(ctx, "Unexpected call.");
+            }
+        }
+
+        @Override
+        public void exitGaAction(ConductorParser.GaActionContext ctx) {
+            String prefix = ctx.KW_GA_EVENT().getText();
+            Map<String, String> arguments = new TreeMap<>();
+
+            arguments.put(AnalyticEventAction.CATEGORY, null);
+            arguments.put(AnalyticEventAction.ACTION, null);
+            arguments.put(AnalyticEventAction.LABEL, null);
+            arguments.put(AnalyticEventAction.USER, null);
+
+            for (ConductorParser.GaParamContext paramCtx : ctx.gaParamList().gaParam()) {
+                String key = null;
+                String value = null;
+
+                if (paramCtx.gaParamOp() != null) {
+                    key = paramCtx.gaParamOp().getText();
+                    TerminalNode terminal = paramCtx.ID();
+                    if (terminal == null) {
+                        terminal = paramCtx.KW_START();
+                    }
+                    if (terminal == null) {
+                        terminal = paramCtx.KW_STOP();
+                    }
+                    value = terminal == null ? null : terminal.getText();
+                }
+
+                if (key == null || value == null) {
+                    emitError(ctx, prefix + ": Unexpected error parsing " + paramCtx.getText());
+                    return;
+                }
+                key = key.toLowerCase(Locale.US);
+                if (!arguments.containsKey(key)) {
+                    emitError(ctx, prefix + ": Unknown argument '" + key + "'. Expected: " +
+                            Arrays.toString(arguments.keySet().toArray()));
+                    return;
+                }
+                if (arguments.get(key) != null) {
+                    emitError(ctx, prefix + ": Argument '" + key + "' is already defined.");
+                    return;
+                }
+
+                arguments.put(key, value);
+            }
+
+            for (Map.Entry<String, String> entry : arguments.entrySet()) {
+                if (entry.getValue() == null || entry.getValue().trim().isEmpty()) {
+                    emitError(ctx, prefix + ": Argument '" + entry.getKey() + "' is not defined");
+                    return;
+                }
+            }
+
+            mEvent.addAction(new AnalyticEventAction(
+                    mAnalytics,
+                    arguments,
+                    // Resolver when a label is an Enum name
+                    varName -> {
+                        Enum_ enum_ = mScript.getEnum(varName);
+                        return enum_ == null ? varName : enum_.get();
+                    },
+                    // Resolver when a user is an Int Counter name
+                    varName -> {
+                        Var var = mScript.getVar(varName);
+                        return var == null ? varName : var.get();
+                    }
+            ));
+        }
+
+        @Override
+        public void exitDefGaIdLine(ConductorParser.DefGaIdLineContext ctx) {
+            String idOrFile = ctx.STR().getText();
+            try {
+                mAnalytics.setTrackingId(idOrFile);
+            } catch (IOException e) {
+                emitError(ctx, "GA-Tracking-Id: Failed to read '" + idOrFile + "', Exception: " + e);
             }
         }
 

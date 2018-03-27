@@ -85,6 +85,7 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
     compile "org.jmdns:jmdns:3.5.3"
     compile "org.slf4j:slf4j-simple:1.7.25"     // used by jmdns
+    compile "com.squareup.okhttp3:okhttp:3.10.0"
 
     // antlr4 dep for building g4 to java sources, and antlr runtime for compiling generated srcs
     antlr4  group: "org.antlr", name: "antlr4",         version: "4.5.3"

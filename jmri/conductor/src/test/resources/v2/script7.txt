@@ -1,0 +1,77 @@
+#
+# Project: Conductor
+# Copyright (C) 2018 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# throttles
+
+Throttle CONSIST = 204
+
+# states
+
+Enum State = Init Idle Fwd Rev      # Enum is initialized with its first value.
+Enum PA-Train = Train1 Train2
+Int Speed = 8
+
+
+# sensors
+
+Sensor B1         = NS48      # 48:1
+Sensor B2         = NS49      # 48:2
+Sensor PA-TOGGLE  = NS50      # 48:3
+
+# turnouts
+
+Turnout T1        = NT01
+
+# define timers and their default value in seconds
+
+# Maps and Routes info
+
+Int PA-Counter = 0
+Int BL-Counter = 0
+
+Route Passenger  = Toggle: PA-TOGGLE, Status: State, Counter: PA-Counter, Throttle: CONSIST
+Route Branchline = Toggle: PA-TOGGLE, Status: State, Counter: BL-Counter, Throttle: CONSIST
+
+
+# GA Tracking
+
+GA-Tracking-Id = "@~/rtac_ga_tracking_id.txt"
+
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+State == INIT -> State = Idle; CONSIST Sound = 1; CONSIST Light = 1
+
+State == Idle & PA-TOGGLE ->
+    State = Fwd ;
+    CONSIST Horn ;
+    CONSIST Forward = Speed ;
+    PA-Counter += 1
+State == Fwd  & B1 + 5 & CONSIST Forward -> State = Rev; CONSIST Reverse = Speed;
+State == Rev  & B1     & CONSIST Reverse -> CONSIST Stop; State = Idle
+
+State != Idle -> T1 Normal;
+
+PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
+!PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
+
+State == Fwd -> GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Counter
+State == Rev -> GA-Event Category: Activation, Action: Stop , Label: PA-Train, User: PA-Counter

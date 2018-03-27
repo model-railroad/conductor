@@ -21,7 +21,9 @@ grammar Conductor;
 script     : scriptLine ( EOL scriptLine )* EOL? EOF;
 scriptLine : ( defLine | eventLine )? SB_COMMENT?;
 
-defLine: defIdLine | defStrLine | defIntLine | defThrottleLine | defEnumLine | defRouteLine;
+defLine: defIdLine | defStrLine | defIntLine | defThrottleLine | defEnumLine | defRouteLine | defGaIdLine ;
+
+defGaIdLine: KW_GA_ID '=' STR;
 
 defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
@@ -53,9 +55,14 @@ condEnum:   condEnumOp ID;
 condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 
 actionList: action ( ';' action )* ';'? ;
-action:     EOL? ( idAction | fnAction ) ;
+action:     EOL? ( idAction | fnAction | gaAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
 fnAction:   KW_RESET KW_TIMERS;
+
+gaAction:   KW_GA_EVENT gaParamList;
+gaParamList:gaParam ( ',' gaParam )* ;
+gaParam:    gaParamOp ':' (ID | KW_STOP | KW_START);
+gaParamOp:  KW_CATEGORY | KW_ACTION | KW_LABEL | KW_USER;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -86,14 +93,21 @@ KW_SEMI:    ';';
 // Note: we use a case-insensitive input stream which works by converting the input to
 // lowercase so all the keywords here need to be lower case. However when the visitor
 // uses ctx.getText(), it will get the original case of the source file.
+KW_ACTION:  'action';
+KW_CATEGORY:'category';
+KW_COUNTER: 'counter';
 KW_END:     'end';
 KW_ENUM:    'enum';
-KW_REPEAT:  'repeat';
 KW_FORWARD: 'forward';
+KW_GA_EVENT:'ga-event';
+KW_GA_ID:   'ga-tracking-id';
 KW_HORN:    'horn';
+KW_INT:     'int';
+KW_LABEL:   'label';
 KW_LIGHT:   'light';
 KW_MAP:     'map';
 KW_NORMAL:  'normal';
+KW_REPEAT:  'repeat';
 KW_RESET:   'reset';
 KW_REVERSE: 'reverse';
 KW_ROUTE:   'route';
@@ -101,7 +115,6 @@ KW_SENSOR:  'sensor';
 KW_SOUND:   'sound';
 KW_START:   'start';
 KW_STATUS:  'status';
-KW_COUNTER: 'counter';
 KW_STOP:    'stop';
 KW_STOPPED: 'stopped';
 KW_THROTTLE:'throttle';
@@ -109,8 +122,8 @@ KW_TIMER:   'timer';
 KW_TIMERS:  'timers';
 KW_TOGGLE:  'toggle';
 KW_TURNOUT: 'turnout';
-KW_INT:     'int';
 KW_STRING:  'string';
+KW_USER:    'user';
 KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
 fragment KW_F0 :      'f'  [0-9] ;
 fragment KW_F10:      'f1' [0-9] ;

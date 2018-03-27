@@ -1,0 +1,139 @@
+package com.alflabs.conductor.util;
+
+import com.alflabs.annotations.NonNull;
+import com.alflabs.utils.FileOps;
+import com.alflabs.utils.ILogger;
+import com.google.common.base.Charsets;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class Analytics {
+    private static final String TAG = Analytics.class.getSimpleName();
+
+    private static final boolean DEBUG = false;
+    private static final boolean USE_GET = false; // default is POST
+
+    private static final String GA_URL =
+            "https://www.google-analytics.com/"
+            + (DEBUG ? "debug/" : "")
+            + "collect";
+
+    private static final Random mRandom = new Random();
+    private static final String UTF_8 = "UTF-8";
+
+    private final ILogger mLogger;
+    private final FileOps mFileOps;
+    private final ExecutorService mExecutorService;
+
+    private String mTrackingId = null;
+
+    @Inject
+    public Analytics(ILogger logger, FileOps fileOps) {
+        mLogger = logger;
+        mFileOps = fileOps;
+        mExecutorService = Executors.newSingleThreadExecutor();
+    }
+
+    public void shutdown() throws InterruptedException {
+        mExecutorService.shutdown();
+        mExecutorService.awaitTermination(10, TimeUnit.SECONDS);
+        mLogger.d(TAG, "Shutdown");
+    }
+
+    public void setTrackingId(@NonNull String idOrFile) throws IOException {
+        if (idOrFile.startsWith("\"") && idOrFile.endsWith("\"") && idOrFile.length() > 2) {
+            idOrFile = idOrFile.substring(1, idOrFile.length() - 1);
+        }
+
+        if (idOrFile.startsWith("@")) {
+            idOrFile = idOrFile.substring(1);
+            File file = new File(idOrFile);
+            if (idOrFile.startsWith("~") && !mFileOps.isFile(file)) {
+                file = new File(System.getProperty("user.home"), idOrFile.substring(1));
+            }
+            idOrFile = mFileOps.toString(file, Charsets.UTF_8);
+            idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
+        }
+        mTrackingId = idOrFile;
+        mLogger.d(TAG, "Tracking ID: " + mTrackingId);
+    }
+
+    public void sendEvent(
+            @NonNull String category,
+            @NonNull String action,
+            @NonNull String label,
+            @NonNull String user_) {
+        if (mTrackingId == null) {
+            mLogger.d(TAG, "No Tracking ID");
+            return;
+        }
+
+        mExecutorService.execute(() -> {
+            try {
+                int random = mRandom.nextInt();
+                if (random < 0) {
+                    random = -random;
+                }
+
+                String user = user_;
+                if (user.length() > 0 && Character.isDigit(user.charAt(0))) {
+                    user = "user_" + user;
+                }
+
+                String payload = String.format(
+                        "v=1&tid=%s&ds=consist&uid=%s&t=event&ec=%s&ea=%s&el=%s&z=%s",
+                        URLEncoder.encode(mTrackingId, UTF_8),
+                        URLEncoder.encode(user, UTF_8),
+                        URLEncoder.encode(category, UTF_8),
+                        URLEncoder.encode(action, UTF_8),
+                        URLEncoder.encode(label, UTF_8),
+                        Integer.toString(random));
+
+                if (DEBUG) {
+                    mLogger.d(TAG, "Event Payload: " + payload);
+                }
+
+                String url = GA_URL;
+                if (USE_GET) {
+                    url += "?" + payload;
+                }
+
+                OkHttpClient client = new OkHttpClient();
+                Request.Builder builder = new Request.Builder().url(url);
+
+                if (!USE_GET) {
+                    MediaType mediaType = MediaType.parse("text/plain");
+                    RequestBody body = RequestBody.create(mediaType, payload);
+                    builder.post(body);
+                }
+
+                Request request = builder.build();
+                Response response = client.newCall(request).execute();
+
+                mLogger.d(TAG, String.format("Event [%s %s %s %s] code: %d",
+                        category, action, label, user, response.code()));
+
+                if (DEBUG) {
+                    mLogger.d(TAG, "Event body: " + response.body().string());
+                }
+
+                response.close();
+
+            } catch (Exception e) {
+                mLogger.d(TAG, "Event ERROR: " + e);
+            }
+        });
+    }
+}

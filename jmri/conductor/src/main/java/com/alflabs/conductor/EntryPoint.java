@@ -125,6 +125,10 @@ public class EntryPoint {
         return null;
     }
 
+    private void sendEvent(String action) {
+        mComponent.getAnalytics().sendEvent("Conductor", action, "", "Conductor");
+    }
+
     private void startZeroconfAdvertising(String name) {
         mJmDNSLatch = new CountDownLatch(1);
         try {
@@ -170,6 +174,7 @@ public class EntryPoint {
     }
 
     protected void onStopAction() {
+        sendEvent("Stop");
         mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
         if (mJmDNSLatch != null) {
             try {
@@ -195,6 +200,7 @@ public class EntryPoint {
     }
 
     protected RPair<EntryPoint, String> onReloadAction() {
+        sendEvent("Reload");
         String error = loadScript();
         return RPair.create(this, error);
     }
@@ -233,6 +239,7 @@ public class EntryPoint {
             mScript = parser.parse(mComponent.getScriptFile());
             mEngine = scriptComponent.createScriptExecEngine();
             mEngine.onExecStart();
+            sendEvent("Start");
         } catch (IOException e) {
             mLogger.log("[Conductor] Script Path: " + mComponent.getScriptFile().getAbsolutePath());
             mLogger.log("[Conductor] failed to load event script with the following exception:");
