@@ -57,7 +57,7 @@ Map Mainline = "Conductor Map Mainline 1.svg"
 
 # GA Tracking
 
-GA-Tracking-Id = "@~/rtac_ga_tracking_id.txt"
+GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 
 
 # ---------
