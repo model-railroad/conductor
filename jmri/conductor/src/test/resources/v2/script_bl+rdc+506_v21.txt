@@ -58,6 +58,7 @@ Map Mainline = "Conductor Map Mainline 1.svg"
 # GA Tracking
 
 GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+String GA-URL = "http://consist.alfray.com/train/"
 
 
 # ---------
@@ -206,6 +207,7 @@ PA-State == Station & !B320 & B311 & B503b & PA-Toggle & AM Stopped & RDC Stoppe
 
 PA-State == Starting ->
     PA-Start-Counter += 1 ;
+    GA-Page URL: GA-URL, Path: PA-Train, User: PA-Start-Counter ;
     GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
     Reset Timers
 PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
@@ -473,6 +475,7 @@ BL-State == Station & BLStation & BLRun & BL-Toggle ->
     BL Light = 1 ;
     BL Repeat = 2 ;
     BL-Start-Counter += 1 ;
+    GA-Page URL: GA-URL, Path: BL, User: BL-Start-Counter ;
     GA-Event Category: Activation, Action: Start, Label: BL, User: BL-Start-Counter ;
     BL Forward = BL-Full-Speed ;
     BL-State = Up

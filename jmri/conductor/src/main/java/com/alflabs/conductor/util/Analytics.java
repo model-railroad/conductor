@@ -30,8 +30,9 @@ public class Analytics {
             + (DEBUG ? "debug/" : "")
             + "collect";
 
-    private static final Random mRandom = new Random();
     private static final String UTF_8 = "UTF-8";
+    private static final Random sRandom = new Random();
+    private static final MediaType sMediaType = MediaType.parse("text/plain");
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
@@ -82,45 +83,26 @@ public class Analytics {
 
         mExecutorService.execute(() -> {
             try {
-                int random = mRandom.nextInt();
+                int random = sRandom.nextInt();
                 if (random < 0) {
                     random = -random;
                 }
 
                 String user = user_;
                 if (user.length() > 0 && Character.isDigit(user.charAt(0))) {
-                    user = "user_" + user;
+                    user = "user" + user;
                 }
 
                 String payload = String.format(
-                        "v=1&tid=%s&ds=consist&uid=%s&t=event&ec=%s&ea=%s&el=%s&z=%s",
+                        "v=1&tid=%s&ds=consist&uid=%s&t=event&ec=%s&ea=%s&el=%s&z=%d",
                         URLEncoder.encode(mTrackingId, UTF_8),
                         URLEncoder.encode(user, UTF_8),
                         URLEncoder.encode(category, UTF_8),
                         URLEncoder.encode(action, UTF_8),
                         URLEncoder.encode(label, UTF_8),
-                        Integer.toString(random));
+                        random);
 
-                if (DEBUG) {
-                    mLogger.d(TAG, "Event Payload: " + payload);
-                }
-
-                String url = GA_URL;
-                if (USE_GET) {
-                    url += "?" + payload;
-                }
-
-                OkHttpClient client = new OkHttpClient();
-                Request.Builder builder = new Request.Builder().url(url);
-
-                if (!USE_GET) {
-                    MediaType mediaType = MediaType.parse("text/plain");
-                    RequestBody body = RequestBody.create(mediaType, payload);
-                    builder.post(body);
-                }
-
-                Request request = builder.build();
-                Response response = client.newCall(request).execute();
+                Response response = sendPayload(payload);
 
                 mLogger.d(TAG, String.format("Event [%s %s %s %s] code: %d",
                         category, action, label, user, response.code()));
@@ -135,5 +117,75 @@ public class Analytics {
                 mLogger.d(TAG, "Event ERROR: " + e);
             }
         });
+    }
+
+    public void sendPage(
+            @NonNull String url_,
+            @NonNull String path,
+            @NonNull String user_) {
+        if (mTrackingId == null) {
+            mLogger.d(TAG, "No Tracking ID");
+            return;
+        }
+
+        mExecutorService.execute(() -> {
+            try {
+                int random = sRandom.nextInt();
+                if (random < 0) {
+                    random = -random;
+                }
+
+                String user = user_;
+                if (user.length() > 0 && Character.isDigit(user.charAt(0))) {
+                    user = "user" + user;
+                }
+
+                String d_url = url_ + path;
+
+                String payload = String.format(
+                        "v=1&tid=%s&ds=consist&uid=%s&t=pageview&dl=%s&z=%d",
+                        URLEncoder.encode(mTrackingId, UTF_8),
+                        URLEncoder.encode(user, UTF_8),
+                        URLEncoder.encode(d_url, UTF_8),
+                        random);
+
+                Response response = sendPayload(payload);
+
+                mLogger.d(TAG, String.format("PageView [%s %s] code: %d",
+                        d_url, user, response.code()));
+
+                if (DEBUG) {
+                    mLogger.d(TAG, "Event body: " + response.body().string());
+                }
+
+                response.close();
+
+            } catch (Exception e) {
+                mLogger.d(TAG, "Page ERROR: " + e);
+            }
+        });
+    }
+
+    // Must be executed in background thread. Caller must call Response.close().
+    private Response sendPayload(String payload) throws IOException {
+        if (DEBUG) {
+            mLogger.d(TAG, "Event Payload: " + payload);
+        }
+
+        String url = GA_URL;
+        if (USE_GET) {
+            url += "?" + payload;
+        }
+
+        OkHttpClient client = new OkHttpClient();
+        Request.Builder builder = new Request.Builder().url(url);
+
+        if (!USE_GET) {
+            RequestBody body = RequestBody.create(sMediaType, payload);
+            builder.post(body);
+        }
+
+        Request request = builder.build();
+        return client.newCall(request).execute();
     }
 }

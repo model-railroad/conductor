@@ -50,7 +50,8 @@ Route Branchline = Toggle: PA-TOGGLE, Status: State, Counter: BL-Counter, Thrott
 
 # GA Tracking
 
-GA-Tracking-Id = "@~/rtac_ga_tracking_id.txt"
+GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+String GA-URL = "http://consist.alfray.com/train/"
 
 
 # ---------
@@ -73,5 +74,6 @@ State != Idle -> T1 Normal;
 PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
 !PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
 
-State == Fwd -> GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Counter
+State == Fwd -> GA-Page URL: GA-URL, Path: PA-Train, User: PA-Counter ;
+                GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Counter
 State == Rev -> GA-Event Category: Activation, Action: Stop , Label: PA-Train, User: PA-Counter

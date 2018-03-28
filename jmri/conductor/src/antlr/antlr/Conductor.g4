@@ -59,10 +59,11 @@ action:     EOL? ( idAction | fnAction | gaAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
 fnAction:   KW_RESET KW_TIMERS;
 
-gaAction:   KW_GA_EVENT gaParamList;
+gaAction:   gaActionOp gaParamList;
+gaActionOp: KW_GA_EVENT | KW_GA_PAGE;
 gaParamList:gaParam ( ',' gaParam )* ;
 gaParam:    gaParamOp ':' (ID | KW_STOP | KW_START);
-gaParamOp:  KW_CATEGORY | KW_ACTION | KW_LABEL | KW_USER;
+gaParamOp:  KW_ACTION | KW_CATEGORY | KW_LABEL | KW_PATH | KW_URL | KW_USER;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -100,6 +101,7 @@ KW_END:     'end';
 KW_ENUM:    'enum';
 KW_FORWARD: 'forward';
 KW_GA_EVENT:'ga-event';
+KW_GA_PAGE: 'ga-page';
 KW_GA_ID:   'ga-tracking-id';
 KW_HORN:    'horn';
 KW_INT:     'int';
@@ -107,6 +109,7 @@ KW_LABEL:   'label';
 KW_LIGHT:   'light';
 KW_MAP:     'map';
 KW_NORMAL:  'normal';
+KW_PATH:    'path';
 KW_REPEAT:  'repeat';
 KW_RESET:   'reset';
 KW_REVERSE: 'reverse';
@@ -123,6 +126,7 @@ KW_TIMERS:  'timers';
 KW_TOGGLE:  'toggle';
 KW_TURNOUT: 'turnout';
 KW_STRING:  'string';
+KW_URL:     'url';
 KW_USER:    'user';
 KW_FN:      KW_F0 | KW_F10 | KW_F20 ;
 fragment KW_F0 :      'f'  [0-9] ;

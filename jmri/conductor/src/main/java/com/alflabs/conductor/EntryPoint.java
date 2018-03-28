@@ -195,6 +195,12 @@ public class EntryPoint {
             }
         }
 
+        try {
+            mComponent.getAnalytics().shutdown();
+        } catch (InterruptedException e) {
+            mLogger.log("[Conductor] Teardown Analytics exception: " + e);
+        }
+
         mKeyValueServer.stopSync();
         mStopRequested = true;
     }

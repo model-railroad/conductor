@@ -123,8 +123,9 @@ public class ScriptParserFullTest {
 
     @Test
     public void testScript7() throws Exception {
-        when(mFileOps.isFile(new File("~/rtac_ga_tracking_id.txt"))).thenReturn(true);
-        when(mFileOps.toString(new File("~/rtac_ga_tracking_id.txt"), Charsets.UTF_8)).thenReturn("GA-ID");
+        when(mFileOps.isFile(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"))).thenReturn(true);
+        when(mFileOps.toString(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"), Charsets.UTF_8))
+                .thenReturn("GA-ID");
 
         String source = getFileSource("script7.txt");
         assertThat(source).isNotNull();

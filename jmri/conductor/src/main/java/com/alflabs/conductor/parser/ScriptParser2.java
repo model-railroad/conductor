@@ -22,6 +22,7 @@ import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
 import com.alflabs.conductor.script.AnalyticEventAction;
+import com.alflabs.conductor.script.AnalyticPageAction;
 import com.alflabs.conductor.script.EnumFactory;
 import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.Event;
@@ -48,6 +49,7 @@ import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.utils.FileOps;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.io.Files;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -698,13 +700,22 @@ public class ScriptParser2 {
 
         @Override
         public void exitGaAction(ConductorParser.GaActionContext ctx) {
-            String prefix = ctx.KW_GA_EVENT().getText();
+            ConductorParser.GaActionOpContext op = ctx.gaActionOp();
+            boolean isEvent = op.KW_GA_EVENT() != null;
+            boolean isPageView = op.KW_GA_PAGE() != null;
+            String prefix = op.getText();
             Map<String, String> arguments = new TreeMap<>();
 
-            arguments.put(AnalyticEventAction.CATEGORY, null);
-            arguments.put(AnalyticEventAction.ACTION, null);
-            arguments.put(AnalyticEventAction.LABEL, null);
-            arguments.put(AnalyticEventAction.USER, null);
+            if (isEvent) {
+                arguments.put(AnalyticEventAction.CATEGORY, null);
+                arguments.put(AnalyticEventAction.ACTION, null);
+                arguments.put(AnalyticEventAction.LABEL, null);
+                arguments.put(AnalyticEventAction.USER, null);
+            } else if (isPageView) {
+                arguments.put(AnalyticPageAction.URL, null);
+                arguments.put(AnalyticPageAction.PATH, null);
+                arguments.put(AnalyticPageAction.USER, null);
+            }
 
             for (ConductorParser.GaParamContext paramCtx : ctx.gaParamList().gaParam()) {
                 String key = null;
@@ -747,20 +758,36 @@ public class ScriptParser2 {
                 }
             }
 
-            mEvent.addAction(new AnalyticEventAction(
-                    mAnalytics,
-                    arguments,
-                    // Resolver when a label is an Enum name
-                    varName -> {
-                        Enum_ enum_ = mScript.getEnum(varName);
-                        return enum_ == null ? varName : enum_.get();
-                    },
-                    // Resolver when a user is an Int Counter name
-                    varName -> {
-                        Var var = mScript.getVar(varName);
-                        return var == null ? varName : var.get();
-                    }
-            ));
+            AnalyticEventAction.ValueResolver varResolver = varName -> {
+                Var var = mScript.getVar(varName);
+                return var == null ? varName : var.get();
+            };
+            AnalyticEventAction.ValueResolver labelResolver = varName -> {
+                Enum_ enum_ = mScript.getEnum(varName);
+                return enum_ == null ? varName : enum_.get();
+            };
+
+            if (isEvent) {
+                mEvent.addAction(new AnalyticEventAction(
+                        mAnalytics,
+                        arguments,
+                        // Resolver when a label is an Enum name
+                        labelResolver,
+                        // Resolver when a user is an Int Counter name
+                        varResolver
+                ));
+            } else if (isPageView) {
+                mEvent.addAction(new AnalyticPageAction(
+                        mAnalytics,
+                        arguments,
+                        // Resolver when URL is a String var
+                        varResolver,
+                        // Resolver when a label is an Enum name
+                        labelResolver,
+                        // Resolver when a user is an Int Counter name
+                        varResolver
+                ));
+            }
         }
 
         @Override
