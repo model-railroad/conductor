@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -93,10 +94,12 @@ public class Analytics {
                     user = "user" + user;
                 }
 
+                String cid = UUID.nameUUIDFromBytes(user.getBytes()).toString();
+
                 String payload = String.format(
-                        "v=1&tid=%s&ds=consist&uid=%s&t=event&ec=%s&ea=%s&el=%s&z=%d",
+                        "v=1&tid=%s&ds=consist&cid=%s&t=event&ec=%s&ea=%s&el=%s&z=%d",
                         URLEncoder.encode(mTrackingId, UTF_8),
-                        URLEncoder.encode(user, UTF_8),
+                        URLEncoder.encode(cid, UTF_8),
                         URLEncoder.encode(category, UTF_8),
                         URLEncoder.encode(action, UTF_8),
                         URLEncoder.encode(label, UTF_8),
@@ -140,12 +143,14 @@ public class Analytics {
                     user = "user" + user;
                 }
 
+                String cid = UUID.nameUUIDFromBytes(user.getBytes()).toString();
+
                 String d_url = url_ + path;
 
                 String payload = String.format(
-                        "v=1&tid=%s&ds=consist&uid=%s&t=pageview&dl=%s&z=%d",
+                        "v=1&tid=%s&ds=consist&cid=%s&t=pageview&dl=%s&z=%d",
                         URLEncoder.encode(mTrackingId, UTF_8),
-                        URLEncoder.encode(user, UTF_8),
+                        URLEncoder.encode(cid, UTF_8),
                         URLEncoder.encode(d_url, UTF_8),
                         random);
 
