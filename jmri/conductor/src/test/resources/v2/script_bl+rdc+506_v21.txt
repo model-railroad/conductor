@@ -374,14 +374,14 @@ RDC-Sound-Stopped ->
 # Events BL
 # ---------
 
-Throttle BL = 1  # disable for now
+Throttle BL = 45
 
-Int BL-Station-Speed = 12
-Int BL-Full-Speed    = 20
+Int BL-Station-Speed = 4
+Int BL-Full-Speed    = 8
 
 Int BL-Start-Counter = 0
 
-Enum BL-State = Disabled Parked Station Up Reversal Down
+Enum BL-State = Parked Station Up Reversal Down
 
 Route Branch = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
 
@@ -389,154 +389,67 @@ BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, Use
 !BL-Toggle -> GA-Event Category: Automation, Action: Off, Label: Branchline, User: Staff
 
 
-# --- BL State: Setup at reverse station
+# --- BL State: Setup at reverse station -- deactivated now
+
+# --- BL State: Parked -- deactivated now.
+
+BL-State == Parked & BL-Toggle & BLStation -> BL-State = Station
+BL-State == Parked & BL-Toggle & BLParked & BL Stopped -> BL Forward = BL-Station-Speed
+BL-State == Parked & BL-Toggle & BLParked & BLStation & BL Forward -> BL Stop ; BL-State = Station
+BL-State == Parked & !BL-Toggle -> BL Stop
 
 BL-Toggle ->
     BL Repeat = 2
 
 !BL-Toggle ->
-    BL F1 = 0 ;
     BL Sound = 0 ;
-    BL F8 = 0 ;
     BL Repeat = 0
-
-# --- BL State: Setup at reverse station
-
-Timer BL-Timer-Reverse-to-Parked = 1
-
-BL-State == Parked & !BLParked & BLReverse & BLRun & !BL-Toggle ->
-    BL-Timer-Reverse-to-Parked Start
-
-BL-Timer-Reverse-to-Parked ->
-    BL-State = Parked ;
-    BL Sound = 0 ;
-    BL F1 = 1 ;
-    BL F9 = 0 ;
-    BL Light = 0;
-    T324 Normal ;
-    BL Reverse = BL-Station-Speed
-
-BL-State == Parked & !BLParked & BLStation & BLRun & !BL-Toggle ->
-    BL F1 = 1 ;
-    BL Light = 0;
-    BL Reverse = BL-Station-Speed
-
-BL-State == Parked & BLParked & !BLStation & !BL-Toggle ->
-    BL Stop ;
-    BL Horn ;
-    BL F1 = 0 ;
-    BL F9 = 0 ;
-    BL Light = 0 ;
-    BL F8 = 0 ;
-    BL Sound = 0
-
-# --- BL State: Parked to Station
-
-BL-State == Parked & BLParked & BL-Toggle ->
-    BL Sound = 1 ;
-    BL Light = 1 ;
-    BL F1 = 1 ;
-    BL Repeat = 2 ;
-    T324 Normal ;
-    BL Forward = BL-Station-Speed
-
-Timer BL-Timer-Stop-Sound-Off = 10
-
-BL-State == Parked & BL Forward & BLStation + 11 ->
-    BL F1 = 0 ;
-    BL Stop ;
-    BL Horn ;
-    BL-Timer-Stop-Sound-Off Start ;
-    BL-State = Station
-
-BL-Timer-Stop-Sound-Off & BL Stopped & BLStation ->
-    BL Sound = 0 ;
-    BL F1 = 0
-
-# --- BL State: Station to Parked
-
-BL-State == Station & BLStation & !BL-Toggle ->
-    T324 Normal ;
-    BL Sound = 1 ;
-    BL F1 = 1 ;
-    BL Light = 1 ;
-    BL Reverse = BL-Station-Speed ;
-    BL-State = Parked
-
 
 # --- BL State: Station to Up
 
 BL-State == Station & BLStation & BLRun & BL-Toggle ->
     T324 Normal ;
-    BL Sound = 1 ;
-    BL Horn ;
-    BL F1 = 0 ;
-    BL F9 = 1 ;
     BL Light = 1 ;
     BL Repeat = 2 ;
     BL-Start-Counter += 1 ;
     GA-Page URL: GA-URL, Path: BL, User: BL-Start-Counter ;
     GA-Event Category: Activation, Action: Start, Label: BL, User: BL-Start-Counter ;
-    BL Forward = BL-Full-Speed ;
     BL-State = Up
+
+BL-State == Station & !BL-Toggle -> BL Stop
 
 # --- BL State: Up (front)
 
-BL-State == Up & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
+BL-State == Up &  BLParked  -> BL Forward = BL-Station-Speed
+BL-State == Up &  BLStation -> BL Forward = BL-Full-Speed
 
-Timer BL-Timer-Horn-Up = 18
-BL-State == Up -> BL-Timer-Horn-Up Start
-BL-State == Up & BL-Timer-Horn-Up     -> BL Horn
-BL-State == Up & BL-Timer-Horn-Up + 5 -> BL Horn
+BL-State == Up & !BLStation & !BLParked & !BL-Toggle -> BL-State = Down
 
-BL-State == Up & BLTunnel  + 6 -> BL Forward = BL-Station-Speed
 BL-State == Up & BLReverse -> BL-State = Reversal
+
+
 
 # --- BL State: Reverse
 
-BL-State == Reversal & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
+BL-State == Reversal & !BL-Toggle -> BL-State = Down
 
 Timer BL-Timer-Reverse = 2
 BL-State == Reversal -> BL-Timer-Reverse Start
-BL-State == Reversal & BL-Toggle & BL-Timer-Reverse     -> BL F1 = 1
-BL-State == Reversal & BL-Toggle & BL-Timer-Reverse + 4 -> BL Horn ; BL Stop
+BL-State == Reversal & BL-Toggle & BL-Timer-Reverse -> BL Stop
 
-BL-State == Reversal & BL-Timer-Reverse + 13 ->
-    BL-State = Down
+BL-State == Reversal & BL-Timer-Reverse + 20 -> BL-State = Down
 
-# Don't blow horn on button
-# BL-State == Up & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 
 # --- BL State: Down (reverse)
 
-BL-State == Down & !BL-Toggle -> BL-Timer-Reverse-to-Parked Start
+BL-State == Down -> BL Stop
+BL-State == Down & !BLStation & !BLParked -> BL Reverse = BL-Full-Speed
+BL-State == Down & BLStation  -> BL Reverse = BL-Station-Speed
+BL-State == Down & BLStation + 20  -> BL Stop ; BL-State = Station
 
-BL-State == Down + 1 & BL-Toggle -> BL Horn
-BL-State == Down + 3 & BL-Toggle -> BL Horn
-BL-State == Down + 4 & BL-Toggle -> BL Reverse = BL-Station-Speed
-BL-State == Down + 5 & BL-Toggle -> BL F1 = 0
+# Safeguard
+BL-State == Down & BLParked & BL Reverse  -> BL Stop
 
-Timer BL-Timer-Horn-Down = 28
-BL-State == Down & BLTunnel ->
-    BL F1 = 0;
-    BL Reverse = BL-Full-Speed ;
-    BL-Timer-Horn-Down Start
-
-BL-State == Down & BL-Timer-Horn-Down     & BL-Toggle -> BL Horn
-BL-State == Down & BL-Timer-Horn-Down + 4 & BL-Toggle -> BL Horn
-BL-State == Down & BLStation     -> T324 Normal
-BL-State == Down & BLStation + 2 -> BL F1 = 1
-
-BL-State == Down & BLStation + 6 & BL-Toggle ->
-    BL Stop ;
-	BL F1 = 0 ;
-    BL-Timer-Stop-Sound-Off Start
-BL-State == Down & BLStation + 12 & BL-Toggle ->
-    GA-Event Category: Activation, Action: Stop, Label: BL, User: BL-Start-Counter ;
-    BL-State = Station
-
-# Don't blow horn on button
-# BL-State == Down & !BL Stopped & BLRun & BL-Toggle -> BL Horn
 
 
 # ------------------
