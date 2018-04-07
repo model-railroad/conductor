@@ -381,7 +381,7 @@ Int BL-Full-Speed    = 8
 
 Int BL-Start-Counter = 0
 
-Enum BL-State = Parked Station Up Reversal Down
+Enum BL-State = Parked Station Up Reversal Down Wait
 
 Route Branch = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
 
@@ -444,12 +444,18 @@ BL-State == Reversal & BL-Timer-Reverse + 20 -> BL-State = Down
 
 BL-State == Down -> BL Stop
 BL-State == Down & !BLStation & !BLParked -> BL Reverse = BL-Full-Speed
-BL-State == Down & BLStation  -> BL Reverse = BL-Station-Speed
-BL-State == Down & BLStation + 20  -> BL Stop ; BL-State = Station
+BL-State == Down & BLTunnel + 50  -> BL Reverse = BL-Station-Speed
+BL-State == Down & BLStation + 6  -> BL Stop ; BL-State = Wait
 
 # Safeguard
 BL-State == Down & BLParked & BL Reverse  -> BL Stop
 
+
+# --- BL State: Wait
+
+Timer BL-Timer-Wait-Station = 30
+BL-State == Wait     -> BL-Timer-Wait-Station Start
+BL-Timer-Wait-Station -> BL-State = Station
 
 
 # ------------------
