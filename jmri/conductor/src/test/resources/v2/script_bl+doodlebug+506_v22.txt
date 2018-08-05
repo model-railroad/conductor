@@ -318,7 +318,7 @@ RDC-Sound-Started ->
     RDC Forward = RDC-Full-Speed ;
     RDC-Timer-Acquire-Route Start
 
-# Time to stop: 40 for RDC, 45 fo Doodlebug
+# Time to stop: 40 for RDC, 60 fo Doodlebug
 Timer RDC-Timer-Up = 60
 PA-State == RDC-Up & B321 & RDC Forward ->
     RDC-Timer-Up Start
@@ -346,7 +346,7 @@ PA-State == RDC-Down ->
     RDC Horn ;
     RDC Reverse = RDC-Full-Speed
 
-# Where to stop. 10 for RDC, 10 for Doodlebug.
+# Where to stop. 10 for RDC, 18 for Doodlebug.
 Timer RDC-Timer-Down = 18
 PA-State == RDC-Down & B311 & RDC Reverse ->
     RDC-Timer-Down Start
