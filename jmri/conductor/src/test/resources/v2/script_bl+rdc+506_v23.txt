@@ -210,8 +210,7 @@ PA-State == Starting ->
     GA-Page URL: GA-URL, Path: PA-Train, User: PA-Start-Counter ;
     GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
     Reset Timers
-# DEBUG PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
-PA-State == Starting & PA-Train == Amtrak -> PA-State = RDC-Up
+PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
 PA-State == Starting & PA-Train == RDC    -> PA-State = RDC-Up
 
 PA-State == Station & !PA-Toggle ->
