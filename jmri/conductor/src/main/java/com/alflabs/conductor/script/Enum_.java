@@ -80,6 +80,10 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
         throw new IllegalArgumentException();
     }
 
+    public boolean isExported() {
+        return mExported;
+    }
+
     @Override
     public void setExported(boolean exported) {
         mExported = exported;

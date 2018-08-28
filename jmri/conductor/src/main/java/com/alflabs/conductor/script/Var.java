@@ -75,6 +75,10 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
         return mInitialStringValue != null;
     }
 
+    public boolean isExported() {
+        return mExported;
+    }
+
     @Override
     public int getAsInt() {
         if (mStringValue != null) {

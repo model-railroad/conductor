@@ -25,6 +25,7 @@ import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
 import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
@@ -159,6 +160,21 @@ public class ScriptParser2Test {
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
         assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(var.isExported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportedInt() throws Exception {
+        String source = " Export Int VALUE    = 5201 # d&rgw ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(var.isExported()).isTrue();
     }
 
     @Test
@@ -234,6 +250,21 @@ public class ScriptParser2Test {
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
         assertThat(var.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var.isExported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportString() throws Exception {
+        String source = " Export String VALUE    = \"5201 # d&rgw\" ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var.isExported()).isTrue();
     }
 
     @Test
@@ -383,9 +414,26 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getEnum("en")).isNotNull();
-        assertThat(script.getEnum("en").getValues().toArray()).isEqualTo(
+        Enum_ enum_ = script.getEnum("en");
+        assertThat(enum_).isNotNull();
+        assertThat(enum_.getValues().toArray()).isEqualTo(
                 new String[] { "init", "idle", "fwd", "rev" });
+        assertThat(enum_.isExported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportedEnum() throws Exception {
+        String source = " Export Enum EN   = Init Idle Fwd Rev ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        Enum_ enum_ = script.getEnum("en");
+        assertThat(enum_).isNotNull();
+        assertThat(enum_.getValues().toArray()).isEqualTo(
+                new String[] { "init", "idle", "fwd", "rev" });
+        assertThat(enum_.isExported()).isTrue();
     }
 
     @Test

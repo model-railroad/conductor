@@ -7,8 +7,6 @@
     <content url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava">
       <sourceFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/src/test/java" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/src/main/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/src/test/resources" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/build" />
       <excludeFolder url="file://$MODULE_DIR$/../../../../../android/RTAC/LibUtils/LibUtilsJava/out" />

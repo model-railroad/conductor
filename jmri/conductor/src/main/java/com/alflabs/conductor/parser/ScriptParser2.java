@@ -168,7 +168,6 @@ public class ScriptParser2 {
             if (ctx.defIdType() == null || ctx.ID().size() != 2) {
                 return;
             }
-            String type = ctx.defIdType().getText().toLowerCase(Locale.US);
             String varName  = ctx.ID(0).getText();
             String jmriName = ctx.ID(1).getText();
 
@@ -177,18 +176,17 @@ public class ScriptParser2 {
                 return;
             }
 
-            switch (type) {
-            case "sensor":
+            if (ctx.defIdType().KW_SENSOR() != null) {
                 Sensor sensor = mSensorFactory.create(jmriName, varName.toLowerCase(Locale.US));
                 mScript.addSensor(varName, sensor);
-                break;
-            case "turnout":
+
+            } else if (ctx.defIdType().KW_TURNOUT() != null) {
                 Turnout turnout = mTurnoutFactory.create(jmriName, varName.toLowerCase(Locale.US));
                 mScript.addTurnout(varName, turnout);
-                break;
-            default:
+
+            } else {
+                String type = ctx.defIdType().getText().toLowerCase(Locale.US);
                 emitError(ctx, "Unsupported type '" + type + "'.");
-                break;
             }
         }
 
@@ -198,7 +196,6 @@ public class ScriptParser2 {
                     (ctx.STR() == null && ctx.STR_BLOCK() == null)) {
                 return;
             }
-            String type = ctx.defStrType().getText().toLowerCase(Locale.US);
             String varName  = ctx.ID().getText();
 
             if (mScript.isExistingName(varName)) {
@@ -224,12 +221,12 @@ public class ScriptParser2 {
                 }
             }
 
-            switch (type) {
-            case "string":
-                 Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
-                 mScript.addVar(varName, var);
-                break;
-            case "map":
+            if (ctx.defStrType().KW_STRING() != null) {
+                Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                var.setExported(ctx.defStrType().KW_EXPORT() != null);
+                mScript.addVar(varName, var);
+
+            } else if (ctx.defStrType().KW_MAP() != null) {
                 // Load the map SVG file
                 File svgFile = mScriptDir == null ? new File(value) : new File(mScriptDir, value);
                 if (!mFileOps.isFile(svgFile)) {
@@ -246,10 +243,11 @@ public class ScriptParser2 {
                 }
 
                 mScript.addMap(varName, new MapInfo(varName, svg));
-                break;
-            default:
+
+            } else {
+                String type = ctx.defStrType().getText().toLowerCase(Locale.US);
                 emitError(ctx, "Unsupported type '" + type + "'.");
-                break;
+
             }
         }
 
@@ -258,7 +256,6 @@ public class ScriptParser2 {
             if (ctx.defIntType() == null || ctx.ID() == null || ctx.NUM() == null) {
                 return;
             }
-            String type = ctx.defIntType().getText().toLowerCase(Locale.US);
             String varName  = ctx.ID().getText();
             String num = ctx.NUM().getText();
             int value;
@@ -274,18 +271,18 @@ public class ScriptParser2 {
                 return;
             }
 
-            switch (type) {
-            case "int":
+            if (ctx.defIntType().KW_INT() != null) {
                 Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                var.setExported(ctx.defIntType().KW_EXPORT() != null);
                 mScript.addVar(varName, var);
-                break;
-            case "timer":
+
+            } else if (ctx.defIntType().KW_TIMER() != null) {
                 Timer timer = mTimerFactory.create(value);
                 mScript.addTimer(varName, timer);
-                break;
-            default:
+
+            } else {
+                String type = ctx.defIntType().getText().toLowerCase(Locale.US);
                 emitError(ctx, "Unsupported type '" + type + "'.");
-                break;
             }
         }
 
@@ -336,6 +333,7 @@ public class ScriptParser2 {
             }
 
             Enum_ enum_ = mEnumFactory.create(values, varName.toLowerCase(Locale.US));
+            enum_.setExported(ctx.KW_EXPORT() != null);
             mScript.addEnum(varName, enum_);
         }
 

@@ -29,14 +29,14 @@ defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_INT | KW_TIMER;
+defIntType: KW_EXPORT? KW_INT | KW_TIMER;
 
 defStrLine: defStrType ID '=' ( STR | STR_BLOCK );
-defStrType: KW_STRING | KW_MAP;
+defStrType: KW_EXPORT? KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
-defEnumLine: KW_ENUM ID '=' defEnumValues;
+defEnumLine: KW_EXPORT? KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
@@ -99,6 +99,7 @@ KW_CATEGORY:'category';
 KW_COUNTER: 'counter';
 KW_END:     'end';
 KW_ENUM:    'enum';
+KW_EXPORT:  'export';
 KW_FORWARD: 'forward';
 KW_GA_EVENT:'ga-event';
 KW_GA_PAGE: 'ga-page';
