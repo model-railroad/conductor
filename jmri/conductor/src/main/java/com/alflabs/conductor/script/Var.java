@@ -99,7 +99,12 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     }
 
     @NonNull
-    public IIntFunction createSetterFunction() {
+    public IStringFunction createSetStrFunction() {
+        return value -> mStringValue = value;
+    }
+
+    @NonNull
+    public IIntFunction createSetIntFunction() {
         return value -> mIntValue = value;
     }
 

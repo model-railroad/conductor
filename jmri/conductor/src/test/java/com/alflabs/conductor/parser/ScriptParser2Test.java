@@ -691,6 +691,30 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testActionStr() throws Exception {
+        String source = "" +
+                "Enum State = Init Set\n" +
+                "String Value = \"a\" \n" +
+                "State == Init -> value = \"bc\" \n" +
+                "State == Set  -> value = \"d{e}\"";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").get()).isEqualTo("a");
+
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").get()).isEqualTo("bc");
+    }
+
+    @Test
     public void testActionInt() throws Exception {
         String source = "" +
                 "Enum State = Init Set\n" +
@@ -804,9 +828,9 @@ public class ScriptParser2Test {
                 "  Line 5: 't1 forward -> t1 normal'\n" +
                 "Error at line 7: Expected timer ID for 'start' but found 't1'.\n" +
                 "  Line 7: 'block      -> t1 start'\n" +
-                "Error at line 9: Expected NUM or ID argument for 't1' but found 'B42'.\n" +
+                "Error at line 9: Expected NUM or ID or \"STR\" argument for 't1' but found 'B42'.\n" +
                 "  Line 9: 't1 forward -> t1 forward = B42'\n" +
-                "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.\n" +
+                "Error at line 10: Expected NUM or ID or \"STR\" argument for 't1' but found 'block'.\n" +
                 "  Line 10: 't1 forward -> t1 forward = block'");
         assertThat(script).isNotNull();
     }

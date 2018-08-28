@@ -48,7 +48,7 @@ public class VarTest {
         VarFactory factory = new VarFactory(InstanceFactory.create(mKeyValue));
         mVar = factory.create(42, "MyVar");
 
-        mFuncSet = mVar.createSetterFunction();
+        mFuncSet = mVar.createSetIntFunction();
         mFuncInc = mVar.createIncFunction();
         mFuncDec = mVar.createDecFunction();
 

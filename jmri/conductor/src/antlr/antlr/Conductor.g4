@@ -69,7 +69,7 @@ throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | 
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
 timerOp:    KW_START | KW_END;
 
-funcValue:  '='  ( NUM | ID ) ;
+funcValue:  '='  ( NUM | ID | STR ) ;
 funcInt:    ( KW_INC | KW_DEC ) ( NUM | ID ) ;
 
 
