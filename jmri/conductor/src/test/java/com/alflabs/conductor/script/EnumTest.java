@@ -56,7 +56,7 @@ public class EnumTest {
         when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
 
         EnumFactory factory = new EnumFactory(InstanceFactory.create(mKeyValue));
-        mEnum = factory.create(Arrays.asList("one", "two", "three"), "MyVar");
+        mEnum = factory.create(Arrays.asList("one", "two", "three", "four"), "MyVar");
         assertThat(mEnum.get()).isEqualTo("one");
 
         mEnum.onExecStart();
@@ -67,6 +67,12 @@ public class EnumTest {
     public void testGetSetValue() throws Exception {
         mEnum.accept("Three");
         assertThat(mEnum.get()).isEqualTo("three");
+
+        mEnum.accept("two"); // small caps
+        assertThat(mEnum.get()).isEqualTo("two");
+
+        mEnum.accept("FOUR"); // upper caps
+        assertThat(mEnum.get()).isEqualTo("four");
     }
 
     @Test(expected = IllegalArgumentException.class)

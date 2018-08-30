@@ -41,7 +41,7 @@ Turnout T1        = NT01
 # RTAC variables
 
 Import Export Enum RTAC-Motion = Off On
-Import Export String RTAC-Text = "Automation Not Working"
+Import Export String RTAC-PSA-Text = "Automation Not Working"
 
 
 # define timers and their default value in seconds
@@ -73,10 +73,10 @@ PA-Toggle & PA-Motion == On   & RTAC-Motion == Off -> PA-Motion = Idle
 PA-Toggle & PA-Motion == Idle & RTAC-Motion == On  -> PA-Motion = On ; PA-PresenceTimer Start
 PA-Toggle & PA-Motion == On   & PA-PresenceTimer -> PA-Motion = Idle
 
-PA-Motion == Off  -> RTAC-Text = "Train Automation Not Working"
-PA-Motion == Idle -> RTAC-Text = "Train Automation Idle"
-PA-Motion == On   -> RTAC-Text = "Train is Running"
-PA-State == Idle & !PA-Motion == Off -> RTAC-Text = "Train Stopped.\nNext train starts in {now+10m} minutes"
+PA-Motion == Off  -> RTAC-PSA-Text = "Train Automation Not Working"
+PA-Motion == Idle -> RTAC-PSA-Text = "Train Automation Idle"
+PA-Motion == On   -> RTAC-PSA-Text = "Train is Running"
+PA-State == Idle & !PA-Motion == Off -> RTAC-PSA-Text = "Train Stopped.\nNext train starts in {now+10m} minutes"
 
 
 # ---------
