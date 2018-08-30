@@ -29,14 +29,14 @@ defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_EXPORT? KW_INT | KW_TIMER;
+defIntType: KW_IMPORT? KW_EXPORT? KW_INT | KW_TIMER;
 
 defStrLine: defStrType ID '=' ( STR | STR_BLOCK );
-defStrType: KW_EXPORT? KW_STRING | KW_MAP;
+defStrType: KW_IMPORT? KW_EXPORT? KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
-defEnumLine: KW_EXPORT? KW_ENUM ID '=' defEnumValues;
+defEnumLine: KW_IMPORT? KW_EXPORT? KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
@@ -106,6 +106,7 @@ KW_GA_PAGE: 'ga-page';
 KW_GA_ID:   'ga-tracking-id';
 KW_HORN:    'horn';
 KW_INT:     'int';
+KW_IMPORT:  'import';
 KW_LABEL:   'label';
 KW_LIGHT:   'light';
 KW_MAP:     'map';

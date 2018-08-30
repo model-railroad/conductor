@@ -19,15 +19,15 @@
 package com.alflabs.conductor.script;
 
 /**
- * A script data-type that can be optionally exported to the KV server.
+ * A script data-type that can be optionally imported from the KV server.
  */
-public interface IExportable {
+public interface IImportable {
     /**
-     * True if this data type should be exported to the KV server during
+     * True if this data type shoulbe be import from the KV server during
      * each {@link ExecEngine#onExecHandle()} loop.
      */
-    void setExported(boolean exported);
+    void setImported(boolean imported);
 
-    /** Returns current exported flag. */
-    boolean isExported();
+    /** Returns current imported flag. */
+    boolean isImported();
 }

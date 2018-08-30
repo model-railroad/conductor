@@ -223,6 +223,7 @@ public class ScriptParser2 {
 
             if (ctx.defStrType().KW_STRING() != null) {
                 Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                var.setImported(ctx.defStrType().KW_IMPORT() != null);
                 var.setExported(ctx.defStrType().KW_EXPORT() != null);
                 mScript.addVar(varName, var);
 
@@ -273,6 +274,7 @@ public class ScriptParser2 {
 
             if (ctx.defIntType().KW_INT() != null) {
                 Var var = mVarFactory.create(value, varName.toLowerCase(Locale.US));
+                var.setImported(ctx.defIntType().KW_IMPORT() != null);
                 var.setExported(ctx.defIntType().KW_EXPORT() != null);
                 mScript.addVar(varName, var);
 
@@ -333,6 +335,7 @@ public class ScriptParser2 {
             }
 
             Enum_ enum_ = mEnumFactory.create(values, varName.toLowerCase(Locale.US));
+            enum_.setImported(ctx.KW_IMPORT() != null);
             enum_.setExported(ctx.KW_EXPORT() != null);
             mScript.addEnum(varName, enum_);
         }

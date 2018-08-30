@@ -20,6 +20,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
+import com.alflabs.rx.ISubscriber;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 @AutoFactory(allowSubclasses = true, className = "EnumFactory")
-public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable, IResettable {
+public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable, IImportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
@@ -37,6 +38,7 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
     private final List<String> mValues = new ArrayList<>();
     private String mValue;
     private boolean mExported;
+    private ISubscriber<String> mImportSubscriber;
 
     public Enum_(Collection<String> values,
                  String scriptName,
@@ -80,13 +82,35 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
         throw new IllegalArgumentException();
     }
 
+    @Override
     public boolean isExported() {
         return mExported;
     }
 
     @Override
+    public boolean isImported() {
+        return mImportSubscriber != null;
+    }
+
+    @Override
     public void setExported(boolean exported) {
         mExported = exported;
+    }
+
+    @Override
+    public void setImported(boolean imported) {
+        if (imported && mImportSubscriber == null) {
+            mImportSubscriber = (stream, key) -> {
+                if (mKeyName.equals(key)) {
+                    accept(mKeyValue.getValue(mKeyName));
+                }
+            };
+            mKeyValue.getChangedStream().subscribe(mImportSubscriber);
+
+        } else if (!imported && mImportSubscriber != null) {
+            mKeyValue.getChangedStream().remove(mImportSubscriber);
+            mImportSubscriber = null;
+        }
     }
 
     @Override

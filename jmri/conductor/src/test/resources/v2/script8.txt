@@ -40,8 +40,8 @@ Turnout T1        = NT01
 
 # RTAC variables
 
-Export Enum RTAC-Motion = Off On
-Export String RTAC-Text = "Automation Not Working"
+Import Export Enum RTAC-Motion = Off On
+Import Export String RTAC-Text = "Automation Not Working"
 
 
 # define timers and their default value in seconds
