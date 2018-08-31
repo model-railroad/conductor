@@ -29,14 +29,14 @@ defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
 
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_INT | KW_TIMER;
+defIntType: KW_IMPORT? KW_EXPORT? KW_INT | KW_TIMER;
 
 defStrLine: defStrType ID '=' ( STR | STR_BLOCK );
-defStrType: KW_STRING | KW_MAP;
+defStrType: KW_IMPORT? KW_EXPORT? KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
-defEnumLine: KW_ENUM ID '=' defEnumValues;
+defEnumLine: KW_IMPORT? KW_EXPORT? KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;
@@ -69,7 +69,7 @@ throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | 
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
 timerOp:    KW_START | KW_END;
 
-funcValue:  '='  ( NUM | ID ) ;
+funcValue:  '='  ( NUM | ID | STR ) ;
 funcInt:    ( KW_INC | KW_DEC ) ( NUM | ID ) ;
 
 
@@ -99,12 +99,14 @@ KW_CATEGORY:'category';
 KW_COUNTER: 'counter';
 KW_END:     'end';
 KW_ENUM:    'enum';
+KW_EXPORT:  'export';
 KW_FORWARD: 'forward';
 KW_GA_EVENT:'ga-event';
 KW_GA_PAGE: 'ga-page';
 KW_GA_ID:   'ga-tracking-id';
 KW_HORN:    'horn';
 KW_INT:     'int';
+KW_IMPORT:  'import';
 KW_LABEL:   'label';
 KW_LIGHT:   'light';
 KW_MAP:     'map';

@@ -34,6 +34,9 @@ public final class Constants {
     public static final String MapsKey = Prefix.Map + "maps";
     public static final String RoutesKey = Prefix.Route + "routes";
 
+    public static final String RtacMotion  = Prefix.Var + "rtac-motion";
+    public static final String RtacPsaText = Prefix.Var + "rtac-psa-text";
+
     public static final String EStopKey = Prefix.Var + "$estop-state$";
     public enum EStopState {
         NORMAL,

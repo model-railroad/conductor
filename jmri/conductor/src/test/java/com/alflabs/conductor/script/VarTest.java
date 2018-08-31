@@ -19,6 +19,11 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.rx.IPublisher;
+import com.alflabs.rx.IStream;
+import com.alflabs.rx.Publishers;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,77 +37,150 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class VarTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IKeyValue mKeyValue;
 
-    private Var mVar;
-    private IIntFunction mFuncSet;
-    private IIntFunction mFuncInc;
-    private IIntFunction mFuncDec;
+    private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
+
+    private Var mStrVar;
+    private IStringFunction mStrSet;
+
+    private Var mIntVar;
+    private IIntFunction mIntSet;
+    private IIntFunction mIntInc;
+    private IIntFunction mIntDec;
 
     @Before
     public void setUp() throws Exception {
+        when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
+        
         VarFactory factory = new VarFactory(InstanceFactory.create(mKeyValue));
-        mVar = factory.create(42, "MyVar");
 
-        mFuncSet = mVar.createSetterFunction();
-        mFuncInc = mVar.createIncFunction();
-        mFuncDec = mVar.createDecFunction();
+        mStrVar = factory.create("42", "MyVar");
+        mStrSet = mStrVar.createSetStrFunction();
 
-        mVar.onExecStart();
+        mIntVar = factory.create(42, "MyVar");
+        mIntSet = mIntVar.createSetIntFunction();
+        mIntInc = mIntVar.createIncFunction();
+        mIntDec = mIntVar.createDecFunction();
+
+        mStrVar.onExecStart();
+        mIntVar.onExecStart();
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
     }
 
     @Test
-    public void testGetSetValue() throws Exception {
-        assertThat(mVar.getAsInt()).isEqualTo(42);
+    public void testStrGetSetValue() throws Exception {
+        assertThat(mStrVar.get()).isEqualTo("42");
 
-        mFuncSet.accept(-32);
-        assertThat(mVar.getAsInt()).isEqualTo(-32);
+        mStrSet.accept("32");
+        assertThat(mStrVar.get()).isEqualTo("32");
     }
 
     @Test
-    public void testIncValue() throws Exception {
-        assertThat(mVar.getAsInt()).isEqualTo(42);
+    public void testIntGetSetValue() throws Exception {
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
 
-        mFuncInc.accept(12);
-        assertThat(mVar.getAsInt()).isEqualTo(54);
-
-        mFuncInc.accept(-32);
-        assertThat(mVar.getAsInt()).isEqualTo(22);
+        mIntSet.accept(-32);
+        assertThat(mIntVar.getAsInt()).isEqualTo(-32);
     }
 
     @Test
-    public void testDecValue() throws Exception {
-        assertThat(mVar.getAsInt()).isEqualTo(42);
+    public void testIntIncValue() throws Exception {
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
 
-        mFuncDec.accept(12);
-        assertThat(mVar.getAsInt()).isEqualTo(30);
+        mIntInc.accept(12);
+        assertThat(mIntVar.getAsInt()).isEqualTo(54);
 
-        mFuncDec.accept(-32);
-        assertThat(mVar.getAsInt()).isEqualTo(62);
+        mIntInc.accept(-32);
+        assertThat(mIntVar.getAsInt()).isEqualTo(22);
     }
 
     @Test
-    public void testSetExported() throws Exception {
+    public void testIntDecValue() throws Exception {
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
+
+        mIntDec.accept(12);
+        assertThat(mIntVar.getAsInt()).isEqualTo(30);
+
+        mIntDec.accept(-32);
+        assertThat(mIntVar.getAsInt()).isEqualTo(62);
+    }
+
+    @Test
+    public void testIntSetExported() throws Exception {
         verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
-        mVar.setExported(true);
-        mFuncSet.accept(43);
-        mVar.onExecHandle();
+        mIntVar.setExported(true);
+        mIntSet.accept(43);
+        mIntVar.onExecHandle();
         verify(mKeyValue).putValue("V/MyVar", "43", true);
     }
 
     @Test
+    public void testStrSetExported() throws Exception {
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
+        mStrVar.setExported(true);
+        mStrSet.accept("43");
+        mStrVar.onExecHandle();
+        verify(mKeyValue).putValue("V/MyVar", "43", true);
+    }
+
+    @Test
+    public void testIntSetImported() throws Exception {
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
+        mIntVar.setImported(true);
+
+        mIntSet.accept(43);
+        assertThat(mIntVar.getAsInt()).isEqualTo(43);
+
+        IPublisher<String> publisher = Publishers.latest();
+        mChangedStream.publishWith(publisher);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("44");
+        publisher.publish("V/MyVar");
+        assertThat(mIntVar.getAsInt()).isEqualTo(44);
+
+        mIntVar.setImported(false);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("45");
+        publisher.publish("V/MyVar");
+        assertThat(mIntVar.getAsInt()).isEqualTo(44);
+    }
+
+    @Test
+    public void testStrSetImported() throws Exception {
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
+        mStrVar.setImported(true);
+
+        mStrSet.accept("two");
+        assertThat(mStrVar.get()).isEqualTo("two");
+
+        IPublisher<String> publisher = Publishers.latest();
+        mChangedStream.publishWith(publisher);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("three");
+        publisher.publish("V/MyVar");
+        assertThat(mStrVar.get()).isEqualTo("three");
+
+        mStrVar.setImported(false);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("four");
+        publisher.publish("V/MyVar");
+        assertThat(mStrVar.get()).isEqualTo("three");
+    }
+
+    @Test
     public void testIsActive() throws Exception {
-        assertThat(mVar.isActive()).isTrue();
+        assertThat(mIntVar.isActive()).isTrue();
 
-        mFuncSet.accept(0);
-        assertThat(mVar.isActive()).isFalse();
+        mIntSet.accept(0);
+        assertThat(mIntVar.isActive()).isFalse();
 
-        mFuncSet.accept(-12);
-        assertThat(mVar.isActive()).isTrue();
+        mIntSet.accept(-12);
+        assertThat(mIntVar.isActive()).isTrue();
     }
 }

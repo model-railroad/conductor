@@ -21,11 +21,12 @@ package com.alflabs.conductor.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
+import com.alflabs.rx.ISubscriber;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
 @AutoFactory(allowSubclasses = true)
-public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, IExportable, IResettable {
+public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, IExportable, IImportable, IResettable {
 
     private final String mKeyName;
     private final IKeyValue mKeyValue;
@@ -35,6 +36,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     private int mIntValue;
     private String mStringValue;
     private boolean mExported;
+    private ISubscriber<String> mImportSubscriber;
 
     public Var(int intValue,
                String scriptName,
@@ -76,6 +78,16 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     }
 
     @Override
+    public boolean isExported() {
+        return mExported;
+    }
+
+    @Override
+    public boolean isImported() {
+        return mImportSubscriber != null;
+    }
+
+    @Override
     public int getAsInt() {
         if (mStringValue != null) {
             try {
@@ -95,7 +107,12 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     }
 
     @NonNull
-    public IIntFunction createSetterFunction() {
+    public IStringFunction createSetStrFunction() {
+        return value -> mStringValue = value;
+    }
+
+    @NonNull
+    public IIntFunction createSetIntFunction() {
         return value -> mIntValue = value;
     }
 
@@ -115,6 +132,29 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     }
 
     @Override
+    public void setImported(boolean imported) {
+        if (imported && mImportSubscriber == null) {
+            mImportSubscriber = (stream, key) -> {
+                if (mKeyName.equals(key)) {
+                    String value = mKeyValue.getValue(mKeyName);
+                    if (isString()) {
+                        mStringValue = value;
+                    } else {
+                        try {
+                            mIntValue = Integer.parseInt(value);
+                        } catch (Exception ignore) {}
+                    }
+                }
+            };
+            mKeyValue.getChangedStream().subscribe(mImportSubscriber);
+
+        } else if (!imported && mImportSubscriber != null) {
+            mKeyValue.getChangedStream().remove(mImportSubscriber);
+            mImportSubscriber = null;
+        }
+    }
+
+    @Override
     public void onExecStart() {
         onExecHandle();
     }
@@ -122,7 +162,11 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     @Override
     public void onExecHandle() {
         if (mExported) {
-            mKeyValue.putValue(mKeyName, Integer.toString(mIntValue), true /*broadcast*/);
+            if (isString()) {
+                mKeyValue.putValue(mKeyName, mStringValue, true /*broadcast*/);
+            } else {
+                mKeyValue.putValue(mKeyName, Integer.toString(mIntValue), true /*broadcast*/);
+            }
         }
     }
 }

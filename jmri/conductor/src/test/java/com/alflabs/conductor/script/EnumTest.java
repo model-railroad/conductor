@@ -19,6 +19,11 @@
 package com.alflabs.conductor.script;
 
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.rx.IPublisher;
+import com.alflabs.rx.IStream;
+import com.alflabs.rx.Publishers;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
 import dagger.internal.InstanceFactory;
 import junit.framework.Assert;
 import org.junit.Before;
@@ -35,18 +40,23 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class EnumTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IKeyValue mKeyValue;
 
+    private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
+
     private Enum_ mEnum;
 
     @Before
     public void setUp() throws Exception {
+        when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
+
         EnumFactory factory = new EnumFactory(InstanceFactory.create(mKeyValue));
-        mEnum = factory.create(Arrays.asList("one", "two", "three"), "MyVar");
+        mEnum = factory.create(Arrays.asList("one", "two", "three", "four"), "MyVar");
         assertThat(mEnum.get()).isEqualTo("one");
 
         mEnum.onExecStart();
@@ -57,6 +67,12 @@ public class EnumTest {
     public void testGetSetValue() throws Exception {
         mEnum.accept("Three");
         assertThat(mEnum.get()).isEqualTo("three");
+
+        mEnum.accept("two"); // small caps
+        assertThat(mEnum.get()).isEqualTo("two");
+
+        mEnum.accept("FOUR"); // upper caps
+        assertThat(mEnum.get()).isEqualTo("four");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -72,6 +88,28 @@ public class EnumTest {
         mEnum.accept("two");
         mEnum.onExecHandle();
         verify(mKeyValue).putValue("V/MyVar", "two", true);
+    }
+
+    @Test
+    public void testSetImported() throws Exception {
+        verify(mKeyValue, never()).putValue(anyString(), anyString(), eq(true));
+        mEnum.setImported(true);
+
+        mEnum.accept("two");
+        assertThat(mEnum.get()).isEqualTo("two");
+
+        IPublisher<String> publisher = Publishers.latest();
+        mChangedStream.publishWith(publisher);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("three");
+        publisher.publish("V/MyVar");
+        assertThat(mEnum.get()).isEqualTo("three");
+
+        mEnum.setImported(false);
+
+        when(mKeyValue.getValue("V/MyVar")).thenReturn("four");
+        publisher.publish("V/MyVar");
+        assertThat(mEnum.get()).isEqualTo("three");
     }
 
     @Test

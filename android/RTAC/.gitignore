@@ -9,3 +9,5 @@
 .externalNativeBuild
 /.idea/markdown*
 /.idea/misc.xml
+/.idea/caches/
+/.idea/codeStyles/

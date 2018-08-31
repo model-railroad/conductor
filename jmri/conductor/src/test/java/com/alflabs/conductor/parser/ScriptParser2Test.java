@@ -25,17 +25,21 @@ import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
 import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.conductor.script.Enum_;
 import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.utils.FakeClock;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.rx.IStream;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
+import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.google.common.base.Charsets;
@@ -44,7 +48,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.internal.matchers.Not;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -71,6 +74,8 @@ import static org.mockito.Mockito.when;
 public class ScriptParser2Test {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
+    private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
+
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
     @Mock IKeyValue mKeyValue;
@@ -83,7 +88,7 @@ public class ScriptParser2Test {
 
     @Before
     public void setUp() throws Exception {
-
+        when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
         when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
 
         // Enable the ExecEngine by default.
@@ -159,6 +164,38 @@ public class ScriptParser2Test {
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
         assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(var.isExported()).isFalse();
+        assertThat(var.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportInt() throws Exception {
+        String source = " Export Int VALUE    = 5201 # d&rgw ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(var.isExported()).isTrue();
+        assertThat(var.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineImportExportInt() throws Exception {
+        String source = " Import Export Int VALUE    = 5201 # d&rgw ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.getAsInt()).isEqualTo(5201);
+        assertThat(var.isExported()).isTrue();
+        assertThat(var.isImported()).isTrue();
     }
 
     @Test
@@ -234,6 +271,38 @@ public class ScriptParser2Test {
         assertThat(script.getVar("value")).isNotNull();
         Var var = script.getVar("Value");
         assertThat(var.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var.isExported()).isFalse();
+        assertThat(var.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportString() throws Exception {
+        String source = " Export String VALUE    = \"5201 # d&rgw\" ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var.isExported()).isTrue();
+        assertThat(var.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineImportExportString() throws Exception {
+        String source = " Import Export String VALUE    = \"5201 # d&rgw\" ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        assertThat(script.getVar("value")).isNotNull();
+        Var var = script.getVar("Value");
+        assertThat(var.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var.isExported()).isTrue();
+        assertThat(var.isImported()).isTrue();
     }
 
     @Test
@@ -383,9 +452,44 @@ public class ScriptParser2Test {
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getEnum("en")).isNotNull();
-        assertThat(script.getEnum("en").getValues().toArray()).isEqualTo(
+        Enum_ enum_ = script.getEnum("en");
+        assertThat(enum_).isNotNull();
+        assertThat(enum_.getValues().toArray()).isEqualTo(
                 new String[] { "init", "idle", "fwd", "rev" });
+        assertThat(enum_.isExported()).isFalse();
+        assertThat(enum_.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineExportedEnum() throws Exception {
+        String source = " Export Enum EN   = Init Idle Fwd Rev ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        Enum_ enum_ = script.getEnum("en");
+        assertThat(enum_).isNotNull();
+        assertThat(enum_.getValues().toArray()).isEqualTo(
+                new String[] { "init", "idle", "fwd", "rev" });
+        assertThat(enum_.isExported()).isTrue();
+        assertThat(enum_.isImported()).isFalse();
+    }
+
+    @Test
+    public void testDefineImportExportEnum() throws Exception {
+        String source = " Import Export Enum EN   = Init Idle Fwd Rev ";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        Enum_ enum_ = script.getEnum("en");
+        assertThat(enum_).isNotNull();
+        assertThat(enum_.getValues().toArray()).isEqualTo(
+                new String[] { "init", "idle", "fwd", "rev" });
+        assertThat(enum_.isExported()).isTrue();
+        assertThat(enum_.isImported()).isTrue();
     }
 
     @Test
@@ -643,6 +747,30 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testActionStr() throws Exception {
+        String source = "" +
+                "Enum State = Init Set\n" +
+                "String Value = \"a\" \n" +
+                "State == Init -> value = \"bc\" \n" +
+                "State == Set  -> value = \"d{e}\"";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").get()).isEqualTo("a");
+
+        engine.onExecHandle();
+
+        assertThat(script.getEnum("State").get()).isEqualTo("init");
+        assertThat(script.getVar ("Value").get()).isEqualTo("bc");
+    }
+
+    @Test
     public void testActionInt() throws Exception {
         String source = "" +
                 "Enum State = Init Set\n" +
@@ -756,9 +884,9 @@ public class ScriptParser2Test {
                 "  Line 5: 't1 forward -> t1 normal'\n" +
                 "Error at line 7: Expected timer ID for 'start' but found 't1'.\n" +
                 "  Line 7: 'block      -> t1 start'\n" +
-                "Error at line 9: Expected NUM or ID argument for 't1' but found 'B42'.\n" +
+                "Error at line 9: Expected NUM or ID or \"STR\" argument for 't1' but found 'B42'.\n" +
                 "  Line 9: 't1 forward -> t1 forward = B42'\n" +
-                "Error at line 10: Expected NUM or ID argument for 't1' but found 'block'.\n" +
+                "Error at line 10: Expected NUM or ID or \"STR\" argument for 't1' but found 'block'.\n" +
                 "  Line 10: 't1 forward -> t1 forward = block'");
         assertThat(script).isNotNull();
     }
