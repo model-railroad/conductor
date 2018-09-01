@@ -41,7 +41,9 @@ public class Timer implements IConditional, IResettable {
      * Must match IIntFunction in the {@link Timer} implementation.
      */
     public enum Function {
+        /** Starts (or restarts) the timer countdown from "now". */
         START,
+        /** Resets the timer so that it does not activate. */
         END
     }
 
