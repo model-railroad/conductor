@@ -28,15 +28,17 @@ defGaIdLine: KW_GA_ID '=' STR;
 defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
 
+defImpExp: KW_IMPORT KW_EXPORT? | KW_EXPORT KW_IMPORT?;
+
 defIntLine: defIntType ID '=' NUM;
-defIntType: KW_IMPORT? KW_EXPORT? KW_INT | KW_TIMER;
+defIntType: defImpExp? KW_INT | KW_TIMER;
 
 defStrLine: defStrType ID '=' ( STR | STR_BLOCK );
-defStrType: KW_IMPORT? KW_EXPORT? KW_STRING | KW_MAP;
+defStrType: defImpExp? KW_STRING | KW_MAP;
 
 defThrottleLine: KW_THROTTLE ID '=' NUM+;
 
-defEnumLine: KW_IMPORT? KW_EXPORT? KW_ENUM ID '=' defEnumValues;
+defEnumLine: defImpExp? KW_ENUM ID '=' defEnumValues;
 defEnumValues: ( ID )+;
 
 defRouteLine:  KW_ROUTE ID '=' routeInfoList;

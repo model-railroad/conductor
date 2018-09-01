@@ -185,17 +185,24 @@ public class ScriptParser2Test {
 
     @Test
     public void testDefineImportExportInt() throws Exception {
-        String source = " Import Export Int VALUE    = 5201 # d&rgw ";
+        String source = " Import Export Int VALUE1 = 5201 # d&rgw \n" +
+                        " Export Import Int Value2 = 42";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("value")).isNotNull();
-        Var var = script.getVar("Value");
-        assertThat(var.getAsInt()).isEqualTo(5201);
-        assertThat(var.isExported()).isTrue();
-        assertThat(var.isImported()).isTrue();
+        Var var1 = script.getVar("Value1");
+        assertThat(var1).isNotNull();
+        assertThat(var1.getAsInt()).isEqualTo(5201);
+        assertThat(var1.isExported()).isTrue();
+        assertThat(var1.isImported()).isTrue();
+
+        Var var2 = script.getVar("Value2");
+        assertThat(var2).isNotNull();
+        assertThat(var2.getAsInt()).isEqualTo(42);
+        assertThat(var2.isExported()).isTrue();
+        assertThat(var2.isImported()).isTrue();
     }
 
     @Test
@@ -292,17 +299,24 @@ public class ScriptParser2Test {
 
     @Test
     public void testDefineImportExportString() throws Exception {
-        String source = " Import Export String VALUE    = \"5201 # d&rgw\" ";
+        String source = " Import Export String VALUE1    = \"5201 # d&rgw\" \n" +
+                " Export Import String value2    = \"something else\"";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        assertThat(script.getVar("value")).isNotNull();
-        Var var = script.getVar("Value");
-        assertThat(var.get()).isEqualTo("5201 # d&rgw");
-        assertThat(var.isExported()).isTrue();
-        assertThat(var.isImported()).isTrue();
+        Var var1 = script.getVar("Value1");
+        assertThat(var1).isNotNull();
+        assertThat(var1.get()).isEqualTo("5201 # d&rgw");
+        assertThat(var1.isExported()).isTrue();
+        assertThat(var1.isImported()).isTrue();
+
+        Var var2 = script.getVar("Value2");
+        assertThat(var2).isNotNull();
+        assertThat(var2.get()).isEqualTo("something else");
+        assertThat(var2.isExported()).isTrue();
+        assertThat(var2.isImported()).isTrue();
     }
 
     @Test
@@ -478,18 +492,26 @@ public class ScriptParser2Test {
 
     @Test
     public void testDefineImportExportEnum() throws Exception {
-        String source = " Import Export Enum EN   = Init Idle Fwd Rev ";
+        String source = " Import Export Enum EN   = Init Idle Fwd Rev \n" +
+                        " Export Import Enum AB   = A B";
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 
-        Enum_ enum_ = script.getEnum("en");
-        assertThat(enum_).isNotNull();
-        assertThat(enum_.getValues().toArray()).isEqualTo(
+        Enum_ enum1 = script.getEnum("en");
+        assertThat(enum1).isNotNull();
+        assertThat(enum1.getValues().toArray()).isEqualTo(
                 new String[] { "init", "idle", "fwd", "rev" });
-        assertThat(enum_.isExported()).isTrue();
-        assertThat(enum_.isImported()).isTrue();
+        assertThat(enum1.isExported()).isTrue();
+        assertThat(enum1.isImported()).isTrue();
+
+        Enum_ enum2 = script.getEnum("ab");
+        assertThat(enum2).isNotNull();
+        assertThat(enum2.getValues().toArray()).isEqualTo(
+                new String[] { "a", "b" });
+        assertThat(enum2.isExported()).isTrue();
+        assertThat(enum2.isImported()).isTrue();
     }
 
     @Test
