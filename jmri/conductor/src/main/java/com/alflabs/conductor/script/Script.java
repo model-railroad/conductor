@@ -54,6 +54,7 @@ import java.util.TreeMap;
 public class Script {
 
     private final Logger mLogger;
+    private final EStopHandler mEStopHandler;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Enum_> mEnums = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
@@ -65,8 +66,9 @@ public class Script {
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
-    public Script(Logger logger) {
+    public Script(Logger logger, EStopHandler eStopHandler) {
         mLogger = logger;
+        mEStopHandler = eStopHandler;
     }
 
     public Logger getLogger() {
@@ -263,13 +265,15 @@ public class Script {
                 || getConditional(name) != null;
     }
 
-    private IIntFunction mResetTimersFunction = ignored -> {
-        for (Timer timer : mTimers.values()) {
-            timer.reset();
-        }
-    };
+    public IAction getResetTimersAction() {
+        return () -> {
+            for (Timer timer : mTimers.values()) {
+                timer.reset();
+            }
+        };
+    }
 
-    public IIntFunction getResetTimersFunction() {
-        return mResetTimersFunction;
+    public IAction getEstopAction() {
+        return mEStopHandler::activateEStop;
     }
 }

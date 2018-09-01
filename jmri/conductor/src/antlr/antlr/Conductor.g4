@@ -59,7 +59,7 @@ condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 actionList: action ( ';' action )* ';'? ;
 action:     EOL? ( idAction | fnAction | gaAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
-fnAction:   KW_RESET KW_TIMERS;
+fnAction:   KW_RESET KW_TIMERS | KW_ESTOP;
 
 gaAction:   gaActionOp gaParamList;
 gaActionOp: KW_GA_EVENT | KW_GA_PAGE;
@@ -101,6 +101,7 @@ KW_CATEGORY:'category';
 KW_COUNTER: 'counter';
 KW_END:     'end';
 KW_ENUM:    'enum';
+KW_ESTOP:   'estop';
 KW_EXPORT:  'export';
 KW_FORWARD: 'forward';
 KW_GA_EVENT:'ga-event';

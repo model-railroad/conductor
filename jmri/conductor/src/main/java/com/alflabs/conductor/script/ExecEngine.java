@@ -42,15 +42,17 @@ public class ExecEngine implements IExecEngine {
     private final FrequencyMeasurer mHandleFrequency;
     private final RateLimiter mHandleRateLimiter;
     private final IKeyValue mKeyValue;
+    private final EStopHandler mEStopHandler;
+
     private Runnable mHandleListener;
-    private Constants.EStopState mLastEStopState;
 
     @Inject
-    public ExecEngine(IClock clock, Script script, IKeyValue keyValue) {
+    public ExecEngine(IClock clock, Script script, IKeyValue keyValue, EStopHandler eStopHandler) {
         mScript = script;
         mHandleFrequency = new FrequencyMeasurer(clock);
         mHandleRateLimiter = new RateLimiter(30.0f, clock);
         mKeyValue = keyValue;
+        mEStopHandler = eStopHandler;
     }
 
     /**
@@ -120,14 +122,14 @@ public class ExecEngine implements IExecEngine {
 
         propagateExecHandle();
 
-        final Constants.EStopState eStopState = getEStopState();
+        final Constants.EStopState eStopState = mEStopHandler.getEStopState();
         switch (eStopState) {
         case NORMAL:
             evalScript();
             repeatSpeed();
             break;
         case ACTIVE:
-            if (mLastEStopState == Constants.EStopState.NORMAL) {
+            if (mEStopHandler.getLastEStopState() == Constants.EStopState.NORMAL) {
                 // First time going from NORMAL to ACTIVE E-Stop.
                 eStopAllThrottles();
             }
@@ -136,7 +138,7 @@ public class ExecEngine implements IExecEngine {
             reset();
             break;
         }
-        mLastEStopState = eStopState;
+        mEStopHandler.setLastEStopState(eStopState);
 
         Runnable listener = mHandleListener;
         if (listener != null) {
@@ -149,21 +151,6 @@ public class ExecEngine implements IExecEngine {
 
         mHandleFrequency.endWork();
         mHandleRateLimiter.limit();
-    }
-
-    /**
-     * Returns true if The EStop-State is defined and Normal.
-     * <p/>
-     * For a more predictible behavior, the absence of the EStop-State is treated as
-     * a active case. This is one of these "should not happen" scenarios.
-     */
-    private Constants.EStopState getEStopState() {
-        final String value = mKeyValue.getValue(Constants.EStopKey);
-        if (value == null) return Constants.EStopState.ACTIVE;
-        try {
-            return Constants.EStopState.valueOf(value);
-        } catch (IllegalArgumentException ignore) {}
-        return Constants.EStopState.ACTIVE;
     }
 
     private void propagateExecHandle() {
@@ -216,7 +203,7 @@ public class ExecEngine implements IExecEngine {
         // for (Turnout turnout : mScript.getTurnouts()) : not resettable
         // for (Sensor sensor : mScript.getSensors()) : : not resettable
 
-        mScript.getResetTimersFunction().accept(0);
+        mScript.getResetTimersAction().execute();
 
         for (Var var : mScript.getVars()) {
             var.reset();
@@ -232,8 +219,7 @@ public class ExecEngine implements IExecEngine {
             event.resetExecuted();
         }
 
-        mLastEStopState = Constants.EStopState.NORMAL;
-        mKeyValue.putValue(Constants.EStopKey, mLastEStopState.toString(), true);
+        mEStopHandler.reset();
     }
 
     private void eStopAllThrottles() {

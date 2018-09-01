@@ -729,8 +729,9 @@ public class ScriptParser2 {
         @Override
         public void exitFnAction(ConductorParser.FnActionContext ctx) {
             if (ctx.KW_RESET() != null && ctx.KW_TIMERS() != null) {
-                mEvent.addAction(
-                        IntAction.create(mScript.getResetTimersFunction(), new LiteralInt(0)));
+                mEvent.addAction(mScript.getResetTimersAction());
+            } else if (ctx.KW_ESTOP() != null) {
+                mEvent.addAction(mScript.getEstopAction());
             } else {
                 emitError(ctx, "Unexpected call.");
             }
