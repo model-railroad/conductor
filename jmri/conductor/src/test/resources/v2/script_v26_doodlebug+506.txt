@@ -68,7 +68,7 @@ String GA-URL = "http://consist.alfray.com/train/"
 # Any route must be shorter than this to reach destination and cancel the timer.
 # The "Reser Timer" action (typically on PA-Toggle off) will clear this.
 
-Timer ESTOP-Timer = 600   # 10 minutes
+Timer Error-Timer = 600   # 10 minutes
 
 
 
@@ -108,7 +108,7 @@ Timer ESTOP-Timer = 600   # 10 minutes
 Throttle AM = 506       # Atlas GE on full Amtrak route
 Throttle SP = 45        # "Short Passenger" (RDC or Doodlebug) on limited Amtrak route
 
-Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Down Manual ESTOP
+Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Down Manual Error
 Enum PA-Train = Amtrak Short
 Enum PA-Manual = Up In370
 
@@ -158,20 +158,21 @@ SP-Timer-Acquire-Route ->
     T330 Reverse ;
     T504 Normal ;
 
-# --- PA State: ESTOP
+# --- PA State: Error
 #
 # Note this state can only be cleared using an RTAC reset.
 
-ESTOP-Timer -> PA-State = ESTOP
+Error-Timer -> PA-State = Error
 
-PA-State == ESTOP ->
+PA-State == Error ->
     AM  Repeat = 1 ;
     SP Repeat = 1 ;
     AM  Stop ;
     SP Stop ;
     AM  Sound = 0; AM Light = 0;
     SP Sound = 0; SP Light = 0;
-    GA-Event Category: Automation, Action: ESTOP,  Label: Passenger, User: Staff
+    GA-Event Category: Automation, Action: Error,  Label: Passenger, User: Staff ;
+    ESTOP
 
 
 # --- PA State: Idle
@@ -249,7 +250,7 @@ PA-State == Station & !PA-Toggle ->
 
 # --- PA State: AM Going Up
 
-PA-State == AM-Up -> ESTOP-Timer Start
+PA-State == AM-Up -> Error-Timer Start
 
 Timer AM-Delayed-Horn = 2
 PA-State == AM-Up & B503b & AM Stopped ->
@@ -289,7 +290,7 @@ PA-State == AM-Up & !PA-Toggle & AM Forward & B503b ->
 
 # --- PA State: AM Summit
 
-PA-State == AM-Summit -> ESTOP-Timer Start
+PA-State == AM-Summit -> Error-Timer Start
 
 PA-State == AM-Summit & B370 +  4 & AM Forward ->
     AM Forward = AM-Summit-Speed ;
@@ -309,7 +310,7 @@ PA-State == AM-Summit & !B370 & B360 & AM Reverse ->
 
 # --- PA State: AM Going Down
 
-PA-State == AM-Down -> ESTOP-Timer Start
+PA-State == AM-Down -> Error-Timer Start
 
 Timer AM-Timer-Full-Reverse = 12
 PA-State == AM-Down & AM Reverse -> AM-Timer-Full-Reverse Start
@@ -333,7 +334,7 @@ PA-State == AM-Down & AM Reverse & B503b + 5 ->
     AM Stop ;
     AM Horn ;
     AM-Timer-Down-Station-Lights-Off Start ;
-    ESTOP-Timer End
+    Error-Timer End
 PA-State == AM-Down & AM-Timer-Down-Station-Lights-Off ->
     GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
     PA-Train = Short ;
@@ -343,7 +344,7 @@ PA-State == AM-Down & AM-Timer-Down-Station-Lights-Off ->
 # --------------------
 # --- PA State: SP Up
 
-PA-State == SP-Up -> ESTOP-Timer Start
+PA-State == SP-Up -> Error-Timer Start
 
 Timer SP-Sound-Started = 2
 PA-State == SP-Up & B311 & SP Stopped ->
@@ -379,7 +380,7 @@ PA-State == SP-Up & !PA-Toggle -> PA-State = SP-Down
 
 # --- PA-State: SP Down
 
-PA-State == SP-Down -> ESTOP-Timer Start
+PA-State == SP-Down -> Error-Timer Start
 
 PA-State == SP-Down ->
     SP Horn ;
@@ -397,7 +398,7 @@ PA-State == SP-Down & SP-Timer-Down & SP Reverse ->
 PA-State == SP-Down & SP-Timer-Down + 10 & SP Reverse ->
     SP Horn ;
     SP Stop ;
-    ESTOP-Timer End
+    Error-Timer End
 
 Timer SP-Sound-Stopped = 2
 PA-State == SP-Down & SP-Timer-Down + 20 & SP Stopped ->
