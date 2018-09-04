@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @AutoFactory(allowSubclasses = true, className = "EnumFactory")
 public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable, IImportable, IResettable {
@@ -43,7 +44,7 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
     public Enum_(Collection<String> values,
                  String scriptName,
                  @Provided IKeyValue keyValue) {
-        mValues.addAll(values);
+        mValues.addAll(values.stream().map(String::toLowerCase).collect(Collectors.toList()));
         mValue = mValues.get(0);
         mKeyName = Prefix.Var + scriptName;
         mKeyValue = keyValue;

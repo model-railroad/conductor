@@ -56,7 +56,8 @@ public class EnumTest {
         when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
 
         EnumFactory factory = new EnumFactory(InstanceFactory.create(mKeyValue));
-        mEnum = factory.create(Arrays.asList("one", "two", "three", "four"), "MyVar");
+        // Note: input case should not matter.
+        mEnum = factory.create(Arrays.asList("One", "TWO", "Three", "FOUR"), "MyVar");
         assertThat(mEnum.get()).isEqualTo("one");
 
         mEnum.onExecStart();
