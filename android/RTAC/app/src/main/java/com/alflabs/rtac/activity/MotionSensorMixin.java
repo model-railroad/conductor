@@ -3,11 +3,14 @@ package com.alflabs.rtac.activity;
 import android.hardware.usb.UsbDevice;
 import android.support.annotation.WorkerThread;
 import com.alflabs.dagger.ActivityScope;
+import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.DigisparkHelper;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.utils.ActivityMixin;
+import com.alflabs.utils.IClock;
 
 import javax.inject.Inject;
 
@@ -19,9 +22,9 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     @Inject DigisparkHelper mDigispark;
     @Inject DataClientMixin mDataClientMixin;
     @Inject AppPrefsValues mAppPrefsValues;
+    @Inject IClock mClock;
 
     private MotionSensorTask mTask;
-    private volatile boolean mEstop;
 
     @Inject
     public MotionSensorMixin(MainActivity activity) {
@@ -53,18 +56,24 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
 
     private void startTask() {
         if (mTask == null && mAppPrefsValues.getConductor_MonitorMotionSensor()) {
-            mTask = new MotionSensorTask(mDataClientMixin);
+            mTask = new MotionSensorTask(mDataClientMixin, mClock);
             mTask.execute(mDigispark);
         }
     }
 
     private static class MotionSensorTask extends DigisparkHelper.DigisparkTask {
         private final DataClientMixin mDataClientMixin;
-        private boolean mValue;
+        private final IClock mClock;
+        private final IKeyValue mKeyValue;
+        private boolean mLastValue;
+        private long mOnTS;
+        private long mLastOnMS;
 
-        private MotionSensorTask(DataClientMixin dataClientMixin) {
+        private MotionSensorTask(DataClientMixin dataClientMixin, IClock clock) {
             super(true /* blinkRepeatedly */);
             mDataClientMixin = dataClientMixin;
+            mClock = clock;
+            mKeyValue = mDataClientMixin.getKeyValueClient();
         }
 
         @Override
@@ -82,8 +91,26 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         @Override
         @WorkerThread
         protected void onNewValue(boolean value) {
-            mValue = value;
-            mDataClientMixin.setMotionStatus(false, mValue ? "[M]" : "[_]");
+            boolean changed = value != mLastValue;
+            if (changed) {
+                mLastValue = value;
+                if (DEBUG && value) {
+                    mOnTS = mClock.elapsedRealtime();
+                }
+            }
+
+            if (DEBUG) {
+                if (value) {
+                    mLastOnMS = (mClock.elapsedRealtime() - mOnTS) / 1000;
+                }
+                mDataClientMixin.setMotionStatus(false, "[" + (value ? '^' : '_') + " " + mLastOnMS + "]");
+            } else if (changed) {
+                mDataClientMixin.setMotionStatus(false, value ? "[^]" : "[_]");
+            }
+
+            if (changed) {
+                mKeyValue.putValue(Constants.RtacMotion, value ? Constants.On : Constants.Off, true /* broadcast */);
+            }
         }
 
         @Override
@@ -91,7 +118,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
             super.onProgressUpdate(values);
             if (isUpdateUsb()) {
                 UsbDevice dev = getUsbDevice();
-                mDataClientMixin.setMotionStatus(dev == null, dev ==null ? "Motion Disconnected" : "");
+                mDataClientMixin.setMotionStatus(dev == null, dev ==null ? "Motion Disconnected" : "[*]");
             }
         }
 
