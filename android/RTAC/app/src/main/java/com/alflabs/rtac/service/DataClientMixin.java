@@ -299,7 +299,12 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     private void setStatus(boolean isError, String message) {
-        mStatus.set(isError, message);
+        mStatus.setText(isError, message);
+        mStatusPublisher.publish(mStatus);
+    }
+
+    public void setMotionStatus(boolean isError, String motion) {
+        mStatus.setMotion(isError, motion);
         mStatusPublisher.publish(mStatus);
     }
 
@@ -313,20 +318,31 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
     }
 
     public static class DataClientStatus {
-        private boolean mIsError;
-        private String mText;
+        private boolean mTextError;
+        private String mText = "";
+        private boolean mMotionError;
+        private String mMotion = "";
 
-        void set(boolean isError, String text) {
-            mIsError = isError;
+        void setText(boolean isError, String text) {
+            mTextError = isError;
             mText = text;
         }
 
+        void setMotion(boolean isError, String motion) {
+            mMotionError = isError;
+            mMotion = motion;
+        }
+
         public boolean isError() {
-            return mIsError;
+            return mTextError || mMotionError;
         }
 
         public String getText() {
             return mText;
+        }
+
+        public String getMotion() {
+            return mMotion;
         }
     }
 

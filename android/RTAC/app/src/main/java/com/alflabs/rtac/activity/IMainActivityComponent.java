@@ -28,9 +28,11 @@ import dagger.Subcomponent;
 public interface IMainActivityComponent
     extends IFragmentComponent.Factory {
 
+
     interface Factory {
         IMainActivityComponent create(ActivityContextModule activityContextModule);
     }
 
     void inject(MainActivity mainActivity);
+    void inject(MotionSensorMixin motionSensorMixin);
 }

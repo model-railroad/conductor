@@ -125,6 +125,11 @@ public class PrefsActivity extends PreferenceActivity {
         addPreferencesFromResource(R.xml.prefs_system);
 
         fakeHeader = new PreferenceCategory(this);
+        fakeHeader.setTitle("Conductor");
+        getPreferenceScreen().addPreference(fakeHeader);
+        addPreferencesFromResource(R.xml.prefs_conductor);
+
+        fakeHeader = new PreferenceCategory(this);
         fakeHeader.setTitle("JMRI");
         getPreferenceScreen().addPreference(fakeHeader);
         addPreferencesFromResource(R.xml.prefs_jmri);

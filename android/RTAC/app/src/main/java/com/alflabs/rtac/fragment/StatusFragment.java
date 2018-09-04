@@ -120,7 +120,11 @@ public class StatusFragment extends Fragment {
     private final ISubscriber<DataClientMixin.DataClientStatus> mDataClientStatusSubscriber = (stream, dataClientStatus) -> {
         assert dataClientStatus != null;
         String text = dataClientStatus.getText();
-        mStatusText.setText(text == null ? "^_^" : text);
+        String motion = dataClientStatus.getMotion();
+        text = String.format(" %s %s",
+                text == null || text.isEmpty() ? "^_^" : text,
+                motion == null ? "" : motion);
+        mStatusText.setText(text);
         mStatusText.setTextColor(dataClientStatus.isError() ? 0xFFFF0000 : 0xFFFFFFFF);
     };
 }

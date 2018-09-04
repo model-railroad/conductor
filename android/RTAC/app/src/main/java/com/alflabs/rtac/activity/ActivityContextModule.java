@@ -29,16 +29,21 @@ import dagger.Provides;
 public class ActivityContextModule {
 
     @NonNull
-    private final Context mContext;
+    private final MainActivity mMainActivity;
 
-    public ActivityContextModule(@NonNull Context context) {
-        mContext = context;
+    public ActivityContextModule(@NonNull MainActivity activity) {
+        mMainActivity = activity;
     }
 
     @Provides
     @ActivityQualifier
     @NonNull
     public Context providesContext() {
-        return mContext;
+        return mMainActivity;
+    }
+
+    @Provides
+    public MainActivity providesMainActivity() {
+        return mMainActivity;
     }
 }

@@ -33,6 +33,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import com.alflabs.dagger.ActivityScope;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.app.AppPrefsValues;
@@ -44,6 +45,7 @@ import com.google.common.base.Preconditions;
 
 import javax.inject.Inject;
 
+@ActivityScope
 public class MainActivity extends Activity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -51,6 +53,7 @@ public class MainActivity extends Activity {
 
     @Inject ILogger mLogger;
     @Inject AppPrefsValues mAppPrefsValues;
+    @Inject MotionSensorMixin mMotionSensorMixin;
 
     private IMainActivityComponent mComponent;
     private RtacService.LocalBinder mServiceBinder;
@@ -81,7 +84,7 @@ public class MainActivity extends Activity {
         return MainApp.getAppComponent(this).create(new ActivityContextModule(this));
     }
 
-    private IMainActivityComponent getComponent() {
+    IMainActivityComponent getComponent() {
         if (DEBUG) Log.d(TAG, "getComponent");
         if (mComponent == null) {
             mComponent = createComponent();
@@ -103,13 +106,15 @@ public class MainActivity extends Activity {
         setupActionBar();
 
         getComponent().inject(this);
+
+        mMotionSensorMixin.onCreate();
     }
 
     @Override
     protected void onStart() {
         if (DEBUG) Log.d(TAG, "onStart");
         super.onStart();
-        // FIXME mDataServerMixin.onStart();
+        mMotionSensorMixin.onStart();
     }
 
     @Override
@@ -117,14 +122,14 @@ public class MainActivity extends Activity {
         if (DEBUG) Log.d(TAG, "onResume");
         super.onResume();
         bindServerService();
-        // FIXME mDataServerMixin.onResume();
         hideNavigationBar();
+        mMotionSensorMixin.onResume();
     }
 
     @Override
     protected void onPause() {
         if (DEBUG) Log.d(TAG, "onPause");
-        // FIXME mDataServerMixin.onPause();
+        mMotionSensorMixin.onPause();
         if (mServiceBinder != null) {
             mServiceBinder.startNotification(this);
         }
@@ -135,14 +140,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
-        // FIXME mDataServerMixin.onStop();
+        mMotionSensorMixin.onStop();
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         if (DEBUG) Log.d(TAG, "onDestroy");
-        // FIXME mDataServerMixin.onDestroy();
+        mMotionSensorMixin.onDestroy();
         super.onDestroy();
     }
 

@@ -5,5 +5,4 @@
         android:layout_height="wrap_content"
         tools:text="Data Client Status"
         android:gravity="center_horizontal"
-        android:minLines="1"
-        android:maxLines="1" />
+        android:minLines="1" />

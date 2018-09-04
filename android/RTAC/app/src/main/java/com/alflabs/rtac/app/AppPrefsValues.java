@@ -51,6 +51,8 @@ public class AppPrefsValues extends BasePrefsValues {
     public static final String PREF_JMRI__SERVER_PORT     = "pref_jmri__server_port";
     public static final String PREF_JMRI__THROTTLE_NAME   = "pref_jmri__throttle_name";
 
+    public static final String PREF_CONDUCTOR__MONITOR_MOTION_SENSOR = "pref_conductor__monitor_motion_sensor";
+
     @Inject
     public AppPrefsValues(@AppQualifier Context context) {
         super(context);
@@ -163,5 +165,9 @@ public class AppPrefsValues extends BasePrefsValues {
         synchronized (editLock()) {
             endEdit(startEdit().putString(PREF_DATA__SERVER_PORT, Integer.toString(port)));
         }
+    }
+
+    public boolean getConductor_MonitorMotionSensor() {
+        return mPrefs.getBoolean(PREF_CONDUCTOR__MONITOR_MOTION_SENSOR, false);
     }
 }
