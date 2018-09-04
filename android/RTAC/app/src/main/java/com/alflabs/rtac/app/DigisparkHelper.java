@@ -19,6 +19,30 @@ import com.alflabs.rtac.BuildConfig;
 import javax.inject.Inject;
 import java.util.HashMap;
 
+/**
+ * Helper to find and communicate with a Digispark attached via an USB OTG cable.
+ * <p/>
+ * The USB service requires the user to authorize access to the device. It will popup a dialog
+ * asking for permission for the device to be used. The {@link #checkPermission(UsbDevice)} method
+ * below provides a <em>session-only</em> authorization, that does not survives accross reboot or
+ * even the app being closed.
+ * <p/>
+ * For a more permanent grant of the permission, the following must be added to the Android Manifest
+ * in the <em>activity</em> that uses this:
+ * <pre>
+ *   &lt;intent-filter>
+ *     &lt;action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+ *   &lt;/intent-filter>
+ *   &lt;meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+ *              android:resource="@xml/usb_device_filter" / >
+ * </pre>
+ * and the corresponding usb_device_filter.xml should have the VID/PID in decimal:
+ * <pre>
+ *   &lt;resources>
+ *     &lt;usb-device vendor-id="5824" product-id="1503" />
+ *   &lt;/resources>
+ * </pre>
+ */
 public class DigisparkHelper {
     private static final String TAG = DigisparkHelper.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -96,7 +120,10 @@ public class DigisparkHelper {
         return null;
     }
 
-
+    /**
+     * Issues a "blink" command by printing 'b' on the USB channel.
+     * In the sketch on the Digispark, this takes 100 ms to execute (50 ms each on/off on the on-board LED).
+     */
     public boolean blink(@NonNull UsbDeviceConnection cnx) {
         int res = cnx.controlTransfer(REQ_OUT, 9, 0, 'b', null, 0, 1000);
         if (DEBUG_VERBOSE) Log.d(TAG, "@@ ==> B: " + res);
@@ -104,10 +131,10 @@ public class DigisparkHelper {
     }
 
     /**
-     * Reads digispark value.
-     * Synchronous call, blocks till gets the reply.
+     * Synchronous call that reads the sensor value from the Digispark by printing a 'r' on the USB channel and
+     * blocking till it gets the reply.
      *
-     * @return -1 on error. 0 or 1 on success.
+     * @return -1 on error. 0 (no motion) or 1 (motion) on success.
      */
     public int readPirSync(@NonNull UsbDeviceConnection cnx) throws InterruptedException {
         // send t
@@ -166,7 +193,7 @@ public class DigisparkHelper {
                     }
                     if (mUsbDevice == null) {
                         try {
-                            Thread.sleep(250 /*ms*/);
+                            Thread.sleep(500 /*ms*/);
                         } catch (InterruptedException ignore) {
                         }
                     }
@@ -183,13 +210,18 @@ public class DigisparkHelper {
                     mUpdateUsb = false;
                     publishProgress();
 
+                    // Read the sensor about every second till we're done.
+                    // (This is not going to be extremely precise, and there's no need for more control
+                    // on the loop iteration).
+                    final long pause = 1000 /*ms*/ - (mBlinkRepeatedly ? 100 : 0);
                     while (!isCancelled()) {
                         try {
-                            Thread.sleep(250 /*ms*/);
+                            Thread.sleep(pause /*ms*/);
                             if (mBlinkRepeatedly) {
                                 if (!helper.blink(cnx)) {
                                     break;
                                 }
+                                Thread.sleep(100 /*ms*/);
                             }
                             int v = helper.readPirSync(cnx);
                             if (v == -1) {

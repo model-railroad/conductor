@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!--
+        DIGISPARK_VID = 0x16C0 = 5824
+        DIGISPARK_PID = 0x05DF = 1503
+    -->
+    <usb-device vendor-id="5824" product-id="1503" />
+</resources>
