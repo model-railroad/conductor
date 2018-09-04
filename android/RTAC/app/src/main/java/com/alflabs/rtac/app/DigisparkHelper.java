@@ -234,8 +234,16 @@ public class DigisparkHelper {
                             return null; // interrupted on cancel
                         }
                     }
+
+
                 } finally {
                     if (cnx != null) {
+                        try {
+                            // Blink at the end to reset the LED state. This can fail.
+                            helper.blink(cnx);
+                            helper.blink(cnx);
+                        } catch (Exception ignore) {}
+
                         cnx.close();
                     }
                     mUsbDevice = null;

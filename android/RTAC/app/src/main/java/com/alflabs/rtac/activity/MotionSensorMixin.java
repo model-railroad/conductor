@@ -9,6 +9,8 @@ import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.DigisparkHelper;
 import com.alflabs.rtac.service.DataClientMixin;
+import com.alflabs.rx.AndroidSchedulers;
+import com.alflabs.rx.ISubscriber;
 import com.alflabs.utils.ActivityMixin;
 import com.alflabs.utils.IClock;
 
@@ -25,6 +27,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     @Inject IClock mClock;
 
     private MotionSensorTask mTask;
+    private boolean mIsConnected;
 
     @Inject
     public MotionSensorMixin(MainActivity activity) {
@@ -39,11 +42,14 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     public void onResume() {
         super.onResume();
         stopTask();
+        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
         startTask();
     }
 
     public void onPause() {
         super.onPause();
+        mDataClientMixin.getConnectedStream().remove(mConnectedSubscriber);
+        mIsConnected = false;
         stopTask();
     }
 
@@ -55,11 +61,20 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     }
 
     private void startTask() {
-        if (mTask == null && mAppPrefsValues.getConductor_MonitorMotionSensor()) {
+        if (mTask == null && mIsConnected && mAppPrefsValues.getConductor_MonitorMotionSensor()) {
             mTask = new MotionSensorTask(mDataClientMixin, mClock);
             mTask.execute(mDigispark);
         }
     }
+
+    private final ISubscriber<Boolean> mConnectedSubscriber = (stream, key) -> {
+        mIsConnected = key;
+        if (mIsConnected) {
+            startTask();
+        } else {
+            stopTask();
+        }
+    };
 
     private static class MotionSensorTask extends DigisparkHelper.DigisparkTask {
         private final DataClientMixin mDataClientMixin;
