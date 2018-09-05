@@ -19,6 +19,7 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FileOps;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
@@ -70,8 +71,8 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public Analytics provideAnalytics(ILogger logger, FileOps fileOps) {
-        return new Analytics(logger, fileOps);
+    public Analytics provideAnalytics(ILogger logger, FileOps fileOps, KeyValueServer keyValue) {
+        return new Analytics(logger, fileOps, keyValue);
     }
 
     @Singleton

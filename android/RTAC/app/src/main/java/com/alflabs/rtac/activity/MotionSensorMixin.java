@@ -8,6 +8,7 @@ import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.DigisparkHelper;
+import com.alflabs.rtac.service.AnalyticsMixin;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rx.AndroidSchedulers;
 import com.alflabs.rx.ISubscriber;
@@ -23,6 +24,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
 
     @Inject DigisparkHelper mDigispark;
     @Inject DataClientMixin mDataClientMixin;
+    @Inject AnalyticsMixin mAnalyticsMixin;
     @Inject AppPrefsValues mAppPrefsValues;
     @Inject IClock mClock;
 
@@ -62,7 +64,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
 
     private void startTask() {
         if (mTask == null && mIsConnected && mAppPrefsValues.getConductor_MonitorMotionSensor()) {
-            mTask = new MotionSensorTask(mDataClientMixin, mClock);
+            mTask = new MotionSensorTask(mDataClientMixin, mAnalyticsMixin, mClock);
             mTask.execute(mDigispark);
         }
     }
@@ -78,15 +80,20 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
 
     private static class MotionSensorTask extends DigisparkHelper.DigisparkTask {
         private final DataClientMixin mDataClientMixin;
+        private final AnalyticsMixin mAnalyticsMixin;
         private final IClock mClock;
         private final IKeyValue mKeyValue;
-        private boolean mLastValue;
+        private boolean mLastMotion;
         private long mOnTS;
-        private long mLastOnMS;
+        private long mLastOnSec;
 
-        private MotionSensorTask(DataClientMixin dataClientMixin, IClock clock) {
+        private MotionSensorTask(
+                DataClientMixin dataClientMixin,
+                AnalyticsMixin analyticsMixin,
+                IClock clock) {
             super(true /* blinkRepeatedly */);
             mDataClientMixin = dataClientMixin;
+            mAnalyticsMixin = analyticsMixin;
             mClock = clock;
             mKeyValue = mDataClientMixin.getKeyValueClient();
         }
@@ -100,31 +107,38 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         @Override
         @WorkerThread
         protected void onNewDevice() {
-            // no-op
+            mAnalyticsMixin.sendEvent("Motion", "Start", "", "RTAC");
         }
 
         @Override
         @WorkerThread
-        protected void onNewValue(boolean value) {
-            boolean changed = value != mLastValue;
+        protected void onNewValue(boolean motion) {
+            boolean changed = motion != mLastMotion;
             if (changed) {
-                mLastValue = value;
-                if (DEBUG && value) {
+                mLastMotion = motion;
+                if (motion) {
+                    // off to on
+                    mAnalyticsMixin.sendEvent("Motion", "On", "", "RTAC");
+                } else {
+                    // on to off
+                    mAnalyticsMixin.sendEvent("Motion", "Off", "", "RTAC", (int) mLastOnSec);
+                }
+                if (DEBUG && motion) {
                     mOnTS = mClock.elapsedRealtime();
                 }
             }
 
             if (DEBUG) {
-                if (value) {
-                    mLastOnMS = (mClock.elapsedRealtime() - mOnTS) / 1000;
+                if (motion) {
+                    mLastOnSec = (mClock.elapsedRealtime() - mOnTS) / 1000;
                 }
-                mDataClientMixin.setMotionStatus(false, "[" + (value ? '^' : '_') + " " + mLastOnMS + "]");
+                mDataClientMixin.setMotionStatus(false, "[" + (motion ? '^' : '_') + " " + mLastOnSec + "]");
             } else if (changed) {
-                mDataClientMixin.setMotionStatus(false, value ? "[^]" : "[_]");
+                mDataClientMixin.setMotionStatus(false, motion ? "[^]" : "[_]");
             }
 
             if (changed) {
-                mKeyValue.putValue(Constants.RtacMotion, value ? Constants.On : Constants.Off, true /* broadcast */);
+                mKeyValue.putValue(Constants.RtacMotion, motion ? Constants.On : Constants.Off, true /* broadcast */);
             }
         }
 
@@ -141,6 +155,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         protected void onCancelled() {
             super.onCancelled();
             mDataClientMixin.setMotionStatus(false, "Motion Stopped");
+            mAnalyticsMixin.sendEvent("Motion", "Stop", "", "RTAC");
         }
     }
 }

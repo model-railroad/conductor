@@ -49,9 +49,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Singleton
 public class DataClientMixin extends ServiceMixin<RtacService> {
-    public static final String NSD_PREFIX = "[NSD] ";
     private static final String TAG = DataClientMixin.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
+
+    public static final String NSD_PREFIX = "[NSD] ";
 
     private final AtomicBoolean mKeepConnected = new AtomicBoolean();
     private final DataClientStatus mStatus = new DataClientStatus();

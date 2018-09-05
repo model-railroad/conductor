@@ -1,6 +1,8 @@
 package com.alflabs.conductor.util;
 
 import com.alflabs.annotations.NonNull;
+import com.alflabs.kv.IKeyValue;
+import com.alflabs.manifest.Constants;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
@@ -37,14 +39,16 @@ public class Analytics {
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
+    private final IKeyValue mKeyValue;
     private final ExecutorService mExecutorService;
 
     private String mTrackingId = null;
 
     @Inject
-    public Analytics(ILogger logger, FileOps fileOps) {
+    public Analytics(ILogger logger, FileOps fileOps, IKeyValue keyValue) {
         mLogger = logger;
         mFileOps = fileOps;
+        mKeyValue = keyValue;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
@@ -69,6 +73,7 @@ public class Analytics {
             idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
         }
         mTrackingId = idOrFile;
+        mKeyValue.putValue(Constants.GAId, idOrFile, true /*broadcast*/);
         mLogger.d(TAG, "Tracking ID: " + mTrackingId);
     }
 
@@ -77,7 +82,7 @@ public class Analytics {
             @NonNull String action,
             @NonNull String label,
             @NonNull String user_) {
-        if (mTrackingId == null) {
+        if (mTrackingId == null || mTrackingId.isEmpty()) {
             mLogger.d(TAG, "No Tracking ID");
             return;
         }

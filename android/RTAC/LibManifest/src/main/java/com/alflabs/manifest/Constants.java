@@ -37,6 +37,8 @@ public final class Constants {
     public static final String RtacMotion  = Prefix.Var + "rtac-motion";
     public static final String RtacPsaText = Prefix.Var + "rtac-psa-text";
 
+    public static final String GAId= Prefix.Var + "$ga-id$";
+
     public static final String EStopKey = Prefix.Var + "$estop-state$";
     public enum EStopState {
         NORMAL,
