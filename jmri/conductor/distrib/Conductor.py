@@ -160,8 +160,13 @@ class JmriSensorAdapter(IJmriSensor):
 
     def setActive(self, active):
         """In: boolean; Out: void"""
-        # Note: setActive is designed for the dev simulator and is to be ignored for JMRI.
-        print "[Conductor] Ignoring SetActive for sensor ", self._name
+        print "[Conductor Sensor", self._name, "] set to ", active
+        if self._sensor is None:
+            print "[Conductor] No Sensor for ", self._name
+        elif active:
+            self._sensor.knownState = jmri.Sensor.ACTIVE
+        elif not active:
+            self._sensor.knownState = jmri.Sensor.INACTIVE
 
     def toString(self):
         """In: void; Out: String"""
