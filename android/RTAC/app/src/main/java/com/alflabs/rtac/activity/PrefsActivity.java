@@ -119,6 +119,9 @@ public class PrefsActivity extends PreferenceActivity {
 
         PreferenceCategory fakeHeader;
 
+        // IMPORTANT: For tablet layout, create a custom PreferenceFragment below
+        // and modify xml/prefs_headers.xml to match changes here.
+
         fakeHeader = new PreferenceCategory(this);
         fakeHeader.setTitle("System");
         getPreferenceScreen().addPreference(fakeHeader);
@@ -285,6 +288,20 @@ public class PrefsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.prefs_jmri);
+            bindAllTextFields(getPreferenceManager());
+        }
+    }
+
+    /**
+     * This fragment shows general preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class ConductorPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.prefs_conductor);
             bindAllTextFields(getPreferenceManager());
         }
     }

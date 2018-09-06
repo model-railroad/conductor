@@ -7,8 +7,12 @@
         android:title="System"/>
 
     <header
-        android:fragment="com.alflabs.rtac.activity.PrefsActivity$JmriPreferenceFragment"
-        android:title="JMRI"/>
+        android:fragment="com.alflabs.rtac.activity.PrefsActivity$ConductorPreferenceFragment"
+        android:title="Conductor"/>
+
+    <header
+            android:fragment="com.alflabs.rtac.activity.PrefsActivity$JmriPreferenceFragment"
+            android:title="JMRI"/>
 
     <header
         android:fragment="com.alflabs.rtac.activity.PrefsActivity$DataServerPreferenceFragment"
