@@ -25,6 +25,9 @@ import com.alflabs.rtac.nsd.DiscoveryListener;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.rtac.service.KVClientStatsListener;
 import com.alflabs.rtac.service.WakeWifiLockMixin;
+import com.alflabs.rx.IStream;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.MockClock;
@@ -83,6 +86,9 @@ public class AppMockComponent extends MainApp {
         };
 
         DataClientMixin dataClientMixin = mock(DataClientMixin.class);
+        when(dataClientMixin.getStatusStream()).thenReturn(Streams.<DataClientMixin.DataClientStatus>stream().on(Schedulers.sync()));
+        when(dataClientMixin.getConnectedStream()).thenReturn(Streams.<Boolean>stream().on(Schedulers.sync()));
+        when(dataClientMixin.getKeyChangedStream()).thenReturn(Streams.<String>stream().on(Schedulers.sync()));
 
         AppDataModule appDataModule = new AppDataModule() {
             @NonNull
