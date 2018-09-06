@@ -52,6 +52,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -625,10 +626,11 @@ public class ScriptParser2Test {
                         "S/bl-toggle", "S/pa-toggle",
                         "V/$estop-state$",
                         "V/bl-counter", "V/bl-status",
-                        "V/pa-counter", "V/pa-status" });
+                        "V/pa-counter", "V/pa-status",
+                        "V/rtac-psa-text" });
 
         assertThat(sortedValues.toArray()).isEqualTo(new String[]
-                { "0", "0", "1", "2", "300", "NORMAL", "OFF", "OFF", "init",
+                { "0", "0", "1", "2", "300", "Loading...", "NORMAL", "OFF", "OFF", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
                                 "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"counterKey\":\"V/bl-counter\",\"throttleKey\":\"D/200\"}," +
@@ -1659,5 +1661,26 @@ public class ScriptParser2Test {
         engine.onExecHandle();
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle, never()).setSound(anyBoolean());
+    }
+
+    @Test
+    public void testBuiltInVariables() throws IOException {
+        String source = "";
+        Script script = mFakeNowScriptComponent.createScriptParser2().parse(source);
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        Var rtacText = script.getVar("RTAC-PSA-Text");
+        assertThat(rtacText).isNotNull();
+        assertThat(rtacText.get()).isEqualTo("Loading...");
+        assertThat(rtacText.isExported()).isTrue();
+        assertThat(rtacText.isImported()).isFalse();
+
+        Enum_ rtacMotion = script.getEnum("RTAC-Motion");
+        assertThat(rtacMotion).isNotNull();
+        assertThat(rtacMotion.get()).isEqualTo("off");
+        assertThat(rtacMotion.isExported()).isFalse();
+        assertThat(rtacMotion.isImported()).isTrue();
     }
 }

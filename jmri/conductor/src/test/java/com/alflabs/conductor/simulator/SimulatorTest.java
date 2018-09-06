@@ -29,6 +29,8 @@ import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FileOps;
@@ -92,6 +94,8 @@ public class SimulatorTest {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
+        when(mKeyValue.getChangedStream()).thenReturn(Streams.<String>stream().on(Schedulers.sync()));
+
         mFakeClock = new FakeClock(1000);
 
         IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
@@ -109,8 +113,7 @@ public class SimulatorTest {
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = fakeNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, mKeyValue));
+        mScriptComponent = fakeNowComponent.newScriptComponent(new ScriptModule(mReporter, mKeyValue));
         mSimulator = new Simulator(mLogger, mClock);
     }
 

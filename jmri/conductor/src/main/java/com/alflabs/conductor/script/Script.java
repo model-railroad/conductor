@@ -21,9 +21,12 @@ package com.alflabs.conductor.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.Logger;
+import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
+import com.google.common.collect.ImmutableList;
+import com.google.googlejavaformat.Indent;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -55,6 +58,8 @@ public class Script {
 
     private final Logger mLogger;
     private final EStopHandler mEStopHandler;
+    private final EnumFactory mEnumFactory;
+    private final VarFactory mVarFactory;
     private final TreeMap<String, Throttle> mThrottles = new TreeMap<>();
     private final TreeMap<String, Enum_> mEnums = new TreeMap<>();
     private final TreeMap<String, Var> mVars = new TreeMap<>();
@@ -66,9 +71,30 @@ public class Script {
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
-    public Script(Logger logger, EStopHandler eStopHandler) {
+    public Script(
+            Logger logger,
+            EStopHandler eStopHandler,
+            EnumFactory enumFactory,
+            VarFactory varFactory) {
         mLogger = logger;
         mEStopHandler = eStopHandler;
+        mEnumFactory = enumFactory;
+        mVarFactory = varFactory;
+
+        createBuiltinVariables();
+    }
+
+    /** Create built-in variables shared with RTAC so that the script can use them. */
+    private void createBuiltinVariables() {
+        String varName = "RTAC-PSA-Text";
+        Var rtacText = mVarFactory.create("Loading...", varName.toLowerCase(Locale.US));
+        rtacText.setExported(true);
+        addVar(varName, rtacText);
+
+        String enumName = Constants.RtacMotion.substring(Prefix.Var.length() );
+        Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Off, Constants.On), enumName);
+        rtacMotion.setImported(true);
+        addEnum(enumName, rtacMotion);
     }
 
     public Logger getLogger() {

@@ -38,10 +38,9 @@ Sensor PA-TOGGLE  = NS50      # 48:3
 Turnout T1        = NT01
 
 
-# RTAC variables
-
-Import Export Enum RTAC-Motion = Off On
-Import Export String RTAC-PSA-Text = "Automation Not Working"
+# RTAC variables are built-in and do not need to be defined.
+# Import Enum RTAC-Motion = Off On
+# Export String RTAC-PSA-Text = "Automation Not Working"
 
 
 # define timers and their default value in seconds

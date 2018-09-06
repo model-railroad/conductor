@@ -42,11 +42,11 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
     private ISubscriber<String> mImportSubscriber;
 
     public Enum_(Collection<String> values,
-                 String scriptName,
+                 String enumName,
                  @Provided IKeyValue keyValue) {
         mValues.addAll(values.stream().map(String::toLowerCase).collect(Collectors.toList()));
         mValue = mValues.get(0);
-        mKeyName = Prefix.Var + scriptName;
+        mKeyName = Prefix.Var + enumName;
         mKeyValue = keyValue;
     }
 

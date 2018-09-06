@@ -39,12 +39,12 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     private ISubscriber<String> mImportSubscriber;
 
     public Var(int intValue,
-               String scriptName,
+               String varName,
                @Provided IKeyValue keyValue) {
         mInitialStringValue = null;
         mInitialIntValue = intValue;
         mIntValue = intValue;
-        mKeyName = Prefix.Var + scriptName;
+        mKeyName = Prefix.Var + varName;
         mKeyValue = keyValue;
     }
 
