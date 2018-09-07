@@ -121,7 +121,7 @@ public class StatusFragment extends Fragment {
         assert dataClientStatus != null;
         String text = dataClientStatus.getText();
         String motion = dataClientStatus.getMotion();
-        text = String.format(" %s %s",
+        text = String.format("%s -- %s",
                 text == null || text.isEmpty() ? "^_^" : text,
                 motion == null ? "" : motion);
         mStatusText.setText(text);

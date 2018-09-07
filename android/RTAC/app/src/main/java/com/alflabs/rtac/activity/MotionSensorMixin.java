@@ -30,6 +30,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
 
     private MotionSensorTask mTask;
     private boolean mIsConnected;
+    private boolean mHasKeyChangedSubscriber;
 
     @Inject
     public MotionSensorMixin(MainActivity activity) {
@@ -60,12 +61,26 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
             mTask.cancel(true /*interrupt*/);
             mTask = null;
         }
+        if (mHasKeyChangedSubscriber) {
+            mDataClientMixin.getKeyChangedStream().remove(mKeyChangedSubscriber);
+            mHasKeyChangedSubscriber = false;
+        }
     }
 
     private void startTask() {
-        if (mTask == null && mIsConnected && mAppPrefsValues.getConductor_MonitorMotionSensor()) {
+        boolean runMonitor = mAppPrefsValues.getConductor_MonitorMotionSensor();
+
+        if (mTask == null && runMonitor && mIsConnected) {
             mTask = new MotionSensorTask(mDataClientMixin, mAnalyticsMixin, mClock);
             mTask.execute(mDigispark);
+
+        } else if (mTask == null && runMonitor && !mIsConnected) {
+            mDataClientMixin.getKeyValueClient().putValue(Constants.RtacMotion, Constants.Disabled, true /* broadcast */);
+            mDataClientMixin.setMotionStatus(false, "Motion Disconnected");
+
+        } else if (!runMonitor && !mHasKeyChangedSubscriber) {
+            mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+            mHasKeyChangedSubscriber = true;
         }
     }
 
@@ -76,6 +91,24 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         } else {
             stopTask();
         }
+    };
+
+    private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
+        if (!Constants.RtacMotion.equals(key)) {
+            return;
+        }
+        if (mDataClientMixin.getKeyValueClient() == null) {
+            return;
+        }
+        String value = mDataClientMixin.getKeyValueClient().getValue(key);
+        if (value == null) {
+            return;
+        }
+
+        mDataClientMixin.setMotionStatus(false,
+                Constants.Disabled.equalsIgnoreCase(value) ? "Motion Disabled"
+                : (Constants.On.equalsIgnoreCase(value) ? "Motion ON"
+                    : "Motion Off"));
     };
 
     private static class MotionSensorTask extends DigisparkHelper.DigisparkTask {
@@ -154,6 +187,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         @Override
         protected void onCancelled() {
             super.onCancelled();
+            mKeyValue.putValue(Constants.RtacMotion, Constants.Disabled, true /* broadcast */);
             mDataClientMixin.setMotionStatus(false, "Motion Stopped");
             mAnalyticsMixin.sendEvent("Motion", "Stop", "", "RTAC");
         }
