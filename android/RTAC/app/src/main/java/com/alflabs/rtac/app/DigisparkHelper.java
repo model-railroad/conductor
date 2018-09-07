@@ -53,6 +53,7 @@ public class DigisparkHelper {
 
     private static final int REQ_OUT = UsbConstants.USB_TYPE_CLASS + UsbConstants.USB_DIR_OUT;
     private static final int REQ_IN  = UsbConstants.USB_TYPE_CLASS + UsbConstants.USB_DIR_IN;
+    private static final int POLL_INTERVAL_MS = 1000;
 
     @NonNull
     private final Context mContext;
@@ -212,8 +213,8 @@ public class DigisparkHelper {
 
                     // Read the sensor about every second till we're done.
                     // (This is not going to be extremely precise, and there's no need for more control
-                    // on the loop iteration).
-                    final long pause = 1000 /*ms*/ - (mBlinkRepeatedly ? 100 : 0);
+                    // on the loop iteration). Remove 100 ms since the blink operation takes 100 ms.
+                    final long pause = POLL_INTERVAL_MS - (mBlinkRepeatedly ? 100 /*ms*/ : 0);
                     while (!isCancelled()) {
                         try {
                             Thread.sleep(pause /*ms*/);

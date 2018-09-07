@@ -104,6 +104,7 @@ public class MainActivity extends Activity {
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.main_activity);
         setupActionBar();
+        setupTitle();
 
         getComponent().inject(this);
 
@@ -155,6 +156,11 @@ public class MainActivity extends Activity {
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
+
+    private void setupTitle() {
+        setTitle(getTitle() + " v" + BuildConfig.VERSION_NAME);
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
