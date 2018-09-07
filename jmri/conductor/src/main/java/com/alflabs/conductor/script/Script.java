@@ -92,7 +92,7 @@ public class Script {
         addVar(varName, rtacText);
 
         String enumName = Constants.RtacMotion.substring(Prefix.Var.length() );
-        Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Off, Constants.On), enumName);
+        Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Disabled, Constants.Off, Constants.On), enumName);
         rtacMotion.setImported(true);
         addEnum(enumName, rtacMotion);
     }

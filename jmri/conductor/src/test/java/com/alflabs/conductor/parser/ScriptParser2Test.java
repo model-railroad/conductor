@@ -1679,7 +1679,7 @@ public class ScriptParser2Test {
 
         Enum_ rtacMotion = script.getEnum("RTAC-Motion");
         assertThat(rtacMotion).isNotNull();
-        assertThat(rtacMotion.get()).isEqualTo("off");
+        assertThat(rtacMotion.get()).isEqualTo("disabled");
         assertThat(rtacMotion.isExported()).isFalse();
         assertThat(rtacMotion.isImported()).isTrue();
     }
