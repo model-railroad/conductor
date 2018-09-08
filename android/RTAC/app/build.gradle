@@ -23,7 +23,7 @@ android {
 
     defaultConfig {
         applicationId "com.alflabs.rtac"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1002
         versionName "1.2"

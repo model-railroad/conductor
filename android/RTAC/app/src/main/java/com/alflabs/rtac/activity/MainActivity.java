@@ -18,6 +18,7 @@
 
 package com.alflabs.rtac.activity;
 
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -25,6 +26,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
@@ -38,6 +40,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import com.alflabs.dagger.ActivityScope;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
@@ -106,6 +109,7 @@ public class MainActivity extends FragmentActivity {
         return ((MainActivity) context).getComponent();
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreate");
@@ -117,6 +121,21 @@ public class MainActivity extends FragmentActivity {
 
         getComponent().inject(this);
         mMotionSensorMixin.onCreate();
+
+        // Modify UI insets (normally applied using android:fitsSystemWindows="true" in the view layout
+        // in order to cancel the insert that the stable layout leaves in place of the bottom nav bar.
+        // Combined with the API 21 translucent nav bar, it allows it to be hidden and shown on *top*
+        // of the layout without resizing the layout.
+        View root = findViewById(R.id.root);
+        root.setOnApplyWindowInsetsListener((v, insets) -> {
+            insets = insets.replaceSystemWindowInsets(
+                    insets.getSystemWindowInsetLeft(),
+                    insets.getSystemWindowInsetTop(),
+                    insets.getSystemWindowInsetRight(),
+                    0 /* insets.getSystemWindowInsetBottom() */
+            );
+            return root.onApplyWindowInsets(insets);
+        });
 
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new RtacFragmentAdapter(getSupportFragmentManager());
@@ -220,8 +239,15 @@ public class MainActivity extends FragmentActivity {
         if (mAppPrefsValues.getSystem_HideNavigation()) {
             final View root = getWindow().getDecorView();
             final int visibility =
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                            (Utils.getApiLevel() < 19 ? 0 : View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    (Utils.getApiLevel() < 19 ? 0 : View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+            // Note: combine with API 21 style.xml to give the nav bar a translucent background
+            // to allow the nav bar to show up on top of the layout without resizing it.
+            // Combine with onApplyWindowInsets() above to let the layout cover the nav bar area.
+
             if (DEBUG) Log.d(TAG, "initial setSystemUiVisibility to " + visibility);
             root.setSystemUiVisibility(visibility);
             root.setOnSystemUiVisibilityChangeListener(newVisibility -> {
