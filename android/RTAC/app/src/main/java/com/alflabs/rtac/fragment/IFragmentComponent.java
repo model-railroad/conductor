@@ -33,6 +33,7 @@ public interface IFragmentComponent {
     void inject(StatusFragment statusFragment);
     void inject(RoutesFragment routesFragment);
     void inject(EStopFragment eStopFragment);
-    void inject(MapFragment mapFragment);
     void inject(DebugFragment debugFragment);
+    void inject(PsaTextFragment mapFragment);
+    void inject(MapFragment mapFragment);
 }

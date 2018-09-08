@@ -172,8 +172,12 @@ PA-State == Error ->
     AM  Sound = 0; AM Light = 0;
     SP Sound = 0; SP Light = 0;
     GA-Event Category: Automation, Action: Error,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:red}{c:white}Automation ERROR" ;
     ESTOP
 
+# For DEBUG
+BL-Toggle  -> PA-State = Error
+!BL-Toggle -> PA-State = Idle
 
 # --- PA State: Idle
 
@@ -208,6 +212,8 @@ PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
 PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
 !PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
 
+PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
+!PA-Toggle -> RTAC-PSA-Text = "{c:red}Automation Stopped"
 
 # --- PA State: Manual
 
@@ -231,7 +237,7 @@ PA-State == Manual & PA-Manual == In370 & !B370 ->
 
 # Departure from Station (going up)
 # REQUIRES both trains on B503b/B311 and stopped.
-PA-State == Station & !B320 & B311 & B503b & PA-Toggle & AM Stopped & SP Stopped & PA-Run3 ->
+PA-State == Station & !B320 & B311 & B503b & AM Stopped & SP Stopped & PA-Run3 ->
     PA-State = Starting
 
 PA-State == Starting ->
@@ -240,8 +246,15 @@ PA-State == Starting ->
     GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
     Reset Timers
 
-PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up
-PA-State == Starting & PA-Train == Short  -> PA-State = SP-Up
+PA-State == Station & PA-Toggle & PA-Train == Amtrak ->
+                                             RTAC-PSA-Text = "Next Train:\n\nAmtrack"
+PA-State == Station & PA-Toggle & PA-Train == Short  ->
+                                             RTAC-PSA-Text = "Next Train:\n\nDoodlebug"
+
+PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up ;
+                                             RTAC-PSA-Text = "Currently Running:\n\nAmtrack"
+PA-State == Starting & PA-Train == Short  -> PA-State = SP-Up ;
+                                             RTAC-PSA-Text = "Currently Running:\n\nDoodlebug"
 
 PA-State == Station & !PA-Toggle ->
     Reset Timers ;

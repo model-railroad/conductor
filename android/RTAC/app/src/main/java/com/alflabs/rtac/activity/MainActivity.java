@@ -35,17 +35,16 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowInsets;
 import com.alflabs.dagger.ActivityScope;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.MainApp;
+import com.alflabs.rtac.fragment.PsaTextFragment;
 import com.alflabs.rtac.fragment.MapFragment;
 import com.alflabs.rtac.service.RtacService;
 import com.alflabs.utils.ILogger;
@@ -309,9 +308,14 @@ public class MainActivity extends FragmentActivity {
 
     //----
 
+    /**
+     * Simplified Fragment Pager Adapter.
+     * For now only deal with 2 fragments: First one is the info fragment and 2nd is the map fragment.
+     * <p/>
+     * Future extension: allow more than one map. Adapter should start with no maps and map fragments
+     * should be added as maps are behind created dynamically. This is not the current case for simplification.
+     */
     public static class RtacFragmentAdapter extends FragmentPagerAdapter {
-
-        private SparseArray<Fragment> mFragments = new SparseArray<>();
 
         public RtacFragmentAdapter(FragmentManager manager) {
             super(manager);
@@ -319,22 +323,33 @@ public class MainActivity extends FragmentActivity {
 
         @Override
         public int getCount() {
-            return 1;
+            return 2;
         }
 
         @Override
         public Fragment getItem(int position) {
-            Fragment f = mFragments.get(position);
-            if (f == null) {
-                f = MapFragment.newInstance();
-                mFragments.put(position, f);
+            switch (position) {
+            case 0:
+                return PsaTextFragment.newInstance();
+            case 1:
+                return MapFragment.newInstance();
+            default:
+                // Should not happen
+                return null;
             }
-            return f;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return "Map " + (1 + position);
+            switch (position) {
+            case 0:
+                return "Information";
+            case 1:
+                return "Map";
+            default:
+                // Should not happen
+                return null;
+            }
         }
     }
 

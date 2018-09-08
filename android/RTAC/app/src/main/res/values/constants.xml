@@ -4,4 +4,6 @@
     <dimen name="route_dir_text_size">20sp</dimen>
     <dimen name="route_speed_text_size">24sp</dimen>
     <dimen name="route_status_text_size">16sp</dimen>
+
+    <dimen name="psa_text_size">20sp</dimen>
 </resources>
