@@ -25,31 +25,13 @@
             android:layout_toRightOf="@id/routes_fragment" />
 
     <fragment
-            android:id="@+id/status_fragment"
-            android:name="com.alflabs.rtac.fragment.StatusFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/routes_sep"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
-
-    <View
-            android:id="@+id/status_sep"
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_toRightOf="@id/routes_sep"
-            android:layout_alignParentRight="true"
-            android:layout_below="@id/status_fragment" />
-
-    <fragment
             android:id="@+id/estop_fragment"
             android:name="com.alflabs.rtac.fragment.EStopFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/routes_sep"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/status_sep" />
+            android:layout_alignParentTop="true" />
 
     <View
             android:id="@+id/estop_sep"
@@ -61,13 +43,37 @@
             android:layout_below="@id/estop_fragment" />
 
     <fragment
-            android:id="@+id/map_fragment"
-            android:name="com.alflabs.rtac.fragment.MapFragment"
+            android:id="@+id/status_fragment"
+            android:name="com.alflabs.rtac.fragment.StatusFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/routes_sep"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/estop_sep" />
+
+    <View
+            android:id="@+id/status_sep"
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_toRightOf="@id/routes_sep"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/status_fragment" />
+
+    <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
             android:layout_gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_toRightOf="@id/routes_sep"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/estop_sep" />
+            android:layout_below="@id/status_sep" >
+        <!-- Note: PagerTabStrip = clickable tab header, PagerTitleStrip = non clickable header. -->
+        <android.support.v4.view.PagerTitleStrip
+                android:id="@+id/pager_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+    </android.support.v4.view.ViewPager>
 
 </RelativeLayout>

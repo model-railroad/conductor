@@ -20,9 +20,9 @@ package com.alflabs.rtac.fragment;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -56,6 +56,10 @@ public class MapFragment extends Fragment {
     private boolean mIsConnected;
 
     private SvgMapView mSvgMapView;
+
+    public static MapFragment newInstance() {
+        return new MapFragment();
+    }
 
     public MapFragment() {
         if (DEBUG) Log.d(TAG, "new fragment");

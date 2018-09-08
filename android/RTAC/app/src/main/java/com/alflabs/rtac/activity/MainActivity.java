@@ -19,7 +19,6 @@
 package com.alflabs.rtac.activity;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -28,7 +27,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,6 +43,7 @@ import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.MainApp;
+import com.alflabs.rtac.fragment.MapFragment;
 import com.alflabs.rtac.service.RtacService;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.Utils;
@@ -46,7 +52,7 @@ import com.google.common.base.Preconditions;
 import javax.inject.Inject;
 
 @ActivityScope
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -58,6 +64,9 @@ public class MainActivity extends Activity {
     private IMainActivityComponent mComponent;
     private RtacService.LocalBinder mServiceBinder;
     private boolean mServiceBound;
+
+    private ViewPager mPager;
+    private RtacFragmentAdapter mPagerAdapter;
 
     //----
 
@@ -107,8 +116,12 @@ public class MainActivity extends Activity {
         setupTitle();
 
         getComponent().inject(this);
-
         mMotionSensorMixin.onCreate();
+
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPagerAdapter = new RtacFragmentAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mPagerAdapter);
+        mPager.setCurrentItem(0);
     }
 
     @Override
@@ -269,5 +282,34 @@ public class MainActivity extends Activity {
     }
 
     //----
+
+    public static class RtacFragmentAdapter extends FragmentPagerAdapter {
+
+        private SparseArray<Fragment> mFragments = new SparseArray<>();
+
+        public RtacFragmentAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public int getCount() {
+            return 1;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment f = mFragments.get(position);
+            if (f == null) {
+                f = MapFragment.newInstance();
+                mFragments.put(position, f);
+            }
+            return f;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return "Map " + (1 + position);
+        }
+    }
 
 }

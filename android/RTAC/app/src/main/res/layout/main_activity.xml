@@ -21,17 +21,6 @@
             android:layout_height="1dp" />
 
     <fragment
-            android:id="@+id/status_fragment"
-            android:name="com.alflabs.rtac.fragment.StatusFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-    <View
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="1dp" />
-
-    <fragment
             android:id="@+id/estop_fragment"
             android:name="com.alflabs.rtac.fragment.EStopFragment"
             android:layout_width="match_parent"
@@ -43,11 +32,27 @@
             android:layout_height="1dp" />
 
     <fragment
-            android:id="@+id/map_fragment"
-            android:name="com.alflabs.rtac.fragment.MapFragment"
+            android:id="@+id/status_fragment"
+            android:name="com.alflabs.rtac.fragment.StatusFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <View
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+    <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
             android:layout_gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="1" >
+        <android.support.v4.view.PagerTitleStrip
+                android:id="@+id/pager_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+    </android.support.v4.view.ViewPager>
 
 </LinearLayout>
