@@ -23,6 +23,7 @@ import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.app.AppMockComponent;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rx.Schedulers;
@@ -57,7 +58,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class,
-        sdk = 19,
+        sdk = RtacTestConfig.ROBOELECTRIC_SDK,
         manifest = "src/main/AndroidManifest.xml",
         application = AppMockComponent.class)
 public class DiscoveryListenerTest {

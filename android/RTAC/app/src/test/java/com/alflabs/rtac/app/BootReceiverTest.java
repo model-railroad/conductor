@@ -20,6 +20,7 @@ package com.alflabs.rtac.app;
 
 import android.content.Intent;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.activity.MainActivity;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +32,7 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
+@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
 public class BootReceiverTest {
 
     @Test

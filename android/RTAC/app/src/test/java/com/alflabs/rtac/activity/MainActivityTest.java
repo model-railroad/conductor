@@ -20,6 +20,7 @@ package com.alflabs.rtac.activity;
 
 import android.view.View;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.RtacTestConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.when;
  * A version of the MainActivity test that uses the real IAppComponent and the real IMainActivityComponent.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
+@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
 public class MainActivityTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 

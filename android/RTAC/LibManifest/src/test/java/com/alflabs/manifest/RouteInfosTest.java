@@ -80,7 +80,7 @@ public class RouteInfosTest {
     }
 
     @Test
-    public void testFromJson() throws Exception {
+    public void testFromJson3() throws Exception {
         RouteInfos rs = RouteInfos.parseJson("{\"routeInfos\":[" +
                 "{\"name\":\"Route 1\",\"toggleKey\":\"S/PA-Toggle\",\"statusKey\":\"V/PA-State\",\"counterKey\":\"V/PA-Counter\",\"throttleKey\":\"D/204\"}," +
                 "{\"name\":\"Route 2\",\"toggleKey\":\"S/BL-Toggle\",\"statusKey\":\"V/BL-State\",\"counterKey\":\"V/BL-Counter\",\"throttleKey\":\"D/10\"}]}");

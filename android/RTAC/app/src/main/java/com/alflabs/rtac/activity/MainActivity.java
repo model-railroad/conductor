@@ -108,7 +108,6 @@ public class MainActivity extends FragmentActivity {
         return ((MainActivity) context).getComponent();
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreate");
@@ -125,16 +124,18 @@ public class MainActivity extends FragmentActivity {
         // in order to cancel the insert that the stable layout leaves in place of the bottom nav bar.
         // Combined with the API 21 translucent nav bar, it allows it to be hidden and shown on *top*
         // of the layout without resizing the layout.
-        View root = findViewById(R.id.root);
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            insets = insets.replaceSystemWindowInsets(
-                    insets.getSystemWindowInsetLeft(),
-                    insets.getSystemWindowInsetTop(),
-                    insets.getSystemWindowInsetRight(),
-                    0 /* insets.getSystemWindowInsetBottom() */
-            );
-            return root.onApplyWindowInsets(insets);
-        });
+        if (Utils.getApiLevel() >= 21) {
+            View root = findViewById(R.id.root);
+            root.setOnApplyWindowInsetsListener((v, insets) -> {
+                insets = insets.replaceSystemWindowInsets(
+                        insets.getSystemWindowInsetLeft(),
+                        insets.getSystemWindowInsetTop(),
+                        insets.getSystemWindowInsetRight(),
+                        0 /* insets.getSystemWindowInsetBottom() */
+                );
+                return root.onApplyWindowInsets(insets);
+            });
+        }
 
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new RtacFragmentAdapter(getSupportFragmentManager());

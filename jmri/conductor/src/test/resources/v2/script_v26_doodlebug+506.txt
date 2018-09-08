@@ -218,6 +218,7 @@ PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
 # --- PA State: Manual
 
 PA-State == Station & B320 ->
+    RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused" ;
     PA-State = Manual ; 
     PA-Manual = Up ; 
     AM Horn ; 
@@ -247,14 +248,14 @@ PA-State == Starting ->
     Reset Timers
 
 PA-State == Station & PA-Toggle & PA-Train == Amtrak ->
-                                             RTAC-PSA-Text = "Next Train:\n\nAmtrack"
+                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrack"
 PA-State == Station & PA-Toggle & PA-Train == Short  ->
-                                             RTAC-PSA-Text = "Next Train:\n\nDoodlebug"
+                                             RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nDoodlebug"
 
 PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up ;
-                                             RTAC-PSA-Text = "Currently Running:\n\nAmtrack"
+                                             RTAC-PSA-Text = "{c:blue}Currently Running:\n\nAmtrack"
 PA-State == Starting & PA-Train == Short  -> PA-State = SP-Up ;
-                                             RTAC-PSA-Text = "Currently Running:\n\nDoodlebug"
+                                             RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nDoodlebug"
 
 PA-State == Station & !PA-Toggle ->
     Reset Timers ;

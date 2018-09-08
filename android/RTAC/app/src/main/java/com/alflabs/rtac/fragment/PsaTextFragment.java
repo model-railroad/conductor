@@ -25,6 +25,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -182,13 +183,10 @@ public class PsaTextFragment extends Fragment {
             text = "{b:red}{c:white}Automation Not Working";
         }
 
-        int txColor = Color.BLACK;
-        int bgColor = Color.TRANSPARENT;
-
         String originalText = text;
 
-        // Reminder: search pattern is a regex so "\" must be escaped twice.
-        text = text.replaceAll("\\\\n", "\n");
+        int txColor = Color.BLACK;
+        int bgColor = Color.TRANSPARENT;
 
         while (!text.isEmpty()) {
             text = text.trim();
@@ -217,6 +215,9 @@ public class PsaTextFragment extends Fragment {
                 Log.e(TAG, "Invalid color name {..:" + val + "} in " + originalText);
             }
         }
+
+        // Reminder: search pattern is a regex so "\" must be escaped twice.
+        text = text.replaceAll("\\\\n", "\n");
 
         mMainText.setTextColor(txColor);
         mMainText.setBackgroundColor(bgColor);

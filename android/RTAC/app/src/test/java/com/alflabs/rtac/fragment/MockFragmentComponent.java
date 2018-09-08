@@ -69,4 +69,10 @@ public class MockFragmentComponent implements IFragmentComponent {
         fragment.mDataClientMixin = mDataClientMixin;
         InjectionValidator.check(fragment);
     }
+
+    @Override
+    public void inject(PsaTextFragment fragment) {
+        fragment.mDataClientMixin = mDataClientMixin;
+        InjectionValidator.check(fragment);
+    }
 }

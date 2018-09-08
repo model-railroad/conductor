@@ -20,6 +20,7 @@ package com.alflabs.rtac.activity;
 
 import android.view.View;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.DigisparkHelper;
 import com.alflabs.rtac.fragment.IFragmentComponent;
@@ -53,7 +54,7 @@ import static org.mockito.Mockito.when;
  * into the activity. The IAppComponent is still the real one.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
+@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
 public class CustomActivityComponentTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 

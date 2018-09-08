@@ -20,6 +20,7 @@ package com.alflabs.rtac.fragment;
 
 import android.app.Activity;
 import com.alflabs.rtac.BuildConfig;
+import com.alflabs.rtac.RtacTestConfig;
 import com.caverock.androidsvg.Colour;
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SvgElement;
@@ -51,7 +52,7 @@ import static com.google.common.truth.Truth.assertThat;
  * Test for {@link SvgMapView}.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = 19, manifest = "src/main/AndroidManifest.xml")
+@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
 public class SvgMapViewTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
