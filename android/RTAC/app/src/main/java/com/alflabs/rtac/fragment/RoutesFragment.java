@@ -28,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import com.alflabs.kv.IKeyValue;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.RouteInfo;
@@ -165,13 +166,14 @@ public class RoutesFragment extends Fragment {
 
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
         if (!isVisible() || isDetached() || getView() == null) return;
-        if (mDataClientMixin.getKeyValueClient() == null) return;
+        IKeyValue kvClient = mDataClientMixin.getKeyValueClient();
+        if (kvClient == null) return;
         assert key != null;
-        String value = mDataClientMixin.getKeyValueClient().getValue(key);
+        String value = kvClient.getValue(key);
         if (value == null) return;
 
         if (Constants.RoutesKey.equals(key)) {
-            initializeRoutes(value);
+            initializeRoutes(kvClient, value);
 
         } else {
             for (RouteCell routeCell : mRouteCells) {
@@ -180,7 +182,7 @@ public class RoutesFragment extends Fragment {
         }
     };
 
-    private void initializeRoutes(final String jsonRoutes) {
+    private void initializeRoutes(IKeyValue kvClient, final String jsonRoutes) {
         mCellsRoot.removeAllViews();
         mRouteCells.clear();
 
@@ -197,13 +199,13 @@ public class RoutesFragment extends Fragment {
                     mCellsRoot.addView(sep);
                 }
 
-                RouteCell cell = RouteCell.inflate(inflater, info, mCellsRoot, mDataClientMixin.getKeyValueClient());
+                RouteCell cell = RouteCell.inflate(inflater, info, mCellsRoot, kvClient);
                 mCellsRoot.addView(cell.getView());
                 mRouteCells.add(cell);
 
-                updateCell(cell, info.getStatusKey());
-                updateCell(cell, info.getThrottleKey());
-                updateCell(cell, info.getToggleKey());
+                updateCell(kvClient, cell, info.getStatusKey());
+                updateCell(kvClient, cell, info.getThrottleKey());
+                updateCell(kvClient, cell, info.getToggleKey());
 
                 needsSeparator = true;
             }
@@ -213,7 +215,7 @@ public class RoutesFragment extends Fragment {
         }
     }
 
-    private void updateCell(RouteCell cell, String key) {
-        cell.onKVChanged(key, mDataClientMixin.getKeyValueClient().getValue(key));
+    private void updateCell(IKeyValue kvClient, RouteCell cell, String key) {
+        cell.onKVChanged(key, kvClient.getValue(key));
     }
 }

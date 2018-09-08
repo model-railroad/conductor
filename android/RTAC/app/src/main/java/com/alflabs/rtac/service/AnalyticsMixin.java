@@ -3,6 +3,7 @@ package com.alflabs.rtac.service;
 import android.util.Log;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
+import com.alflabs.kv.IKeyValue;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
@@ -83,7 +84,7 @@ public class AnalyticsMixin extends ServiceMixin<RtacService> {
         @Override
         public void onReceive(IStream<? extends String> stream, String key) {
             if (Constants.GAId.equals(key)) {
-                KeyValueClient kvClient = mDataClientMixin.getKeyValueClient();
+                IKeyValue kvClient = mDataClientMixin.getKeyValueClient();
                 if (kvClient == null) return;
                 mTrackingId = kvClient.getValue(key);
                 if (DEBUG) Log.d(TAG, "TrackingId = " + mTrackingId);

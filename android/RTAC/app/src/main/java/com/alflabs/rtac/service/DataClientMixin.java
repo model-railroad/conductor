@@ -117,6 +117,7 @@ public class DataClientMixin extends ServiceMixin<RtacService> {
         return mKeyChangedStream;
     }
 
+    /** Returns the current KV client. IMPORTANT: This CAN be null if the client is not started yet. */
     @Null
     public KeyValueClient getKeyValueClient() {
         return mKVClient;

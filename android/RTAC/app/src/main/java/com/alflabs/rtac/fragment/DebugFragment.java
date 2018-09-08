@@ -28,6 +28,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import com.alflabs.kv.IKeyValue;
+import com.alflabs.kv.KeyValueClient;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.activity.MainActivity;
@@ -113,18 +115,19 @@ public class DebugFragment extends Fragment {
 
     private final ISubscriber<String> mKeyChangedSubscriber = (stream, key) -> {
         if (!isVisible()) return;
-        if (mDataClientMixin.getKeyValueClient() == null) return;
+        IKeyValue kvClient = mDataClientMixin.getKeyValueClient();
+        if (kvClient == null) return;
         assert key != null;
-        String value = mDataClientMixin.getKeyValueClient().getValue(key);
+        String value = kvClient.getValue(key);
 
-        debugKVView(key, value);
+        debugKVView(kvClient, key, value);
     };
 
-    private void debugKVView(String key, String value) {
+    private void debugKVView(IKeyValue kvClient, String key, String value) {
         StringBuilder text = new StringBuilder(mDebugView.getText());
 
         if (text.length() == 0) {
-            ArrayList<String> keys = new ArrayList<>(mDataClientMixin.getKeyValueClient().getKeys());
+            ArrayList<String> keys = new ArrayList<>(kvClient.getKeys());
             for (String k : keys) {
                 text.append("[").append(k).append("] = ''\n");
             }
