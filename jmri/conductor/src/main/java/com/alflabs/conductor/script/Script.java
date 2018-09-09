@@ -20,15 +20,21 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
+import com.alflabs.conductor.util.ILocalTimeNowProvider;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.utils.IClock;
 import com.google.common.collect.ImmutableList;
 import com.google.googlejavaformat.Indent;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+import java.time.Clock;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +63,7 @@ import java.util.TreeMap;
 public class Script {
 
     private final Logger mLogger;
+    private final ILocalTimeNowProvider mLocalTimeNow;
     private final EStopHandler mEStopHandler;
     private final EnumFactory mEnumFactory;
     private final VarFactory mVarFactory;
@@ -73,10 +80,12 @@ public class Script {
     @Inject
     public Script(
             Logger logger,
+            ILocalTimeNowProvider localTimeNow,
             EStopHandler eStopHandler,
             EnumFactory enumFactory,
             VarFactory varFactory) {
         mLogger = logger;
+        mLocalTimeNow = localTimeNow;
         mEStopHandler = eStopHandler;
         mEnumFactory = enumFactory;
         mVarFactory = varFactory;
@@ -86,15 +95,26 @@ public class Script {
 
     /** Create built-in variables shared with RTAC so that the script can use them. */
     private void createBuiltinVariables() {
-        String varName = "RTAC-PSA-Text";
-        Var rtacText = mVarFactory.create("Loading...", varName.toLowerCase(Locale.US));
+        String rtacTextName = Constants.RtacPsaText.substring(Prefix.Var.length() );
+        Var rtacText = mVarFactory.create("Loading...", rtacTextName.toLowerCase(Locale.US));
         rtacText.setExported(true);
-        addVar(varName, rtacText);
+        addVar(rtacTextName, rtacText);
 
-        String enumName = Constants.RtacMotion.substring(Prefix.Var.length() );
-        Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Disabled, Constants.Off, Constants.On), enumName);
+        String rtacMotionName = Constants.RtacMotion.substring(Prefix.Var.length() );
+        Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Disabled, Constants.Off, Constants.On), rtacMotionName);
         rtacMotion.setImported(true);
-        addEnum(enumName, rtacMotion);
+        addEnum(rtacMotionName, rtacMotion);
+
+        String hhmmTimeName = Constants.ConductorTime.substring(Prefix.Var.length() );
+        Var hhmmsTime = mVarFactory.create(() -> {
+            // Note: This is the system time in the "default" timezone which is... well it depends.
+            // Many linux installs default to UTC, so that needs to be verified on deployment site.
+            LocalTime now = mLocalTimeNow.getNow();
+            int h = now.getHour();
+            int m = now.getMinute();
+            return h * 100 + m;
+        }, hhmmTimeName.toLowerCase(Locale.US));
+        addVar(hhmmTimeName, hhmmsTime);
     }
 
     public Logger getLogger() {

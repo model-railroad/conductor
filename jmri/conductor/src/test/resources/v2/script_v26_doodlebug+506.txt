@@ -158,6 +158,14 @@ SP-Timer-Acquire-Route ->
     T330 Reverse ;
     T504 Normal ;
 
+
+# --- End of the Day
+
+Condutor-Time == 1700 ->
+    PA-Toggle = Off;
+    RTAC-PSA-Text = "{c:red}Automation Turned Off at 5 PM"
+
+
 # --- PA State: Error
 #
 # Note this state can only be cleared using an RTAC reset.

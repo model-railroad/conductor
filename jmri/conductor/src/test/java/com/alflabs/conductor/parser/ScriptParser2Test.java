@@ -32,6 +32,7 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
+import com.alflabs.conductor.util.ILocalTimeNowProvider;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
@@ -53,6 +54,7 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -125,6 +127,14 @@ public class ScriptParser2Test {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
+                    }
+
+                    @Override
+                    public ILocalTimeNowProvider provideLocalTime() {
+                        return () -> {
+                            // It is permanently 1:42 PM here
+                            return LocalTime.of(13, 42);
+                        };
                     }
                 })
                 .scriptFile(file)
@@ -1682,5 +1692,12 @@ public class ScriptParser2Test {
         assertThat(rtacMotion.get()).isEqualTo("disabled");
         assertThat(rtacMotion.isExported()).isFalse();
         assertThat(rtacMotion.isImported()).isTrue();
+
+        Var conductorTime = script.getVar("Conductor-Time");
+        assertThat(conductorTime).isNotNull();
+        assertThat(conductorTime.getAsInt()).isEqualTo(1342);
+        assertThat(conductorTime.get()).isEqualTo("1342");
+        assertThat(conductorTime.isExported()).isFalse();
+        assertThat(conductorTime.isImported()).isFalse();
     }
 }

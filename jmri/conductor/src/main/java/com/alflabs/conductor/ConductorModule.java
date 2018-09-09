@@ -19,10 +19,10 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Analytics;
-import com.alflabs.kv.IKeyValue;
-import com.alflabs.utils.FileOps;
+import com.alflabs.conductor.util.ILocalTimeNowProvider;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.JavaClock;
@@ -30,6 +30,7 @@ import dagger.Module;
 import dagger.Provides;
 
 import javax.inject.Singleton;
+import java.time.LocalTime;
 
 @Module
 public class ConductorModule {
@@ -43,6 +44,12 @@ public class ConductorModule {
     @Provides
     public IClock provideClock() {
         return new JavaClock();
+    }
+
+    @Singleton
+    @Provides
+    public ILocalTimeNowProvider provideLocalTime() {
+        return LocalTime::now;
     }
 
     @Singleton

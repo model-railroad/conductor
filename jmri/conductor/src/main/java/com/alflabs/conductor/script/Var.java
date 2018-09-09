@@ -32,6 +32,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     private final IKeyValue mKeyValue;
     private final int mInitialIntValue;
     private final String mInitialStringValue;
+    private final IIntValue mIntValueSupplier;
 
     private int mIntValue;
     private String mStringValue;
@@ -43,6 +44,19 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
                @Provided IKeyValue keyValue) {
         mInitialStringValue = null;
         mInitialIntValue = intValue;
+        mIntValueSupplier = null;
+        mIntValue = intValue;
+        mKeyName = Prefix.Var + varName;
+        mKeyValue = keyValue;
+    }
+
+    public Var(IIntValue intValueSupplier,
+               String varName,
+               @Provided IKeyValue keyValue) {
+        mIntValueSupplier = intValueSupplier;
+        mInitialStringValue = null;
+        int intValue = intValueSupplier.getAsInt();
+        mInitialIntValue = intValue;
         mIntValue = intValue;
         mKeyName = Prefix.Var + varName;
         mKeyValue = keyValue;
@@ -53,6 +67,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
                @Provided IKeyValue keyValue) {
         mInitialStringValue = stringValue;
         mInitialIntValue = 0;
+        mIntValueSupplier = null;
         mStringValue = stringValue;
         mKeyName = Prefix.Var + scriptName;
         mKeyValue = keyValue;
@@ -60,7 +75,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
 
     @Override
     public void reset() {
-        mIntValue = mInitialIntValue;
+        mIntValue = mIntValueSupplier == null ? mInitialIntValue : mIntValueSupplier.getAsInt();
         mStringValue = mInitialStringValue;
     }
 
@@ -94,7 +109,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
                 return Integer.parseInt(mStringValue);
             } catch (Exception ignore) {}
         }
-        return mIntValue;
+        return mIntValueSupplier == null ? mIntValue : mIntValueSupplier.getAsInt();
     }
 
     /** Gets the value as a String. */
@@ -102,8 +117,9 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     public String get() {
         if (mStringValue != null) {
             return mStringValue;
+        } else {
+            return Integer.toString(getAsInt());
         }
-        return Integer.toString(mIntValue);
     }
 
     @NonNull
@@ -113,16 +129,19 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
 
     @NonNull
     public IIntFunction createSetIntFunction() {
+        // Ignored when mIntValueSupplier != null
         return value -> mIntValue = value;
     }
 
     @NonNull
     public IIntFunction createIncFunction() {
+        // Ignored when mIntValueSupplier != null
         return value -> mIntValue += value;
     }
 
     @NonNull
     public IIntFunction createDecFunction() {
+        // Ignored when mIntValueSupplier != null
         return value -> mIntValue -= value;
     }
 
@@ -141,6 +160,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
                         mStringValue = value;
                     } else {
                         try {
+                            // Ignored when mIntValueSupplier != null
                             mIntValue = Integer.parseInt(value);
                         } catch (Exception ignore) {}
                     }
@@ -162,11 +182,7 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     @Override
     public void onExecHandle() {
         if (mExported) {
-            if (isString()) {
-                mKeyValue.putValue(mKeyName, mStringValue, true /*broadcast*/);
-            } else {
-                mKeyValue.putValue(mKeyName, Integer.toString(mIntValue), true /*broadcast*/);
-            }
+            mKeyValue.putValue(mKeyName, get(), true /*broadcast*/);
         }
     }
 }
