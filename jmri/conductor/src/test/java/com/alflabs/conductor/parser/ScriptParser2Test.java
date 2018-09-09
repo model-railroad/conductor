@@ -805,6 +805,31 @@ public class ScriptParser2Test {
     }
 
     @Test
+    public void testCondIntVarEqNeq() throws Exception {
+        String source = "" +
+                "Int Constant = 42 \n" +
+                "Int Value = 42 \n" +
+                "Value == Constant -> value = 1 \n" +
+                "Value != Constant -> value = 2";
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        engine.onExecStart();
+        engine.onExecHandle();
+
+        // First, 42 == 42 condition matches
+        assertThat(script.getVar("Value").getAsInt()).isEqualTo(1);
+
+        engine.onExecHandle();
+
+        // Next, 1 != 42 condition matches
+        assertThat(script.getVar("Value").getAsInt()).isEqualTo(2);
+    }
+
+    @Test
     public void testActionInt() throws Exception {
         String source = "" +
                 "Enum State = Init Set\n" +
@@ -1319,6 +1344,37 @@ public class ScriptParser2Test {
         // Note: event b1 is not executed a second time till the condition gets invalidated
         verify(mJmriThrottle, never()).setLight(anyBoolean());
         verify(mJmriThrottle).setSound(true);
+    }
+
+    @Test
+    public void testActionSetSensor() throws Exception {
+        String source = "" +
+                "sensor S1  = NS42 \n" +
+                "Enum   E1  = Off On\n" +
+                "e1 == Off -> S1 = inactive \n" +
+                "e1 == On  -> S1 = active \n";
+
+        Script script = mScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriSensor sensor1 = mock(IJmriSensor.class);
+        when(mJmriProvider.getSensor("NS42")).thenReturn(sensor1);
+
+        engine.onExecStart();
+        verify(mJmriProvider).getSensor("NS42");
+
+        engine.onExecHandle();
+        assertThat(script.getEnum("e1").get()).isEqualTo("off");
+        verify(sensor1).setActive(false);
+        reset(sensor1);
+
+        script.getEnum("e1").accept("on");
+        engine.onExecHandle();
+        assertThat(script.getEnum("e1").get()).isEqualTo("on");
+        verify(sensor1).setActive(true);
     }
 
     @Test

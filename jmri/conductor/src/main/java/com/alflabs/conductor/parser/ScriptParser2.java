@@ -460,18 +460,32 @@ public class ScriptParser2 {
             if (ctx.condEnum() != null) {
                 String op = ctx.condEnum().condEnumOp().getText(); // == or !=
                 Enum_ enum_ = mScript.getEnum(id);
-                if (enum_ == null) {
-                    emitError(ctx, "Expected Enum ID for '" + op + "' but found '" + id + "'.");
+                Var var = mScript.getVar(id);
+                if (enum_ == null && var == null) {
+                    emitError(ctx, "Expected Enum or Var ID for '" + op + "' but found '" + id + "'.");
                     return;
                 }
 
                 String rhs = ctx.condEnum().ID().getText().toLowerCase(Locale.US);
-                if (!enum_.getValues().contains(rhs)) {
-                    emitError(ctx, "Invalid value '" + rhs + "' for enum '" + id + "'. Expected: "
-                            + Arrays.toString(enum_.getValues().toArray()));
-                }
 
-                cond = enum_.createCondition(op, rhs);
+                if (enum_ != null) {
+                    if (!enum_.getValues().contains(rhs)) {
+                        emitError(ctx, "Invalid value '" + rhs + "' for enum '" + id + "'. Expected: "
+                                + Arrays.toString(enum_.getValues().toArray()));
+                        return;
+                    }
+
+                    cond = enum_.createCondition(op, rhs);
+
+                } else if (var != null) {
+                    Var rhsVar = mScript.getVar(rhs);
+                    if (rhsVar == null) {
+                        emitError(ctx, "Invalid Var '" + rhs + "' being compared with '" + id + "'.");
+                        return;
+                    }
+
+                    cond = var.createCondition(op, rhsVar);
+                }
 
             } else if (ctx.condThrottleOp() != null) {
                 String op = ctx.condThrottleOp().getText();
@@ -515,10 +529,30 @@ public class ScriptParser2 {
             }
             String id = ctx.ID().getText();
 
-            // Parse simplified case for enums
-            Enum_ enum_ = mScript.getEnum(id);
             ConductorParser.FuncIntContext funcInt = ctx.funcInt();
             ConductorParser.FuncValueContext funcValue = ctx.funcValue();
+
+            // Parse simplified case for sensors
+            Sensor sensor = mScript.getSensor(id);
+            if (sensor != null && funcInt != null) {
+                emitError(ctx, "Invalid function after sensor '" + id + "'. Expected '='");
+                return;
+            }
+            if (sensor != null && funcValue != null) {
+                if (funcValue.sensorOp() == null) {
+                    emitError(ctx, "Invalid function after sensor '" + id + "'. Expected '= Active' or '= Inactive'");
+                    return;
+                }
+
+                boolean isActive = funcValue.sensorOp().KW_ACTIVE() != null;
+
+                mEvent.addAction(sensor.createAction(isActive));
+                return;
+            }
+
+
+            // Parse simplified case for enums
+            Enum_ enum_ = mScript.getEnum(id);
             if (enum_ != null && funcInt != null) {
                 emitError(ctx, "Invalid integer function after enum '" + id + "'. Expected '='");
                 return;

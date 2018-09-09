@@ -60,6 +60,18 @@ GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 String GA-URL = "http://consist.alfray.com/train/"
 
 
+
+# -------------
+# End of the Day
+# -------------
+
+Int End-Of-Day-HHMM = 1700
+
+Conductor-Time == End-Of-Day-HHMM ->
+    PA-Toggle = Inactive;
+    RTAC-PSA-Text = "{c:red}Automation Turned Off at 5 PM"
+
+
 # -------------
 # Events Motion
 # -------------

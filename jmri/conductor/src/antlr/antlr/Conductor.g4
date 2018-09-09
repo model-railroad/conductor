@@ -70,10 +70,10 @@ gaParamOp:  KW_ACTION | KW_CATEGORY | KW_LABEL | KW_PATH | KW_URL | KW_USER;
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
 timerOp:    KW_START | KW_END;
+sensorOp:   KW_ACTIVE | KW_INACTIVE;
 
-funcValue:  '='  ( NUM | ID | STR ) ;
+funcValue:  '=' ( sensorOp | NUM | ID | STR ) ;
 funcInt:    ( KW_INC | KW_DEC ) ( NUM | ID ) ;
-
 
 WS:  [ \t\u000C]+ -> skip ;   // from https://github.com/antlr/grammars-v4/blob/master/java/Java.g4
 EOL: [\r\n]+ ;
@@ -97,6 +97,7 @@ KW_SEMI:    ';';
 // lowercase so all the keywords here need to be lower case. However when the visitor
 // uses ctx.getText(), it will get the original case of the source file.
 KW_ACTION:  'action';
+KW_ACTIVE:  'active';
 KW_CATEGORY:'category';
 KW_COUNTER: 'counter';
 KW_END:     'end';
@@ -108,6 +109,7 @@ KW_GA_EVENT:'ga-event';
 KW_GA_PAGE: 'ga-page';
 KW_GA_ID:   'ga-tracking-id';
 KW_HORN:    'horn';
+KW_INACTIVE:'inactive';
 KW_INT:     'int';
 KW_IMPORT:  'import';
 KW_LABEL:   'label';
@@ -140,7 +142,7 @@ fragment KW_F20:      'f2' [0-8] ;
 
 // An ID. Can be 1 or more characters. Some specific non-alpha chars are accepted.
 // An ID can contain a dash in the middle but not start or end with one (to avoid conflict with ->).
-ID:      IdCharStart ( IdCharFull* IdCharLast )? ;
+ID:      IdCharStart ( IdCharFull* IdCharLast )?;
 NUM:     IdNum+ ;      // An *positive* int literal
 STR:     '"' ~["\r\n]* '"';
 STR_BLOCK: '\'\'\'' ~[']* '\'\'\'';

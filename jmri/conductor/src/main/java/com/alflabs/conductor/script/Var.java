@@ -123,6 +123,16 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     }
 
     @NonNull
+    public IConditional createCondition(String op, Var rhs) {
+        if (op.equals("==")) {
+            return () -> get().equalsIgnoreCase(rhs.get());
+        } else if (op.equals("!=")) {
+            return () -> !get().equalsIgnoreCase(rhs.get());
+        }
+        throw new IllegalArgumentException();
+    }
+
+    @NonNull
     public IStringFunction createSetStrFunction() {
         return value -> mStringValue = value;
     }

@@ -161,9 +161,17 @@ SP-Timer-Acquire-Route ->
 
 # --- End of the Day
 
-Condutor-Time == 1700 ->
-    PA-Toggle = Off;
-    RTAC-PSA-Text = "{c:red}Automation Turned Off at 5 PM"
+Int End-Of-Day-HHMM = 1700
+
+PA-Toggle & Conductor-Time == End-Of-Day-HHMM -> PA-Toggle = Inactive
+
+PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
+
+!PA-Toggle & Conductor-Time == End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Turned Off\nat 5 PM"
+
+!PA-Toggle & Conductor-Time != End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Stopped"
 
 
 # --- PA State: Error
@@ -219,9 +227,6 @@ PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
 
 PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
 !PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
-
-PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
-!PA-Toggle -> RTAC-PSA-Text = "{c:red}Automation Stopped"
 
 # --- PA State: Manual
 

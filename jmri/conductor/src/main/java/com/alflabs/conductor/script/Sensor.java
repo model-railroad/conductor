@@ -71,6 +71,12 @@ public class Sensor implements IConditional, IExecEngine {
         return mSensor != null && mSensor.isActive();
     }
 
+    private void setActive(boolean active) {
+        if (mSensor != null) {
+            mSensor.setActive(active);
+        }
+    }
+
     @Override
     public void onExecHandle() {
         boolean active = isActive();
@@ -79,6 +85,10 @@ public class Sensor implements IConditional, IExecEngine {
             mLastActive = active;
             mOnChangedListener.run();
         }
+    }
+
+    public IAction createAction(boolean isActive) {
+        return () -> setActive(isActive);
     }
 
     public IJmriSensor getJmriSensor() {
