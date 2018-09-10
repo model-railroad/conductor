@@ -106,7 +106,7 @@ public class Script {
         addEnum(rtacMotionName, rtacMotion);
 
         String hhmmTimeName = Constants.ConductorTime.substring(Prefix.Var.length() );
-        Var hhmmsTime = mVarFactory.create(() -> {
+        Var hhmmTime = mVarFactory.create(() -> {
             // Note: This is the system time in the "default" timezone which is... well it depends.
             // Many linux installs default to UTC, so that needs to be verified on deployment site.
             LocalTime now = mLocalTimeNow.getNow();
@@ -114,7 +114,8 @@ public class Script {
             int m = now.getMinute();
             return h * 100 + m;
         }, hhmmTimeName.toLowerCase(Locale.US));
-        addVar(hhmmTimeName, hhmmsTime);
+        hhmmTime.setExported(true);
+        addVar(hhmmTimeName, hhmmTime);
     }
 
     public Logger getLogger() {

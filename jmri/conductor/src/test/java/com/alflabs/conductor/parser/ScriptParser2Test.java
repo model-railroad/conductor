@@ -108,6 +108,14 @@ public class ScriptParser2Test {
                     public FileOps provideFileOps() {
                         return mFileOps;
                     }
+
+                    @Override
+                    public ILocalTimeNowProvider provideLocalTime() {
+                        return () -> {
+                            // It is permanently 1:42 PM here
+                            return LocalTime.of(13, 42);
+                        };
+                    }
                 })
                 .scriptFile(file)
                 .build();
@@ -636,11 +644,12 @@ public class ScriptParser2Test {
                         "S/bl-toggle", "S/pa-toggle",
                         "V/$estop-state$",
                         "V/bl-counter", "V/bl-status",
+                        "V/conductor-time",
                         "V/pa-counter", "V/pa-status",
                         "V/rtac-psa-text" });
 
         assertThat(sortedValues.toArray()).isEqualTo(new String[]
-                { "0", "0", "1", "2", "300", "Loading...", "NORMAL", "OFF", "OFF", "init",
+                { "0", "0", "1", "1342", "2", "300", "Loading...", "NORMAL", "OFF", "OFF", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
                                 "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"counterKey\":\"V/bl-counter\",\"throttleKey\":\"D/200\"}," +
@@ -1753,7 +1762,7 @@ public class ScriptParser2Test {
         assertThat(conductorTime).isNotNull();
         assertThat(conductorTime.getAsInt()).isEqualTo(1342);
         assertThat(conductorTime.get()).isEqualTo("1342");
-        assertThat(conductorTime.isExported()).isFalse();
+        assertThat(conductorTime.isExported()).isTrue();
         assertThat(conductorTime.isImported()).isFalse();
     }
 }
