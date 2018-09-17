@@ -1,0 +1,10 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+            android:key="pref_dev__simul_motion_sensor"
+            android:title="Simulate Motion Sensor"
+            android:summaryOff="Off: Does not simulate Motion Sensor (default)"
+            android:summaryOn="On: Does simulate Motion Sensor"
+            android:defaultValue="false" />
+
+</PreferenceScreen>

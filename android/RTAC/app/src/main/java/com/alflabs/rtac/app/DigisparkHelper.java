@@ -177,8 +177,16 @@ public class DigisparkHelper {
             return mUpdateUsb;
         }
 
+        protected void setUpdateUsb(boolean updateUsb) {
+            mUpdateUsb = updateUsb;
+        }
+
         public UsbDevice getUsbDevice() {
             return mUsbDevice;
+        }
+
+        public boolean hasUsbDevice() {
+            return mUsbDevice != null;
         }
 
         @Override
@@ -193,10 +201,7 @@ public class DigisparkHelper {
                         mUsbDevice = helper.checkPermission(device);
                     }
                     if (mUsbDevice == null) {
-                        try {
-                            Thread.sleep(500 /*ms*/);
-                        } catch (InterruptedException ignore) {
-                        }
+                        _sleepMs(500 /*ms*/);
                     }
                 }
 
@@ -251,6 +256,13 @@ public class DigisparkHelper {
                 }
             }
             return null;
+        }
+
+        private void _sleepMs(long timeMs) {
+            try {
+                Thread.sleep(timeMs);
+            } catch (InterruptedException ignore) {
+            }
         }
 
         /**

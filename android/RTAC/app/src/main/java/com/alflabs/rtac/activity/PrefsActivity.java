@@ -142,6 +142,11 @@ public class PrefsActivity extends PreferenceActivity {
         getPreferenceScreen().addPreference(fakeHeader);
         addPreferencesFromResource(R.xml.prefs_data_server);
 
+        fakeHeader = new PreferenceCategory(this);
+        fakeHeader.setTitle("Development");
+        getPreferenceScreen().addPreference(fakeHeader);
+        addPreferencesFromResource(R.xml.prefs_dev);
+
         bindAllTextFields(getPreferenceManager());
     }
 
@@ -316,6 +321,20 @@ public class PrefsActivity extends PreferenceActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.prefs_data_server);
+            bindAllTextFields(getPreferenceManager());
+        }
+    }
+
+    /**
+     * This fragment shows general preferences only. It is used when the
+     * activity is showing a two-pane settings UI.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class DevPreferenceFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.prefs_dev);
             bindAllTextFields(getPreferenceManager());
         }
     }

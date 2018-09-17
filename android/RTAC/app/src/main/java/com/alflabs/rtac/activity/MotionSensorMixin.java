@@ -4,7 +4,6 @@ import android.hardware.usb.UsbDevice;
 import android.support.annotation.WorkerThread;
 import com.alflabs.dagger.ActivityScope;
 import com.alflabs.kv.IKeyValue;
-import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
@@ -69,10 +68,11 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     }
 
     private void startTask() {
-        boolean runMonitor = mAppPrefsValues.getConductor_MonitorMotionSensor();
+        boolean simulate = mAppPrefsValues.getDev_SimulMotionSensor();
+        boolean runMonitor = mAppPrefsValues.getConductor_MonitorMotionSensor() || simulate;
 
         if (mTask == null && runMonitor && mIsConnected) {
-            mTask = new MotionSensorTask(mDataClientMixin, mAnalyticsMixin, mClock);
+            mTask = new MotionSensorTask(mDataClientMixin, mAnalyticsMixin, mClock, simulate);
             mTask.execute(mDigispark);
 
         } else if (mTask == null && runMonitor && !mIsConnected && mDataClientMixin.getKeyValueClient() != null) {
@@ -116,6 +116,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         private final DataClientMixin mDataClientMixin;
         private final AnalyticsMixin mAnalyticsMixin;
         private final IClock mClock;
+        private final boolean mSimulate;
         private boolean mLastMotion;
         private long mOnTS;
         private long mLastOnSec;
@@ -123,17 +124,54 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         private MotionSensorTask(
                 DataClientMixin dataClientMixin,
                 AnalyticsMixin analyticsMixin,
-                IClock clock) {
+                IClock clock,
+                boolean simulate) {
             super(true /* blinkRepeatedly */);
             mDataClientMixin = dataClientMixin;
             mAnalyticsMixin = analyticsMixin;
             mClock = clock;
+            mSimulate = simulate;
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             mDataClientMixin.setMotionStatus(false, "");
+        }
+
+        @Override
+        public boolean hasUsbDevice() {
+            return mSimulate || super.hasUsbDevice();
+        }
+
+        @Override
+        protected Void doInBackground(DigisparkHelper... params) {
+            if (!mSimulate) {
+                return super.doInBackground(params);
+            }
+
+            // Simulator: motion on for 5 seconds, then off for 10 seconds.
+            onNewDevice();
+            setUpdateUsb(true);
+            publishProgress();
+            setUpdateUsb(false);
+            publishProgress();
+
+            int counter = 0;
+            while (!isCancelled()) {
+                try {
+                    onNewValue(counter++ <= 5);
+                    if (counter == 15) {
+                        counter = 0;
+                    }
+                    Thread.sleep(1000 /*ms*/);
+                    publishProgress();
+                } catch (InterruptedException e) {
+                    return null; // interrupted on cancel
+                }
+            }
+
+            return null;
         }
 
         @Override
@@ -181,8 +219,8 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
             if (isUpdateUsb()) {
-                UsbDevice dev = getUsbDevice();
-                mDataClientMixin.setMotionStatus(dev == null, dev ==null ? "Motion Disconnected" : "[*]");
+                boolean hwOK = hasUsbDevice();
+                mDataClientMixin.setMotionStatus(!hwOK, !hwOK ? "Motion Disconnected" : "[*]");
             }
         }
 

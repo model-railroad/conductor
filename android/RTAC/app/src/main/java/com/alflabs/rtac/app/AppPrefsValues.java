@@ -53,6 +53,8 @@ public class AppPrefsValues extends BasePrefsValues {
 
     public static final String PREF_CONDUCTOR__MONITOR_MOTION_SENSOR = "pref_conductor__monitor_motion_sensor";
 
+    public static final String PREF_DEV__SIMUL_MOTION_SENSOR = "pref_dev__simul_motion_sensor";
+
     @Inject
     public AppPrefsValues(@AppQualifier Context context) {
         super(context);
@@ -169,5 +171,9 @@ public class AppPrefsValues extends BasePrefsValues {
 
     public boolean getConductor_MonitorMotionSensor() {
         return mPrefs.getBoolean(PREF_CONDUCTOR__MONITOR_MOTION_SENSOR, false);
+    }
+
+    public boolean getDev_SimulMotionSensor() {
+        return mPrefs.getBoolean(PREF_DEV__SIMUL_MOTION_SENSOR, false);
     }
 }
