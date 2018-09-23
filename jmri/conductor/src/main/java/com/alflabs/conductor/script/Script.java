@@ -103,6 +103,7 @@ public class Script {
         String rtacMotionName = Constants.RtacMotion.substring(Prefix.Var.length() );
         Enum_ rtacMotion = mEnumFactory.create(ImmutableList.of(Constants.Disabled, Constants.Off, Constants.On), rtacMotionName);
         rtacMotion.setImported(true);
+        rtacMotion.setExported(true);
         addEnum(rtacMotionName, rtacMotion);
 
         String hhmmTimeName = Constants.ConductorTime.substring(Prefix.Var.length() );

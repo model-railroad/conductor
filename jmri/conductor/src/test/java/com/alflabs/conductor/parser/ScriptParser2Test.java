@@ -646,10 +646,10 @@ public class ScriptParser2Test {
                         "V/bl-counter", "V/bl-status",
                         "V/conductor-time",
                         "V/pa-counter", "V/pa-status",
-                        "V/rtac-psa-text" });
+                        "V/rtac-motion", "V/rtac-psa-text" });
 
         assertThat(sortedValues.toArray()).isEqualTo(new String[]
-                { "0", "0", "1", "1342", "2", "300", "Loading...", "NORMAL", "OFF", "OFF", "init",
+                { "0", "0", "1", "1342", "2", "300", "Loading...", "NORMAL", "OFF", "OFF", "disabled", "init",
                         "{\"mapInfos\":[]}",
                         "{\"routeInfos\":[" +
                                 "{\"name\":\"Branchline\",\"toggleKey\":\"S/bl-toggle\",\"statusKey\":\"V/bl-status\",\"counterKey\":\"V/bl-counter\",\"throttleKey\":\"D/200\"}," +
@@ -1755,7 +1755,7 @@ public class ScriptParser2Test {
         Enum_ rtacMotion = script.getEnum("RTAC-Motion");
         assertThat(rtacMotion).isNotNull();
         assertThat(rtacMotion.get()).isEqualTo("disabled");
-        assertThat(rtacMotion.isExported()).isFalse();
+        assertThat(rtacMotion.isExported()).isTrue();
         assertThat(rtacMotion.isImported()).isTrue();
 
         Var conductorTime = script.getVar("Conductor-Time");
