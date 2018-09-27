@@ -179,14 +179,14 @@ SP-Timer-Acquire-Route ->
 
 # --- End of the Day
 
-Int End-Of-Day-HHMM = 1700
+Int End-Of-Day-HHMM = 1650
 
 PA-Toggle & Conductor-Time == End-Of-Day-HHMM -> PA-Toggle = Inactive
 
 PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
 
 !PA-Toggle & Conductor-Time == End-Of-Day-HHMM ->
-              RTAC-PSA-Text = "{c:red}Automation Turned Off\nat 5 PM"
+              RTAC-PSA-Text = "{c:red}Automation Turned Off\nat 4:50 PM"
 
 !PA-Toggle & Conductor-Time != End-Of-Day-HHMM ->
               RTAC-PSA-Text = "{c:red}Automation Stopped"
