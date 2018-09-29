@@ -26,19 +26,17 @@ import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
-import com.alflabs.utils.IClock;
 import com.google.common.collect.ImmutableList;
-import com.google.googlejavaformat.Indent;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Provider;
-import java.time.Clock;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -313,10 +311,39 @@ public class Script {
                 || getConditional(name) != null;
     }
 
-    public IAction getResetTimersAction() {
+    /**
+     * Creates a reset timer action.
+     *
+     * @param prefixes If non-null, this is a space-separated list of prefixes to match for the
+     *                 timer variable names. E.g. "ab cd" would match timers "ab1" and "cd2"
+     *                 but not "foo-ab", etc.
+     *                 If null, all timers are reset.
+     */
+    public IAction getResetTimersAction(@Null String prefixes) {
+        final Set<String> prefixSet = new HashSet<>();
+        if (prefixes != null) {
+            for (String p : prefixes.trim().toLowerCase(Locale.US).split(" ")) {
+                if (p != null && !p.isEmpty()) {
+                    prefixSet.add(p);
+                }
+            }
+        }
+
         return () -> {
-            for (Timer timer : mTimers.values()) {
-                timer.reset();
+            nextTimer: for (Map.Entry<String, Timer> entry : mTimers.entrySet()) {
+                if (prefixSet.isEmpty()) {
+                    entry.getValue().reset();
+                } else {
+                    String name = entry.getKey();
+                    for (String prefix : prefixSet) {
+                        if (name.startsWith(prefix)) {
+                            // Prefix match. Reset below.
+                            entry.getValue().reset();
+                            continue nextTimer;
+                        }
+                    }
+                    // No prefix match
+                }
             }
         };
     }

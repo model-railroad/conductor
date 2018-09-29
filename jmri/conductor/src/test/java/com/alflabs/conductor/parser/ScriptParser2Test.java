@@ -1623,6 +1623,51 @@ public class ScriptParser2Test {
         verify(throttle, never()).setLight(true);
     }
 
+    @Test
+    public void testTimerWithResetWithPrefix() throws Exception {
+        String source = "" +
+                "int do = 1\n" +
+                "timer A-T1  = 1 \n" +
+                "timer A-T2  = 2 \n" +
+                "timer B-T3  = 3 \n" +
+                "timer C-T4  = 4 \n" +
+                "timer D-T5  = 5 \n" +
+                "do == do -> A-T1 Start ; A-T2 Start ; B-T3 Start ; C-T4 Start ; D-T5 Start \n" +
+                "D-T5 -> Reset Timers = \"A- B-\" \n " ;
+
+        Script script = mFakeNowScriptComponent.createScriptParser2().parse(source);
+        ExecEngine engine = mFakeNowScriptComponent.createScriptExecEngine();
+
+        assertThat(mReporter.toString()).isEqualTo("");
+        assertThat(script).isNotNull();
+
+        IJmriThrottle throttle = mock(IJmriThrottle.class);
+        when(mJmriProvider.getThrotlle(42)).thenReturn(throttle);
+        engine.onExecStart();
+
+        engine.onExecHandle();
+        assertThat(script.getTimer("a-t1").isActive()).isFalse();
+        assertThat(script.getTimer("a-t2").isActive()).isFalse();
+        assertThat(script.getTimer("b-t3").isActive()).isFalse();
+        assertThat(script.getTimer("c-t4").isActive()).isFalse();
+
+        mClock.add(4*1000);
+        engine.onExecHandle();
+        assertThat(script.getTimer("a-t1").isActive()).isTrue();
+        assertThat(script.getTimer("a-t2").isActive()).isTrue();
+        assertThat(script.getTimer("b-t3").isActive()).isTrue();
+        assertThat(script.getTimer("c-t4").isActive()).isTrue();
+        assertThat(script.getTimer("d-t5").isActive()).isFalse();
+
+        mClock.add(1000);  // Timers A* and B* get reset but not C nor D ones.
+        engine.onExecHandle();
+        assertThat(script.getTimer("a-t1").isActive()).isFalse();
+        assertThat(script.getTimer("a-t2").isActive()).isFalse();
+        assertThat(script.getTimer("b-t3").isActive()).isFalse();
+        assertThat(script.getTimer("c-t4").isActive()).isTrue();
+        assertThat(script.getTimer("d-t5").isActive()).isTrue();
+    }
+
     @SuppressWarnings("PointlessArithmeticExpression")
     @Test
     public void testDelayedCondition() throws Exception {

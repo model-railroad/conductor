@@ -209,9 +209,7 @@ public class ScriptParser2 {
                 value = ctx.STR().getText();
 
                 // Remove start/end quotes from the string
-                if (value.startsWith("\"") && value.endsWith("\"")) {
-                    value = value.substring(1, value.length() - 1);
-                }
+                value = removeDoubleQuotesStartEnd(value);
             } else {
                 value = ctx.STR_BLOCK().getText();
 
@@ -457,7 +455,7 @@ public class ScriptParser2 {
 
             IConditional cond = null;
 
-            if (ctx.condEnum() != null) {
+            if (ctx.condEnum() != null && ctx.condEnum().ID() != null) {
                 String op = ctx.condEnum().condEnumOp().getText(); // == or !=
                 Enum_ enum_ = mScript.getEnum(id);
                 Var var = mScript.getVar(id);
@@ -614,9 +612,7 @@ public class ScriptParser2 {
                     if (node != null) {
                         String value = node.getText();
                         // Remove start/end quotes from the string
-                        if (value.startsWith("\"") && value.endsWith("\"")) {
-                            value = value.substring(1, value.length() - 1);
-                        }
+                        value = removeDoubleQuotesStartEnd(value);
 
                         strValue = new LiteralString(value);
                     }
@@ -763,7 +759,14 @@ public class ScriptParser2 {
         @Override
         public void exitFnAction(ConductorParser.FnActionContext ctx) {
             if (ctx.KW_RESET() != null && ctx.KW_TIMERS() != null) {
-                mEvent.addAction(mScript.getResetTimersAction());
+                String prefixes = null;
+
+                ConductorParser.FnArgContext args = ctx.fnArg();
+                if (args != null && args.STR() != null) {
+                    prefixes = removeDoubleQuotesStartEnd(args.STR().getText());
+                }
+
+                mEvent.addAction(mScript.getResetTimersAction(prefixes));
             } else if (ctx.KW_ESTOP() != null) {
                 mEvent.addAction(mScript.getEstopAction());
             } else {
@@ -948,6 +951,14 @@ public class ScriptParser2 {
 
             return timer;
         }
+    }
+
+    /** Remove start/end quotes from the string. */
+    private String removeDoubleQuotesStartEnd(String quotedString) {
+        if (quotedString != null && quotedString.startsWith("\"") && quotedString.endsWith("\"")) {
+            quotedString = quotedString.substring(1, quotedString.length() - 1);
+        }
+        return quotedString;
     }
 
     private class ReporterErrorListener extends BaseErrorListener {

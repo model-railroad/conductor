@@ -114,3 +114,4 @@ PA-State == Fwd -> GA-Page URL: GA-URL, Path: PA-Train, User: PA-Counter ;
                 GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Counter
 PA-State == Rev -> GA-Event Category: Activation, Action: Stop , Label: PA-Train, User: PA-Counter
 
+PA-State == Fwd -> Reset Timers = "PA"

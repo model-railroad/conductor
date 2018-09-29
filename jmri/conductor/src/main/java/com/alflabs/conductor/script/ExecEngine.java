@@ -203,7 +203,7 @@ public class ExecEngine implements IExecEngine {
         // for (Turnout turnout : mScript.getTurnouts()) : not resettable
         // for (Sensor sensor : mScript.getSensors()) : : not resettable
 
-        mScript.getResetTimersAction().execute();
+        mScript.getResetTimersAction(null /* prefixes */).execute();
 
         for (Var var : mScript.getVars()) {
             var.reset();

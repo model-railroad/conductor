@@ -59,7 +59,8 @@ condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 actionList: action ( ';' action )* ';'? ;
 action:     EOL? ( idAction | fnAction | gaAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
-fnAction:   KW_RESET KW_TIMERS | KW_ESTOP;
+fnAction:   KW_RESET KW_TIMERS fnArg? | KW_ESTOP;
+fnArg:      '=' STR ;
 
 gaAction:   gaActionOp gaParamList;
 gaActionOp: KW_GA_EVENT | KW_GA_PAGE;
