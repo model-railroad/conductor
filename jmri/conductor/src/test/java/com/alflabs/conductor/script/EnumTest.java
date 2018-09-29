@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.script;
 
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.rx.IPublisher;
 import com.alflabs.rx.IStream;
@@ -46,6 +47,7 @@ public class EnumTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IKeyValue mKeyValue;
+    @Mock EventLogger mEventLogger;
 
     private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
 
@@ -55,7 +57,9 @@ public class EnumTest {
     public void setUp() throws Exception {
         when(mKeyValue.getChangedStream()).thenReturn(mChangedStream);
 
-        EnumFactory factory = new EnumFactory(InstanceFactory.create(mKeyValue));
+        EnumFactory factory = new EnumFactory(
+                InstanceFactory.create(mKeyValue),
+                InstanceFactory.create(mEventLogger));
         // Note: input case should not matter.
         mEnum = factory.create(Arrays.asList("One", "TWO", "Three", "FOUR"), "MyVar");
         assertThat(mEnum.get()).isEqualTo("one");

@@ -1,0 +1,191 @@
+package com.alflabs.conductor.util;
+
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
+import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
+import com.alflabs.utils.ILogger;
+
+import javax.inject.Inject;
+import java.io.File;
+import java.io.IOException;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.Date;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * A formal, asynchronous, event logger for Conductor.
+ * <p/>
+ * The purpose of this logger is to formally record input sensor changes and output action
+ * changes performed by Conductor. Events are to be stored locally on files.
+ * <p/>
+ * This is designed to be invoked from the script engine. To ensure that storage does not affect
+ * the performance, the logging calls are asynchronous. A standalone task purges the event buffer
+ * to a file.
+ */
+public class EventLogger {
+    private static final String TAG = EventLogger.class.getSimpleName();
+
+    private final ILogger mLogger;
+    private final FileOps mFileOps;
+    private final IClock mClock;
+    private final ILocalTimeNowProvider mLocalTimeNow;
+    private final ExecutorService mExecutorService;
+
+    private static final Event END_LOOP = new Event(LocalTime.of(0, 0, 0, 0), Type.Variable, "Stop", "Internal");
+
+    private volatile boolean mStarted;
+
+    /** A thread-safe queue (safe for single operations with weakly consistent iterators). */
+    private final BlockingQueue<Event> mEvents = new LinkedBlockingQueue<>();
+    /** The file being written. */
+    private File mFile;
+
+    public enum Type {
+        Sensor,
+        Turnout,
+        Variable,
+        DccThrottle
+    }
+
+    @Inject
+    public EventLogger(
+            ILogger logger,
+            FileOps fileOps,
+            IClock clock,
+            ILocalTimeNowProvider localTimeNow) {
+        mLogger = logger;
+        mFileOps = fileOps;
+        mClock = clock;
+        mLocalTimeNow = localTimeNow;
+        mExecutorService = Executors.newSingleThreadExecutor();
+    }
+
+    public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
+        LocalTime now = mLocalTimeNow.getNow();
+        // Add an event (non blocking)
+        mEvents.add(new Event(now, type, name, value));
+    }
+
+    /** Starts logging to disk.
+     *
+     * @param logDirectory The directory to use for logging or null for current directory.
+     * @return The name of the file being logged to.
+     */
+    public String start(@Null File logDirectory) {
+        mLogger.d(TAG, "Start");
+
+        if (!mStarted) {
+            if (logDirectory == null) {
+                mLogger.d(TAG, "Hint: customize event log dir by exporting env var $CONDUCTOR_EVENT_LOG_DIR");
+                String envDir = System.getenv("CONDUCTOR_EVENT_LOG_DIR");
+                if (envDir == null) {
+                    envDir = System.getProperty("CONDUCTOR_EVENT_LOG_DIR");
+                }
+                if (envDir != null) {
+                    File dir = new File(envDir);
+                    if (mFileOps.isDir(dir)) {
+                        logDirectory = dir;
+                        mLogger.d(TAG, "Using CONDUCTOR_EVENT_LOG_DIR=" + logDirectory.getPath());
+                    } else {
+                        mLogger.d(TAG, "Not using invalid directory CONDUCTOR_EVENT_LOG_DIR=" + dir.getPath());
+                    }
+                }
+            }
+
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+            Date now = new Date(mClock.elapsedRealtime());
+            String time = simpleDateFormat.format(now);
+            String filename = "conductor-log-" + time + ".txt";
+            mFile = logDirectory == null ? new File(filename) : new File(logDirectory, filename);
+
+            mStarted = true;
+
+            mExecutorService.execute(() -> {
+                mLogger.d(TAG, "Writer thread started for " + mFile.getPath());
+
+                try (Writer w = mFileOps.openFileWriter(mFile, true /*append*/)) {
+                    // BlockingQueue.take() waits till an element is available or is interrupted.
+                    // We use a special "marker" event to request to the end the loop.
+                    Event event;
+                    while ((event = mEvents.take()) != END_LOOP) {
+                        w.write(event.toString());
+                        w.flush();
+                    }
+                } catch (IOException e) {
+                    mLogger.d(TAG, "Write Failed", e);
+                } catch (InterruptedException e) {
+                    mLogger.d(TAG, "Writer thread interrupted");
+                }
+
+                mLogger.d(TAG, "Writer thread finished");
+                mStarted = false;
+            });
+        }
+
+        return mFile.getPath();
+    }
+
+    public void shutdown() throws InterruptedException {
+        mEvents.add(END_LOOP);
+        mExecutorService.shutdown();
+        mExecutorService.awaitTermination(10, TimeUnit.SECONDS);
+        mLogger.d(TAG, "Shutdown");
+    }
+
+    private static class Event {
+        private final LocalTime mLocalTime;
+        private final Type mType;
+        private final String mName;
+        private final String mValue;
+
+        public Event(@NonNull LocalTime localTime, @NonNull Type type, @NonNull String name, @NonNull String value) {
+            mLocalTime = localTime;
+            mType = type;
+            mName = name;
+            mValue = value;
+        }
+
+        public LocalTime getLocalTime() {
+            return mLocalTime;
+        }
+
+        @NonNull
+        public Type getType() {
+            return mType;
+        }
+
+        @NonNull
+        public String getName() {
+            return mName;
+        }
+
+        @NonNull
+        public String getValue() {
+            return mValue;
+        }
+
+        @Override
+        public String toString() {
+            String value = mValue;
+            if (value.indexOf(' ') != -1) {
+                value = '"' + value + '"';
+            }
+            return String.format("%02d:%02d:%02d.%03d %c %s %s\n",
+                    mLocalTime.getHour(),
+                    mLocalTime.getMinute(),
+                    mLocalTime.getSecond(),
+                    mLocalTime.getNano() / 1000000, // from ns to ms
+                    mType.name().charAt(0),
+                    mName,
+                    value);
+        }
+    }
+
+}

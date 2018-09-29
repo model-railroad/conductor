@@ -19,6 +19,7 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.ILocalTimeNowProvider;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
@@ -80,6 +81,12 @@ public class ConductorModule {
     @Provides
     public Analytics provideAnalytics(ILogger logger, FileOps fileOps, KeyValueServer keyValue) {
         return new Analytics(logger, fileOps, keyValue);
+    }
+
+    @Singleton
+    @Provides
+    public EventLogger provideEventLogger(ILogger logger, FileOps fileOps, IClock clock, ILocalTimeNowProvider localTimeNow) {
+        return new EventLogger(logger, fileOps, clock, localTimeNow);
     }
 
     @Singleton

@@ -26,6 +26,7 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.ui.StatusWnd;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
@@ -60,6 +61,7 @@ public class EntryPoint {
 
     @Inject Logger mLogger;
     @Inject KeyValueServer mKeyValueServer;
+    @Inject EventLogger mEventLogger;
 
     public Script getScript() {
         return mScript;
@@ -89,9 +91,14 @@ public class EntryPoint {
                 .scriptFile(scriptFile)
                 .build();
 
+        // Do not use any injected field before this call
         mComponent.inject(this);
 
         mLogger.log("[Conductor] Setup");
+
+        String eventLogFilename = mEventLogger.start(null);
+        mLogger.log("[Conductor] Event log: " + eventLogFilename);
+
         if (loadScript().length() > 0) {
             return false;
         }
@@ -199,6 +206,12 @@ public class EntryPoint {
             mComponent.getAnalytics().shutdown();
         } catch (InterruptedException e) {
             mLogger.log("[Conductor] Teardown Analytics exception: " + e);
+        }
+
+        try {
+            mEventLogger.shutdown();
+        } catch (InterruptedException e) {
+            mLogger.log("[Conductor] EventLogger Shutdown exception: " + e);
         }
 
         mKeyValueServer.stopSync();

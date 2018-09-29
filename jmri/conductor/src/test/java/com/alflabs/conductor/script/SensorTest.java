@@ -20,6 +20,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriSensor;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
@@ -42,9 +43,10 @@ import static org.mockito.Mockito.when;
 public class SensorTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    @Mock IJmriProvider mJmriProvider;
     @Mock IJmriSensor mJmriSensor;
+    @Mock IJmriProvider mJmriProvider;
     @Mock IKeyValue mKeyValue;
+    @Mock EventLogger mEventLogger;
     @Mock Runnable mOnChangeRunnable;
 
     private Sensor mSensor;
@@ -56,7 +58,8 @@ public class SensorTest {
 
         SensorFactory factory = new SensorFactory(
                 InstanceFactory.create(mJmriProvider),
-                InstanceFactory.create(mKeyValue));
+                InstanceFactory.create(mKeyValue),
+                InstanceFactory.create(mEventLogger));
         mSensor = factory.create("jmriName", "scriptName");
         mSensor.setOnChangedListener(mOnChangeRunnable);
 

@@ -18,6 +18,15 @@
 
 package com.alflabs.conductor.util;
 
+/**
+ * Drastically simplified interface for console logging.
+ * <p/>
+ * This is useful for dumping generic statements, typically on the console, typically for
+ * casual debugging.
+ * <p/>
+ * Some refactoring should be done later to get rid of this and use LibUtils's {@code ILogger}
+ * everywhere; consequently new code should probably avoid using this.
+ */
 public interface Logger {
     void log(String msg);
 

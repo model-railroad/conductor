@@ -20,6 +20,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.MockClock;
@@ -47,6 +48,7 @@ public class ThrottleTest {
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
+    @Mock EventLogger mEventLogger;
     @Mock IKeyValue mKeyValue;
     @Mock Logger mLogger;
 
@@ -75,7 +77,8 @@ public class ThrottleTest {
                 InstanceFactory.create(mClock),
                 InstanceFactory.create(mLogger),
                 InstanceFactory.create(mJmriProvider),
-                InstanceFactory.create(mKeyValue));
+                InstanceFactory.create(mKeyValue),
+                InstanceFactory.create(mEventLogger));
         mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddressesAsString()).isEqualTo("42");
         when(mJmriThrottle.getDccAddress()).thenReturn(42);

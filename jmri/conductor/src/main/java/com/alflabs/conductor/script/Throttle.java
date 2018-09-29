@@ -20,6 +20,7 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
@@ -47,6 +48,7 @@ public class Throttle implements IExecEngine {
     private final Logger mLogger;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
+    private final EventLogger mEventLogger;
 
     private int mSpeed;
     private boolean mSound;
@@ -88,11 +90,13 @@ public class Throttle implements IExecEngine {
             @Provided IClock clock,
             @Provided Logger logger,
             @Provided IJmriProvider jmriProvider,
-            @Provided IKeyValue keyValue) {
+            @Provided IKeyValue keyValue,
+            @Provided EventLogger eventLogger) {
         mClock = clock;
         mLogger = logger;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
+        mEventLogger = eventLogger;
         mDccAddresses.addAll(dccAddresses);
     }
 
@@ -162,15 +166,20 @@ public class Throttle implements IExecEngine {
      * Speed 0 means stopped, a positive number for forward and a negative number for reverse.
      */
     public void setSpeed(int speed) {
+        boolean speedChange = speed != mSpeed;
         mSpeed = speed;
         for (IJmriThrottle jmriThrottle : mJmriThrottles) {
+            int dccAddress = jmriThrottle.getDccAddress();
             try {
+                if (speedChange) {
+                    mEventLogger.logAsync(EventLogger.Type.DccThrottle, Integer.toString(dccAddress), Integer.toString(speed));
+                }
                 jmriThrottle.setSpeed(speed);
             } catch (Throwable e) {
                 mLogger.log("Throttle [" + getDccAddressesAsString() + "] setSpeed exception: " + e);
             }
             try {
-                updateKV(jmriThrottle.getDccAddress(), speed);
+                updateKV(dccAddress, speed);
             } catch (Throwable e) {
                 mLogger.log("Throttle [" + getDccAddressesAsString() + "] getDccAddress exception: " + e);
             }
@@ -178,7 +187,7 @@ public class Throttle implements IExecEngine {
 
         mLastJmriTS = mClock.elapsedRealtime();
 
-        if (mSpeedListener != null) {
+        if (mSpeedListener != null && speedChange) {
             try {
                 mSpeedListener.accept(mSpeed);
             } catch (Throwable e) {

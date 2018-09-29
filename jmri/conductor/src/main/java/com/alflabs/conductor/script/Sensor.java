@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.script;
 
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.conductor.IJmriProvider;
@@ -38,6 +39,7 @@ public class Sensor implements IConditional, IExecEngine {
     private final String mKeyName;
     private final IJmriProvider mJmriProvider;
     private final IKeyValue mKeyValue;
+    private final EventLogger mEventLogger;
 
     private Runnable mOnChangedListener;
     private IJmriSensor mSensor;
@@ -48,11 +50,13 @@ public class Sensor implements IConditional, IExecEngine {
             String jmriName,
             String scriptName,
             @Provided IJmriProvider jmriProvider,
-            @Provided IKeyValue keyValue) {
+            @Provided IKeyValue keyValue,
+            @Provided EventLogger eventLogger) {
         mJmriName = jmriName;
         mKeyName = Prefix.Sensor + scriptName;
         mJmriProvider = jmriProvider;
         mKeyValue = keyValue;
+        mEventLogger = eventLogger;
     }
 
     public void setOnChangedListener(Runnable onChangedListener) {
@@ -80,10 +84,12 @@ public class Sensor implements IConditional, IExecEngine {
     @Override
     public void onExecHandle() {
         boolean active = isActive();
-        mKeyValue.putValue(mKeyName, active ? Constants.On : Constants.Off, true /*broadcast*/);
+        String value = active ? Constants.On : Constants.Off;
+        mKeyValue.putValue(mKeyName, value, true /*broadcast*/);
         if (active != mLastActive && mOnChangedListener != null) {
             mLastActive = active;
             mOnChangedListener.run();
+            mEventLogger.logAsync(EventLogger.Type.Sensor, mKeyName, value);
         }
     }
 
