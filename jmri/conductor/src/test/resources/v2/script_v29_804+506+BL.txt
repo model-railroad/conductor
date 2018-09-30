@@ -475,12 +475,15 @@ SP-Sound-Stopped ->
 # Route order: BLParked BLStation BLTunnel BLReverse
 #
 # Branchline is authorized to run when BOTH BL-Toggle and PA-Toggle are on.
+# Design issue: when BL blocks get dirty, they "isolate" quickly in on/off.
+# I should make the BD20s more sensitive. In between, adjust by assuming "on"
+# states are not permanent, they are just triggers.
 
 Throttle BL = 10
 
-Int BL-Speed = 8
+Int BL-Speed = 10
 
-Enum BL-State = Wait Restart Station Fwd Rev Error
+Enum BL-State = Wait Restart ToStation Station Fwd Fwd2 Rev Rev2 Error
 
 Int BL-Start-Counter = 0
 Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: PA-Start-Counter, Throttle: BL
@@ -525,9 +528,7 @@ BL-Toggle ->
 # --- BL State: Restart
 
 # Is it on the station already?
-# If not, try to bring it to the station, with a timeout
-
-BL-State == Restart & !BLStation -> BL-Timer-Error Start
+# If not, try to bring it to the station, with a timeout.
 
 BL-State == Restart & BLStation ->
     T324 Normal ;
@@ -537,89 +538,122 @@ BL-State == Restart & BLStation ->
 
 # Is it parked?
 BL-State == Restart & !BLStation & BLParked ->
-    BL Forward = BL-Speed
+    BL Forward = BL-Speed ;
+    BL-State = ToStation
 
 # In any other location, try to bring it backwards to the station
 BL-State == Restart & !BLStation & !BLParked ->
-    BL Reverse = BL-Speed
+    BL Reverse = BL-Speed ;
+    BL-State = ToStation
+
+# --- ToStation
+
+BL-State == ToStation & !BLStation -> 
+    BL-Timer-Error Start
+
+BL-State == ToStation & BLStation ->
+    BL Stop ;
+    BL-Timer-Error End ;
+    BL-State = Station
 
 
 # --- BL State: Station
 
+Timer BL-Timer-Start-Delay = 40
 Timer BL-Timer-Bell-Delay = 5
 
 BL-State == Station & AIU-Motion & BL-Toggle & PA-Toggle ->
     BL Stop ;
-    BL F1 = 1 ;
     BL F8 = 1 ;
     BL F9 = 1 ;
     BL Light = 1 ;
-    BL-Timer-Bell-Delay Start ;
+    BL-Timer-Start-Delay Start ;
     BL-Start-Counter += 1 ;
     GA-Page URL: GA-URL, Path: BL-Train, User: BL-Start-Counter ;
     GA-Event Category: Activation, Action: Start, Label: BL-Train, User: BL-Start-Counter
 
+BL-State == Station & BL-Timer-Start-Delay ->
+    BL Horn ;
+    BL F1 = 1 ;
+    BL-Timer-Bell-Delay Start
+
 BL-State == Station & BL-Timer-Bell-Delay ->
+    BL F1 = 0 ;
+    BL Horn ;
+    BL Forward = BL-Speed ;
     BL-State = Fwd ;
     BL-Timer-Bell-Delay End
 
 
 # --- BL State: Fwd
 
-Timer BL-Timer-Station-Start = 1
-Timer BL-Timer-RevStation-Pause = 60
+Timer BL-Timer-RevStation-Pause = 50
 
-BL-State == Fwd & !BLReverse ->
-    BL F1 = 0 ;
-    BL-Timer-Station-Start Start ;
+BL-State == Fwd ->
     BL-Timer-Error Start
 
-BL-Timer-Station-Start     -> BL Horn
-BL-Timer-Station-Start + 2 -> BL Horn
-BL-Timer-Station-Start + 4 -> BL Forward = BL-Speed
-
 BL-State == Fwd & BLReverse ->
+    BL Horn ;
     BL F1 = 1 ;
     BL-Timer-Bell-Delay Start ;
-    BL-Timer-Error End
+    BL-Timer-Error End ;
+    BL-State = Fwd2
 
-BL-State == Fwd & BL-Timer-Bell-Delay ->
+BL-State == Fwd & !BL-Toggle -> BL-State = Rev
+BL-State == Fwd & !PA-Toggle -> BL-State = Rev
+
+# --- Fwd2
+
+BL-State == Fwd2 & BL-Timer-Bell-Delay ->
     BL F1 = 0 ;
     BL Stop ;
+    BL Horn ;
     BL-Timer-RevStation-Pause Start ;
     BL-Timer-Bell-Delay End
 
-BL-State == Fwd & BL-Timer-RevStation-Pause ->
-    BL F1 = 1
+BL-State == Fwd2 & BL-Timer-RevStation-Pause ->
+    BL F1 = 1 ;
+    BL Horn
 
-BL-State == Fwd & BL-Timer-RevStation-Pause + 5 ->
+BL-State == Fwd2 & BL-Timer-RevStation-Pause + 5 ->
     BL-State = Rev
+
+BL-State == Fwd2 & !BL-Toggle -> BL-State = Rev
+BL-State == Fwd2 & !PA-Toggle -> BL-State = Rev
 
 
 # --- BL State: Rev
+
+BL-State == Rev & BLParked -> BL Stop   # too far...
 
 BL-State == Rev & !BLStation ->
     BL F1 = 0 ;
     BL F8 = 1 ;
     BL F9 = 1 ;
     BL Light = 1 ;
+    BL Horn ;
     BL Reverse = BL-Speed ;
     BL-Timer-Error Start
 
-Timer BL-Timer-Station-Stop = 20
+Timer BL-Timer-Station-Stop = 14
 
 BL-State == Rev & BLStation ->
     BL F1 = 1 ;
     T324 Normal ;
     BL-Timer-Station-Stop Start ;
-    BL-Timer-Error End
+    BL-Timer-Error End ;
+    BL-State = Rev2
 
-BL-State == Rev & BL-Timer-Station-Stop ->
+# --- Rev2
+
+BL-State == Rev2 & BLParked -> BL Stop   # too far...
+
+BL-State == Rev2 & BL-Timer-Station-Stop ->
     BL Stop ;
     BL Horn ;
     BL-Timer-Bell-Delay Start
 
-BL-State == Rev & BL-Timer-Bell-Delay ->
+BL-State == Rev2 & BL-Timer-Bell-Delay ->
     BL F1 = 0 ;
     BL F8 = 0 ;
     BL-State = Wait ;
