@@ -12,11 +12,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -34,8 +36,7 @@ public class EventLogger {
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
-    private final IClock mClock;
-    private final ILocalTimeNowProvider mLocalTimeNow;
+    private final ILocalDateTimeNowProvider mLocalDateTimeNow;
     private final ExecutorService mExecutorService;
 
     private static final Event END_LOOP = new Event(LocalTime.of(0, 0, 0, 0), Type.Variable, "Stop", "Internal");
@@ -58,25 +59,30 @@ public class EventLogger {
     public EventLogger(
             ILogger logger,
             FileOps fileOps,
-            IClock clock,
-            ILocalTimeNowProvider localTimeNow) {
+            ILocalDateTimeNowProvider localDateTimeNow) {
         mLogger = logger;
         mFileOps = fileOps;
-        mClock = clock;
-        mLocalTimeNow = localTimeNow;
+        mLocalDateTimeNow = localDateTimeNow;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
     public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
-        LocalTime now = mLocalTimeNow.getNow();
+        LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
         // Add an event (non blocking)
         mEvents.add(new Event(now, type, name, value));
     }
 
-    /** Starts logging to disk.
+    /**
+     * Starts logging to disk.
+     * <p/>
+     * Can be called multiple times before {@link #shutdown()}, in which case the following calls
+     * are no-ops that just return the filename.
+     * <p/>
+     * Calling this after {@link #shutdown()} should fail and will not restart it.
      *
      * @param logDirectory The directory to use for logging or null for current directory.
      * @return The name of the file being logged to.
+     * @throws RejectedExecutionException if trying to call this after {@link #shutdown()}.
      */
     public String start(@Null File logDirectory) {
         mLogger.d(TAG, "Start");
@@ -99,9 +105,8 @@ public class EventLogger {
                 }
             }
 
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-            Date now = new Date(mClock.elapsedRealtime());
-            String time = simpleDateFormat.format(now);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+            String time = mLocalDateTimeNow.getNow().format(formatter);
             String filename = "conductor-log-" + time + ".txt";
             mFile = logDirectory == null ? new File(filename) : new File(logDirectory, filename);
 
@@ -112,7 +117,7 @@ public class EventLogger {
 
                 try (Writer w = mFileOps.openFileWriter(mFile, true /*append*/)) {
                     // BlockingQueue.take() waits till an element is available or is interrupted.
-                    // We use a special "marker" event to request to the end the loop.
+                    // We use a special "marker" event to request to end the loop.
                     Event event;
                     while ((event = mEvents.take()) != END_LOOP) {
                         w.write(event.toString());
@@ -132,6 +137,11 @@ public class EventLogger {
         return mFile.getPath();
     }
 
+    /**
+     * Shutdown the executor service and sync/wait for it to terminate.
+     * This ensures the log file is flushed and closed properly.
+     * Attempts to {@link #start(File)} again after this will fail.
+     */
     public void shutdown() throws InterruptedException {
         mEvents.add(END_LOOP);
         mExecutorService.shutdown();

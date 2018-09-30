@@ -29,6 +29,7 @@ import com.alflabs.conductor.script.ExecEngine;
 import com.alflabs.conductor.script.IScriptComponent;
 import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.rx.Schedulers;
 import com.alflabs.rx.Streams;
 import com.alflabs.utils.FakeClock;
@@ -47,6 +48,7 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -108,6 +110,14 @@ public class SimulatorTest {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
+                    }
+
+                    @Override
+                    public ILocalDateTimeNowProvider provideLocalDateTime() {
+                        return () -> {
+                            // It is permanently 1:42 PM here
+                            return LocalDateTime.of(1901, 2, 3, 13, 42, 43);
+                        };
                     }
                 })
                 .scriptFile(file)
