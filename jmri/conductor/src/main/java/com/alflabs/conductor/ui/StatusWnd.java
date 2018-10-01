@@ -58,6 +58,8 @@ import java.util.function.Supplier;
  * - Reactivate the "Delegate IDE build to gradle".
  */
 public class StatusWnd {
+    private static final String TAG = StatusWnd.class.getSimpleName();
+
     private final JFrame mFrame;
     private JPanel mRootPanel;
     private JTextField mTextScriptName;
@@ -291,7 +293,7 @@ public class StatusWnd {
                 throttle.setDccAddress(newAddress);
                 label.setText(Integer.toString(newAddress));
             } catch (Exception e) {
-                LogException.logException(jmriProvider, e);
+                LogException.logException(jmriProvider, TAG, e);
             }
         }
     }

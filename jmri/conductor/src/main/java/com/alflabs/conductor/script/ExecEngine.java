@@ -36,6 +36,8 @@ import java.util.List;
 
 @ScriptScope
 public class ExecEngine implements IExecEngine {
+    private static final String TAG = ExecEngine.class.getSimpleName();
+
     private final Script mScript;
     private final List<Event> mActivatedEvents = new LinkedList<>();
     private final CondCache mCondCache = new CondCache();
@@ -90,7 +92,7 @@ public class ExecEngine implements IExecEngine {
         try {
             mKeyValue.putValue(Constants.MapsKey, maps.toJsonString(), true);
         } catch (JsonProcessingException e) {
-            mScript.getLogger().log("[Conductor] Export KV Maps failed: " + e);
+            mScript.getLogger().d(TAG, "Export KV Maps failed: " + e);
         }
     }
 
@@ -99,7 +101,7 @@ public class ExecEngine implements IExecEngine {
         try {
             mKeyValue.putValue(Constants.RoutesKey, routes.toJsonString(), true);
         } catch (JsonProcessingException e) {
-            mScript.getLogger().log("[Conductor] Export KV Routes failed: " + e);
+            mScript.getLogger().d(TAG, "Export KV Routes failed: " + e);
         }
     }
 
@@ -145,7 +147,7 @@ public class ExecEngine implements IExecEngine {
             try {
                 listener.run();
             } catch (Throwable e) {
-                mScript.getLogger().log("[Conductor] Handle Listener: " + e);
+                mScript.getLogger().d(TAG, "Handle Listener: " + e);
             }
         }
 

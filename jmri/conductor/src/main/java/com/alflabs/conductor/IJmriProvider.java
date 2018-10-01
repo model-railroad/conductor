@@ -18,12 +18,12 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.util.Logger;
+import com.alflabs.utils.ILogger;
 
 /**
  * Interface to JMRI to provide JMRI adapter objects.
  */
-public interface IJmriProvider extends Logger {
+public interface IJmriProvider extends ILogger {
     /**
      * Returns a new JMRI throttle adapter for the given DCC long address.
      * Returns null if the object cannot be created.

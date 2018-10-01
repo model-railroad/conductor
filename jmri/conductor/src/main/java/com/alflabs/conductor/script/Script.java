@@ -21,11 +21,11 @@ package com.alflabs.conductor.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
-import com.alflabs.conductor.util.Logger;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.utils.ILogger;
 import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
@@ -59,8 +59,9 @@ import java.util.TreeMap;
  */
 @ScriptScope
 public class Script {
+    private static final String TAG = Script.class.getSimpleName();
 
-    private final Logger mLogger;
+    private final ILogger mLogger;
     private final ILocalDateTimeNowProvider mLocalDateTimeNow;
     private final EStopHandler mEStopHandler;
     private final EnumFactory mEnumFactory;
@@ -77,7 +78,7 @@ public class Script {
 
     @Inject
     public Script(
-            Logger logger,
+            ILogger logger,
             ILocalDateTimeNowProvider localDateTimeNow,
             EStopHandler eStopHandler,
             EnumFactory enumFactory,
@@ -117,7 +118,7 @@ public class Script {
         addVar(hhmmTimeName, hhmmTime);
     }
 
-    public Logger getLogger() {
+    public ILogger getLogger() {
         return mLogger;
     }
 

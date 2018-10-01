@@ -18,17 +18,19 @@
 
 package com.alflabs.conductor.parser;
 
-import com.alflabs.conductor.util.Logger;
+import com.alflabs.utils.ILogger;
 
 /**
  * Helper to output an error message. <br/>
  * This default implementation outputs to {@link System#out}.
  */
-public class Reporter implements Logger {
-    private Logger mLogger;
+public class Reporter {
+    private static final String TAG = Reporter.class.getSimpleName();
+
+    private ILogger mLogger;
     private int mLastReportLine;
 
-    public Reporter(Logger logger) {
+    public Reporter(ILogger logger) {
         mLogger = logger;
     }
 
@@ -45,13 +47,12 @@ public class Reporter implements Logger {
         }
     }
 
-    @Override
     public void log(String msg) {
         if (mLogger != null) {
             if (msg.length() > 0 && !msg.endsWith("\n")) {
                 msg = msg + "\n";
             }
-            mLogger.log(msg);
+            mLogger.d(TAG, msg);
         }
     }
 }

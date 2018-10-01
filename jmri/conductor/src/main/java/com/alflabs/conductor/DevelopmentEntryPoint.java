@@ -19,7 +19,6 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.simulator.Simulator;
-import com.alflabs.conductor.util.Logger;
 import com.alflabs.utils.ILogger;
 import com.google.common.truth.Truth;
 
@@ -29,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Entry point controlled for development purposes using a fake no-op JMRI interface. */
 public class DevelopmentEntryPoint {
+    private static final String TAG = DevelopmentEntryPoint.class.getSimpleName();
 
     public static void main(String[] args) {
         FakeJmriProvider jmriProvider = new FakeJmriProvider();
@@ -65,12 +65,12 @@ public class DevelopmentEntryPoint {
         }
     }
 
-    private static void mainLoop(Logger logger, AtomicBoolean keepRunning, EntryPoint entryPoint) {
-        logger.log("[Main] Start thread");
+    private static void mainLoop(ILogger logger, AtomicBoolean keepRunning, EntryPoint entryPoint) {
+        logger.d(TAG, "Start thread");
         while (keepRunning.get()) {
             entryPoint.handle();
         }
-        logger.log("[Main] End thread");
+        logger.d(TAG, "End thread");
     }
 
     public static class FakeJmriProvider implements IJmriProvider {
@@ -78,9 +78,20 @@ public class DevelopmentEntryPoint {
         final Map<String, IJmriTurnout> mTurnouts = new TreeMap<>();
         final Map<Integer, IJmriThrottle> mThrottles = new TreeMap<>();
 
+        // Interface ILogger
         @Override
-        public void log(String msg) {
-            System.out.println(msg);
+        public void d(String tag, String message) {
+            System.out.println(tag + ": " + message);
+        }
+
+        // Interface ILogger
+        @Override
+        public void d(String tag, String message, Throwable tr) {
+            System.out.println(tag + ": " + message + ": " + tr);
+        }
+
+        private void log(String msg) {
+            d(TAG, msg);
         }
 
         @Override

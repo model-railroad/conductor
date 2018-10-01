@@ -21,8 +21,8 @@ package com.alflabs.conductor.script;
 import com.alflabs.conductor.IJmriProvider;
 import com.alflabs.conductor.IJmriThrottle;
 import com.alflabs.conductor.util.EventLogger;
-import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.utils.ILogger;
 import com.alflabs.utils.MockClock;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
@@ -50,7 +50,7 @@ public class ThrottleTest {
     @Mock IJmriThrottle mJmriThrottle;
     @Mock EventLogger mEventLogger;
     @Mock IKeyValue mKeyValue;
-    @Mock Logger mLogger;
+    @Mock ILogger mLogger;
 
     private Throttle mThrottle;
     private MockClock mClock;

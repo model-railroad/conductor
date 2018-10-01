@@ -208,9 +208,13 @@ class JmriProvider(IJmriProvider):
     def waitMsec(self, delayMs):
         self._provider.waitMsec(delayMs)
 
-    def log(self, msg):
-        """In: String msg; Out: void"""
-        print msg
+    def d(self, tag, msg):
+        """In: String tag, String msg; Out: void -- interface ILogger"""
+        print tag, msg
+
+    def d(self, tag, msg, tr):
+        """In: String tag, String msg, Throwable tr; Out: void -- interface ILogger"""
+        print tag, msg, str(tr)
 
     def getThrotlle(self, dccAddress):
         """In: int dccAddress; Out: IJmriThrottle"""
