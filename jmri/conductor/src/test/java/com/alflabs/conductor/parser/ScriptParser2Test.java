@@ -32,7 +32,7 @@ import com.alflabs.conductor.script.Script;
 import com.alflabs.conductor.script.ScriptModule;
 import com.alflabs.conductor.script.Timer;
 import com.alflabs.conductor.script.Var;
-import com.alflabs.conductor.util.ILocalTimeNowProvider;
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
@@ -54,6 +54,7 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,10 +111,10 @@ public class ScriptParser2Test {
                     }
 
                     @Override
-                    public ILocalTimeNowProvider provideLocalTime() {
+                    public ILocalDateTimeNowProvider provideLocalDateTime() {
                         return () -> {
                             // It is permanently 1:42 PM here
-                            return LocalTime.of(13, 42);
+                            return LocalDateTime.of(1901, 2, 3, 13, 42, 43);
                         };
                     }
                 })
@@ -138,10 +139,10 @@ public class ScriptParser2Test {
                     }
 
                     @Override
-                    public ILocalTimeNowProvider provideLocalTime() {
+                    public ILocalDateTimeNowProvider provideLocalDateTime() {
                         return () -> {
                             // It is permanently 1:42 PM here
-                            return LocalTime.of(13, 42);
+                            return LocalDateTime.of(1901, 2, 3, 13, 42, 43);
                         };
                     }
                 })

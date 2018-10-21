@@ -20,8 +20,7 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
-import com.alflabs.conductor.util.ILocalTimeNowProvider;
-import com.alflabs.conductor.util.Logger;
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -31,7 +30,7 @@ import dagger.Module;
 import dagger.Provides;
 
 import javax.inject.Singleton;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 @Module
 public class ConductorModule {
@@ -49,8 +48,8 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public ILocalTimeNowProvider provideLocalTime() {
-        return LocalTime::now;
+    public ILocalDateTimeNowProvider provideLocalDateTime() {
+        return LocalDateTime::now;
     }
 
     @Singleton
@@ -61,7 +60,7 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public Logger provideLogger() {
+    public ILogger provideLogger() {
         return mJmriProvider;
     }
 
@@ -85,23 +84,7 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public EventLogger provideEventLogger(ILogger logger, FileOps fileOps, IClock clock, ILocalTimeNowProvider localTimeNow) {
-        return new EventLogger(logger, fileOps, clock, localTimeNow);
-    }
-
-    @Singleton
-    @Provides
-    public ILogger provideILogger(Logger logger) {
-        return new ILogger() {
-            @Override
-            public void d(String tag, String message) {
-                logger.log(tag + ": " + message);
-            }
-
-            @Override
-            public void d(String tag, String message, Throwable tr) {
-                logger.log(tag + ": " + message + ": " + tr);
-            }
-        };
+    public EventLogger provideEventLogger(ILogger logger, FileOps fileOps, ILocalDateTimeNowProvider localDateTimeNow) {
+        return new EventLogger(logger, fileOps, localDateTimeNow);
     }
 }

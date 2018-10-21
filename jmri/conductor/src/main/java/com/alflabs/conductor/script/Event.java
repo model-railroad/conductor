@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.script;
 
-import com.alflabs.conductor.util.Logger;
+import com.alflabs.utils.ILogger;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +27,15 @@ import java.util.List;
  * Represents one event with its condition list, its action list and an "execution engine".
  */
 public class Event {
+    private static final String TAG = Event.class.getSimpleName();
+
     private final List<Cond> mConditions = new ArrayList<>();
     private final List<IAction> mActions = new ArrayList<>();
-    private final Logger mLogger;
+    private final ILogger mLogger;
     private final String mSrcLine;
     private boolean mExecuted;
 
-    public Event(Logger logger, String srcLine) {
+    public Event(ILogger logger, String srcLine) {
         mLogger = logger;
         mSrcLine = srcLine;
     }
@@ -64,11 +66,11 @@ public class Event {
         if (!mExecuted) {
             for (IAction action : mActions) {
                 try {
-                    mLogger.log("[Conductor] Exec: " + mSrcLine);
+                    mLogger.d(TAG, "Exec: " + mSrcLine);
                     action.execute();
 
                 } catch (Exception e) {
-                    mLogger.log("[Conductor] IAction failed [" + action + "]: " + e);
+                    mLogger.d(TAG, "failed [" + action + "]: " + e);
                 }
             }
 

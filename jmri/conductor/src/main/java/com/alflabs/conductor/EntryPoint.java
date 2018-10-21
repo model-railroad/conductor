@@ -28,9 +28,9 @@ import com.alflabs.conductor.simulator.Simulator;
 import com.alflabs.conductor.ui.StatusWnd;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.LogException;
-import com.alflabs.conductor.util.Logger;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.Constants;
+import com.alflabs.utils.ILogger;
 import com.alflabs.utils.RPair;
 
 import javax.inject.Inject;
@@ -52,6 +52,8 @@ import java.util.concurrent.TimeUnit;
 
 /** Interface controlled by Conductor.py */
 public class EntryPoint {
+    private static final String TAG = EntryPoint.class.getSimpleName();
+
     private Script mScript;
     private ExecEngine mEngine;
     private boolean mStopRequested;
@@ -59,7 +61,7 @@ public class EntryPoint {
     private CountDownLatch mJmDNSLatch;
     private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
-    @Inject Logger mLogger;
+    @Inject ILogger mLogger;
     @Inject KeyValueServer mKeyValueServer;
     @Inject EventLogger mEventLogger;
 
@@ -94,10 +96,10 @@ public class EntryPoint {
         // Do not use any injected field before this call
         mComponent.inject(this);
 
-        mLogger.log("[Conductor] Setup");
+        mLogger.d(TAG, "Setup");
 
         String eventLogFilename = mEventLogger.start(null);
-        mLogger.log("[Conductor] Event log: " + eventLogFilename);
+        mLogger.d(TAG, "Event log: " + eventLogFilename);
 
         if (loadScript().length() > 0) {
             return false;
@@ -108,7 +110,7 @@ public class EntryPoint {
         // Open the window if a GUI is possible. This can fail.
         try {
             InetSocketAddress address = mKeyValueServer.start(Constants.KV_SERVER_PORT);
-            mLogger.log("[Conductor] KV Server available at " + address);
+            mLogger.d(TAG, "KV Server available at " + address);
 
             StatusWnd wnd = StatusWnd.open();
             wnd.init(
@@ -121,8 +123,8 @@ public class EntryPoint {
 
         } catch (Exception e) {
             // Ignore. continue.
-            mLogger.log("[Conductor] UI not enabled: ");
-            LogException.logException(mLogger, e);
+            mLogger.d(TAG, "UI not enabled: ");
+            LogException.logException(mLogger, TAG, e);
         }
 
         return true;
@@ -139,7 +141,7 @@ public class EntryPoint {
     private void startZeroconfAdvertising(String name) {
         mJmDNSLatch = new CountDownLatch(1);
         try {
-            mLogger.log("[Conductor] Starting ZeroConf");
+            mLogger.d(TAG, "Starting ZeroConf");
 
             Map<String, String> props = new TreeMap<>();
             props.put("origin", "conductor");
@@ -155,7 +157,7 @@ public class EntryPoint {
                     gotIpv4 = true;
                 }
                 if (gotIpv4 && address instanceof Inet6Address) {
-                    mLogger.log("[Conductor] Skip ZeroConf on " + address + " (already got an IPv4 before).");
+                    mLogger.d(TAG, "Skip ZeroConf on " + address + " (already got an IPv4 before).");
                     continue;
                 }
                 ServiceInfo info = ServiceInfo.create(
@@ -168,13 +170,13 @@ public class EntryPoint {
 
                 JmDNS jmDns = JmDNS.create(address);
                 jmDns.registerService(info);
-                mLogger.log("[Conductor] Started ZeroConf on " + jmDns.getInetAddress());
+                mLogger.d(TAG, "Started ZeroConf on " + jmDns.getInetAddress());
                 mJmDnsList.add(jmDns);
             }
         } catch (IOException e) {
             // Ignore. continue.
-            mLogger.log("[Conductor] ZeroConf not enabled: ");
-            LogException.logException(mLogger, e);
+            mLogger.d(TAG, "ZeroConf not enabled: ");
+            LogException.logException(mLogger, TAG, e);
         } finally {
             mJmDNSLatch.countDown();
         }
@@ -182,36 +184,36 @@ public class EntryPoint {
 
     protected void onStopAction() {
         sendEvent("Stop");
-        mLogger.log("[Conductor] KV Server stopping, port " + Constants.KV_SERVER_PORT);
+        mLogger.d(TAG, "KV Server stopping, port " + Constants.KV_SERVER_PORT);
         if (mJmDNSLatch != null) {
             try {
-                mLogger.log("[Conductor] Waiting for ZeroConf");
+                mLogger.d(TAG, "Waiting for ZeroConf");
                 mJmDNSLatch.await(1, TimeUnit.MINUTES);
             } catch (InterruptedException ignore) {}
         }
 
         for (JmDNS jmDns : mJmDnsList) {
             try {
-                mLogger.log("[Conductor] Teardown ZeroConf on " + jmDns.getInetAddress());
+                mLogger.d(TAG, "Teardown ZeroConf on " + jmDns.getInetAddress());
             } catch (IOException ignore) {}
             jmDns.unregisterAllServices();
             try {
                 jmDns.close();
             } catch (IOException e) {
-                mLogger.log("[Conductor] Teardown ZeroConf exception: " + e);
+                mLogger.d(TAG, "Teardown ZeroConf exception: " + e);
             }
         }
 
         try {
             mComponent.getAnalytics().shutdown();
         } catch (InterruptedException e) {
-            mLogger.log("[Conductor] Teardown Analytics exception: " + e);
+            mLogger.d(TAG, "Teardown Analytics exception: " + e);
         }
 
         try {
             mEventLogger.shutdown();
         } catch (InterruptedException e) {
-            mLogger.log("[Conductor] EventLogger Shutdown exception: " + e);
+            mLogger.d(TAG, "EventLogger Shutdown exception: " + e);
         }
 
         mKeyValueServer.stopSync();
@@ -260,9 +262,9 @@ public class EntryPoint {
             mEngine.onExecStart();
             sendEvent("Start");
         } catch (IOException e) {
-            mLogger.log("[Conductor] Script Path: " + mComponent.getScriptFile().getAbsolutePath());
-            mLogger.log("[Conductor] failed to load event script with the following exception:");
-            LogException.logException(mLogger, e);
+            mLogger.d(TAG, "Script Path: " + mComponent.getScriptFile().getAbsolutePath());
+            mLogger.d(TAG, "Failed to load event script with the following exception:");
+            LogException.logException(mLogger, TAG, e);
         }
         return error.toString();
     }
@@ -275,9 +277,9 @@ public class EntryPoint {
      */
     @SuppressWarnings("unused")
     public boolean handle() {
-        // DEBUG ONLY: mScript.getLogger().log("[Conductor] Handle");
+        // DEBUG ONLY: mScript.getLogger().log("Handle");
         if (mStopRequested) {
-            mLogger.log("[Conductor] Stop Requested");
+            mLogger.d(TAG, "Stop Requested");
             return false;
         }
         if (mEngine != null) {

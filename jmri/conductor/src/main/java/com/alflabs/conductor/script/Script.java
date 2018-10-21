@@ -20,12 +20,12 @@ package com.alflabs.conductor.script;
 
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
-import com.alflabs.conductor.util.ILocalTimeNowProvider;
-import com.alflabs.conductor.util.Logger;
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.manifest.RouteInfo;
+import com.alflabs.utils.ILogger;
 import com.google.common.collect.ImmutableList;
 
 import javax.inject.Inject;
@@ -59,9 +59,10 @@ import java.util.TreeMap;
  */
 @ScriptScope
 public class Script {
+    private static final String TAG = Script.class.getSimpleName();
 
-    private final Logger mLogger;
-    private final ILocalTimeNowProvider mLocalTimeNow;
+    private final ILogger mLogger;
+    private final ILocalDateTimeNowProvider mLocalDateTimeNow;
     private final EStopHandler mEStopHandler;
     private final EnumFactory mEnumFactory;
     private final VarFactory mVarFactory;
@@ -77,13 +78,13 @@ public class Script {
 
     @Inject
     public Script(
-            Logger logger,
-            ILocalTimeNowProvider localTimeNow,
+            ILogger logger,
+            ILocalDateTimeNowProvider localDateTimeNow,
             EStopHandler eStopHandler,
             EnumFactory enumFactory,
             VarFactory varFactory) {
         mLogger = logger;
-        mLocalTimeNow = localTimeNow;
+        mLocalDateTimeNow = localDateTimeNow;
         mEStopHandler = eStopHandler;
         mEnumFactory = enumFactory;
         mVarFactory = varFactory;
@@ -108,7 +109,7 @@ public class Script {
         Var hhmmTime = mVarFactory.create(() -> {
             // Note: This is the system time in the "default" timezone which is... well it depends.
             // Many linux installs default to UTC, so that needs to be verified on deployment site.
-            LocalTime now = mLocalTimeNow.getNow();
+            LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
             int h = now.getHour();
             int m = now.getMinute();
             return h * 100 + m;
@@ -117,7 +118,7 @@ public class Script {
         addVar(hhmmTimeName, hhmmTime);
     }
 
-    public Logger getLogger() {
+    public ILogger getLogger() {
         return mLogger;
     }
 
