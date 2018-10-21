@@ -40,7 +40,7 @@ Sensor B503a        = NS786      # 50:3
 Sensor B503b        = NS787      # 50:4
 Sensor AIU-Motion   = NS797      # 50:14
 
-Sensor BL-Toggle    = NS829      # 52:14
+Sensor BL-Toggle    = NS828      # 52:13
 Sensor PA-Toggle    = NS829      # 52:14
 
 # turnouts
