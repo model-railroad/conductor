@@ -32,14 +32,15 @@ Sensor B330         = NS773      # 49:6
 Sensor B340         = NS774      # 49:7
 Sensor B360         = NS775      # 49:8
 Sensor B370         = NS776      # 49:9
-Sensor BL-Toggle    = NS781      # 49:14
+Sensor Old-BL-Toggle= NS781      # 49:14
 
-Sensor OLD-Toggle   = NS784      # 50:1, Unused PA automation toggle
+Sensor Old-PA-Toggle= NS784      # 50:1, Unused PA automation toggle
 Sensor PA-Run3      = NS785      # 50:2
 Sensor B503a        = NS786      # 50:3
 Sensor B503b        = NS787      # 50:4
 Sensor AIU-Motion   = NS797      # 50:14
 
+Sensor BL-Toggle    = NS829      # 52:14
 Sensor PA-Toggle    = NS829      # 52:14
 
 # turnouts
@@ -473,11 +474,6 @@ SP-Sound-Stopped ->
 # F9 for red markers on the "end" side
 #
 # Route order: BLParked BLStation BLTunnel BLReverse
-#
-# Branchline is authorized to run when BOTH BL-Toggle and PA-Toggle are on.
-# Design issue: when BL blocks get dirty, they "isolate" quickly in on/off.
-# I should make the BD20s more sensitive. In between, adjust by assuming "on"
-# states are not permanent, they are just triggers.
 
 Throttle BL = 10
 
@@ -511,7 +507,7 @@ BL-State == Wait ->
     BL-Timer-Wait Start ;
     BL Stop
 
-BL-Timer-Wait & BL-Toggle & PA-Toggle -> BL-State = Restart
+BL-Timer-Wait & BL-Toggle -> BL-State = Restart
 
 BL-Toggle ->
     BL Repeat = 2 ;
