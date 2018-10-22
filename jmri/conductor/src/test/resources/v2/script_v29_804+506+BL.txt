@@ -482,7 +482,7 @@ Int BL-Speed = 10
 Enum BL-State = Wait Restart ToStation Station Fwd Fwd2 Rev Rev2 Error
 
 Int BL-Start-Counter = 0
-Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: PA-Start-Counter, Throttle: BL
+Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
 
 # --- BL State: Error
 
@@ -558,7 +558,7 @@ BL-State == ToStation & BLStation ->
 Timer BL-Timer-Start-Delay = 40
 Timer BL-Timer-Bell-Delay = 5
 
-BL-State == Station & AIU-Motion & BL-Toggle & PA-Toggle ->
+BL-State == Station & AIU-Motion & BL-Toggle ->
     BL Stop ;
     BL F8 = 1 ;
     BL F9 = 1 ;
@@ -596,7 +596,6 @@ BL-State == Fwd & BLReverse ->
     BL-State = Fwd2
 
 BL-State == Fwd & !BL-Toggle -> BL-State = Rev
-BL-State == Fwd & !PA-Toggle -> BL-State = Rev
 
 # --- Fwd2
 
@@ -615,7 +614,6 @@ BL-State == Fwd2 & BL-Timer-RevStation-Pause + 5 ->
     BL-State = Rev
 
 BL-State == Fwd2 & !BL-Toggle -> BL-State = Rev
-BL-State == Fwd2 & !PA-Toggle -> BL-State = Rev
 
 
 # --- BL State: Rev
