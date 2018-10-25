@@ -22,7 +22,7 @@ Sensor BLParked     = NS752      # 48:1
 Sensor BLStation    = NS753      # 48:2
 Sensor BLTunnel     = NS754      # 48:3
 Sensor BLReverse    = NS755      # 48:4
-Sensor BLRun        = NS765      # 48:14, Disconnected
+Sensor BLRun        = NS765      # 48:14, Disconnected BL activation button
 
 Sensor B310         = NS768      # 49:1
 Sensor B311         = NS769      # 49:2
@@ -32,10 +32,10 @@ Sensor B330         = NS773      # 49:6
 Sensor B340         = NS774      # 49:7
 Sensor B360         = NS775      # 49:8
 Sensor B370         = NS776      # 49:9
-Sensor Old-BL-Toggle= NS781      # 49:14
+Sensor Old-BL-Toggle= NS781      # 49:14 Unused BL automation toggle
 
 Sensor Old-PA-Toggle= NS784      # 50:1, Unused PA automation toggle
-Sensor PA-Run3      = NS785      # 50:2
+Sensor Old-PA-Run   = NS785      # 50:2, Unused PA activation button
 Sensor B503a        = NS786      # 50:3
 Sensor B503b        = NS787      # 50:4
 Sensor AIU-Motion   = NS797      # 50:14
@@ -64,6 +64,9 @@ Map Mainline = "Conductor Map Mainline 1.svg"
 GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 String GA-URL = "http://consist.alfray.com/train/"
 
+# Limited Run Mode
+
+Enum Limitation = Full Limited
 
 # -----------------
 # Global STOP Timer
@@ -82,12 +85,12 @@ Timer PA-Error-Timer = 600   # 10 minutes
 Int AIU-Motion-Counter = 0
 
 AIU-Motion  -> 
-    RTAC-Motion = On  ; PA-Run3 = Active ;
+    RTAC-Motion = On ;
     AIU-Motion-Counter += 1 ;
     GA-Event Category: Motion, Action: Start, Label: AIU, User: AIU-Motion-Counter
 
 !AIU-Motion -> 
-    RTAC-Motion = Off ; PA-Run3 = Inactive ;
+    RTAC-Motion = Off ;
     GA-Event Category: Motion, Action: Stop, Label: AIU, User: AIU-Motion-Counter
 
 
@@ -266,7 +269,7 @@ PA-State == Manual & PA-Manual == In370 & !B370 ->
 
 # --- PA State: Wait (to station)
 
-Timer PA-Timer-Wait = 300  # 5 minutes
+Timer PA-Timer-Wait = 60  # 1 minute
 PA-State == Wait -> PA-Timer-Wait Start
 
 PA-Timer-Wait -> PA-State = Station
@@ -276,7 +279,7 @@ PA-Timer-Wait -> PA-State = Station
 
 # Departure from Station (going up)
 # REQUIRES both trains on B503b/B311 and stopped.
-PA-State == Station & !B320 & B311 & B503b & AM Stopped & SP Stopped & PA-Run3 ->
+PA-State == Station & !B320 & B311 & B503b & AM Stopped & SP Stopped & AIU-Motion ->
     PA-State = Starting
 
 PA-State == Starting ->
@@ -288,11 +291,11 @@ PA-State == Starting ->
 PA-State == Station & PA-Toggle & PA-Train == Amtrak ->
                                              RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrak"
 PA-State == Wait    & PA-Toggle & PA-Train == Amtrak ->
-                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrak\n\nLeaving in 5 minutes"
+                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrak\n\nLeaving in 1 minute"
 PA-State == Station & PA-Toggle & PA-Train == Short  ->
                                              RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
 PA-State == Wait    & PA-Toggle & PA-Train == Short  ->
-                                             RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 5 minutes"
+                                             RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
 
 PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up ;
                                              RTAC-PSA-Text = "{c:blue}Currently Running:\n\nAmtrak"
@@ -343,12 +346,12 @@ PA-State == AM-Up & !PA-Toggle & AM Forward & B330 -> PA-State = AM-Down ; AM Re
 PA-State == AM-Up & !PA-Toggle & AM Forward & B340 -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
 
 
-# LIMITATION -- Stop and reverse at block 330, do not reach Summit
+# LIMITED -- Stop and reverse at block 330, do not reach Summit
 
-PA-State == AM-Up & B330 -> AM Stop ; AM Horn
-PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+Limitation == Limited & PA-State == AM-Up & B330 -> AM Stop ; AM Horn
+Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
 
-# END-LIMITATION
+# END-LIMITED
 
 
 # --- PA State: AM Summit
@@ -615,16 +618,16 @@ BL-State == Fwd & BLReverse ->
     BL-Timer-Error End ;
     BL-State = Fwd2
 
-# LIMITATION : Stop just at the exit of the tunnel
+# LIMITATED : Stop just at the exit of the tunnel
 
-BL-State == Fwd & BLTunnel + 5 ->
+Limitation == Limited & BL-State == Fwd & BLTunnel + 5 ->
     BL Horn ;
     BL F1 = 1 ;
     BL-Timer-Bell-Delay Start ;
     BL-Timer-Error End ;
     BL-State = Fwd2
 
-# END-LIMITATION
+# END-LIMITED
 
 BL-State == Fwd & !BL-Toggle -> BL-State = Rev
 
@@ -710,7 +713,7 @@ Stop
 Set  On B503b
 Set  On B311
 Set Off B320
-Wait On PA-Toggle; Wait On PA-Run3; Wait 8s
+Wait On PA-Toggle; Wait On AIU-Motion; Wait 8s
 
 # Going up
 Set On B503a; Set Off B503b; Wait 8s
