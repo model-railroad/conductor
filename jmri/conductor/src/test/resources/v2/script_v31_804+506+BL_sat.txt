@@ -485,13 +485,18 @@ SP-Sound-Stopped ->
 
 # --- PA State: Saturday
 
-Enum PA-Saturday = Init Store1 Store2 Store3 Restore1
+Enum PA-Saturday = Init Store1 Store2 Store3 Store4 Restore1
 
 # Saturday Init:
 # - Store if trains are at station (B503b + B311, no B503a)
 # - Restore if trains are both in station (B503a / B503b, no B311).
 
 PA-State == Station  & PA-Toggle &  Sat-Toggle & PA-Saturday == Init & !B503a & B503b &  B311 -> 
+    PA-State = Saturday ;
+    Reset Timers = "Sat" ;
+    PA-Saturday = Store1
+
+PA-State == Wait     & PA-Toggle &  Sat-Toggle & PA-Saturday == Init & !B503a & B503b &  B311 -> 
     PA-State = Saturday ;
     Reset Timers = "Sat" ;
     PA-Saturday = Store1
@@ -546,11 +551,14 @@ PA-Saturday == Store3 & B321 ->
     AM-Timer-Acquire-Route Start
 
 PA-Saturday == Store3 & !B321 & SP Reverse ->
-    SP Reverse = SP-Station-Speed
+    SP Reverse = SP-Reverse-Speed
 
-PA-Saturday == Store3 & B503a ->
+PA-Saturday == Store3 & B503a + 1 ->
     SP Stop ;
     SP F1 = 0 ;
+    PA-Saturday = Store4
+
+PA-Saturday == Store4 + 5 ->
     AM Light = 0 ; AM Sound = 0 ; AM F1 = 0 ;
     SP Light = 0 ; SP Sound = 0 ; SP F1 = 0 ;
     PA-Timer-Release-Route Start ;
