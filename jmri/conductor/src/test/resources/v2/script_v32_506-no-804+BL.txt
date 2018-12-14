@@ -146,10 +146,28 @@ Int AM-Sonora-Speed     = 12
 Int AM-Crossover-Speed  = 12
 Int AM-Full-Speed       = 20
 
+Timer AM-Timer-B321-Up-Doppler = 27
+Timer AM-Timer-B330-Up-Resume = 12
+Timer AM-Timer-B340-Up-Horn = 5
+Timer AM-Timer-B370-Forward-Stop = 10  # time running at AM-Summit-Speed before stopping
+Timer AM-Timer-B370-Pause-Delay  = 16
+Timer AM-Timer-B360-Full-Reverse = 12
+Timer AM-Timer-B330-Down-Speed = 8
+Timer AM-Timer-B321-Down-Crossover = 20
+Timer AM-Timer-B503b-Down-Stop = 5
+Timer AM-Timer-Down-Station-Lights-Off = 10
+
 # Speeds: Doodlebug = 8/4; RDC = 20/12.
 Int SP-Forward-Speed    = 16
 Int SP-Reverse-Speed    = 12
 Int SP-Station-Speed    = 4
+
+Timer SP-Timer-Up-Slow = 60      # B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+Timer SP-Timer-Up-Stop = 10
+Timer SP-Timer-Up-Reverse = 20
+Timer SP-Timer-Down-Slow = 18    # Where to slow at station. RDC=10, Doodlebug or 804=18.
+Timer SP-Timer-Down-Stop = 10
+Timer SP-Timer-Down-Off  = 20
 
 # --- Routes
 
@@ -334,12 +352,20 @@ PA-State == AM-Up & B503a & AM Forward ->
 PA-State == AM-Up & B321 & AM Forward -> AM Forward = AM-Full-Speed
 
 # Mid-Station doppler on the way up
-PA-State == AM-Up & B321 + 27 & AM Forward -> AM F9 = 1 ; AM F9 = 0
+PA-State == AM-Up & B321 & AM Forward -> AM-Timer-B321-Up-Doppler Start
+PA-State == AM-Up & B321 & AM Forward & AM-Timer-B321-Up-Doppler -> AM F9 = 1 ; AM F9 = 0
+
 # Sonora speed reduction
-PA-State == AM-Up & B330 & AM Forward -> AM Forward = AM-Sonora-Speed
-PA-State == AM-Up & B330 + 12 & AM Forward -> AM Forward = AM-Full-Speed ; AM Horn
+PA-State == AM-Up & B330 & AM Forward ->
+    AM Forward = AM-Sonora-Speed ;
+    AM-Timer-B330-Up-Resume Start
+PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
+    AM Forward = AM-Full-Speed ;
+    AM Horn
+
 # After tunnel on the way up
-PA-State == AM-Up & B340 + 5 & AM Forward -> AM Horn
+PA-State == AM-Up & B340 -> AM-Timer-B340-Up-Horn Start
+PA-State == AM-Up & AM-Timer-B340-Up-Horn & AM Forward -> AM Horn
 
 PA-State == AM-Up & B360 -> PA-State = AM-Summit
 
@@ -352,10 +378,10 @@ PA-State == AM-Up & !PA-Toggle & AM Forward & B340 -> PA-State = AM-Down ; AM Re
 
 
 # LIMITED -- Stop and reverse at block 330, do not reach Summit
-
-Limitation == Limited & PA-State == AM-Up & B330 -> AM Stop ; AM Horn
-Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
-
+#
+#Limitation == Limited & PA-State == AM-Up & B330 -> AM Stop ; AM Horn
+#Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+#
 # END-LIMITED
 
 
@@ -363,13 +389,16 @@ Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State =
 
 PA-State == AM-Summit -> PA-Error-Timer Start
 
+
 PA-State == AM-Summit & B370 +  4 & AM Forward ->
+    AM-Timer-B370-Forward-Stop Start ;
     AM Forward = AM-Summit-Speed ;
     AM F1 = 1
-PA-State == AM-Summit & B370 + 14 & AM Forward ->
+PA-State == AM-Summit & AM-Timer-B370-Forward-Stop & AM Forward ->
     AM Stop ;
-    AM Horn
-PA-State == AM-Summit & B370 + 30 ->
+    AM Horn ;
+    AM-Timer-B370-Pause-Delay Start
+PA-State == AM-Summit & AM-Timer-B370-Pause-Delay ->
     AM F1 = 0 ;
     AM Horn;
     AM Reverse = AM-Summit-Speed
@@ -383,27 +412,28 @@ PA-State == AM-Summit & !B370 & B360 & AM Reverse ->
 
 PA-State == AM-Down -> PA-Error-Timer Start
 
-Timer AM-Timer-Full-Reverse = 12
-PA-State == AM-Down & AM Reverse -> AM-Timer-Full-Reverse Start
-PA-State == AM-Down & AM Reverse & B360 & AM-Timer-Full-Reverse -> AM Reverse = AM-Full-speed
+PA-State == AM-Down & AM Reverse -> AM-Timer-B360-Full-Reverse Start
+PA-State == AM-Down & AM Reverse & B360 & AM-Timer-B360-Full-Reverse -> AM Reverse = AM-Full-speed
 
 # Just slow down at midstation
-PA-State == AM-Down & AM Reverse & B330 + 8 ->
+PA-State == AM-Down & AM Reverse & B330 -> AM-Timer-B330-Down-Speed Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B330-Down-Speed ->
     AM Horn ;
     AM Reverse = AM-Crossover-Speed 
 PA-State == AM-Down & AM Reverse & B321 & B330 ->
     AM Reverse = AM-Full-Speed ;
     AM F9 = 1 ; AM F9 = 0
-PA-State == AM-Down & AM Reverse & B321 + 20 ->
+PA-State == AM-Down & AM Reverse & B321 -> AM-Timer-B321-Down-Crossover Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B321-Down-Crossover ->
     AM Horn ;
     AM Reverse = AM-Crossover-Speed
 
 # Arrival at Station
 PA-State == AM-Down & B503a & AM Reverse -> AM Reverse = AM-Station-Speed
-Timer AM-Timer-Down-Station-Lights-Off = 10
 PA-State == AM-Down & AM Reverse & B503a ->
-    AM Reverse = AM-Leaving-Speed
-PA-State == AM-Down & AM Reverse & B503b + 5 ->
+    AM Reverse = AM-Leaving-Speed ;
+    AM-Timer-B503b-Down-Stop Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
     AM Stop ;
     AM Horn ;
     AM-Timer-Down-Station-Lights-Off Start ;
@@ -429,20 +459,20 @@ SP-Sound-Started ->
     SP Forward = SP-Forward-Speed ;
     SP-Timer-Acquire-Route Start
 
-# Time to stop: 40 for RDC, 60 for Doodlebug, 60 for 804.
-Timer SP-Timer-Up = 60
 PA-State == SP-Up & B321 & SP Forward ->
-    SP-Timer-Up Start
+    SP-Timer-Up-Slow Start
 
-PA-State == SP-Up & B321 & SP-Timer-Up & SP Forward ->
+PA-State == SP-Up & B321 & SP-Timer-Up-Slow & SP Forward ->
     SP Horn ;
-    SP Forward = SP-Station-Speed
+    SP Forward = SP-Station-Speed ;
+    SP-Timer-Up-Stop Start
 
-PA-State == SP-Up & SP-Timer-Up + 10 & SP Forward ->
+PA-State == SP-Up & SP-Timer-Up-Stop & SP Forward ->
     SP Horn ;
-    SP Stop
+    SP Stop ;
+    SP-Timer-Up-Reverse Start
 
-PA-State == SP-Up & SP-Timer-Up + 30 & SP Stopped ->
+PA-State == SP-Up & SP-Timer-Up-Reverse & SP Stopped ->
     PA-State = SP-Down
 
 # Error case: we should never reach block B330
@@ -460,22 +490,22 @@ PA-State == SP-Down ->
     SP Horn ;
     SP Reverse = SP-Reverse-Speed
 
-# Where to stop. 10 for RDC, 18 for Doodlebug or 804.
-Timer SP-Timer-Down = 18
 PA-State == SP-Down & B311 & SP Reverse ->
-    SP-Timer-Down Start
+    SP-Timer-Down-Slow Start
 
-PA-State == SP-Down & SP-Timer-Down & SP Reverse ->
+PA-State == SP-Down & SP-Timer-Down-Slow & SP Reverse ->
     SP Horn ;
-    SP Reverse = SP-Station-Speed
+    SP Reverse = SP-Station-Speed ;
+    SP-Timer-Down-Stop Start
 
-PA-State == SP-Down & SP-Timer-Down + 10 & SP Reverse ->
+PA-State == SP-Down & SP-Timer-Down-Stop & SP Reverse ->
     SP Horn ;
     SP Stop ;
-    PA-Error-Timer End
+    PA-Error-Timer End ;
+    SP-Timer-Down-Off Start
 
 Timer SP-Sound-Stopped = 2
-PA-State == SP-Down & SP-Timer-Down + 20 & SP Stopped ->
+PA-State == SP-Down & SP-Timer-Down-Off & SP Stopped ->
     SP Horn ;
     SP Light = 0 ;
     SP-Sound-Stopped Start
@@ -623,7 +653,7 @@ BL-State == Fwd & BLReverse ->
     BL-Timer-Error End ;
     BL-State = Fwd2
 
-# LIMITATED : Stop just at the exit of the tunnel
+# LIMITED : Stop just at the exit of the tunnel
 
 Limitation == Limited & BL-State == Fwd & BLTunnel + 5 ->
     BL Horn ;
