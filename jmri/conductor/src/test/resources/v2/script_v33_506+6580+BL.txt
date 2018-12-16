@@ -115,6 +115,9 @@ AIU-Motion  ->
 #
 # Timing for CV Momentum: CV 3 = CV 4 = 18
 
+# Walthers Mainline UP 8736:
+# Timings for NCE Momentum #2
+
 # On the RDC SP-10:
 # F0 is light (use BL Light)
 # F1 is bell
@@ -144,7 +147,7 @@ AIU-Motion  ->
 
 
 
-Throttle AM = 506       # Atlas GE on full Amtrak route
+Throttle AM = 8736      # Atlas GE on full Amtrak route
 Throttle SP = 2468      # "Short Passenger" (now Santa Fe Freight) on limited Amtrak route
 
 Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Down Manual Error Wait
@@ -158,10 +161,10 @@ Route SP-Main = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, 
 
 Int AM-Leaving-Speed    = 8
 Int AM-Station-Speed    = 12
-Int AM-Summit-Speed     = 12
-Int AM-Sonora-Speed     = 12
-Int AM-Crossover-Speed  = 12
-Int AM-Full-Speed       = 20
+Int AM-Summit-Speed     = 8
+Int AM-Sonora-Speed     = 8
+Int AM-Crossover-Speed  = 6
+Int AM-Full-Speed       = 16
 
 Timer AM-Timer-B321-Up-Doppler = 27
 Timer AM-Timer-B330-Up-Resume = 12
@@ -321,8 +324,7 @@ PA-Timer-Wait -> PA-State = Station
 # B320 must be free (it triggers the manual mode).
 # We must have all the route free till B370 before starting.
 PA-State == Station & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b & AM Stopped & SP Stopped & AIU-Motion ->
-    PA-State = Starting ;
-    PA-Train = Short   # RM DEBUG
+    PA-State = Starting
 
 PA-State == Starting ->
     PA-Start-Counter += 1 ;
@@ -438,7 +440,7 @@ PA-State == AM-Down & AM Reverse & B360 & AM-Timer-B360-Full-Reverse -> AM Rever
 PA-State == AM-Down & AM Reverse & B330 -> AM-Timer-B330-Down-Speed Start
 PA-State == AM-Down & AM Reverse & AM-Timer-B330-Down-Speed ->
     AM Horn ;
-    AM Reverse = AM-Crossover-Speed 
+    AM Reverse = AM-Sonora-Speed 
 PA-State == AM-Down & AM Reverse & B321 & B330 ->
     AM Reverse = AM-Full-Speed ;
     AM F9 = 1 ; AM F9 = 0
@@ -448,9 +450,8 @@ PA-State == AM-Down & AM Reverse & AM-Timer-B321-Down-Crossover ->
     AM Reverse = AM-Crossover-Speed
 
 # Arrival at Station
-PA-State == AM-Down & B503a & AM Reverse -> AM Reverse = AM-Station-Speed
-PA-State == AM-Down & AM Reverse & B503a ->
-    AM Reverse = AM-Leaving-Speed ;
+PA-State == AM-Down & B503a & AM Reverse -> 
+    AM Reverse = AM-Station-Speed ;
     AM-Timer-B503b-Down-Stop Start
 PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
     AM Stop ;
