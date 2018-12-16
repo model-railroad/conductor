@@ -291,7 +291,11 @@ PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User
 #
 # Note: Manual mode can only be engaged if route is free going up.
 
-PA-State == Station & B320 & !B330 & !B340 & !B360 & !B370 ->
+Timer PA-Go-To-Manual = 1
+PA-State == Station & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual Start
+PA-State == Wait    & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual Start
+
+PA-Go-To-Manual ->
     RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused" ;
     PA-State = Manual ;
     PA-Manual = Up ; 
@@ -333,16 +337,16 @@ PA-State == Starting ->
     Reset Timers = "PA AM SP"
 
 PA-State == Station & PA-Toggle & PA-Train == Amtrak ->
-                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrak"
+                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
 PA-State == Wait    & PA-Toggle & PA-Train == Amtrak ->
-                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nAmtrak\n\nLeaving in 1 minute"
+                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
 PA-State == Station & PA-Toggle & PA-Train == Short  ->
                                              RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
 PA-State == Wait    & PA-Toggle & PA-Train == Short  ->
                                              RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
 
 PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up ;
-                                             RTAC-PSA-Text = "{c:blue}Currently Running:\n\nAmtrak"
+                                             RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger"
 PA-State == Starting & PA-Train == Short  -> PA-State = SP-Up ;
                                              RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight"
 
