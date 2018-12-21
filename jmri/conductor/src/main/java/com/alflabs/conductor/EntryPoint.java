@@ -18,14 +18,14 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.parser.Reporter;
-import com.alflabs.conductor.parser.ScriptParser2;
-import com.alflabs.conductor.script.ExecEngine;
-import com.alflabs.conductor.script.IScriptComponent;
-import com.alflabs.conductor.script.Script;
-import com.alflabs.conductor.script.ScriptModule;
-import com.alflabs.conductor.simulator.Simulator;
-import com.alflabs.conductor.ui.StatusWnd;
+import com.alflabs.conductor.v1.parser.Reporter;
+import com.alflabs.conductor.v1.parser.ScriptParser2;
+import com.alflabs.conductor.v1.script.ExecEngine;
+import com.alflabs.conductor.v1.script.IScriptComponent;
+import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.simulator.Simulator;
+import com.alflabs.conductor.v1.ui.StatusWnd;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;

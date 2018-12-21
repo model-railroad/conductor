@@ -18,8 +18,8 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.script.IScriptComponent;
-import com.alflabs.conductor.script.ScriptModule;
+import com.alflabs.conductor.v1.script.IScriptComponent;
+import com.alflabs.conductor.v1.script.ScriptModule;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;

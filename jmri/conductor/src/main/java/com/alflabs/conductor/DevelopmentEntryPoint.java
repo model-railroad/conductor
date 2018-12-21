@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.simulator.Simulator;
+import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.utils.ILogger;
 import com.google.common.truth.Truth;
 
