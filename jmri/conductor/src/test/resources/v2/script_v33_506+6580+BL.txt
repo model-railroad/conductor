@@ -174,7 +174,7 @@ Timer AM-Timer-B370-Pause-Delay  = 16
 Timer AM-Timer-B360-Full-Reverse = 12
 Timer AM-Timer-B330-Down-Speed = 8
 Timer AM-Timer-B321-Down-Crossover = 20
-Timer AM-Timer-B503b-Down-Stop = 5
+Timer AM-Timer-B503b-Down-Stop = 14
 Timer AM-Timer-Down-Station-Lights-Off = 10
 
 # Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12
@@ -455,7 +455,6 @@ PA-State == AM-Down & AM Reverse & AM-Timer-B321-Down-Crossover ->
 
 # Arrival at Station
 PA-State == AM-Down & B503a & AM Reverse -> 
-    AM Reverse = AM-Station-Speed ;
     AM-Timer-B503b-Down-Stop Start
 PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
     AM Stop ;
@@ -637,7 +636,7 @@ BL-State == ToStation & BLStation ->
 
 # --- BL State: Station
 
-Timer BL-Timer-Start-Delay = 40
+Timer BL-Timer-Start-Delay = 5
 Timer BL-Timer-Bell-Delay = 5
 
 BL-State == Station & AIU-Motion & BL-Toggle ->
