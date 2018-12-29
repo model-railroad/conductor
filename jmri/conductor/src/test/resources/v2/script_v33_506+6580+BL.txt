@@ -151,13 +151,13 @@ Throttle AM = 8736      # Atlas GE on full Amtrak route
 Throttle SP = 2468      # "Short Passenger" (now Santa Fe Freight) on limited Amtrak route
 
 Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Down Manual Error Wait
-Enum PA-Train = Amtrak Short
+Enum PA-Train = Passenger Freight
 Enum PA-Manual = Up In370
 
 Int PA-Start-Counter = 0
 
-Route Amtrak = Toggle: PA-Toggle, Status: PA-State,  Counter: PA-Start-Counter, Throttle: AM
-Route SP-Main = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, Throttle: SP
+Route Passenger = Toggle: PA-Toggle, Status: PA-State,  Counter: PA-Start-Counter, Throttle: AM
+Route Freight   = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, Throttle: SP
 
 Int AM-Leaving-Speed    = 8
 Int AM-Station-Speed    = 12
@@ -255,6 +255,7 @@ PA-State == Error ->
 
 
 # --- PA State: Idle
+# Idle to station must be donw within the error-time time, otherwise enter error mode.
 
 Timer PA-Timer-Stop-Sound-Off = 10
 
@@ -265,10 +266,16 @@ PA-State == Idle & PA-Toggle ->
     SP Stop ;
     AM  Repeat = 2 ;
     SP Repeat = 2 ;
-    PA-State = Station ;
-    PA-Timer-Release-Route Start
+    PA-Timer-Release-Route Start ;
+    PA-Error-Timer Start
+
+# Idle to station can only be done once track is cleared with BOTH trains at startup location.
+PA-State == Idle & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b ->
+    PA-Error-Timer End ;
+    PA-State = Station
 
 PA-State == Idle & !PA-Toggle ->
+    PA-Error-Timer End ;
     AM  Light = 0 ;
     SP Light = 0 ;
     AM  Stop ;
@@ -336,18 +343,18 @@ PA-State == Starting ->
     GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
     Reset Timers = "PA AM SP"
 
-PA-State == Station & PA-Toggle & PA-Train == Amtrak ->
+PA-State == Station & PA-Toggle & PA-Train == Passenger ->
                                              RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
-PA-State == Wait    & PA-Toggle & PA-Train == Amtrak ->
+PA-State == Wait    & PA-Toggle & PA-Train == Passenger ->
                                              RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
-PA-State == Station & PA-Toggle & PA-Train == Short  ->
+PA-State == Station & PA-Toggle & PA-Train == Freight  ->
                                              RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
-PA-State == Wait    & PA-Toggle & PA-Train == Short  ->
+PA-State == Wait    & PA-Toggle & PA-Train == Freight  ->
                                              RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
 
-PA-State == Starting & PA-Train == Amtrak -> PA-State = AM-Up ;
+PA-State == Starting & PA-Train == Passenger -> PA-State = AM-Up ;
                                              RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger"
-PA-State == Starting & PA-Train == Short  -> PA-State = SP-Up ;
+PA-State == Starting & PA-Train == Freight   -> PA-State = SP-Up ;
                                              RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight"
 
 PA-State == Station & !PA-Toggle ->
@@ -463,7 +470,7 @@ PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
     PA-Error-Timer End
 PA-State == AM-Down & AM-Timer-Down-Station-Lights-Off ->
     GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
-    PA-Train = Short ;
+    PA-Train = Freight ;
     PA-State = Wait
 
 # --------------------
@@ -536,7 +543,7 @@ PA-State == SP-Down & SP-Timer-Down-Off & SP Stopped ->
 SP-Sound-Stopped ->
     SP Sound = 0 ;
     GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
-    PA-Train = Amtrak ;
+    PA-Train = Passenger ;
     PA-State = Wait ;
 
 
@@ -560,10 +567,15 @@ Throttle BL = 10
 
 Int BL-Speed = 10
 
+Enum BL-Train = RDC
+
 Enum BL-State = Wait Restart ToStation Station Fwd Fwd2 Rev Rev2 Error
 
 Int BL-Start-Counter = 0
 Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
+
+BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, User: Staff
+!BL-Toggle -> GA-Event Category: Automation, Action: Off, Label: Branchline, User: Staff
 
 # --- BL State: Error
 
