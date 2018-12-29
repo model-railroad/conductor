@@ -255,26 +255,34 @@ PA-State == Error ->
 
 
 # --- PA State: Idle
-# Idle to station must be donw within the error-time time, otherwise enter error mode.
+# Idle to station must be done within the error-timer time, otherwise enter error mode.
 
 Timer PA-Timer-Stop-Sound-Off = 10
+Timer PA-Timer-Check-Track = 2
 
 PA-State == Idle & PA-Toggle ->
-    AM  Sound = 1; AM Light = 1;
+    AM Sound = 1; AM Light = 1;
     SP Sound = 1; SP Light = 1;
-    AM  Stop ;
+    AM Stop ;
     SP Stop ;
-    AM  Repeat = 2 ;
+    AM Repeat = 2 ;
     SP Repeat = 2 ;
     PA-Timer-Release-Route Start ;
+    PA-Timer-Check-Track Start ;
     PA-Error-Timer Start
 
 # Idle to station can only be done once track is cleared with BOTH trains at startup location.
 PA-State == Idle & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b ->
+    PA-Timer-Check-Track End ;
     PA-Error-Timer End ;
     PA-State = Station
 
+PA-State == Idle & PA-Toggle & PA-Timer-Check-Track ->
+    GA-Event Category: Automation, Action: Warning,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:blue}{c:white}Automation Warning\nCheck Track" 
+
 PA-State == Idle & !PA-Toggle ->
+    PA-Timer-Check-Track End ;
     PA-Error-Timer End ;
     AM  Light = 0 ;
     SP Light = 0 ;
