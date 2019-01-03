@@ -21,9 +21,11 @@ grammar Conductor;
 script     : scriptLine ( EOL scriptLine )* EOL? EOF;
 scriptLine : ( defLine | eventLine )? SB_COMMENT?;
 
-defLine: defIdLine | defStrLine | defIntLine | defThrottleLine | defEnumLine | defRouteLine | defGaIdLine ;
+defLine: defIdLine | defStrLine | defIntLine | defThrottleLine | defEnumLine
+       | defRouteLine | defGaIdLine | defJsonUrlLine ;
 
 defGaIdLine: KW_GA_ID '=' STR;
+defJsonUrlLine: KW_JSON_URL '=' STR;
 
 defIdLine: defIdType ID '=' ID;
 defIdType: KW_SENSOR | KW_TURNOUT;
@@ -57,7 +59,7 @@ condEnum:   condEnumOp ID;
 condEnumOp: KW_IS_EQ | KW_IS_NEQ;
 
 actionList: action ( ';' action )* ';'? ;
-action:     EOL? ( idAction | fnAction | gaAction ) ;
+action:     EOL? ( idAction | fnAction | gaAction | jsonAction ) ;
 idAction:   ID ( throttleOp | turnoutOp | timerOp )? ( funcValue? | funcInt? ) ;
 fnAction:   KW_RESET KW_TIMERS fnArg? | KW_ESTOP;
 fnArg:      '=' STR ;
@@ -67,6 +69,8 @@ gaActionOp: KW_GA_EVENT | KW_GA_PAGE;
 gaParamList:gaParam ( ',' gaParam )* ;
 gaParam:    gaParamOp ':' (ID | KW_STOP | KW_START);
 gaParamOp:  KW_ACTION | KW_CATEGORY | KW_LABEL | KW_PATH | KW_URL | KW_USER;
+
+jsonAction: KW_JSON_URL STR;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -113,6 +117,8 @@ KW_HORN:    'horn';
 KW_INACTIVE:'inactive';
 KW_INT:     'int';
 KW_IMPORT:  'import';
+KW_JSON_DEPART:'json-depart';
+KW_JSON_URL:'json-url';
 KW_LABEL:   'label';
 KW_LIGHT:   'light';
 KW_MAP:     'map';

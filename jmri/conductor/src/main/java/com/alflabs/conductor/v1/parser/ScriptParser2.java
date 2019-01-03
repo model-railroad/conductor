@@ -21,6 +21,7 @@ package com.alflabs.conductor.v1.parser;
 import com.alflabs.conductor.parser2.ConductorBaseListener;
 import com.alflabs.conductor.parser2.ConductorLexer;
 import com.alflabs.conductor.parser2.ConductorParser;
+import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.v1.script.AnalyticEventAction;
 import com.alflabs.conductor.v1.script.AnalyticPageAction;
 import com.alflabs.conductor.v1.script.EnumFactory;
@@ -32,6 +33,7 @@ import com.alflabs.conductor.v1.script.IIntValue;
 import com.alflabs.conductor.v1.script.IStringFunction;
 import com.alflabs.conductor.v1.script.IStringValue;
 import com.alflabs.conductor.v1.script.IntAction;
+import com.alflabs.conductor.v1.script.JsonDepartAction;
 import com.alflabs.conductor.v1.script.Script;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.SensorFactory;
@@ -82,6 +84,7 @@ public class ScriptParser2 {
     private final TimerFactory mTimerFactory;
     private final EnumFactory mEnumFactory;
     private final VarFactory mVarFactory;
+    private final JsonSender mJsonSender;
     private final Analytics mAnalytics;
     private final FileOps mFileOps;
     private final Script mScript;
@@ -98,6 +101,7 @@ public class ScriptParser2 {
             TimerFactory timerFactory,
             EnumFactory enumFactory,
             VarFactory varFactory,
+            JsonSender jsonSender,
             Analytics analytics,
             FileOps fileOps) {
         mReporter = reporter;
@@ -108,6 +112,7 @@ public class ScriptParser2 {
         mTimerFactory = timerFactory;
         mEnumFactory = enumFactory;
         mVarFactory = varFactory;
+        mJsonSender = jsonSender;
         mAnalytics = analytics;
         mFileOps = fileOps;
     }
@@ -775,6 +780,12 @@ public class ScriptParser2 {
         }
 
         @Override
+        public void exitJsonAction(ConductorParser.JsonActionContext ctx) {
+            String name = ctx.STR().getText();
+            mEvent.addAction(new JsonDepartAction(mJsonSender, name));
+        }
+
+        @Override
         public void exitGaAction(ConductorParser.GaActionContext ctx) {
             ConductorParser.GaActionOpContext op = ctx.gaActionOp();
             boolean isEvent = op.KW_GA_EVENT() != null;
@@ -873,6 +884,16 @@ public class ScriptParser2 {
                 mAnalytics.setTrackingId(idOrFile);
             } catch (IOException e) {
                 emitError(ctx, "GA-Tracking-Id: Failed to read '" + idOrFile + "', Exception: " + e);
+            }
+        }
+
+        @Override
+        public void exitDefJsonUrlLine(ConductorParser.DefJsonUrlLineContext ctx) {
+            String idOrFile = ctx.STR().getText();
+            try {
+                mJsonSender.setJsonUrl(idOrFile);
+            } catch (IOException e) {
+                emitError(ctx, "JSON-Sender-URL: Failed to read '" + idOrFile + "', Exception: " + e);
             }
         }
 
