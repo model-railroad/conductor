@@ -40,15 +40,20 @@ public class Analytics {
     private final ILogger mLogger;
     private final FileOps mFileOps;
     private final IKeyValue mKeyValue;
+    private final OkHttpClient mOkHttpClient;
     private final ExecutorService mExecutorService;
 
     private String mTrackingId = null;
 
     @Inject
-    public Analytics(ILogger logger, FileOps fileOps, IKeyValue keyValue) {
+    public Analytics(ILogger logger,
+                     FileOps fileOps,
+                     IKeyValue keyValue,
+                     OkHttpClient okHttpClient) {
         mLogger = logger;
         mFileOps = fileOps;
         mKeyValue = keyValue;
+        mOkHttpClient = okHttpClient;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
@@ -70,11 +75,19 @@ public class Analytics {
                 file = new File(System.getProperty("user.home"), idOrFile.substring(1));
             }
             idOrFile = mFileOps.toString(file, Charsets.UTF_8);
-            idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
         }
+        // Use "#" as a comment and only take the first thing before, if any.
+        idOrFile = idOrFile.replaceAll("[#\n\r].*", "");
+        // GA Id format is "UA-Numbers-1" so accept only letters, numbers, hyphen. Ignore the rest.
+        idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
+
         mTrackingId = idOrFile;
         mKeyValue.putValue(Constants.GAId, idOrFile, true /*broadcast*/);
         mLogger.d(TAG, "Tracking ID: " + mTrackingId);
+    }
+
+    public String getTrackingId() {
+        return mTrackingId;
     }
 
     public void sendEvent(
@@ -187,7 +200,6 @@ public class Analytics {
             url += "?" + payload;
         }
 
-        OkHttpClient client = new OkHttpClient();
         Request.Builder builder = new Request.Builder().url(url);
 
         if (!USE_GET) {
@@ -196,6 +208,6 @@ public class Analytics {
         }
 
         Request request = builder.build();
-        return client.newCall(request).execute();
+        return mOkHttpClient.newCall(request).execute();
     }
 }

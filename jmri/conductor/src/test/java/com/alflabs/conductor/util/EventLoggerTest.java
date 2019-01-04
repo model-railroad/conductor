@@ -23,7 +23,6 @@ public class EventLoggerTest {
     @Mock ILogger mLogger;
 
     private FileOps mFileOps = new FakeFileOps();
-    private IClock mClock;
     private ILocalDateTimeNowProvider mLocalDateTimeNow;
     private EventLogger mEventLogger;
 

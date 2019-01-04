@@ -22,6 +22,7 @@ import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
+import okhttp3.OkHttpClient;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -38,15 +39,20 @@ public class JsonSender {
     private final ILogger mLogger;
     private final FileOps mFileOps;
     private final IClock mClock;
+    private final OkHttpClient mOkHttpClient;
     private final ExecutorService mExecutorService;
 
     private String mJsonUrl;
 
     @Inject
-    public JsonSender(ILogger logger, FileOps fileOps, IClock clock) {
+    public JsonSender(ILogger logger,
+                      FileOps fileOps,
+                      IClock clock,
+                     OkHttpClient okHttpClient) {
         mLogger = logger;
         mFileOps = fileOps;
         mClock = clock;
+        mOkHttpClient = okHttpClient;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
@@ -65,7 +71,7 @@ public class JsonSender {
             idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
         }
         mJsonUrl = idOrFile;
-        mLogger.d(TAG, "Tracking ID: " + mJsonUrl);
+        mLogger.d(TAG, "JSON Sender URL: " + mJsonUrl);
     }
 
     public void sendDepart(String name) {

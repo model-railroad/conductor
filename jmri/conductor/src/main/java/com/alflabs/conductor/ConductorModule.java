@@ -28,7 +28,9 @@ import com.alflabs.utils.ILogger;
 import com.alflabs.utils.JavaClock;
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.OkHttpClient;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.time.LocalDateTime;
 
@@ -78,8 +80,18 @@ public class ConductorModule {
 
     @Singleton
     @Provides
-    public Analytics provideAnalytics(ILogger logger, FileOps fileOps, KeyValueServer keyValue) {
-        return new Analytics(logger, fileOps, keyValue);
+    public OkHttpClient provideOkHttpClient() {
+        return new OkHttpClient();
+    }
+
+    @Singleton
+    @Provides
+    public Analytics provideAnalytics(
+            ILogger logger,
+            FileOps fileOps,
+            KeyValueServer keyValue,
+            OkHttpClient okHttpClient) {
+        return new Analytics(logger, fileOps, keyValue, okHttpClient);
     }
 
     @Singleton
