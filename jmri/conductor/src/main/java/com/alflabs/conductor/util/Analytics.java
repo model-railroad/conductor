@@ -34,12 +34,12 @@ public class Analytics {
             + "collect";
 
     private static final String UTF_8 = "UTF-8";
-    private static final Random sRandom = new Random();
     private static final MediaType sMediaType = MediaType.parse("text/plain");
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
     private final IKeyValue mKeyValue;
+    private final Random mRandom;
     private final OkHttpClient mOkHttpClient;
     private final ExecutorService mExecutorService;
 
@@ -49,10 +49,12 @@ public class Analytics {
     public Analytics(ILogger logger,
                      FileOps fileOps,
                      IKeyValue keyValue,
-                     OkHttpClient okHttpClient) {
+                     OkHttpClient okHttpClient,
+                     Random random) {
         mLogger = logger;
         mFileOps = fileOps;
         mKeyValue = keyValue;
+        mRandom = random;
         mOkHttpClient = okHttpClient;
         mExecutorService = Executors.newSingleThreadExecutor();
     }
@@ -102,7 +104,7 @@ public class Analytics {
 
         mExecutorService.execute(() -> {
             try {
-                int random = sRandom.nextInt();
+                int random = mRandom.nextInt();
                 if (random < 0) {
                     random = -random;
                 }
@@ -151,7 +153,7 @@ public class Analytics {
 
         mExecutorService.execute(() -> {
             try {
-                int random = sRandom.nextInt();
+                int random = mRandom.nextInt();
                 if (random < 0) {
                     random = -random;
                 }

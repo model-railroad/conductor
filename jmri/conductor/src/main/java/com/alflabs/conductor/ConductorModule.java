@@ -33,6 +33,7 @@ import okhttp3.OkHttpClient;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Module
 public class ConductorModule {
@@ -86,12 +87,19 @@ public class ConductorModule {
 
     @Singleton
     @Provides
+    public Random provideRandom() {
+        return new Random();
+    }
+
+    @Singleton
+    @Provides
     public Analytics provideAnalytics(
             ILogger logger,
             FileOps fileOps,
             KeyValueServer keyValue,
-            OkHttpClient okHttpClient) {
-        return new Analytics(logger, fileOps, keyValue, okHttpClient);
+            OkHttpClient okHttpClient,
+            Random random) {
+        return new Analytics(logger, fileOps, keyValue, okHttpClient, random);
     }
 
     @Singleton
