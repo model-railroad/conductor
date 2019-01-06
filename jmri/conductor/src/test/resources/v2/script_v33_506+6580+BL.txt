@@ -59,6 +59,10 @@ Turnout T504        = NT504
 
 Map Mainline = "Conductor Map Mainline 1.svg"
 
+# JSON tracking
+
+JSON-URL = "@~/bin/JMRI/rtac_json_url.txt"
+
 # GA Tracking
 
 GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
@@ -302,6 +306,10 @@ PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
 PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
 !PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
 
+PA-Toggle  -> JSON-Event "Toggle" "Passenger" = "On"
+!PA-Toggle -> JSON-Event "Toggle" "Passenger" = "Off"
+
+
 # --- PA State: Manual
 #
 # Note: Manual mode can only be engaged if route is free going up.
@@ -352,18 +360,20 @@ PA-State == Starting ->
     Reset Timers = "PA AM SP"
 
 PA-State == Station & PA-Toggle & PA-Train == Passenger ->
-                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
 PA-State == Wait    & PA-Toggle & PA-Train == Passenger ->
-                                             RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
 PA-State == Station & PA-Toggle & PA-Train == Freight  ->
-                                             RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
 PA-State == Wait    & PA-Toggle & PA-Train == Freight  ->
-                                             RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
 
-PA-State == Starting & PA-Train == Passenger -> PA-State = AM-Up ;
-                                             RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger"
-PA-State == Starting & PA-Train == Freight   -> PA-State = SP-Up ;
-                                             RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight"
+PA-State == Starting & PA-Train == Passenger ->
+    PA-State = AM-Up ;
+    RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger"
+PA-State == Starting & PA-Train == Freight   ->
+    PA-State = SP-Up ;
+    RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight"
 
 PA-State == Station & !PA-Toggle ->
     Reset Timers = "PA AM SP" ;
@@ -381,6 +391,7 @@ PA-State == AM-Up & B503b & AM Stopped ->
     AM Horn ; AM-Delayed-Horn Start ;
     AM-Timer-Acquire-Route Start ;
     AM F1 = 1 ;
+    JSON-Event "Depart" "Passenger"
 
 AM-Delayed-Horn -> AM Horn
 
@@ -495,7 +506,8 @@ PA-State == SP-Up & B311 & SP Stopped ->
 SP-Sound-Started ->
     SP Horn ;
     SP Forward = SP-Forward-Speed ;
-    SP-Timer-Acquire-Route Start
+    SP-Timer-Acquire-Route Start ;
+    JSON-Event "Depart" "Freight"
 
 PA-State == SP-Up & B321 & SP Forward ->
     SP Forward = SP-Forward-Speed ;
@@ -584,6 +596,9 @@ Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counte
 
 BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, User: Staff
 !BL-Toggle -> GA-Event Category: Automation, Action: Off, Label: Branchline, User: Staff
+
+BL-Toggle  -> JSON-Event "Toggle" "Branchline" = "On"
+!BL-Toggle -> JSON-Event "Toggle" "Branchline" = "Off"
 
 # --- BL State: Error
 
@@ -679,7 +694,8 @@ BL-State == Station & BL-Timer-Bell-Delay ->
     BL Horn ;
     BL Forward = BL-Speed ;
     BL-State = Fwd ;
-    BL-Timer-Bell-Delay End
+    BL-Timer-Bell-Delay End ;
+    JSON-Event "Depart" "Branchline"
 
 
 # --- BL State: Fwd
