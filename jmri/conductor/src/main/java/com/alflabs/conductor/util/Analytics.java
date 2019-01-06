@@ -59,6 +59,10 @@ public class Analytics {
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
+    /**
+     * Requests termination. Pending tasks will be executed, no new task is allowed.
+     * Waiting time is 10 minutes max.
+     */
     public void shutdown() throws InterruptedException {
         mExecutorService.shutdown();
         mExecutorService.awaitTermination(10, TimeUnit.SECONDS);

@@ -38,6 +38,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.TimeZone;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Module
 public class ConductorModule {
@@ -107,6 +109,13 @@ public class ConductorModule {
 
     @Singleton
     @Provides
+    @Named("SingleThreadExecutor")
+    public ScheduledExecutorService provideScheduledExecutorService() {
+        return Executors.newSingleThreadScheduledExecutor();
+    }
+
+    @Singleton
+    @Provides
     public Analytics provideAnalytics(
             ILogger logger,
             FileOps fileOps,
@@ -121,9 +130,10 @@ public class ConductorModule {
     public JsonSender provideJsonSender(ILogger logger,
                                         FileOps fileOps,
                                         IClock clock,
+                                        OkHttpClient okHttpClient,
                                         @Named("JsonDateFormat") DateFormat jsonDateFormat,
-                                        OkHttpClient okHttpClient) {
-        return new JsonSender(logger, fileOps, clock, jsonDateFormat, okHttpClient);
+                                        @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+        return new JsonSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
     }
 
     @Singleton

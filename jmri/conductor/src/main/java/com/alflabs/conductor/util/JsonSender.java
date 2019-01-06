@@ -28,7 +28,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -38,14 +42,15 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TreeMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class JsonSender {
+public class JsonSender implements Runnable {
     private static final String TAG = JsonSender.class.getSimpleName();
 
     private static final boolean DEBUG = false;
-    private static final boolean USE_GET = false; // default is POST
+    private static final MediaType sMediaType = MediaType.parse("text/plain");
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
@@ -54,23 +59,37 @@ public class JsonSender {
     // DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private final DateFormat mJsonDateFormat;
     private final OkHttpClient mOkHttpClient;
-    private final ExecutorService mExecutorService;
+    private final ScheduledExecutorService mExecutor;
+    @SuppressWarnings("unchecked")
     private final TreeMap<String, Object> mKeyValues = new TreeMap();
+    private final AtomicReference<String> mLatestJson = new AtomicReference<>();
 
+    private long mRetryDelay;
     private String mJsonUrl;
 
     @Inject
     public JsonSender(ILogger logger,
                       FileOps fileOps,
                       IClock clock,
+                      OkHttpClient okHttpClient,
                       @Named("JsonDateFormat") DateFormat jsonDateFormat,
-                      OkHttpClient okHttpClient) {
+                      @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         mLogger = logger;
         mFileOps = fileOps;
         mClock = clock;
-        mJsonDateFormat = jsonDateFormat;
         mOkHttpClient = okHttpClient;
-        mExecutorService = Executors.newSingleThreadExecutor();
+        mJsonDateFormat = jsonDateFormat;
+        mExecutor = executor;
+    }
+
+    /**
+     * Requests termination. Pending tasks will be executed, no new task is allowed.
+     * Waiting time is 10 minutes max.
+     */
+    public void shutdown() throws InterruptedException {
+        mExecutor.shutdown();
+        mExecutor.awaitTermination(10, TimeUnit.SECONDS);
+        mLogger.d(TAG, "Shutdown");
     }
 
     public void setJsonUrl(String urlOrFile) throws IOException {
@@ -94,6 +113,11 @@ public class JsonSender {
 
         mJsonUrl = urlOrFile;
         mLogger.d(TAG, "JSON Sender URL: " + mJsonUrl);
+
+        if (mLatestJson.get() != null) {
+            mRetryDelay = 0;
+            mExecutor.execute(this);
+        }
     }
 
     public String getJsonUrl() {
@@ -125,6 +149,14 @@ public class JsonSender {
             key2 = key2.toLowerCase(Locale.US);
             map.put(key2, entry);
         }
+
+        try {
+            mLatestJson.set(toJsonString());
+            mRetryDelay = 0;
+            mExecutor.execute(this);
+        } catch (JsonProcessingException e) {
+            mLogger.d(TAG, "JSON Sender: Error creating JSON entry", e);
+        }
     }
 
     public String toJsonString() throws JsonProcessingException {
@@ -137,6 +169,41 @@ public class JsonSender {
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.setDateFormat(mJsonDateFormat);
         return mapper.writeValueAsString(mKeyValues).replaceAll("\r", "");
+    }
+
+    @Override
+    public void run() {
+        if (mJsonUrl == null) {
+            return;
+        }
+
+        String jsonData = mLatestJson.getAndSet(null);
+        if (jsonData == null) {
+            mLogger.d(TAG, "JSON Sender: No data to send");
+            return;
+        }
+
+        Request.Builder builder = new Request.Builder().url(mJsonUrl);
+        RequestBody body = RequestBody.create(sMediaType, jsonData);
+        builder.post(body);
+
+        Request request = builder.build();
+        try {
+            Response response = mOkHttpClient.newCall(request).execute();
+            mLogger.d(TAG, "JSON Sender: HTTP Response " + response);
+            if (response != null && response.isSuccessful()) {
+                return;
+            }
+        } catch (IOException e) {
+            mLogger.d(TAG, "JSON Sender: Error sending JSON", e);
+        }
+
+        if (mLatestJson.get() == null && !mExecutor.isShutdown()) {
+            mRetryDelay = Math.max(30*60, 5 + 2 * mRetryDelay);
+            mLogger.d(TAG, "JSON Sender: Will rety in " + mRetryDelay + " seconds");
+            mLatestJson.set(jsonData);
+            mExecutor.schedule(this, mRetryDelay, TimeUnit.SECONDS);
+        }
     }
 
     private static class Entry {

@@ -8,6 +8,7 @@ import com.google.common.base.Charsets;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okio.Buffer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,12 +33,17 @@ public class AnalyticsTest {
     @Mock private Random mRandom;
     @Mock private OkHttpClient mOkHttpClient;
 
-    private FileOps mFileOps = new FakeFileOps();
+    private final FileOps mFileOps = new FakeFileOps();
     private Analytics mAnalytics;
 
     @Before
     public void setUp() {
         mAnalytics = new Analytics(mLogger, mFileOps, mKeyValue, mOkHttpClient, mRandom);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        mAnalytics.shutdown();
     }
 
     @Test
@@ -66,7 +72,7 @@ public class AnalyticsTest {
 
         mAnalytics.setTrackingId("UID-1234-5");
         mAnalytics.sendEvent("CAT", "ACT", "LAB", "USR");
-        mAnalytics.shutdown();
+        mAnalytics.shutdown(); // forces pending tasks to execute
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         verify(mOkHttpClient).newCall(requestCaptor.capture());
@@ -75,6 +81,7 @@ public class AnalyticsTest {
         assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/collect");
         assertThat(req.method()).isEqualTo("POST");
         Buffer bodyBuffer = new Buffer();
+        //noinspection ConstantConditions
         req.body().writeTo(bodyBuffer);
         assertThat(bodyBuffer.readUtf8()).isEqualTo(
                 "v=1&tid=UID-1234-5&ds=consist&cid=2b6cc9c3-0eaa-39c1-8909-1ea928529cbd&t=event&ec=CAT&ea=ACT&el=LAB&z=42");

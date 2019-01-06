@@ -28,7 +28,6 @@ public class JsonEventAction implements IAction {
     private final String mValue;
 
     public JsonEventAction(JsonSender jsonSender, String key1, String key2, String value) {
-
         mJsonSender = jsonSender;
         mKey1 = key1;
         mKey2 = key2;
