@@ -61,7 +61,7 @@ public class Analytics {
 
     /**
      * Requests termination. Pending tasks will be executed, no new task is allowed.
-     * Waiting time is 10 minutes max.
+     * Waiting time is 10 seconds max.
      */
     public void shutdown() throws InterruptedException {
         mExecutorService.shutdown();

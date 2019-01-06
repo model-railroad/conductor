@@ -84,7 +84,7 @@ public class JsonSender implements Runnable {
 
     /**
      * Requests termination. Pending tasks will be executed, no new task is allowed.
-     * Waiting time is 10 minutes max.
+     * Waiting time is 10 seconds max.
      */
     public void shutdown() throws InterruptedException {
         mExecutor.shutdown();
@@ -188,19 +188,24 @@ public class JsonSender implements Runnable {
         builder.post(body);
 
         Request request = builder.build();
+        Response response = null;
         try {
-            Response response = mOkHttpClient.newCall(request).execute();
+            response = mOkHttpClient.newCall(request).execute();
             mLogger.d(TAG, "JSON Sender: HTTP Response " + response);
             if (response != null && response.isSuccessful()) {
                 return;
             }
         } catch (IOException e) {
             mLogger.d(TAG, "JSON Sender: Error sending JSON", e);
+        } finally {
+            if (response != null && response.body() != null) {
+                response.body().close();
+            }
         }
 
         if (mLatestJson.get() == null && !mExecutor.isShutdown()) {
-            mRetryDelay = Math.max(30*60, 5 + 2 * mRetryDelay);
-            mLogger.d(TAG, "JSON Sender: Will rety in " + mRetryDelay + " seconds");
+            mRetryDelay = Math.min(30*60, 5 + 2 * mRetryDelay);
+            mLogger.d(TAG, "JSON Sender: Will retry in " + mRetryDelay + " seconds");
             mLatestJson.set(jsonData);
             mExecutor.schedule(this, mRetryDelay, TimeUnit.SECONDS);
         }

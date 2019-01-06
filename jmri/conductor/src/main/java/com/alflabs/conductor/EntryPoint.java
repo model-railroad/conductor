@@ -19,6 +19,7 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.parser.ScriptParser2;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -66,6 +67,7 @@ public class EntryPoint {
     @Inject KeyValueServer mKeyValueServer;
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
+    @Inject JsonSender mJsonSender;
 
     public Script getScript() {
         return mScript;
@@ -185,6 +187,7 @@ public class EntryPoint {
     }
 
     protected void onStopAction() {
+        mJsonSender.sendEvent("conductor", null, "off");
         sendEvent("Stop");
         mLogger.d(TAG, "KV Server stopping, port " + Constants.KV_SERVER_PORT);
         if (mJmDNSLatch != null) {
@@ -204,6 +207,12 @@ public class EntryPoint {
             } catch (IOException e) {
                 mLogger.d(TAG, "Teardown ZeroConf exception: " + e);
             }
+        }
+
+        try {
+            mJsonSender.shutdown();
+        } catch (InterruptedException e) {
+            mLogger.d(TAG, "Teardown JsonSender exception: " + e);
         }
 
         try {
@@ -263,6 +272,7 @@ public class EntryPoint {
             mEngine = scriptComponent.createScriptExecEngine();
             mEngine.onExecStart();
             sendEvent("Start");
+            mJsonSender.sendEvent("conductor", null, "on");
         } catch (IOException e) {
             mLogger.d(TAG, "Script Path: " + mComponent.getScriptFile().getAbsolutePath());
             mLogger.d(TAG, "Failed to load event script with the following exception:");
