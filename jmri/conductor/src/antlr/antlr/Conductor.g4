@@ -70,7 +70,10 @@ gaParamList:gaParam ( ',' gaParam )* ;
 gaParam:    gaParamOp ':' (ID | KW_STOP | KW_START);
 gaParamOp:  KW_ACTION | KW_CATEGORY | KW_LABEL | KW_PATH | KW_URL | KW_USER;
 
-jsonAction: KW_JSON_URL STR;
+jsonAction: KW_JSON_EVENT jsonKey1 jsonKey2? jsonValue? ;
+jsonKey1:   STR ;
+jsonKey2:   STR ;
+jsonValue:  '=' STR ;
 
 throttleOp: KW_FORWARD | KW_REVERSE | KW_STOP | KW_SOUND | KW_LIGHT | KW_HORN | KW_FN | KW_REPEAT;
 turnoutOp:  KW_NORMAL ;  // KW_REVERSE is captured by throttleOp.
@@ -117,7 +120,7 @@ KW_HORN:    'horn';
 KW_INACTIVE:'inactive';
 KW_INT:     'int';
 KW_IMPORT:  'import';
-KW_JSON_DEPART:'json-depart';
+KW_JSON_EVENT:'json-event';
 KW_JSON_URL:'json-url';
 KW_LABEL:   'label';
 KW_LIGHT:   'light';

@@ -20,21 +20,23 @@ package com.alflabs.conductor.v1.script;
 
 import com.alflabs.conductor.util.JsonSender;
 
-public class JsonDepartAction implements IAction {
-
+public class JsonEventAction implements IAction {
 
     private final JsonSender mJsonSender;
-    private final String mName;
+    private final String mKey1;
+    private final String mKey2;
+    private final String mValue;
 
-    public JsonDepartAction(
-            JsonSender jsonSender,
-            String name) {
+    public JsonEventAction(JsonSender jsonSender, String key1, String key2, String value) {
+
         mJsonSender = jsonSender;
-        mName = name;
+        mKey1 = key1;
+        mKey2 = key2;
+        mValue = value;
     }
 
     @Override
     public void execute() {
-        mJsonSender.sendDepart(mName);
+        mJsonSender.sendEvent(mKey1, mKey2, mValue);
     }
 }

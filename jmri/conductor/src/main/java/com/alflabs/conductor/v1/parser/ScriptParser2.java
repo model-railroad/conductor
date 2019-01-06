@@ -33,7 +33,7 @@ import com.alflabs.conductor.v1.script.IIntValue;
 import com.alflabs.conductor.v1.script.IStringFunction;
 import com.alflabs.conductor.v1.script.IStringValue;
 import com.alflabs.conductor.v1.script.IntAction;
-import com.alflabs.conductor.v1.script.JsonDepartAction;
+import com.alflabs.conductor.v1.script.JsonEventAction;
 import com.alflabs.conductor.v1.script.Script;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.SensorFactory;
@@ -781,8 +781,15 @@ public class ScriptParser2 {
 
         @Override
         public void exitJsonAction(ConductorParser.JsonActionContext ctx) {
-            String name = ctx.STR().getText();
-            mEvent.addAction(new JsonDepartAction(mJsonSender, name));
+            ConductorParser.JsonKey1Context ctxKey1 = ctx.jsonKey1();
+            ConductorParser.JsonKey2Context ctxKey2 = ctx.jsonKey2();
+            ConductorParser.JsonValueContext ctxValue = ctx.jsonValue();
+
+            String key1  = ctxKey1 == null ? null : ctxKey1.STR().getText();
+            String key2  = ctxKey2 == null ? null : ctxKey2.STR().getText();
+            String value = ctxValue == null ? null : ctxValue.STR().getText();
+
+            mEvent.addAction(new JsonEventAction(mJsonSender, key1, key2, value));
         }
 
         @Override

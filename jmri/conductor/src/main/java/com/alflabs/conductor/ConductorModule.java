@@ -21,6 +21,7 @@ package com.alflabs.conductor;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
+import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -30,10 +31,13 @@ import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 
-import javax.inject.Provider;
+import javax.inject.Named;
 import javax.inject.Singleton;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Random;
+import java.util.TimeZone;
 
 @Module
 public class ConductorModule {
@@ -93,6 +97,16 @@ public class ConductorModule {
 
     @Singleton
     @Provides
+    @Named("JsonDateFormat")
+    public DateFormat provideJsonDateFormat() {
+        // Format timestamps using ISO 8601
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        return df;
+    }
+
+    @Singleton
+    @Provides
     public Analytics provideAnalytics(
             ILogger logger,
             FileOps fileOps,
@@ -100,6 +114,16 @@ public class ConductorModule {
             OkHttpClient okHttpClient,
             Random random) {
         return new Analytics(logger, fileOps, keyValue, okHttpClient, random);
+    }
+
+    @Singleton
+    @Provides
+    public JsonSender provideJsonSender(ILogger logger,
+                                        FileOps fileOps,
+                                        IClock clock,
+                                        @Named("JsonDateFormat") DateFormat jsonDateFormat,
+                                        OkHttpClient okHttpClient) {
+        return new JsonSender(logger, fileOps, clock, jsonDateFormat, okHttpClient);
     }
 
     @Singleton
