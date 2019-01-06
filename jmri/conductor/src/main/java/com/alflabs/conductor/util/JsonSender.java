@@ -59,6 +59,7 @@ public class JsonSender implements Runnable {
     // DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private final DateFormat mJsonDateFormat;
     private final OkHttpClient mOkHttpClient;
+    // Note: The executor is a dagger singleton, shared with the Analytics class.
     private final ScheduledExecutorService mExecutor;
     @SuppressWarnings("unchecked")
     private final TreeMap<String, Object> mKeyValues = new TreeMap();
@@ -85,6 +86,9 @@ public class JsonSender implements Runnable {
     /**
      * Requests termination. Pending tasks will be executed, no new task is allowed.
      * Waiting time is 10 seconds max.
+     * <p/>
+     * Side effect: The executor is now a dagger singleton. This affects other classes that
+     * use the same executor, e.g. {@link Analytics}.
      */
     public void shutdown() throws InterruptedException {
         mExecutor.shutdown();

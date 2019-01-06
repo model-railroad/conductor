@@ -20,6 +20,8 @@ import org.mockito.junit.MockitoRule;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.verify;
@@ -34,11 +36,12 @@ public class AnalyticsTest {
     @Mock private OkHttpClient mOkHttpClient;
 
     private final FileOps mFileOps = new FakeFileOps();
+    private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private Analytics mAnalytics;
 
     @Before
     public void setUp() {
-        mAnalytics = new Analytics(mLogger, mFileOps, mKeyValue, mOkHttpClient, mRandom);
+        mAnalytics = new Analytics(mLogger, mFileOps, mKeyValue, mOkHttpClient, mRandom, mExecutor);
     }
 
     @After

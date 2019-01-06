@@ -13,13 +13,13 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Analytics {
@@ -41,7 +41,8 @@ public class Analytics {
     private final IKeyValue mKeyValue;
     private final Random mRandom;
     private final OkHttpClient mOkHttpClient;
-    private final ExecutorService mExecutorService;
+    // Note: The executor is a dagger singleton, shared with the JsonSender.
+    private final ScheduledExecutorService mExecutor;
 
     private String mTrackingId = null;
 
@@ -50,22 +51,26 @@ public class Analytics {
                      FileOps fileOps,
                      IKeyValue keyValue,
                      OkHttpClient okHttpClient,
-                     Random random) {
+                     Random random,
+                     @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         mLogger = logger;
         mFileOps = fileOps;
         mKeyValue = keyValue;
         mRandom = random;
         mOkHttpClient = okHttpClient;
-        mExecutorService = Executors.newSingleThreadExecutor();
+        mExecutor = executor;
     }
 
     /**
      * Requests termination. Pending tasks will be executed, no new task is allowed.
      * Waiting time is 10 seconds max.
+     * <p/>
+     * Side effect: The executor is now a dagger singleton. This affects other classes that
+     * use the same executor, e.g. {@link JsonSender}.
      */
     public void shutdown() throws InterruptedException {
-        mExecutorService.shutdown();
-        mExecutorService.awaitTermination(10, TimeUnit.SECONDS);
+        mExecutor.shutdown();
+        mExecutor.awaitTermination(10, TimeUnit.SECONDS);
         mLogger.d(TAG, "Shutdown");
     }
 
@@ -106,7 +111,7 @@ public class Analytics {
             return;
         }
 
-        mExecutorService.execute(() -> {
+        mExecutor.execute(() -> {
             try {
                 int random = mRandom.nextInt();
                 if (random < 0) {
@@ -155,7 +160,7 @@ public class Analytics {
             return;
         }
 
-        mExecutorService.execute(() -> {
+        mExecutor.execute(() -> {
             try {
                 int random = mRandom.nextInt();
                 if (random < 0) {

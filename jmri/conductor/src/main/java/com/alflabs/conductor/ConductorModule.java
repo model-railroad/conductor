@@ -121,8 +121,9 @@ public class ConductorModule {
             FileOps fileOps,
             KeyValueServer keyValue,
             OkHttpClient okHttpClient,
-            Random random) {
-        return new Analytics(logger, fileOps, keyValue, okHttpClient, random);
+            Random random,
+            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+        return new Analytics(logger, fileOps, keyValue, okHttpClient, random, executor);
     }
 
     @Singleton
