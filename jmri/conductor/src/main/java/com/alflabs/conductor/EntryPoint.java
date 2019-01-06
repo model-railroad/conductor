@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.parser.ScriptParser2;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -64,6 +65,7 @@ public class EntryPoint {
     @Inject ILogger mLogger;
     @Inject KeyValueServer mKeyValueServer;
     @Inject EventLogger mEventLogger;
+    @Inject Analytics mAnalytics;
 
     public Script getScript() {
         return mScript;
@@ -135,7 +137,7 @@ public class EntryPoint {
     }
 
     private void sendEvent(String action) {
-        mComponent.getAnalytics().sendEvent("Conductor", action, "", "Conductor");
+        mAnalytics.sendEvent("Conductor", action, "", "Conductor");
     }
 
     private void startZeroconfAdvertising(String name) {
@@ -205,7 +207,7 @@ public class EntryPoint {
         }
 
         try {
-            mComponent.getAnalytics().shutdown();
+            mAnalytics.shutdown();
         } catch (InterruptedException e) {
             mLogger.d(TAG, "Teardown Analytics exception: " + e);
         }

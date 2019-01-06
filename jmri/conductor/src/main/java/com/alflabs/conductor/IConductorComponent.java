@@ -20,7 +20,6 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.v1.script.IScriptComponent;
 import com.alflabs.conductor.v1.script.ScriptModule;
-import com.alflabs.conductor.util.Analytics;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import dagger.BindsInstance;
@@ -37,7 +36,6 @@ public interface IConductorComponent {
     IClock getClock();
     KeyValueServer getKeyValueServer();
     IJmriProvider getJmriProvider();
-    Analytics getAnalytics();
     @Named("script") File getScriptFile();
 
     void inject(EntryPoint entryPoint);
