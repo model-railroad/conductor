@@ -82,7 +82,7 @@ public class JsonSenderTest {
         assertThat(mSender.getJsonUrl()).isNull();
 
         mSender.setJsonUrl(" http://example.com/some/url # Comment \nBlah");
-        assertThat(mSender.getJsonUrl()).isEqualTo("http://example.com/some/url");
+        assertThat(mSender.getJsonUrl().toString()).isEqualTo("http://example.com/some/url");
     }
 
     @Test
@@ -94,7 +94,7 @@ public class JsonSenderTest {
                 new File("/tmp/id.txt"));
 
         mSender.setJsonUrl("@/tmp/id.txt");
-        assertThat(mSender.getJsonUrl()).isEqualTo("http://example.com/some/url");
+        assertThat(mSender.getJsonUrl().toString()).isEqualTo("http://example.com/some/url");
     }
 
     @Test

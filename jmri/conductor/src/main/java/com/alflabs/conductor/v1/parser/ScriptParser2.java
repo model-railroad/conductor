@@ -785,9 +785,12 @@ public class ScriptParser2 {
             ConductorParser.JsonKey2Context ctxKey2 = ctx.jsonKey2();
             ConductorParser.JsonValueContext ctxValue = ctx.jsonValue();
 
-            String key1  = ctxKey1 == null ? null : ctxKey1.STR().getText();
-            String key2  = ctxKey2 == null ? null : ctxKey2.STR().getText();
-            String value = ctxValue == null ? null : ctxValue.STR().getText();
+            String key1  = ctxKey1 == null ? null :
+                    removeDoubleQuotesStartEnd(ctxKey1.STR().getText());
+            String key2  = ctxKey2 == null ? null :
+                    removeDoubleQuotesStartEnd(ctxKey2.STR().getText());
+            String value = ctxValue == null ? null :
+                    removeDoubleQuotesStartEnd(ctxValue.STR().getText());
 
             mEvent.addAction(new JsonEventAction(mJsonSender, key1, key2, value));
         }

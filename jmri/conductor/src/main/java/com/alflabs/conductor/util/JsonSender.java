@@ -28,11 +28,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
+import okhttp3.Authenticator;
+import okhttp3.Credentials;
+import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.Route;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -66,7 +70,7 @@ public class JsonSender implements Runnable {
     private final AtomicReference<String> mLatestJson = new AtomicReference<>();
 
     private long mRetryDelay;
-    private String mJsonUrl;
+    private HttpUrl mJsonUrl;
 
     @Inject
     public JsonSender(ILogger logger,
@@ -113,9 +117,9 @@ public class JsonSender implements Runnable {
         // Use "#" as a comment and only take the first thing before, if any.
         urlOrFile = urlOrFile.replaceAll("[#\n\r].*", "").trim();
         // Somewhat sanitize the URL
-        urlOrFile = urlOrFile.replaceAll("[^a-zA-Z0-9:/._+-]", "");
+        urlOrFile = urlOrFile.replaceAll("[^a-zA-Z0-9@:/._+-]", "");
 
-        mJsonUrl = urlOrFile;
+        mJsonUrl = HttpUrl.parse(urlOrFile);
         mLogger.d(TAG, "JSON Sender URL: " + mJsonUrl);
 
         if (mLatestJson.get() != null) {
@@ -124,7 +128,7 @@ public class JsonSender implements Runnable {
         }
     }
 
-    public String getJsonUrl() {
+    public HttpUrl getJsonUrl() {
         return mJsonUrl;
     }
 
@@ -178,6 +182,7 @@ public class JsonSender implements Runnable {
     @Override
     public void run() {
         if (mJsonUrl == null) {
+            mLogger.d(TAG, "JSON Sender: URL not set");
             return;
         }
 
@@ -187,17 +192,37 @@ public class JsonSender implements Runnable {
             return;
         }
 
-        Request.Builder builder = new Request.Builder().url(mJsonUrl);
+        OkHttpClient client = mOkHttpClient;
+        HttpUrl url = mJsonUrl;
+        String usr = url.encodedUsername();
+        String pwd = url.encodedPassword();
+        if (!usr.isEmpty() && !pwd.isEmpty()) {
+            url = url.newBuilder().username("").password("").build();
+            Authenticator auth = new Authenticator() {
+                @Null
+                @Override
+                public Request authenticate(Route route, Response response) throws IOException {
+                    mLogger.d(TAG, "JSON Sender: HTTP Auth for " + response);
+                    String basic = Credentials.basic(usr, pwd);
+                    return response.request().newBuilder().header("Authorization", basic).build();
+                }
+            };
+            client = client.newBuilder().authenticator(auth).build();
+        }
+
+        Request.Builder builder = new Request.Builder().url(url);
         RequestBody body = RequestBody.create(sMediaType, jsonData);
         builder.post(body);
 
         Request request = builder.build();
         Response response = null;
         try {
-            response = mOkHttpClient.newCall(request).execute();
+            response = client.newCall(request).execute();
             mLogger.d(TAG, "JSON Sender: HTTP Response " + response);
-            if (response != null && response.isSuccessful()) {
-                return;
+            if (response != null) {
+                if (response.isSuccessful()) {
+                    return;
+                }
             }
         } catch (IOException e) {
             mLogger.d(TAG, "JSON Sender: Error sending JSON", e);
