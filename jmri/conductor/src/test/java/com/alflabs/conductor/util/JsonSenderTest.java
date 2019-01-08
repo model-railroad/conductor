@@ -25,7 +25,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -117,12 +116,12 @@ public class JsonSenderTest {
         assertThat(json).isEqualTo(
                 "{\n" +
                         "  \"computer\" : {\n" +
-                        "    \"value\" : \"on\",\n" +
-                        "    \"ts\" : \"1970-01-01T00:00:01Z\"\n" +
+                        "    \"ts\" : \"1970-01-01T00:00:01Z\",\n" +
+                        "    \"value\" : \"on\"\n" +
                         "  },\n" +
                         "  \"conductor\" : {\n" +
-                        "    \"value\" : \"off\",\n" +
-                        "    \"ts\" : \"1970-01-01T00:00:01Z\"\n" +
+                        "    \"ts\" : \"1970-01-01T00:00:01Z\",\n" +
+                        "    \"value\" : \"off\"\n" +
                         "  },\n" +
                         "  \"depart\" : {\n" +
                         "    \"branchline\" : {\n" +
@@ -137,12 +136,12 @@ public class JsonSenderTest {
                         "  },\n" +
                         "  \"toggles\" : {\n" +
                         "    \"branchline\" : {\n" +
-                        "      \"value\" : \"off\",\n" +
-                        "      \"ts\" : \"1970-01-01T00:00:01Z\"\n" +
+                        "      \"ts\" : \"1970-01-01T00:00:01Z\",\n" +
+                        "      \"value\" : \"off\"\n" +
                         "    },\n" +
                         "    \"passenger\" : {\n" +
-                        "      \"value\" : \"on\",\n" +
-                        "      \"ts\" : \"1970-01-01T00:00:01Z\"\n" +
+                        "      \"ts\" : \"1970-01-01T00:00:01Z\",\n" +
+                        "      \"value\" : \"on\"\n" +
                         "    }\n" +
                         "  }\n" +
                         "}");
