@@ -25,6 +25,7 @@ import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.Charsets;
@@ -173,6 +174,8 @@ public class JsonSender implements Runnable {
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         // Sorting technically not needed due to already using a sorted TreeMap.
         mapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+        // We don't want the order of serialized objects to change (for unit tests).
+        mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         // Remove null values in entries.
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         mapper.setDateFormat(mJsonDateFormat);
