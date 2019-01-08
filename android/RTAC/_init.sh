@@ -12,6 +12,14 @@ else
 fi
 
 ROOT=.
+if [[ $(git --version) =~ 1.[1-7] ]]; then
+    # Note: On old git 1.7, "git submodule" needs to be run from the "toplevel"
+    # where the .git directory is located.
+    cd ../..
+    ROOT=android/RTAC
+    echo "### Warning: git 1.7 detected, switching to ROOT=$ROOT and PWD=$PWD" ; echo
+fi
+
 GIT_USER=$(sed -n '/email = /s/.*= \(.*\)@.*/\1/p' ~/.gitconfig)
 if [[ -z $GIT_USER ]]; then set +x; echo "Git user not found"; exit 1; fi
 
