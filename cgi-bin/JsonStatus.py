@@ -136,10 +136,7 @@ def doCgi():
             new_data = merge_data(existing, new_data)
             write_data(new_data)
 
-            if existing == new_data:
-                print "Status: 304 Same difference"
-            else:
-                print "Status: 200 I like what you got"
+            print "Status: 200 I like what you got"
             print
             _exit = 0
             return
