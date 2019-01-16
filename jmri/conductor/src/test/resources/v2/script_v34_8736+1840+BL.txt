@@ -154,7 +154,7 @@ AIU-Motion  ->
 Throttle AM = 8736      # Atlas GE on full Amtrak route
 Throttle SP = 1840      # "Short Passenger" (now Freight) on limited Amtrak route
 
-Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Up2 SP-Down Manual Error Wait
+Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Up2 SP-Up3 SP-Down Manual Error Wait
 Enum PA-Train = Passenger Freight
 Enum PA-Manual = Up In370
 
@@ -518,22 +518,24 @@ PA-State == SP-Up & B321 & SP Forward ->
     SP-Timer-Up-Slow Start
 
 PA-State == SP-Up2 & B321 & SP-Timer-Up-Slow & SP Forward ->
+    PA-State = SP-Up3 ;
     SP Horn ;
     SP Forward = SP-Station-Speed ;
     SP-Timer-Up-Stop Start
 
-PA-State == SP-Up2 & SP-Timer-Up-Stop & SP Forward ->
+PA-State == SP-Up3 & SP-Timer-Up-Stop & SP Forward ->
     SP Horn ;
     SP Stop ;
     SP F1 = 0;
     SP-Timer-Up-Reverse Start
 
-PA-State == SP-Up2 & SP-Timer-Up-Reverse & SP Stopped ->
+PA-State == SP-Up3 & SP-Timer-Up-Reverse & SP Stopped ->
     PA-State = SP-Down
 
 # Error case: we should never reach block B330
 PA-State == SP-Up  & B330 -> PA-State = SP-Down
 PA-State == SP-Up2 & B330 -> PA-State = SP-Down
+PA-State == SP-Up3 & B330 -> PA-State = SP-Down
 
 # PA-Toggle off reverts train to down but not in the start block
 # (we can't change the timer to stop in block B311 if we're already in it).
