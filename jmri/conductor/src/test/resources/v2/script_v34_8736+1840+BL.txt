@@ -632,6 +632,7 @@ BL-State == Error ->
 Timer BL-Timer-Wait = 600  # 10 minutes
 
 BL-State == Wait ->
+    Reset Timers = "BL" ;
     BL-Timer-Wait Start ;
     BL Stop
 
@@ -775,7 +776,6 @@ BL-State == Rev & BLStation ->
     BL F1 = 1 ;
     T324 Normal ;
     BL-Timer-Station-Stop Start ;
-    BL-Timer-Error End ;
     BL-State = Rev2
 
 # --- Rev2
@@ -785,6 +785,7 @@ BL-State == Rev2 & BLParked -> BL Stop   # too far...
 BL-State == Rev2 & BL-Timer-Station-Stop ->
     BL Stop ;
     BL Horn ;
+    BL-Timer-Error End ;
     BL-Timer-Bell-Delay Start
 
 BL-State == Rev2 & BL-Timer-Bell-Delay ->
