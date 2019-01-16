@@ -86,10 +86,12 @@ public class Sensor implements IConditional, IExecEngine {
         boolean active = isActive();
         String value = active ? Constants.On : Constants.Off;
         mKeyValue.putValue(mKeyName, value, true /*broadcast*/);
-        if (active != mLastActive && mOnChangedListener != null) {
+        if (active != mLastActive) {
             mLastActive = active;
-            mOnChangedListener.run();
             mEventLogger.logAsync(EventLogger.Type.Sensor, mKeyName, value);
+            if (mOnChangedListener != null) {
+                mOnChangedListener.run();
+            }
         }
     }
 

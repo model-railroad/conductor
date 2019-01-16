@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.v1.script;
 
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.IClock;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
@@ -32,9 +33,12 @@ import com.google.auto.factory.Provided;
 @AutoFactory(allowSubclasses = true)
 public class Timer implements IConditional, IResettable {
 
+    private final String mTimerName;
     private final IClock mClock;
+    private final EventLogger mEventLogger;
     private final int mDurationSec;
     private long mEndTS;
+    private boolean mActivated;
 
     /**
      * Possible keywords for a timer function.
@@ -47,9 +51,14 @@ public class Timer implements IConditional, IResettable {
         END
     }
 
-    public Timer(int durationSec, @Provided IClock clock) {
+    public Timer(int durationSec,
+                 String timerName,
+                 @Provided IClock clock,
+                 @Provided EventLogger eventLogger) {
         mDurationSec = durationSec;
+        mTimerName = timerName;
         mClock = clock;
+        mEventLogger = eventLogger;
         mEndTS = 0;
     }
 
@@ -60,7 +69,7 @@ public class Timer implements IConditional, IResettable {
     public IIntFunction createFunction(Function function) {
         switch (function) {
         case START:
-            return ignored -> mEndTS = now() + mDurationSec * 1000;
+            return ignored -> start();
         case END:
             return ignored -> reset();
         }
@@ -69,12 +78,25 @@ public class Timer implements IConditional, IResettable {
 
     @Override
     public boolean isActive() {
-        return mEndTS != 0 && now() >= mEndTS;
+        if (!mActivated) {
+            mActivated = mEndTS != 0 && now() >= mEndTS;
+            if (mActivated) {
+                mEventLogger.logAsync(EventLogger.Type.Timer, mTimerName, "activated");
+            }
+        }
+        return mActivated;
+    }
+
+    private void start() {
+        mEndTS = now() + mDurationSec * 1000;
+        mEventLogger.logAsync(EventLogger.Type.Timer, mTimerName, "start:" + mDurationSec);
     }
 
     @Override
     public void reset() {
         mEndTS = 0;
+        mActivated = false;
+        mEventLogger.logAsync(EventLogger.Type.Timer, mTimerName, "reset");
     }
 
     private long now() {

@@ -56,7 +56,7 @@ public class DevelopmentEntryPoint {
                 return new Simulator(logger, component.getClock());
             }
         };
-        String filePath = "src/test/resources/v2/script_v33_506+6580+BL.txt";
+        String filePath = "src/test/resources/v2/script_v34_8736+1840+BL.txt";
         boolean parsed = entryPoint.setup(jmriProvider, filePath);
         Truth.assertThat(parsed).isTrue();
         if (parsed) {

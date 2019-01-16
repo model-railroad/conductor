@@ -20,7 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class EventLoggerTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    @Mock ILogger mLogger;
+    @Mock private ILogger mLogger;
 
     private FileOps mFileOps = new FakeFileOps();
     private ILocalDateTimeNowProvider mLocalDateTimeNow;
@@ -50,6 +50,7 @@ public class EventLoggerTest {
         mEventLogger.logAsync(EventLogger.Type.Variable, "V3", "Value 3"); // this gets quoted
         mEventLogger.logAsync(EventLogger.Type.DccThrottle, "444", "28");
         mEventLogger.logAsync(EventLogger.Type.Turnout, "T5", "On");
+        mEventLogger.logAsync(EventLogger.Type.Timer, "timer-2", "Start:300");
 
         mEventLogger.shutdown();
 
@@ -59,6 +60,7 @@ public class EventLoggerTest {
                 "13:42:43.000 S S2 Before_start_2\n" +
                 "13:42:43.000 V V3 \"Value 3\"\n" +
                 "13:42:43.000 D 444 28\n" +
-                "13:42:43.000 T T5 On\n");
+                "13:42:43.000 T T5 On\n" +
+                "13:42:43.000 T timer-2 Start:300\n");
     }
 }

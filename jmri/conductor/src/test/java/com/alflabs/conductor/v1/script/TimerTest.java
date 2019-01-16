@@ -18,11 +18,13 @@
 
 package com.alflabs.conductor.v1.script;
 
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.FakeClock;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -31,6 +33,8 @@ import static com.google.common.truth.Truth.assertThat;
 public class TimerTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
+    @Mock private EventLogger mEventLogger;
+
     private FakeClock mNow;
     private Timer mTimer;
 
@@ -38,8 +42,10 @@ public class TimerTest {
     public void setUp() throws Exception {
         mNow = new FakeClock(100*1000);
 
-        TimerFactory factory = new TimerFactory(InstanceFactory.create(mNow));
-        mTimer = factory.create(42);
+        TimerFactory factory = new TimerFactory(
+                InstanceFactory.create(mNow),
+                InstanceFactory.create(mEventLogger));
+        mTimer = factory.create(42, "timer");
     }
 
     @Test
@@ -67,7 +73,7 @@ public class TimerTest {
     @Test
     public void testTimerReset() throws Exception {
         FakeClock now = new FakeClock(100*1000);
-        Timer timer = new Timer(42, now);
+        Timer timer = new Timer(42, "timer", now, mEventLogger);
 
         assertThat(timer.isActive()).isFalse();
 

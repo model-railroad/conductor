@@ -286,7 +286,7 @@ public class ScriptParser2 {
                 mScript.addVar(varName, var);
 
             } else if (ctx.defIntType().KW_TIMER() != null) {
-                Timer timer = mTimerFactory.create(value);
+                Timer timer = mTimerFactory.create(value, varName.toLowerCase(Locale.US));
                 mScript.addTimer(varName, timer);
 
             } else {
@@ -960,7 +960,7 @@ public class ScriptParser2 {
 
             Timer timer = mScript.getTimer(timerName);
             if (timer == null) {
-                timer = mTimerFactory.create(delaySeconds);
+                timer = mTimerFactory.create(delaySeconds, timerName.toLowerCase(Locale.US));
                 mScript.addTimer(timerName, timer);
 
                 // create an event that will trigger the timer

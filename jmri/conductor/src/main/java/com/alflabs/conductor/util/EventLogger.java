@@ -52,6 +52,7 @@ public class EventLogger {
         Sensor,
         Turnout,
         Variable,
+        Timer,
         DccThrottle
     }
 

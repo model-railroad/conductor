@@ -46,8 +46,8 @@ import static org.mockito.Mockito.when;
 public class EnumTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    @Mock IKeyValue mKeyValue;
-    @Mock EventLogger mEventLogger;
+    @Mock private IKeyValue mKeyValue;
+    @Mock private EventLogger mEventLogger;
 
     private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
 
