@@ -178,7 +178,7 @@ Timer AM-Timer-B370-Pause-Delay  = 16
 Timer AM-Timer-B360-Full-Reverse = 12
 Timer AM-Timer-B330-Down-Speed = 8
 Timer AM-Timer-B321-Down-Crossover = 27
-Timer AM-Timer-B503b-Down-Stop = 15
+Timer AM-Timer-B503b-Down-Stop = 9
 Timer AM-Timer-Down-Station-Lights-Off = 10
 
 # Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:
@@ -478,6 +478,7 @@ PA-State == AM-Down & AM Reverse & B321 & B330 ->
 PA-State == AM-Down & AM Reverse & B321 -> AM-Timer-B321-Down-Crossover Start
 PA-State == AM-Down & AM Reverse & AM-Timer-B321-Down-Crossover ->
     AM Horn ;
+    AM F1 = 1 ;
     AM Reverse = AM-Crossover-Speed
 
 # Arrival at Station
@@ -486,6 +487,7 @@ PA-State == AM-Down & B503a & AM Reverse ->
 PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
     AM Stop ;
     AM Horn ;
+    AM F1 = 0;
     AM-Timer-Down-Station-Lights-Off Start ;
     PA-Error-Timer End
 PA-State == AM-Down & AM-Timer-Down-Station-Lights-Off ->
@@ -670,12 +672,12 @@ BL-State == Restart & BLStation ->
     BL-State = Station
 
 # Is it parked?
-BL-State == Restart & !BLStation & BLParked ->
+BL-State == Restart & BL-Toggle & !BLStation & BLParked ->
     BL Forward = BL-Speed ;
     BL-State = ToStation
 
 # In any other location, try to bring it backwards to the station
-BL-State == Restart & !BLStation & !BLParked ->
+BL-State == Restart & BL-Toggle & !BLStation & !BLParked ->
     BL Reverse = BL-Speed ;
     BL-State = ToStation
 
