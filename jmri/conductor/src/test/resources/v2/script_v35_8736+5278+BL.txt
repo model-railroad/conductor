@@ -288,15 +288,15 @@ PA-State == Idle & PA-Toggle & PA-Timer-Check-Track ->
 PA-State == Idle & !PA-Toggle ->
     PA-Timer-Check-Track End ;
     PA-Error-Timer End ;
-    AM  Light = 0 ;
+    AM Light = 0 ;
     SP Light = 0 ;
-    AM  Stop ;
+    AM Stop ;
     SP Stop ;
     PA-Timer-Stop-Sound-Off Start ;
     PA-Timer-Release-Route Start
 
 PA-State == Idle & PA-Timer-Stop-Sound-Off ->
-    AM  Sound = 0 ;
+    AM Sound = 0 ;
     SP Sound = 0 ;
 
 PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
@@ -545,7 +545,9 @@ PA-State == SP-Up3 & B330 -> PA-State = SP-Down
 
 # PA-Toggle off reverts train to down but not in the start block
 # (we can't change the timer to stop in block B311 if we're already in it).
-PA-State == SP-Up & !PA-Toggle & B321 -> PA-State = SP-Down
+PA-State == SP-Up  & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
+PA-State == SP-Up2 & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
+PA-State == SP-Up3 & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
 
 # --- PA-State: SP Down
 
