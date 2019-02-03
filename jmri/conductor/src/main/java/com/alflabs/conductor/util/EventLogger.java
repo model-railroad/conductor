@@ -67,6 +67,10 @@ public class EventLogger {
         mExecutorService = Executors.newSingleThreadExecutor();
     }
 
+    public ILogger getLogger() {
+        return mLogger;
+    }
+
     public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
         LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
         // Add an event (non blocking)

@@ -20,6 +20,7 @@ package com.alflabs.conductor.v1.script;
 
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.IClock;
+import com.alflabs.utils.ILogger;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;
 
@@ -32,9 +33,11 @@ import com.google.auto.factory.Provided;
  */
 @AutoFactory(allowSubclasses = true)
 public class Timer implements IConditional, IResettable {
+    private static final String TAG = Timer.class.getSimpleName();
 
     private final String mTimerName;
     private final IClock mClock;
+    private ILogger mLogger;
     private final EventLogger mEventLogger;
     private final int mDurationSec;
     private long mEndTS;
@@ -54,10 +57,12 @@ public class Timer implements IConditional, IResettable {
     public Timer(int durationSec,
                  String timerName,
                  @Provided IClock clock,
+                 @Provided ILogger logger,
                  @Provided EventLogger eventLogger) {
         mDurationSec = durationSec;
         mTimerName = timerName;
         mClock = clock;
+        mLogger = logger;
         mEventLogger = eventLogger;
         mEndTS = 0;
     }
@@ -88,8 +93,13 @@ public class Timer implements IConditional, IResettable {
     }
 
     private void start() {
-        mEndTS = now() + mDurationSec * 1000;
-        mEventLogger.logAsync(EventLogger.Type.Timer, mTimerName, "start:" + mDurationSec);
+        if (mEndTS == 0 || mActivated) {
+            mEndTS = now() + mDurationSec * 1000;
+            mActivated = false;
+            mEventLogger.logAsync(EventLogger.Type.Timer, mTimerName, "start:" + mDurationSec);
+        } else {
+            mLogger.d(TAG, "Warning: ignoring ongoing Timer start for " + mTimerName);
+        }
     }
 
     @Override

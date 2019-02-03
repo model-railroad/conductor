@@ -20,6 +20,7 @@ package com.alflabs.conductor.v1.script;
 
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.FakeClock;
+import com.alflabs.utils.ILogger;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,6 +34,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class TimerTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
+    @Mock private ILogger mLogger;
     @Mock private EventLogger mEventLogger;
 
     private FakeClock mNow;
@@ -44,6 +46,7 @@ public class TimerTest {
 
         TimerFactory factory = new TimerFactory(
                 InstanceFactory.create(mNow),
+                InstanceFactory.create(mLogger),
                 InstanceFactory.create(mEventLogger));
         mTimer = factory.create(42, "timer");
     }
@@ -73,7 +76,7 @@ public class TimerTest {
     @Test
     public void testTimerReset() throws Exception {
         FakeClock now = new FakeClock(100*1000);
-        Timer timer = new Timer(42, "timer", now, mEventLogger);
+        Timer timer = new Timer(42, "timer", now, mLogger, mEventLogger);
 
         assertThat(timer.isActive()).isFalse();
 
@@ -86,5 +89,36 @@ public class TimerTest {
 
         timer.reset();
         assertThat(timer.isActive()).isFalse();
+    }
+
+    @Test
+    public void testTimerNoRestart() {
+        // Validates that "start" does not restart a timer that is already ongoing.
+
+        mTimer.createFunction(Timer.Function.START).accept(1);
+        assertThat(mTimer.isActive()).isFalse();
+
+        mNow.setNow((100+41)*1000);
+        assertThat(mTimer.isActive()).isFalse();
+
+        // At t+41 s, a new start() should not reset the timer, it should still expire
+        // at the original t+42 s.
+        mTimer.createFunction(Timer.Function.START).accept(1);
+
+        mNow.setNow((100+42)*1000);
+        assertThat(mTimer.isActive()).isTrue();
+
+        // However once the timer has been activated, we can restart it even without calling end.
+        mTimer.createFunction(Timer.Function.START).accept(1);
+        assertThat(mTimer.isActive()).isFalse();
+
+        mNow.setNow((100+42+41)*1000);
+        assertThat(mTimer.isActive()).isFalse();
+
+        mNow.setNow((100+42+42)*1000);
+        assertThat(mTimer.isActive()).isTrue();
+
+        mTimer.createFunction(Timer.Function.END).accept(1);
+        assertThat(mTimer.isActive()).isFalse();
     }
 }
