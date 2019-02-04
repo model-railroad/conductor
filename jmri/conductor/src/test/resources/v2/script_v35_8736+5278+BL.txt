@@ -178,7 +178,7 @@ Timer AM-Timer-B370-Pause-Delay  = 16
 Timer AM-Timer-B360-Full-Reverse = 12
 Timer AM-Timer-B330-Down-Speed = 8
 Timer AM-Timer-B321-Down-Crossover = 27
-Timer AM-Timer-B503b-Down-Stop = 9
+Timer AM-Timer-B503b-Down-Stop = 12
 Timer AM-Timer-Down-Station-Lights-Off = 10
 
 # Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:
@@ -613,7 +613,7 @@ Int BL-Speed = 12
 
 Enum BL-Train = RDC
 
-Enum BL-State = Restart Wait ToStation Station Fwd Fwd2 Rev Rev2 Error
+Enum BL-State = Restart Wait ToStation Station Fwd Fwd2 Rev Rev2 Rev3 Error Parking Parked
 
 Int BL-Start-Counter = 0
 Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
@@ -661,6 +661,47 @@ BL-Toggle ->
     BL F8 = 0 ;
     BL F9 = 0
 
+# --- Force lights on
+
+BLStation -> BL Light = 1
+BLReverse -> BL Light = 1
+BLTunnel  -> BL Light = 1
+
+
+# --- BL State: Parked
+# (station/wait -> toggle off -> parked // parked -> toggle on -> restart)
+
+BL-State == Parked & BL-Toggle ->
+    T324 Normal ;
+    BL F1 = 0;
+    BL Stop ;
+    BL-State = Restart
+
+Timer BL-Timer-ToParking = 1
+BL-State == Station & !BL-Toggle -> BL-Timer-ToParking Start
+BL-State == Wait    & !BL-Toggle -> BL-Timer-ToParking Start
+
+BL-Timer-ToParking ->
+    T324 Normal ;
+    BL Stop ;
+    BL-State = Parking ;
+    BL Repeat = 2 ;
+    BL Light = 1;
+    BL Sound = 1;
+    BL F1 = 1;
+    BL-Timer-Error Start ;
+    BL Reverse = BL-Speed
+
+Timer BL-Timer-Parked-Off = 10
+BL-State == Parking & !BLStation & BLParked ->
+    BL Stop;
+    BL F1 = 0;
+    BL Light = 0;
+    BL Sound = 0;
+    BL Repeat = 0 ;
+    BL-Timer-Error End ;
+    BL-State = Parked
+
 
 # --- BL State: Restart
 
@@ -684,11 +725,13 @@ BL-State == Restart & BL-Toggle & !BLStation & !BLParked ->
     BL-State = ToStation
 
 # --- ToStation
+# Update: Stopping point is now accross both BL Station+Parked blocks.
+# It is enough to stop when BLParked is triggered, whether BLStation is or not.
 
-BL-State == ToStation & !BLStation -> 
+BL-State == ToStation & !BLStation & !BLParked -> 
     BL-Timer-Error Start
 
-BL-State == ToStation & BLStation ->
+BL-State == ToStation & BLParked ->
     BL Stop ;
     BL-Timer-Error End ;
     BL-State = Station
@@ -721,7 +764,6 @@ BL-State == Station & BL-Timer-Bell-Delay ->
     BL-State = Fwd ;
     BL-Timer-Bell-Delay End ;
     JSON-Event "Depart" "Branchline"
-
 
 # --- BL State: Fwd
 
@@ -773,16 +815,17 @@ BL-State == Fwd2 & !BL-Toggle -> BL-State = Rev
 
 BL-State == Rev & BLParked -> BL Stop   # too far...
 
-BL-State == Rev & !BLStation ->
+BL-State == Rev -> BL Light = 1
+
+BL-State == Rev & !BLStation & !BLParked ->
     BL F1 = 0 ;
     BL F8 = 1 ;
     BL F9 = 1 ;
-    BL Light = 1 ;
     BL Horn ;
     BL Reverse = BL-Speed ;
     BL-Timer-Error Start
 
-Timer BL-Timer-Station-Stop = 10
+Timer BL-Timer-Station-Stop = 13
 
 BL-State == Rev & BLStation ->
     BL F1 = 1 ;
@@ -797,14 +840,21 @@ BL-State == Rev2 & BLParked -> BL Stop   # too far...
 BL-State == Rev2 & BL-Timer-Station-Stop ->
     BL Stop ;
     BL Horn ;
-    BL-Timer-Error End ;
     BL-Timer-Bell-Delay Start
 
 BL-State == Rev2 & BL-Timer-Bell-Delay ->
+    BL Horn ;
+    BL Reverse = BL-Speed ;
+    BL-State = Rev3
+
+BL-State == Rev3 & BL-Timer-Bell-Delay + 2 -> BL Horn
+
+BL-State == Rev3 & BLParked ->
+    BL Stop ;
     BL F1 = 0 ;
     BL F8 = 0 ;
-    BL-State = Wait ;
-    BL-Timer-Bell-Delay End
+    BL-Timer-Error End ;
+    BL-State = Wait
 
 
 # ------------------
