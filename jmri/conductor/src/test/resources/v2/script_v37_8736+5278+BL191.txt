@@ -163,7 +163,7 @@ Int PA-Start-Counter = 0
 Route Passenger = Toggle: PA-Toggle, Status: PA-State,  Counter: PA-Start-Counter, Throttle: AM
 Route Freight   = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, Throttle: SP
 
-Int AM-Leaving-Speed    = 8
+Int AM-Leaving-Speed    = 6
 Int AM-Station-Speed    = 12
 Int AM-Summit-Speed     = 6
 Int AM-Sonora-Speed     = 8
@@ -401,7 +401,11 @@ PA-State == AM-Up & B503a & AM Forward ->
     AM F1 = 0 ;
     SP Sound = 0
 
-PA-State == AM-Up & B321 & AM Forward -> AM Forward = AM-Full-Speed
+# Wait for train to have cleared up T320 before switching to full speed.
+# The problem is that B321 activates as train hits diverted leg of turnout.
+Timer AM-Leaving-To-Full-Speed = 15
+PA-State == AM-Up & B321 & AM Forward -> AM-Leaving-To-Full-Speed Start
+PA-State == AM-Up & B321 & AM Forward & AM-Leaving-To-Full-Speed -> AM Forward = AM-Full-Speed
 
 # Mid-Station doppler on the way up
 PA-State == AM-Up & B321 & AM Forward -> AM-Timer-B321-Up-Doppler Start
