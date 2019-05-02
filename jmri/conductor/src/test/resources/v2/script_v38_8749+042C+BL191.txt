@@ -647,7 +647,7 @@ BL-State == Error ->
 
 # --- BL State: Wait
 
-Timer BL-Timer-Wait = 30 # DEBUG 300  # 5 minutes
+Timer BL-Timer-Wait = 300  # 5 minutes
 
 BL-State == Wait ->
     Reset Timers = "BL" ;
@@ -789,16 +789,16 @@ BL-State == Fwd & BLReverse ->
     BL-Timer-Error End ;
     BL-State = Fwd2
 
-# LIMITED : Stop just at the exit of the tunnel
-
-Limitation == Limited & BL-State == Fwd & BLTunnel + 5 ->
-    BL Horn ;
-    BL F1 = 1 ;
-    BL-Timer-Bell-Delay Start ;
-    BL-Timer-Error End ;
-    BL-State = Fwd2
-
-# END-LIMITED
+## LIMITED : Stop just at the exit of the tunnel
+#
+#Limitation == Limited & BL-State == Fwd & BLTunnel + 5 ->
+#    BL Horn ;
+#    BL F1 = 1 ;
+#    BL-Timer-Bell-Delay Start ;
+#    BL-Timer-Error End ;
+#    BL-State = Fwd2
+#
+## END-LIMITED
 
 BL-State == Fwd & !BL-Toggle -> BL-State = Rev
 
