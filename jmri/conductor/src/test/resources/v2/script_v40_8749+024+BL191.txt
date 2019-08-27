@@ -427,15 +427,23 @@ PA-State == AM-Up & B321 & AM Forward & AM-Timer-B321-Up-Doppler -> AM F9 = 1 ; 
 PA-State == AM-Up & B330 & AM Forward ->
     AM Forward = AM-Sonora-Speed ;
     AM-Timer-B330-Up-Resume Start
-# RM Temporarily stop UP train at 330
-#PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
-#    AM Forward = AM-Full-Speed ;
-#    AM Horn
-PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
+
+# LIMITED -- Stop and reverse at block 330, do not reach Summit
+Timer AM-Limited-Pause-At-330 = 15
+Limitation == Limited & PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
     AM Stop;
+    AM Horn;
+    AM-Limited-Pause-At-330 Start
+AM-Limited-Pause-At-330 ->
     AM Horn;
     PA-State = AM-Down;
     AM Reverse = 4
+
+# END-LIMITED... Non-limited case below.
+Limitation == Full & PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
+    AM Forward = AM-Full-Speed ;
+    AM Horn
+
 
 # After tunnel on the way up
 PA-State == AM-Up & B340 -> AM-Timer-B340-Up-Horn Start
@@ -451,12 +459,6 @@ PA-State == AM-Up & !PA-Toggle & AM Forward & B330 -> PA-State = AM-Down ; AM Re
 PA-State == AM-Up & !PA-Toggle & AM Forward & B340 -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
 
 
-# LIMITED -- Stop and reverse at block 330, do not reach Summit
-#
-#Limitation == Limited & PA-State == AM-Up & B330 -> AM Stop ; AM Horn
-#Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
-#
-# END-LIMITED
 
 
 # --- PA State: AM Summit
