@@ -189,8 +189,8 @@ Int SP-Station-Speed    = 2
 Timer SP-Timer-Up-Slow = 40      # B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
 Timer SP-Timer-Up-Stop = 12      # Time on slow down before stop
 Timer SP-Timer-Up-Reverse = 30   # Time stopped before reverse
-Timer SP-Timer-Down-Slow = 16    # Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-Timer SP-Timer-Down-Stop = 12    # Time on slow down before stop.
+Timer SP-Timer-Down-Slow = 20    # Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+Timer SP-Timer-Down-Stop = 16    # Time on slow down before stop.
 Timer SP-Timer-Down-Off  = 20
 
 # --- Routes
@@ -380,6 +380,7 @@ PA-State == Station & PA-Toggle & PA-Train == Freight  ->
 PA-State == Wait    & PA-Toggle & PA-Train == Freight  ->
     RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
 
+# DEBUG place to force AM-up vs SP-up
 PA-State == Starting & PA-Train == Passenger ->
     RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger" ;
     PA-State = AM-Up
