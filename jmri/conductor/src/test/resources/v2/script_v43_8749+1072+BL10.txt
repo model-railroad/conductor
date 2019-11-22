@@ -166,6 +166,7 @@ Route Freight   = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter
 Int AM-Leaving-Speed    = 6
 Int AM-Station-Speed    = 12
 Int AM-Summit-Speed     = 6
+Int AM-Summit-Bridge-Speed = 4
 Int AM-Sonora-Speed     = 8
 Int AM-Crossover-Speed  = 4
 Int AM-Full-Speed       = 12
@@ -183,13 +184,13 @@ Timer AM-Timer-Down-Station-Lights-Off = 10
 
 # Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
 Int SP-Forward-Speed    = 8
-Int SP-Reverse-Speed    = 5
+Int SP-Reverse-Speed    = 4
 Int SP-Station-Speed    = 2
 
 Timer SP-Timer-Up-Slow = 40      # B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
 Timer SP-Timer-Up-Stop = 12      # Time on slow down before stop
 Timer SP-Timer-Up-Reverse = 30   # Time stopped before reverse
-Timer SP-Timer-Down-Slow = 20    # Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+Timer SP-Timer-Down-Slow = 24    # Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
 Timer SP-Timer-Down-Stop = 16    # Time on slow down before stop.
 Timer SP-Timer-Down-Off  = 20
 
@@ -348,6 +349,7 @@ PA-State == Manual & PA-Manual == In370 & !B370 ->
 
 # --- PA State: Wait (to station)
 
+# RM DEBUG: Use 5 here instead of 60
 Timer PA-Timer-Wait = 60  # 1 minute
 PA-State == Wait -> PA-Timer-Wait Start
 
@@ -482,6 +484,7 @@ PA-State == AM-Summit & AM-Timer-B370-Pause-Delay ->
 
 PA-State == AM-Summit & !B370 & B360 & AM Reverse ->
     PA-State = AM-Down ;
+    AM Reverse = AM-Summit-Bridge-Speed ;
     AM-Timer-Acquire-Route Start
 
 
