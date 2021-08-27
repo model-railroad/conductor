@@ -20,8 +20,8 @@ if [[ -z "$URL" ]]; then
 fi
 
 KEY="$2"
-if [[ "$KEY" != "computer" ]]; then
-    error "Key (2nd argument) must be 'computer' for now."
+if [[ ! "$KEY" =~ ^computer* ]]; then
+    error "Key (2nd argument) must start with 'computer' for now."
 fi
 
 VAL="$3"
