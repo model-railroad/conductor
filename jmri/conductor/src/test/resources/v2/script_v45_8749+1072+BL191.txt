@@ -151,7 +151,7 @@ AIU-Motion  ->
 
 
 
-Throttle AM = 8736      # Full Amtrak route
+Throttle AM = 8749      # Full Amtrak route
 Throttle SP = 1072      # "Short Passenger" (now Freight) on limited Amtrak route
 
 Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Up2 SP-Up3 SP-Down Manual Error Wait
