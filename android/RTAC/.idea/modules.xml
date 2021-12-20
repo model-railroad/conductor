@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/LibManifest/LibManifest.iml" filepath="$PROJECT_DIR$/LibManifest/LibManifest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RTAC.iml" filepath="$PROJECT_DIR$/RTAC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/androidsvg/androidsvg/androidsvg.iml" filepath="$PROJECT_DIR$/androidsvg/androidsvg/androidsvg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/root"
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.alflabs.rtac.activity.MainActivity"
+        android:orientation="vertical">
+
+    <fragment
+            android:id="@+id/routes_fragment"
+            android:name="com.alflabs.rtac.fragment.RoutesFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <View
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+    <fragment
+            android:id="@+id/estop_fragment"
+            android:name="com.alflabs.rtac.fragment.EStopFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <View
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+    <fragment
+            android:id="@+id/status_fragment"
+            android:name="com.alflabs.rtac.fragment.StatusFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    <View
+            android:background="@color/white"
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
+
+    <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" >
+        <android.support.v4.view.PagerTitleStrip
+                android:id="@+id/pager_tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top" />
+    </android.support.v4.view.ViewPager>
+
+</LinearLayout>

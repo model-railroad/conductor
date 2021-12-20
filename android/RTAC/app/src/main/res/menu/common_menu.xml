@@ -1,0 +1,27 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".MountainActivity">
+
+    <item android:id="@+id/action_disconnect"
+          android:title="Disconnect"
+          android:icon="@drawable/ic_action_disconnect"
+          android:orderInCategory="100"
+          app:showAsAction="ifRoom"
+        />
+
+    <!-- There is no JED Setup yet.
+         When re-enabling this, please edit MainActivity#onOptionsItemSelected()
+    <item android:id="@+id/action_setup"
+          android:title="JED Setup"
+          android:orderInCategory="100"
+          app:showAsAction="never"
+        />
+    -->
+
+    <item android:id="@+id/action_settings"
+          android:title="Settings"
+          android:orderInCategory="100"
+          app:showAsAction="never"
+        />
+</menu>

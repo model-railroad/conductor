@@ -1,0 +1,40 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="pref_system__hide_navigation"
+        android:title="Hide Navigation Bar"
+        android:summaryOn="On: Do not display navigation bar (e.g. home &amp; back icons)"
+        android:summaryOff="Off: Display navigation bar (e.g. home &amp; back icons)"
+        android:defaultValue="true" />
+
+    <ListPreference
+        android:key="pref_system__boot_action"
+        android:title="On-Boot Action"
+        android:entries="@array/pref_system__boot_action_strings"
+        android:entryValues="@array/pref_system__boot_action_values"
+        android:defaultValue="no_action"
+        />
+
+    <CheckBoxPreference
+        android:key="pref_system__enable_nsd"
+        android:title="Enable Zero-conf Server Discovery"
+        android:summaryOff="Off: Disable JMRI and Data Server Zero-conf Discovery"
+        android:summaryOn="On: Enable JMRI and Data Server Zero-conf Discovery (default)"
+        android:defaultValue="true" />
+
+    <CheckBoxPreference
+            android:key="pref_system__enable_nsd_ipv6"
+            android:title="Enable Zero-conf over IPv6"
+            android:summaryOff="Off: Disable Zero-conf Discovery over IPv6 (default)"
+            android:summaryOn="On: Enable Zero-conf Discovery over IPv6"
+            android:defaultValue="false" />
+
+    <EditTextPreference
+            android:key="pref_system__wifi_ssid"
+            android:title="SSID of Wifi Network to monitor"
+            android:selectAllOnFocus="false"
+            android:inputType="text"
+            android:singleLine="true"
+            android:maxLines="1" />
+
+</PreferenceScreen>

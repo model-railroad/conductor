@@ -1,0 +1,12 @@
+workspace.xml
+libraries
+.gradle
+build
+out
+*.swp
+markdown-navigator
+markdown-navigator.xml
+src/antlr/java
+src/dagger/java
+conductor-log-*.txt
+

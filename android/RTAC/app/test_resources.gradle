@@ -1,0 +1,80 @@
+/*
+ * Project: RTAC
+ * Copyright (C) 2017 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Source:
+ * - https://pastebin.com/L6CeCtAp
+ * From:
+ * - https://issuetracker.google.com/issues/37020423
+ */
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.apache.commons:commons-lang3:3.3.2"
+    }
+}
+
+// workaround, see https://code.google.com/p/android/issues/detail?id=136013
+import org.apache.commons.lang3.StringUtils
+gradle.projectsEvaluated {
+    def variants = android.applicationVariants.collect()
+
+    tasks.withType(Test) { task ->
+        try {
+            variants.each { variant ->
+                def buildTypeName = variant.buildType.name.capitalize()
+
+                def productFlavorNames = variant.productFlavors.collect { it.name.capitalize() }
+                if (productFlavorNames.isEmpty()) {
+                    productFlavorNames = [""]
+                }
+                def productFlavorName = productFlavorNames.join("")
+                def flavor = StringUtils.uncapitalize(productFlavorName)
+
+                def variationName = "${productFlavorName}${buildTypeName}"
+
+                if (task.name.contains(variationName)) {
+                    def variationPath = variant.buildType.name
+
+                    if (StringUtils.isNotEmpty(productFlavorName)) {
+                        variationPath = StringUtils.uncapitalize(productFlavorName) + "/" + variationPath
+                    }
+
+                    def copyTestResourcesTask = project.tasks.create("copyTest${variationName}Resources", Copy)
+                    copyTestResourcesTask.from("${projectDir}/src/test/resources")
+                    copyTestResourcesTask.into("${buildDir}/intermediates/classes/test/${variationPath}")
+
+                    // Makes the test task depend on the copy test resource variation task
+                    task.dependsOn(copyTestResourcesTask)
+
+                    def copyResourcesTask = project.tasks.create("copy${variationName}Resources", Copy)
+                    copyResourcesTask.from("${projectDir}/src/main/resources")
+                    copyResourcesTask.into("${buildDir}/intermediates/classes/${variationPath}")
+
+                    task.dependsOn(copyResourcesTask)
+
+                    variants.remove(variant)
+
+                    throw new Exception("Break") // Breaking the loop
+                }
+            }
+        } catch (Exception e) {} // Just drop the exception
+    }
+}

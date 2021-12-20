@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="/xml/XSLT/panelfile-2-9-6.xsl" type="text/xsl"?>
+<layout-config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://jmri.org/xml/schema/layout-2-9-6.xsd">
+  <jmriversion>
+    <major>4</major>
+    <minor>4</minor>
+    <test>0</test>
+    <modifier />
+  </jmriversion>
+  <sensors class="jmri.jmrix.internal.configurexml.InternalSensorManagerXml">
+    <defaultInitialState>unknown</defaultInitialState>
+    <sensor systemName="ISCLOCKRUNNING" inverted="false">
+      <systemName>ISCLOCKRUNNING</systemName>
+    </sensor>
+  </sensors>
+  <sensors class="jmri.jmrix.nce.configurexml.NceSensorManagerXml">
+    <sensor systemName="NS752" inverted="false" userName="BLParked">
+      <systemName>NS752</systemName>
+      <userName>BLParked</userName>
+    </sensor>
+    <sensor systemName="NS753" inverted="false" userName="BLStation">
+      <systemName>NS753</systemName>
+      <userName>BLStation</userName>
+    </sensor>
+    <sensor systemName="NS754" inverted="false" userName="BLTunnel">
+      <systemName>NS754</systemName>
+      <userName>BLTunnel</userName>
+    </sensor>
+    <sensor systemName="NS755" inverted="false" userName="BLReverse">
+      <systemName>NS755</systemName>
+      <userName>BLReverse</userName>
+    </sensor>
+    <sensor systemName="NS756" inverted="false">
+      <systemName>NS756</systemName>
+    </sensor>
+    <sensor systemName="NS757" inverted="false">
+      <systemName>NS757</systemName>
+    </sensor>
+    <sensor systemName="NS758" inverted="false">
+      <systemName>NS758</systemName>
+    </sensor>
+    <sensor systemName="NS759" inverted="false">
+      <systemName>NS759</systemName>
+    </sensor>
+    <sensor systemName="NS760" inverted="false">
+      <systemName>NS760</systemName>
+    </sensor>
+    <sensor systemName="NS761" inverted="false">
+      <systemName>NS761</systemName>
+    </sensor>
+    <sensor systemName="NS762" inverted="false">
+      <systemName>NS762</systemName>
+    </sensor>
+    <sensor systemName="NS763" inverted="false">
+      <systemName>NS763</systemName>
+    </sensor>
+    <sensor systemName="NS764" inverted="false">
+      <systemName>NS764</systemName>
+    </sensor>
+    <sensor systemName="NS765" inverted="false" userName="BLRun">
+      <systemName>NS765</systemName>
+      <userName>BLRun</userName>
+    </sensor>
+    <sensor systemName="NS768" inverted="false" userName="B310">
+      <systemName>NS768</systemName>
+      <userName>B310</userName>
+    </sensor>
+    <sensor systemName="NS769" inverted="false" userName="B311">
+      <systemName>NS769</systemName>
+      <userName>B311</userName>
+    </sensor>
+    <sensor systemName="NS770" inverted="false" userName="B320">
+      <systemName>NS770</systemName>
+      <debounceTimers>
+        <goingActive>500</goingActive>
+        <goingInActive>500</goingInActive>
+      </debounceTimers>
+      <userName>B320</userName>
+      <comment />
+    </sensor>
+    <sensor systemName="NS771" inverted="false" userName="B321">
+      <systemName>NS771</systemName>
+      <debounceTimers>
+        <goingActive>500</goingActive>
+        <goingInActive>500</goingInActive>
+      </debounceTimers>
+      <userName>B321</userName>
+      <comment />
+    </sensor>
+    <sensor systemName="NS772" inverted="false" userName="B322">
+      <systemName>NS772</systemName>
+      <userName>B322</userName>
+    </sensor>
+    <sensor systemName="NS773" inverted="false" userName="B330">
+      <systemName>NS773</systemName>
+      <userName>B330</userName>
+    </sensor>
+    <sensor systemName="NS774" inverted="false" userName="B340">
+      <systemName>NS774</systemName>
+      <debounceTimers>
+        <goingActive>1000</goingActive>
+        <goingInActive>0</goingInActive>
+      </debounceTimers>
+      <userName>B340</userName>
+      <comment />
+    </sensor>
+    <sensor systemName="NS775" inverted="false" userName="B360">
+      <systemName>NS775</systemName>
+      <userName>B360</userName>
+    </sensor>
+    <sensor systemName="NS776" inverted="false" userName="B370">
+      <systemName>NS776</systemName>
+      <userName>B370</userName>
+    </sensor>
+    <sensor systemName="NS777" inverted="false" userName="B380">
+      <systemName>NS777</systemName>
+      <userName>B380</userName>
+    </sensor>
+    <sensor systemName="NS778" inverted="false">
+      <systemName>NS778</systemName>
+    </sensor>
+    <sensor systemName="NS779" inverted="false">
+      <systemName>NS779</systemName>
+    </sensor>
+    <sensor systemName="NS780" inverted="false">
+      <systemName>NS780</systemName>
+    </sensor>
+    <sensor systemName="NS781" inverted="false">
+      <systemName>NS781</systemName>
+    </sensor>
+    <sensor systemName="NS784" inverted="false" userName="PAToggle">
+      <systemName>NS784</systemName>
+      <userName>PAToggle</userName>
+    </sensor>
+    <sensor systemName="NS785" inverted="false" userName="PARun3">
+      <systemName>NS785</systemName>
+      <userName>PARun3</userName>
+    </sensor>
+    <sensor systemName="NS786" inverted="false" userName="P3.1">
+      <systemName>NS786</systemName>
+      <userName>P3.1</userName>
+    </sensor>
+    <sensor systemName="NS787" inverted="false" userName="P3.2">
+      <systemName>NS787</systemName>
+      <userName>P3.2</userName>
+    </sensor>
+    <sensor systemName="NS788" inverted="false">
+      <systemName>NS788</systemName>
+    </sensor>
+    <sensor systemName="NS789" inverted="false">
+      <systemName>NS789</systemName>
+    </sensor>
+  </sensors>
+  <turnouts class="jmri.jmrix.nce.configurexml.NceTurnoutManagerXml">
+    <operations automate="false">
+      <operation name="NoFeedback" class="jmri.configurexml.turnoutoperations.NoFeedbackTurnoutOperationXml" interval="300" maxtries="2" />
+      <operation name="Raw" class="jmri.configurexml.turnoutoperations.RawTurnoutOperationXml" interval="300" maxtries="1" />
+      <operation name="Sensor" class="jmri.configurexml.turnoutoperations.SensorTurnoutOperationXml" interval="300" maxtries="3" />
+    </operations>
+    <defaultclosedspeed>Normal</defaultclosedspeed>
+    <defaultthrownspeed>Restricted</defaultthrownspeed>
+    <turnout systemName="NT311" userName="T311" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT311</systemName>
+      <userName>T311</userName>
+    </turnout>
+    <turnout systemName="NT320" userName="T320" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT320</systemName>
+      <userName>T320</userName>
+    </turnout>
+    <turnout systemName="NT321" userName="T321" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT321</systemName>
+      <userName>T321</userName>
+    </turnout>
+    <turnout systemName="NT322" userName="T322" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT322</systemName>
+      <userName>T322</userName>
+    </turnout>
+    <turnout systemName="NT324" userName="T324" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT324</systemName>
+      <userName>T324</userName>
+    </turnout>
+    <turnout systemName="NT326" userName="T326" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT326</systemName>
+      <userName>T326</userName>
+    </turnout>
+    <turnout systemName="NT330" userName="T330" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT330</systemName>
+      <userName>T330</userName>
+    </turnout>
+    <turnout systemName="NT370" userName="T370" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT370</systemName>
+      <userName>T370</userName>
+    </turnout>
+    <turnout systemName="NT504" userName="T504" feedback="DIRECT" inverted="false" automate="Off">
+      <systemName>NT504</systemName>
+      <userName>T504</userName>
+    </turnout>
+  </turnouts>
+  <memories class="jmri.managers.configurexml.DefaultMemoryManagerXml">
+    <memory systemName="IMCURRENTTIME" value="3:56 PM">
+      <systemName>IMCURRENTTIME</systemName>
+    </memory>
+    <memory systemName="IMRATEFACTOR" value="1.0">
+      <systemName>IMRATEFACTOR</systemName>
+    </memory>
+  </memories>
+  <signalmasts class="jmri.managers.configurexml.DefaultSignalMastManagerXml" />
+  <signalgroups class="jmri.managers.configurexml.DefaultSignalGroupManagerXml" />
+  <oblocks class="jmri.jmrit.logix.configurexml.OBlockManagerXml" />
+  <warrants class="jmri.jmrit.logix.configurexml.WarrantManagerXml" />
+  <signalmastlogics class="jmri.managers.configurexml.DefaultSignalMastLogicManagerXml">
+    <logicDelay>500</logicDelay>
+  </signalmastlogics>
+  <timebase class="jmri.jmrit.simpleclock.configurexml.SimpleTimebaseXml" time="Sun Oct 16 19:35:43 PDT 2016" rate="1.0" run="yes" master="yes" sync="no" correct="no" display="no" startstopped="no" startsettime="no" startclockoption="0" />
+  <entryexitpairs class="jmri.jmrit.signalling.configurexml.EntryExitPairsXml" />
+  <entryexitpairs class="jmri.jmrit.signalling.configurexml.EntryExitPairsXml" />
+  <filehistory>
+    <operation>
+      <type>app</type>
+      <date>Fri Feb 03 08:43:51 PST 2017</date>
+      <filename>JMRI program</filename>
+    </operation>
+    <operation>
+      <type>Load OK</type>
+      <date>Fri Feb 03 08:44:13 PST 2017</date>
+      <filename>/home/fireman/ggmrc-scripts/jmri_ggmrc/.jmri/Randall1/Randall1.xml</filename>
+      <filehistory>
+        <operation>
+          <type>app</type>
+          <date>Thu Feb 02 13:30:43 PST 2017</date>
+          <filename>JMRI program</filename>
+        </operation>
+        <operation>
+          <type>Load OK</type>
+          <date>Thu Feb 02 13:31:05 PST 2017</date>
+          <filename>/home/fireman/ggmrc-scripts/jmri_ggmrc/.jmri/Randall1/Randall1.xml</filename>
+          <filehistory>
+            <operation>
+              <type>app</type>
+              <date>Thu Dec 29 10:45:02 PST 2016</date>
+              <filename>JMRI program</filename>
+            </operation>
+            <operation>
+              <type>Load OK</type>
+              <date>Thu Dec 29 10:45:26 PST 2016</date>
+              <filename>/home/fireman/ggmrc-scripts/jmri_ggmrc/.jmri/Randall1/Randall1.xml</filename>
+              <filehistory>
+                <operation>
+                  <type>app</type>
+                  <date>Thu Dec 15 09:57:47 PST 2016</date>
+                  <filename>JMRI program</filename>
+                </operation>
+                <operation>
+                  <type>Load OK</type>
+                  <date>Thu Dec 15 09:58:20 PST 2016</date>
+                  <filename>/home/fireman/ggmrc-scripts/jmri_ggmrc/.jmri/Randall1/Randall1.xml</filename>
+                  <filehistory>
+                    <operation>
+                      <type>app</type>
+                      <date>Sun Nov 06 10:42:49 PST 2016</date>
+                      <filename>JMRI program</filename>
+                    </operation>
+                    <operation>
+                      <type>Load OK</type>
+                      <date>Sun Nov 06 10:43:12 PST 2016</date>
+                      <filename>/home/fireman/ggmrc-scripts/jmri_ggmrc/.jmri/Randall1/Randall1.xml</filename>
+                      <filehistory>
+                        <operation>
+                          <type>app</type>
+                          <date>Sun Oct 16 19:35:42 PDT 2016</date>
+                          <filename>JMRI program</filename>
+                        </operation>
+                        <operation>
+                          <type>Store</type>
+                          <date>Sun Oct 16 19:43:48 PDT 2016</date>
+                          <filename />
+                        </operation>
+                      </filehistory>
+                    </operation>
+                    <operation>
+                      <type>Store</type>
+                      <date>Sun Nov 06 12:39:46 PST 2016</date>
+                      <filename />
+                    </operation>
+                  </filehistory>
+                </operation>
+                <operation>
+                  <type>Store</type>
+                  <date>Thu Dec 15 13:45:19 PST 2016</date>
+                  <filename />
+                </operation>
+              </filehistory>
+            </operation>
+            <operation>
+              <type>Store</type>
+              <date>Thu Dec 29 12:36:23 PST 2016</date>
+              <filename />
+            </operation>
+          </filehistory>
+        </operation>
+        <operation>
+          <type>Store</type>
+          <date>Thu Feb 02 13:48:19 PST 2017</date>
+          <filename />
+        </operation>
+      </filehistory>
+    </operation>
+    <operation>
+      <type>Store</type>
+      <date>Fri Feb 03 15:56:04 PST 2017</date>
+      <filename />
+    </operation>
+  </filehistory>
+  <!--Written by JMRI version 4.4-R1ccf76b on Fri Feb 03 15:56:04 PST 2017 $Id$-->
+</layout-config>

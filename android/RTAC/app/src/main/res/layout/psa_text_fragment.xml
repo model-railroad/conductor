@@ -1,0 +1,19 @@
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/white" >
+
+    <TextView
+        android:id="@+id/main_text"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:gravity="center"
+        android:textSize="@dimen/psa_text_size"
+        android:textStyle="bold" />
+
+</FrameLayout>

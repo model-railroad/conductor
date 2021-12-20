@@ -1,0 +1,12 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+              android:orientation="horizontal"
+             tools:context="com.alflabs.rtac.fragment.RoutesFragment">
+
+    <!--
+    Will dynamically inflate @layout/route_cell or @layout/route_sep
+    -->
+
+</LinearLayout>

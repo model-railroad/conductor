@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-606366463/LibManifest.iml" filepath="$PROJECT_DIR$/.idea/modules/-606366463/LibManifest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/-712348066/LibUtilsJava.iml" filepath="$PROJECT_DIR$/.idea/modules/-712348066/LibUtilsJava.iml" />
+      <module fileurl="file://$PROJECT_DIR$/conductor.iml" filepath="$PROJECT_DIR$/conductor.iml" />
+    </modules>
+  </component>
+</project>

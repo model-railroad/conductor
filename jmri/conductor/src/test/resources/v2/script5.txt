@@ -1,0 +1,67 @@
+#
+# Project: Conductor
+# Copyright (C) 2017 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# throttles
+
+Throttle CONSIST = 204
+
+# states
+
+Enum State = Init Idle Fwd Rev      # Enum is initialized with its first value.
+Int Speed = 8
+
+
+# sensors
+
+Sensor B1         = NS48      # 48:1
+Sensor B2         = NS49      # 48:2
+Sensor PA-TOGGLE  = NS50      # 48:3
+
+# turnouts
+
+Turnout T1        = NT01
+
+# define timers and their default value in seconds
+
+# Maps and Routes info
+
+Map Map1 = "maps/filename1.svg"
+Map Map2 = "maps/filename2.svg"
+
+Route Passenger  = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
+Route Branchline = Toggle: PA-TOGGLE, Status: State, Throttle: CONSIST
+
+String SingleLineString = "This is a free string. It is not used in the script."
+String MultiLineString = '''This string can
+ be split on as many lines as needed. It cannot
+ however contain any "single-quotes" (for grammar
+ simplification).'''
+
+# ---------
+# Events PA
+# ---------
+
+# Setup
+State == INIT -> State = Idle; CONSIST Sound = 1; CONSIST Light = 1
+
+State == Idle & PA-TOGGLE -> State = Fwd ; CONSIST Horn ; CONSIST Forward = Speed
+State == Fwd  & B1 + 5 & CONSIST Forward -> State = Rev; CONSIST Reverse = Speed;
+State == Rev  & B1     & CONSIST Reverse -> CONSIST Stop; State = Idle
+
+State != Idle -> T1 Normal;
+

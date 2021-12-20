@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:orientation="vertical"
+                android:layout_width="wrap_content"
+                android:layout_weight="1"
+                android:layout_height="0dp"
+                android:gravity="center_horizontal"
+                android:padding="8dp">
+
+    <TextView
+            android:id="@+id/route_name"
+            tools:text="Name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:textStyle="bold"
+            android:textSize="@dimen/route_name_text_size"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textAllCaps="true"
+            tools:ignore="HardcodedText" />
+
+    <TextView
+            android:id="@+id/route_toggle"
+            tools:text="ON"
+            android:textColor="@color/red"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_name"
+            android:layout_alignStart="@id/route_name"
+            android:textSize="@dimen/route_status_text_size"
+            android:textAllCaps="true"
+            android:layout_marginStart="4dp" />
+
+    <TextView
+            android:id="@+id/route_status"
+            tools:text="IDLE"
+            android:textColor="@color/green"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_toggle"
+            android:layout_alignStart="@id/route_toggle"
+            android:textSize="@dimen/route_status_text_size"
+            android:textAllCaps="true" />
+
+    <TextView
+            android:id="@+id/route_dir"
+            tools:text="FWD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_status"
+            android:layout_alignStart="@id/route_toggle"
+            android:textSize="@dimen/route_dir_text_size"
+            android:textAllCaps="true"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp" />
+
+    <TextView
+            android:id="@+id/route_speed"
+            tools:text="12"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/route_dir"
+            android:layout_toEndOf="@id/route_dir"
+            android:textStyle="bold"
+            android:textSize="@dimen/route_speed_text_size" />
+
+    <TextView
+            android:id="@+id/route_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/route_dir"
+            android:layout_alignStart="@id/route_toggle"
+            android:layout_marginTop="8dp"
+            tools:text="42 Activations" />
+
+</RelativeLayout>

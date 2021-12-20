@@ -1,0 +1,49 @@
+#
+# Project: Conductor
+# Copyright (C) 2017 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# Comment
+Throttle T1 = 1201
+Throttle T2 = 1202
+
+Int Var-1       = 1
+Int Half-Speed  = 4
+Int Full-Speed  = 8
+
+# define alias for sensors
+Sensor Alias   = NS784
+Sensor Block1 = NS785
+
+# define alias for turnouts
+Turnout T42 = NT420
+
+# define timers and their default value in seconds
+Timer Timer-1 = 5
+
+# events
+Alias & Var-1 -> T1 Forward = Half-Speed ; Var-1 = 0 ; T1 Sound = 1; T1 Light = 1 ; T1 Horn
+Alias & !Var-1 -> T1 Forward = Full-Speed ; Timer-1 Start
+T1 Forward -> T1 Forward = Full-Speed
+T1 Reverse -> T1 Reverse = Half-Speed
+T1 Stopped -> T1 Stop
+Timer-1 -> T1 Sound = 0; T1 Horn ; Var-1 = 1 ; T1 Reverse = Half-Speed
+!Timer-1 -> T1 Stop
+Block1 -> T42 Normal
+!Block1 -> T42 Reverse
+T42 -> T1 Forward = Half-Speed
+T42 + 42 -> T1 Forward = Full-Speed
+!T42 -> T1 Reverse = Half-Speed

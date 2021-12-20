@@ -1,0 +1,16 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@android:style/Theme.Holo" />
+
+    <style name="ActivityTheme" parent="AppTheme" />
+
+    <style name="MainActivityTheme" parent="AppTheme">
+        <!-- API 21: allows nav bar to draw above a stable layout, without resizing it. -->
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+
+    <style name="InvertedTheme" parent="@android:style/Theme.Holo.Light" />
+
+</resources>
