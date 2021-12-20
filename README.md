@@ -30,8 +30,6 @@ Here's a non-exhaustive list of projects or folders available here:
 
     For more info, see __[android/RTAC/LibManifest/README.md](./android/RTAC/LibManifest/README.md)__
 
-* __./docs__: An ongoing documentation effort for the Randall layout.
-
 * __./arduino__ and __./pic16f__: Embedded software to reprogram or replace
     the NCE Button Boards used on the layout.
 
