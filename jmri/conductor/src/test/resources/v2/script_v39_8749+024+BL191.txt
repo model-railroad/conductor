@@ -1,0 +1,970 @@
+#
+# Project: Conductor
+# Copyright (C) 2018 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# sensors
+
+Sensor BLParked     = NS752      # 48:1
+Sensor BLStation    = NS753      # 48:2
+Sensor BLTunnel     = NS754      # 48:3
+Sensor BLReverse    = NS755      # 48:4
+Sensor BLRun        = NS765      # 48:14, Disconnected BL activation button
+
+Sensor B310         = NS768      # 49:1
+Sensor B311         = NS769      # 49:2
+Sensor B320         = NS770      # 49:3
+Sensor B321         = NS771      # 49:4
+Sensor B330         = NS773      # 49:6
+Sensor B340         = NS774      # 49:7
+Sensor B360         = NS775      # 49:8
+Sensor B370         = NS776      # 49:9
+Sensor Old-BL-Toggle= NS781      # 49:14 Unused BL automation toggle
+
+Sensor Old-PA-Toggle= NS784      # 50:1, Unused PA automation toggle
+Sensor Old-PA-Run   = NS785      # 50:2, Unused PA activation button
+Sensor B503a        = NS786      # 50:3
+Sensor B503b        = NS787      # 50:4
+Sensor AIU-Motion   = NS797      # 50:14
+
+Sensor BL-Toggle    = NS828      # 52:13
+Sensor PA-Toggle    = NS829      # 52:14
+
+# turnouts
+
+Turnout T311        = NT311
+Turnout T320        = NT320
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T324        = NT324
+Turnout T326        = NT326
+Turnout T330        = NT330
+Turnout T370        = NT370
+Turnout T504        = NT504
+
+# Maps
+
+Map Mainline = "Conductor Map Mainline 1.svg"
+
+# JSON tracking
+
+JSON-URL = "@~/bin/JMRI/rtac_json_url.txt"
+
+# GA Tracking
+
+GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+String GA-URL = "http://consist.alfray.com/train/"
+
+# Limited Run Mode
+
+Enum Limitation = Full Limited
+
+# -----------------
+# Global STOP Timer
+# -----------------
+#
+# Any route must be shorter than this to reach destination and cancel the timer.
+# The "Reset Timer" action (typically on PA-Toggle off) will clear this.
+
+Timer PA-Error-Timer = 600   # 10 minutes
+
+
+# -----------------
+# Motion
+# -----------------
+
+Int AIU-Motion-Counter = 0
+
+AIU-Motion  -> 
+    RTAC-Motion = On ;
+    AIU-Motion-Counter += 1 ;
+    GA-Event Category: Motion, Action: Start, Label: AIU, User: AIU-Motion-Counter
+
+!AIU-Motion -> 
+    RTAC-Motion = Off ;
+    GA-Event Category: Motion, Action: Stop, Label: AIU, User: AIU-Motion-Counter
+
+
+# ---------
+# Events PA
+# ---------
+
+# Amtrak engines: Rapido F40PH, both on address 204
+# F0 is light (use PA Light)
+# F1 is bell
+# F2 is horn (use PA Horn)
+# F3 = horn doppler effect (use F3 1 to 0)
+# F6 = Strobe lights
+# F8 1/0 for Sound (use PA Sound)
+# F9 = Red Markers (end unit)
+
+# Amtrak engines: Atlas Master line GE Dash 8-32BWH
+# F0 is light (use PA Light)
+# F1 is bell
+# F2 is horn (use PA Horn)
+# F9 is horn grade crossing formation (use F9 1 to 0)
+#
+# Timing for CV Momentum: CV 3 = CV 4 = 18
+
+# Walthers Mainline UP 8736 / 8749:
+# Timings for NCE Momentum #2
+
+# On the RDC SP-10:
+# F0 is light (use BL Light)
+# F1 is bell
+# F2 is horn (use BL Horn)
+# F5 is a doppler horn, too long so not using it
+# F6 is disabled (function used by ESU PowerPack)
+# F7 for dim lights for stations
+# F8 1/0 for Sound (use BL Sound)
+# F9 for red markers on the "end" side
+#
+# Timings for NCE Momentum #3
+
+# On the MTH SP 6580, MTH works very differently ==> this thing is basically unusable for automation
+# F0 / F1 / F2 (light, bell, horn as usual)
+# F3 twice = toggle sound on/off (startup sequence)
+# F4 twice = spoken communication (cycles through a sound bank)
+# F5 = turn on oscillating + board lights
+# F6 twice = cycles through volume 18 levels ==> down to 5~6
+# F7 twice = open/close front coupler
+# F8 twice = open/close rear coupler
+# F9 twice = forward signal
+# F10 twice = reverse signal
+# F11 twice = grade crossing sequence
+# etc... there are more (80dl1519i.pdf page 22)
+#
+# Timing for NCE Momentum #4
+
+
+
+Throttle AM = 8749      # Full Amtrak route
+Throttle SP = 24        # 024 ATSF "Short Passenger" (now Freight) on limited Amtrak route
+
+Enum PA-State = Idle Station Starting AM-Up AM-Summit AM-Down SP-Up SP-Up2 SP-Up3 SP-Down Manual Error Wait
+Enum PA-Train = Passenger Freight
+Enum PA-Manual = Up In370
+
+Int PA-Start-Counter = 0
+
+Route Passenger = Toggle: PA-Toggle, Status: PA-State,  Counter: PA-Start-Counter, Throttle: AM
+Route Freight   = Toggle: PA-Toggle, Status: PA-State, Counter: PA-Start-Counter, Throttle: SP
+
+Int AM-Leaving-Speed    = 6
+Int AM-Station-Speed    = 12
+Int AM-Summit-Speed     = 6
+Int AM-Sonora-Speed     = 8
+Int AM-Crossover-Speed  = 4
+Int AM-Full-Speed       = 12
+
+Timer AM-Timer-B321-Up-Doppler = 27
+Timer AM-Timer-B330-Up-Resume = 12
+Timer AM-Timer-B340-Up-Horn = 5
+Timer AM-Timer-B370-Forward-Stop = 17  # time running at AM-Summit-Speed before stopping
+Timer AM-Timer-B370-Pause-Delay  = 16
+Timer AM-Timer-B360-Full-Reverse = 12
+Timer AM-Timer-B330-Down-Speed = 8
+Timer AM-Timer-B321-Down-Crossover = 27
+Timer AM-Timer-B503b-Down-Stop = 20
+Timer AM-Timer-Down-Station-Lights-Off = 10
+
+# Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 042C:
+Int SP-Forward-Speed    = 8
+Int SP-Reverse-Speed    = 6
+Int SP-Station-Speed    = 2
+
+Timer SP-Timer-Up-Slow = 58      # B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+Timer SP-Timer-Up-Stop = 15      # Time on slow down before stop
+Timer SP-Timer-Up-Reverse = 30   # Time stopped before reverse
+Timer SP-Timer-Down-Slow = 21    # Time before slow on B311. RDC=10, Doodlebug or 804=18.
+Timer SP-Timer-Down-Stop = 12    # Time on slow down before stop.
+Timer SP-Timer-Down-Off  = 20
+
+# --- Routes
+
+Timer AM-Timer-Acquire-Route = 1
+Timer PA-Timer-Release-Route = 1
+Timer SP-Timer-Acquire-Route = 1
+
+AM-Timer-Acquire-Route ->
+    T311 Reverse;
+    T320 Normal ;
+    T321 Normal ;
+    T322 Normal ;
+    T326 Normal ;
+    T330 Reverse ;
+    T370 Normal ;
+    T504 Normal 
+
+PA-Timer-Release-Route ->
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
+
+SP-Timer-Acquire-Route ->
+    T311 Normal;
+    T320 Normal ;
+    T321 Normal ;
+    T322 Normal ;
+    T326 Normal ;
+    T330 Reverse ;
+    T504 Normal ;
+
+
+# --- End of the Day
+
+Int End-Of-Day-HHMM = 1650
+
+PA-Toggle & Conductor-Time == End-Of-Day-HHMM -> PA-Toggle = Inactive
+BL-Toggle & Conductor-Time == End-Of-Day-HHMM -> BL-Toggle = Inactive
+
+PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
+
+!PA-Toggle & Conductor-Time == End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Turned Off\nat 4:50 PM"
+
+!PA-Toggle & Conductor-Time != End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Stopped"
+
+
+# --- PA State: Error
+#
+# Note this state can only be cleared using an RTAC reset.
+
+PA-Error-Timer -> PA-State = Error
+
+PA-State == Error ->
+    AM Repeat = 1 ;
+    SP Repeat = 1 ;
+    AM Stop ;
+    SP Stop ;
+    AM Sound = 0; AM Light = 0; AM F1 = 0 ;
+    SP Sound = 0; SP Light = 0; SP F5 = 0; SP F1 = 0 ;
+    GA-Event Category: Automation, Action: Error,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:red}{c:white}Automation ERROR" ;
+    ESTOP
+
+
+# --- PA State: Idle
+# Idle to station must be done within the error-timer time, otherwise enter error mode.
+
+Timer PA-Timer-Stop-Sound-Off = 10
+Timer PA-Timer-Check-Track = 2
+
+PA-State == Idle & PA-Toggle ->
+    AM Sound = 1; AM Light = 1;
+    SP Sound = 1; SP Light = 1;
+    AM Stop ;
+    SP Stop ;
+    AM Repeat = 2 ;
+    SP Repeat = 2 ;
+    PA-Timer-Release-Route Start ;
+    PA-Timer-Check-Track Start ;
+    PA-Error-Timer Start
+
+# Idle to station can only be done once track is cleared with BOTH trains at startup location.
+PA-State == Idle & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b ->
+    PA-Timer-Check-Track End ;
+    PA-Error-Timer End ;
+    PA-State = Station
+
+PA-State == Idle & PA-Toggle & PA-Timer-Check-Track ->
+    GA-Event Category: Automation, Action: Warning,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:blue}{c:white}Automation Warning\nCheck Track" 
+
+PA-State == Idle & !PA-Toggle ->
+    PA-Timer-Check-Track End ;
+    PA-Error-Timer End ;
+    AM Light = 0 ;
+    SP Light = 0 ;
+    AM Stop ;
+    SP Stop ;
+    PA-Timer-Stop-Sound-Off Start ;
+    PA-Timer-Release-Route Start
+
+PA-State == Idle & PA-Timer-Stop-Sound-Off ->
+    AM Sound = 0 ;
+    SP Sound = 0 ;
+
+PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
+
+!PA-Toggle -> AM Repeat = 0 ; SP Repeat = 0 ; AM F1 = 0 ; SP F1 = 0
+
+PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
+!PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
+
+PA-Toggle  -> JSON-Event "Toggle" "Passenger" = "On"
+!PA-Toggle -> JSON-Event "Toggle" "Passenger" = "Off"
+
+
+# --- PA State: Manual
+#
+# Note: Manual mode can only be engaged if route is free going up.
+
+Timer PA-Go-To-Manual = 1
+PA-State == Station & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual Start
+PA-State == Wait    & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual Start
+
+PA-Go-To-Manual ->
+    RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused" ;
+    PA-State = Manual ;
+    PA-Manual = Up ; 
+    AM Horn ; 
+    SP Horn ;
+    T330 Normal
+
+PA-State == Manual -> RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused"
+
+PA-State == Manual & PA-Manual == Up & B370 -> PA-Manual = In370
+
+PA-State == Manual & PA-Manual == In370 & !B370 ->
+    PA-State = Station ;
+    AM Horn ; 
+    SP Horn
+
+
+# --- PA State: Wait (to station)
+
+Timer PA-Timer-Wait = 60  # 1 minute
+PA-State == Wait -> PA-Timer-Wait Start
+
+PA-Timer-Wait -> PA-State = Station
+
+
+# --- PA State: Station
+
+# Departure from Station (going up)
+# REQUIRES both trains on B503b/B311 and stopped.
+# B320 must be free (it triggers the manual mode).
+# We must have all the route free till B370 before starting.
+PA-State == Station & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b & AM Stopped & SP Stopped & AIU-Motion ->
+    PA-State = Starting
+
+PA-State == Starting ->
+    PA-Start-Counter += 1 ;
+    GA-Page URL: GA-URL, Path: PA-Train, User: PA-Start-Counter ;
+    GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
+    Reset Timers = "PA AM SP"
+
+PA-State == Station & PA-Toggle & PA-Train == Passenger ->
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
+PA-State == Wait    & PA-Toggle & PA-Train == Passenger ->
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+PA-State == Station & PA-Toggle & PA-Train == Freight  ->
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
+PA-State == Wait    & PA-Toggle & PA-Train == Freight  ->
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+
+PA-State == Starting & PA-Train == Passenger ->
+    RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger" ;
+    PA-State = AM-Up
+PA-State == Starting & PA-Train == Freight   ->
+    RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight" ;
+    PA-State = SP-Up
+
+PA-State == Station & !PA-Toggle ->
+    Reset Timers = "PA AM SP" ;
+    PA-State = Idle ;
+
+
+# --- PA State: AM Going Up
+
+PA-State == AM-Up -> PA-Error-Timer Start
+
+Timer AM-Delayed-Horn = 2
+PA-State == AM-Up & B503b & AM Stopped ->
+    AM Light = 1; AM Sound = 1;
+    SP Sound = 0;
+    AM Forward = AM-Leaving-Speed ;
+    AM Horn ; AM-Delayed-Horn Start ;
+    AM-Timer-Acquire-Route Start ;
+    AM F1 = 1 ;
+    JSON-Event "Depart" "Passenger"
+
+AM-Delayed-Horn -> AM Horn
+
+PA-State == AM-Up & B503a & AM Forward ->
+    AM Forward = AM-Leaving-Speed ;
+    AM F1 = 0 ;
+    SP Sound = 0
+
+# Wait for train to have cleared up T320 before switching to full speed.
+# The problem is that B321 activates as train hits diverted leg of turnout.
+Timer AM-Leaving-To-Full-Speed = 15
+PA-State == AM-Up & B321 & AM Forward -> AM-Leaving-To-Full-Speed Start
+PA-State == AM-Up & B321 & AM Forward & AM-Leaving-To-Full-Speed -> AM Forward = AM-Full-Speed
+
+# Mid-Station doppler on the way up
+PA-State == AM-Up & B321 & AM Forward -> AM-Timer-B321-Up-Doppler Start
+PA-State == AM-Up & B321 & AM Forward & AM-Timer-B321-Up-Doppler -> AM F9 = 1 ; AM F9 = 0
+
+# Sonora speed reduction
+PA-State == AM-Up & B330 & AM Forward ->
+    AM Forward = AM-Sonora-Speed ;
+    AM-Timer-B330-Up-Resume Start
+PA-State == AM-Up & AM-Timer-B330-Up-Resume & AM Forward ->
+    AM Forward = AM-Full-Speed ;
+    AM Horn
+
+# After tunnel on the way up
+PA-State == AM-Up & B340 -> AM-Timer-B340-Up-Horn Start
+PA-State == AM-Up & AM-Timer-B340-Up-Horn & AM Forward -> AM Horn
+
+PA-State == AM-Up & B360 -> PA-State = AM-Summit
+
+
+# PA-Toggle off reverts train to down but only on specific "safe" blocks
+# (e.g. not in B503a/B503b because stop distances puts us in the next block)
+PA-State == AM-Up & !PA-Toggle & AM Forward & B321 -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+PA-State == AM-Up & !PA-Toggle & AM Forward & B330 -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+PA-State == AM-Up & !PA-Toggle & AM Forward & B340 -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+
+
+# LIMITED -- Stop and reverse at block 330, do not reach Summit
+#
+#Limitation == Limited & PA-State == AM-Up & B330 -> AM Stop ; AM Horn
+#Limitation == Limited & PA-State == AM-Up & B330 + 30 & AM Stopped -> PA-State = AM-Down ; AM Reverse = AM-Summit-Speed
+#
+# END-LIMITED
+
+
+# --- PA State: AM Summit
+
+PA-State == AM-Summit -> PA-Error-Timer Start
+
+
+PA-State == AM-Summit & B370 +  4 & AM Forward ->
+    AM-Timer-B370-Forward-Stop Start ;
+    AM Forward = AM-Summit-Speed ;
+    AM F1 = 1
+PA-State == AM-Summit & AM-Timer-B370-Forward-Stop & AM Forward ->
+    AM Stop ;
+    AM Horn ;
+    AM-Timer-B370-Pause-Delay Start
+PA-State == AM-Summit & AM-Timer-B370-Pause-Delay ->
+    AM F1 = 0 ;
+    AM Horn;
+    AM Reverse = AM-Summit-Speed
+
+PA-State == AM-Summit & !B370 & B360 & AM Reverse ->
+    PA-State = AM-Down ;
+    AM-Timer-Acquire-Route Start
+
+
+# --- PA State: AM Going Down
+
+PA-State == AM-Down -> PA-Error-Timer Start
+
+PA-State == AM-Down & AM Reverse -> AM-Timer-B360-Full-Reverse Start
+PA-State == AM-Down & AM Reverse & B360 & AM-Timer-B360-Full-Reverse -> AM Reverse = AM-Full-speed
+
+# Just slow down at midstation
+PA-State == AM-Down & AM Reverse & B330 -> AM-Timer-B330-Down-Speed Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B330-Down-Speed ->
+    AM Horn ;
+    AM Reverse = AM-Sonora-Speed 
+PA-State == AM-Down & AM Reverse & B321 & B330 ->
+    AM Reverse = AM-Full-Speed ;
+    AM F9 = 1 ; AM F9 = 0
+PA-State == AM-Down & AM Reverse & B321 -> AM-Timer-B321-Down-Crossover Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B321-Down-Crossover ->
+    AM Horn ;
+    AM F1 = 1 ;
+    AM Reverse = AM-Crossover-Speed
+
+# Arrival at Station
+PA-State == AM-Down & B503a & AM Reverse -> 
+    AM-Timer-B503b-Down-Stop Start
+PA-State == AM-Down & AM Reverse & AM-Timer-B503b-Down-Stop ->
+    AM Stop ;
+    AM Horn ;
+    AM F1 = 0;
+    AM-Timer-Down-Station-Lights-Off Start ;
+    PA-Error-Timer End
+PA-State == AM-Down & AM-Timer-Down-Station-Lights-Off ->
+    GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
+    PA-Train = Freight ;
+    PA-State = Wait
+
+# --------------------
+# --- PA State: SP Up
+
+PA-State == SP-Up -> PA-Error-Timer Start
+
+Timer SP-Sound-Started = 2
+PA-State == SP-Up & B311 & SP Stopped ->
+    SP Light = 1 ;
+    SP F5 = 1;
+    SP Sound = 1 ;
+    AM Sound = 0 ;
+    SP-Sound-Started Start
+
+SP-Sound-Started ->
+    SP Horn ;
+    SP Light = 1 ;
+    SP F1 = 0;
+    SP Forward = SP-Forward-Speed ;
+    SP-Timer-Acquire-Route Start ;
+    JSON-Event "Depart" "Freight"
+SP-Sound-Started + 2 ->
+    SP Horn
+
+PA-State == SP-Up & B321 & SP Forward ->
+    PA-State = SP-Up2 ;
+    SP Forward = SP-Forward-Speed ;
+    SP-Timer-Up-Slow Start
+
+PA-State == SP-Up2 & B321 & SP-Timer-Up-Slow & SP Forward ->
+    PA-State = SP-Up3 ;
+    SP Horn ;
+    SP F1 = 1;
+    SP Forward = SP-Station-Speed ;
+    SP-Timer-Up-Stop Start
+
+PA-State == SP-Up3 & SP-Timer-Up-Stop & SP Forward ->
+    SP Horn ;
+    SP Stop ;
+    SP F1 = 0;
+    SP-Timer-Up-Reverse Start
+
+PA-State == SP-Up3 & SP-Timer-Up-Reverse & SP Stopped ->
+    PA-State = SP-Down
+
+# Error case: we should never reach block B330
+PA-State == SP-Up  & B330 -> PA-State = SP-Down
+PA-State == SP-Up2 & B330 -> PA-State = SP-Down
+PA-State == SP-Up3 & B330 -> PA-State = SP-Down
+
+# PA-Toggle off reverts train to down but not in the start block
+# (we can't change the timer to stop in block B311 if we're already in it).
+PA-State == SP-Up  & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
+PA-State == SP-Up2 & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
+PA-State == SP-Up3 & !PA-Toggle & !B311 & B321 -> PA-State = SP-Down
+
+# --- PA-State: SP Down
+
+PA-State == SP-Down -> PA-Error-Timer Start
+
+Timer SP-Timer-Reverse-Horn = 2
+PA-State == SP-Down ->
+    SP Horn ;
+    SP F1 = 1;
+    SP-Timer-Reverse-Horn Start ;
+    SP Reverse = SP-Reverse-Speed
+SP-Timer-Reverse-Horn     -> SP Horn
+SP-Timer-Reverse-Horn + 2 -> SP Horn
+
+PA-State == SP-Down & B311 & SP Reverse ->
+    SP-Timer-Down-Slow Start
+
+PA-State == SP-Down & SP-Timer-Down-Slow & SP Reverse ->
+    SP Horn ;
+    SP Reverse = SP-Station-Speed ;
+    SP-Timer-Down-Stop Start
+
+PA-State == SP-Down & SP-Timer-Down-Stop & SP Reverse ->
+    SP F1 = 0;
+    SP Horn ;
+    SP Stop ;
+    PA-Error-Timer End ;
+    SP-Timer-Down-Off Start
+
+Timer SP-Sound-Stopped = 2
+PA-State == SP-Down & SP-Timer-Down-Off & SP Stopped ->
+    SP Horn ;
+    SP F1 = 0;
+    SP Light = 0 ;
+    SP F5 = 0 ;
+    SP-Sound-Stopped Start
+SP-Sound-Stopped ->
+    SP Sound = 0 ;
+    AM Sound = 1 ;
+    GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
+    PA-Train = Passenger ;
+    PA-State = Wait ;
+
+
+# ---------
+# Events BL
+# ---------
+
+# On the RDC SP-10:
+# F0 is light (use BL Light)
+# F1 is bell
+# F2 is horn (use BL Horn)
+# F5 is a doppler horn, too long so not using it
+# F6 is disabled (function used by ESU PowerPack)
+# F7 for dim lights for stations
+# F8 1/0 for Sound (use BL Sound)
+# F9 for red markers on the "end" side
+#
+# Route order: BLParked BLStation BLTunnel BLReverse
+
+Throttle BL = 191
+
+Int BL-Speed = 10
+
+Enum BL-Train = RDC
+
+Enum BL-State = Restart Wait ToStation Station Fwd Fwd2 Rev Rev2 Rev3 Error Parking Parked
+
+Int BL-Start-Counter = 0
+Route Branchline = Toggle: BL-Toggle, Status: BL-State, Counter: BL-Start-Counter, Throttle: BL
+
+BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, User: Staff
+!BL-Toggle -> GA-Event Category: Automation, Action: Off, Label: Branchline, User: Staff
+
+BL-Toggle  -> JSON-Event "Toggle" "Branchline" = "On"
+!BL-Toggle -> JSON-Event "Toggle" "Branchline" = "Off"
+
+# --- BL State: Error
+
+# No ESTOP on the Branchline, it does not affect PA route.
+
+Timer BL-Timer-Error = 300  # 5 minutes
+
+BL-Timer-Error -> BL-State = Error
+
+BL-State == Error ->
+    BL Repeat = 1 ;
+    BL Stop ;
+    BL Sound = 0; AM Light = 0;
+    GA-Event Category: Automation, Action: Error,  Label: Branchline, User: Staff
+
+
+# --- BL State: Wait
+
+Timer BL-Timer-Wait = 300  # 5 minutes
+
+BL-State == Wait ->
+    Reset Timers = "BL" ;
+    BL-Timer-Wait Start ;
+    BL Stop
+
+BL-Timer-Wait & BL-Toggle -> BL-State = Restart
+
+BL-Toggle ->
+    BL Repeat = 2 ;
+    BL Light = 0
+
+!BL-Toggle ->
+    BL Repeat = 0 ;
+    BL Light = 0 ;
+    BL F1 = 0 ;
+    BL F8 = 0 ;
+    BL F9 = 0 ;
+    BL F10 = 0
+
+# --- Force lights on
+
+BLStation -> BL Light = 1
+BLReverse -> BL Light = 1
+BLTunnel  -> BL Light = 1
+
+
+# --- BL State: Parked
+# (station/wait -> toggle off -> parked // parked -> toggle on -> restart)
+
+BL-State == Parked & BL-Toggle ->
+    T324 Normal ;
+    BL F1 = 0;
+    BL Stop ;
+    BL-State = Restart
+
+Timer BL-Timer-ToParking = 1
+BL-State == Station & !BL-Toggle -> BL-Timer-ToParking Start
+BL-State == Wait    & !BL-Toggle -> BL-Timer-ToParking Start
+
+BL-Timer-ToParking ->
+    T324 Normal ;
+    BL Stop ;
+    BL-State = Parking ;
+    BL Repeat = 2 ;
+    BL Light = 1;
+    BL Sound = 1;
+    BL F1 = 1;
+    BL-Timer-Error Start ;
+    BL Reverse = BL-Speed
+
+Timer BL-Timer-Parked-Off = 10
+BL-State == Parking & !BLStation & BLParked ->
+    BL Stop;
+    BL F1 = 0;
+    BL Light = 0;
+    BL Sound = 0;
+    BL Repeat = 0 ;
+    BL-Timer-Error End ;
+    BL-State = Parked
+
+
+# --- BL State: Restart
+
+# Is it on the station already?
+# If not, try to bring it to the station, with a timeout.
+
+BL-State == Restart & BLStation ->
+    T324 Normal ;
+    BL Stop ;
+    BL-Timer-Error End ;
+    BL-State = Station
+
+# Is it parked?
+BL-State == Restart & BL-Toggle & !BLStation & BLParked ->
+    BL Forward = BL-Speed ;
+    BL-State = ToStation
+
+# In any other location, try to bring it backwards to the station
+BL-State == Restart & BL-Toggle & !BLStation & !BLParked ->
+    BL Reverse = BL-Speed ;
+    BL-State = ToStation
+
+# --- ToStation
+# Update: Stopping point is now accross both BL Station+Parked blocks.
+# It is enough to stop when BLParked is triggered, whether BLStation is or not.
+
+BL-State == ToStation & !BLStation & !BLParked -> 
+    BL-Timer-Error Start
+
+BL-State == ToStation & BLParked ->
+    BL Stop ;
+    BL-Timer-Error End ;
+    BL-State = Station
+
+
+# --- BL State: Station
+
+Timer BL-Timer-Start-Delay = 8
+Timer BL-Timer-Bell-Delay = 5
+
+BL-State == Station & AIU-Motion & BL-Toggle ->
+    BL Stop ;
+    BL F8 = 1 ;
+    BL F9 = 1 ;
+    BL F10 = 1 ;
+    BL Light = 1 ;
+    BL-Timer-Start-Delay Start ;
+    BL-Start-Counter += 1 ;
+    GA-Page URL: GA-URL, Path: BL-Train, User: BL-Start-Counter ;
+    GA-Event Category: Activation, Action: Start, Label: BL-Train, User: BL-Start-Counter
+
+BL-State == Station & BL-Timer-Start-Delay ->
+    BL Horn ;
+    BL F1 = 1 ;
+    BL-Timer-Bell-Delay Start
+
+BL-State == Station & BL-Timer-Bell-Delay ->
+    BL F1 = 0 ;
+    BL Horn ;
+    BL Forward = BL-Speed ;
+    BL-State = Fwd ;
+    BL-Timer-Bell-Delay End ;
+    JSON-Event "Depart" "Branchline"
+
+# --- BL State: Fwd
+
+Timer BL-Timer-RevStation-Stop = 4
+Timer BL-Timer-RevStation-Pause = 25
+
+BL-State == Fwd ->
+    BL-Timer-Error Start
+
+BL-State == Fwd & BLReverse ->
+    BL Horn ;
+    BL F1 = 1 ;
+    BL-Timer-RevStation-Stop Start ;
+    BL-Timer-Bell-Delay Start ;
+    BL-Timer-Error End ;
+    BL-State = Fwd2
+
+## LIMITED : Stop just at the exit of the tunnel
+#
+#Limitation == Limited & BL-State == Fwd & BLTunnel + 5 ->
+#    BL Horn ;
+#    BL F1 = 1 ;
+#    BL-Timer-Bell-Delay Start ;
+#    BL-Timer-Error End ;
+#    BL-State = Fwd2
+#
+## END-LIMITED
+
+BL-State == Fwd & !BL-Toggle -> BL-State = Rev
+
+# --- Fwd2
+
+BL-State == Fwd2 & BL-Timer-RevStation-Stop ->
+    BL Stop ;
+    BL Horn ;
+    BL Reverse = 1 ;
+    BL Stop
+
+BL-State == Fwd2 & BL-Timer-Bell-Delay ->
+    BL F1 = 0 ;
+    BL-Timer-RevStation-Pause Start ;
+    BL-Timer-Bell-Delay End
+
+BL-State == Fwd2 & BL-Timer-RevStation-Pause ->
+    BL F1 = 1 ;
+    BL Horn
+
+BL-State == Fwd2 & BL-Timer-RevStation-Pause + 5 ->
+    BL-State = Rev
+
+BL-State == Fwd2 & !BL-Toggle -> BL-State = Rev
+
+
+# --- BL State: Rev
+
+BL-State == Rev & BLParked -> BL Stop   # too far...
+
+BL-State == Rev -> BL Light = 1
+
+BL-State == Rev & !BLStation & !BLParked ->
+    BL F1 = 0 ;
+    BL F8 = 1 ;
+    BL F9 = 1 ;
+    BL F10 = 1 ;
+    BL Horn ;
+    BL Reverse = BL-Speed ;
+    BL-Timer-Error Start
+
+Timer BL-Timer-Station-Stop = 13
+
+BL-State == Rev & BLStation ->
+    BL F1 = 1 ;
+    T324 Normal ;
+    BL-Timer-Station-Stop Start ;
+    BL-State = Rev2
+
+# --- Rev2
+
+BL-State == Rev2 & BLParked -> BL Stop   # too far...
+
+BL-State == Rev2 & BL-Timer-Station-Stop ->
+    BL Stop ;
+    BL Horn ;
+    BL-Timer-Bell-Delay Start
+
+BL-State == Rev2 & BL-Timer-Bell-Delay ->
+    BL Horn ;
+    BL Reverse = BL-Speed ;
+    BL-State = Rev3
+
+BL-State == Rev3 & BL-Timer-Bell-Delay + 2 -> BL Horn
+
+BL-State == Rev3 & BLParked ->
+    BL Stop
+
+BL-State == Rev3 & BLParked + 3 ->
+    BL F1 = 0
+
+BL-State == Rev3 & BLParked + 5 ->
+    BL F8 = 0 ;
+    BL F9 = 0 ;
+    BL F10 = 0 ;
+    BL-Timer-Error End ;
+    BL-State = Wait
+
+
+# ------------------
+# Automatic Turnouts
+# ------------------
+
+# If automation is off, T330 is automatically selected:
+# B320 -> B330 via T330 Normal
+# B321 -> B330 via T330 Reverse
+
+!PA-Toggle & !B330 &  B320 & !B321 -> T330 Normal
+!PA-Toggle & !B330 & !B320 &  B321 -> T330 Reverse
+
+
+
+# ------------------
+# Simulations
+# ------------------
+
+String Simulation-Passenger = '''
+Throttle AM
+
+# Station
+Stop
+Set  On B503b
+Set  On B311
+Set Off B320
+Wait On PA-Toggle; Wait On AIU-Motion; Wait 8s
+
+# Going up
+Set On B503a; Set Off B503b; Wait 8s
+
+Set Off B503a; Wait 4s
+Set On B311; Wait 8s
+
+# Midstation horn is at 321+27s
+Set On B320; Set Off B311; Wait 30s
+
+# Curve slow down is at 330+12, horn at 330+26
+Set On B330; Set Off B320; Wait 30s
+
+Set On B340; Set Off B330; Wait 4s
+Set On B350; Set Off B340; Wait 4s
+Set On B360; Set Off B350; Wait 8s
+
+# Summit slow down at 370+9, stop at +14, reverse at +22
+Set On B370; Set Off B360; Wait 40s
+
+# Going down
+
+# Full reverse down at 360+12
+Set On  B360; Set Off B370; Wait 40s
+Set On  B350; Set Off B360; Wait 4s
+Set On  B340; Set Off B350; Wait 4s
+Set On  B330; Set Off B340; Wait 30s
+Set On  B320; Set Off B330; Wait 30s
+Set On  B311; Set Off B320; Wait 8s
+Set On B503a; Set Off B311; Wait 8s
+# Station stop at 503b+10
+Set Off B503a; Set On B503b; Wait 15s
+End
+'''
+
+String Simulation-Branchline = '''
+Throttle BL
+
+# Station
+Stop
+Set On BLParked
+Wait On BL-Toggle; Wait 4s
+
+# Parked to station
+Set On BLStation; Set Off BLParked ; Wait 5s
+Wait On BLRun; Wait 20s
+
+# up between station and tunnel... takes at least 40s (bridge horn is at +16~20s)
+Set Off BLStation; Wait 40s
+Set On  BLTunnel ; Wait  8s
+# at reverse station: at least 6s going in, 15s pause, 3s+ going out
+Set On  BLReverse; Set Off BLTunnel; Wait 30s
+Set On  BLTunnel ; Set Off BLReverse; Wait 8s
+Set Off BLTunnel ; Wait 40s
+# back at station. Bell stops at +2, engine stops at +2+7, sound stops at +2+7+10
+Set On  BLStation; Wait 20s
+
+# station to parked
+Wait Off BL-Toggle; Wait 4s
+Set On  BLParked ; Set Off BLStation; Wait 8s
+
+'''
+
+# ---------
