@@ -68,16 +68,16 @@ It uses __Dagger__ and __[LibUtils](https://bitbucket.org/ralfoide/libutils)' RX
 
 The __Conductor__ scripting language is implemented using __ANTRL v4__.
 The grammar is available in
-[src/antlr/antlr/Conductor.g4](https://bitbucket.org/ralfoide/randall-layout/src/HEAD/jmri/conductor/src/antlr/antlr/Conductor.g4)
+[src/antlr/antlr/Conductor.g4](https://bitbucket.org/randall-railroad/automation/src/HEAD/jmri/conductor/src/antlr/antlr/Conductor.g4)
 and here is an example of actual script as being run on the Randall layout:
-[resources/v2/script.txt](https://bitbucket.org/ralfoide/randall-layout/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/script_pa+bl_11.txt).
+[resources/v2/script.txt](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/script_pa+bl_11.txt).
 
 The __Conductor__ simulation language does not have its own grammar file yet.
 The syntax is trivial enough to be handled by a
-[hand-written parser](https://bitbucket.org/ralfoide/randall-layout/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/main/java/com/alflabs/conductor/simulator/Simulator.java?#Simulator.java-118)
+[handwritten parser](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/main/java/com/alflabs/conductor/simulator/Simulator.java?#Simulator.java-118)
 in a few lines of Java.
 Here is an example simulation script:
-[resources/v2/simul1.txt](https://bitbucket.org/ralfoide/randall-layout/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/simul1.txt).
+[resources/v2/simul1.txt](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/simul1.txt).
 
 
 Communication with __RTAC__ is done using the __KV Client/Server__
@@ -155,24 +155,24 @@ To build and use this from IntelliJ using the Community Edition:
   - Application > Name "Entry Point"
     - Check Single Instance Only.
     - Main Class: com.alflabs.conductor.DevelopmentEntryPoint.
-    - Workding dir: Set to ".../randall-layout/jmri/conductor".
+    - Workding dir: Set to ".../automation/jmri/conductor".
     - Use classpath of module: conductor_main.
     - JRE: 1.8.
     - Before launch: Build.
   - Gradle > Name "All Tests"
     - Check Single Instance Only.
-    - Proect: Conductor (use the project icon, not the ... button)
+    - Project: Conductor (use the project icon, not the ... button)
     - Tasks: test
   - Gradle > Name "Assemble App"
     - Check Single Instance Only.
-    - Proect: Conductor (use the project icon, not the ... button)
+    - Project: Conductor (use the project icon, not the ... button)
     - Tasks: assemble
   - Junit > Name "All Tests" (does not always work, use Gradle instead)
     - Check Single Instance Only.
     - Test kind: all in package.
     - Package: com.alflabs.conductor
     - Search for tests: in single module.
-    - Workding dir: Set to ".../randall-layout/jmri/conductor" (or $MODULE_DIR).
+    - Working dir: Set to ".../automation/jmri/conductor" (or $MODULE_DIR).
     - Use classpath of module: conductor_test.
     - JRE: 1.8.
     - Before launch: Build.
