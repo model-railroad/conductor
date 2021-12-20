@@ -7,6 +7,7 @@ HO-scale model train layout at the Randall Museum in San Francisco.
 
 More info can be found here: http://ralf.alfray.com/trains/rtac
 
+
 ## Content
 
 Here's a non-exhaustive list of projects or folders available here:
@@ -33,6 +34,18 @@ Here's a non-exhaustive list of projects or folders available here:
 
 * __./arduino__ and __./pic16f__: Embedded software to reprogram or replace
     the NCE Button Boards used on the layout.
+
+
+## Documentation
+
+For documentation on the Randall Museum Model Railroad, please consult:
+
+* The [__Presentation & Automation__ of the
+Randall Museum Model Railroad](https://www.alfray.com/trains/randall/about.html)
+
+* The [__Documentation__ git repository](https://bitbucket.org/randall-railroad/documentation),
+  with manuals, maps, and schemas related to the layout.
+
 
 ## Dependencies
 
