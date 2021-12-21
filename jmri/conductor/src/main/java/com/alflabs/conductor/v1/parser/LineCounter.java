@@ -18,8 +18,6 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.util.Pair;
-
 import java.util.HashMap;
 import java.util.Map;
 
