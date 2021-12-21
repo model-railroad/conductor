@@ -891,7 +891,7 @@ public class ScriptParser2 {
         public void exitDefGaIdLine(ConductorParser.DefGaIdLineContext ctx) {
             String idOrFile = ctx.STR().getText();
             try {
-                mAnalytics.setTrackingId(idOrFile);
+                mAnalytics.setAnalyticsId(idOrFile);
             } catch (IOException e) {
                 emitError(ctx, "GA-Tracking-Id: Failed to read '" + idOrFile + "', Exception: " + e);
             }

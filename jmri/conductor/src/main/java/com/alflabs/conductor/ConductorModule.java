@@ -118,12 +118,13 @@ public class ConductorModule {
     @Provides
     public Analytics provideAnalytics(
             ILogger logger,
+            IClock clock,
             FileOps fileOps,
             KeyValueServer keyValue,
             OkHttpClient okHttpClient,
             Random random,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new Analytics(logger, fileOps, keyValue, okHttpClient, random, executor);
+        return new Analytics(logger, clock, fileOps, keyValue, okHttpClient, random, executor);
     }
 
     @Singleton

@@ -4,6 +4,7 @@ import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.MockClock;
 import com.google.common.base.Charsets;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -35,13 +36,14 @@ public class AnalyticsTest {
     @Mock private Random mRandom;
     @Mock private OkHttpClient mOkHttpClient;
 
+    private MockClock mClock = new MockClock();
     private final FileOps mFileOps = new FakeFileOps();
     private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private Analytics mAnalytics;
 
     @Before
     public void setUp() {
-        mAnalytics = new Analytics(mLogger, mFileOps, mKeyValue, mOkHttpClient, mRandom, mExecutor);
+        mAnalytics = new Analytics(mLogger, mClock, mFileOps, mKeyValue, mOkHttpClient, mRandom, mExecutor);
     }
 
     @After
@@ -51,29 +53,29 @@ public class AnalyticsTest {
 
     @Test
     public void testSetTrackingId_FromString() throws IOException {
-        assertThat(mAnalytics.getTrackingId()).isNull();
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
 
-        mAnalytics.setTrackingId("___ UID -string 1234 'ignored- 5 # Comment \nBlah");
-        assertThat(mAnalytics.getTrackingId()).isEqualTo("UID-1234-5");
+        mAnalytics.setAnalyticsId("___ UID -string 1234 'ignored- 5 # Comment \nBlah");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
     }
 
     @Test
     public void testSetTrackingId_FromFile() throws IOException {
-        assertThat(mAnalytics.getTrackingId()).isNull();
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
 
         mFileOps.writeBytes(
                 "___ UID -string 1234 'ignored- 5 # Comment \n Blah".getBytes(Charsets.UTF_8),
                 new File("/tmp/id.txt"));
 
-        mAnalytics.setTrackingId("@/tmp/id.txt");
-        assertThat(mAnalytics.getTrackingId()).isEqualTo("UID-1234-5");
+        mAnalytics.setAnalyticsId("@/tmp/id.txt");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
     }
 
     @Test
-    public void testSendEvent() throws IOException, InterruptedException {
+    public void testSendEvent() throws Exception {
         when(mRandom.nextInt()).thenReturn(42);
 
-        mAnalytics.setTrackingId("UID-1234-5");
+        mAnalytics.setAnalyticsId("UID-1234-5");
         mAnalytics.sendEvent("CAT", "ACT", "LAB", "USR");
         mAnalytics.shutdown(); // forces pending tasks to execute
 
@@ -87,6 +89,6 @@ public class AnalyticsTest {
         //noinspection ConstantConditions
         req.body().writeTo(bodyBuffer);
         assertThat(bodyBuffer.readUtf8()).isEqualTo(
-                "v=1&tid=UID-1234-5&ds=consist&cid=2b6cc9c3-0eaa-39c1-8909-1ea928529cbd&t=event&ec=CAT&ea=ACT&el=LAB&z=42");
+                "v=1&tid=UID-1234-5&ds=consist&cid=2b6cc9c3-0eaa-39c1-8909-1ea928529cbd&t=event&ec=CAT&ea=ACT&el=LAB&z=42&qt=0");
     }
 }

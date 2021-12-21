@@ -217,7 +217,7 @@ public class EntryPoint {
 
         try {
             mAnalytics.shutdown();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             mLogger.d(TAG, "Teardown Analytics exception: " + e);
         }
 
