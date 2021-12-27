@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor;
+package com.alflabs.conductor.jmri;
 
 /**
  * Abstraction of a JMRI throttle that focuses on actions.

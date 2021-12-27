@@ -16,29 +16,18 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor;
+package com.alflabs.conductor.jmri;
 
-import com.alflabs.utils.ILogger;
-
-/**
- * Interface to JMRI to provide JMRI adapter objects.
- */
-public interface IJmriProvider extends ILogger {
-    /**
-     * Returns a new JMRI throttle adapter for the given DCC long address.
-     * Returns null if the object cannot be created.
-     */
-    IJmriThrottle getThrotlle(int dccAddress);
+/** Abstraction of a JMRI sensor. */
+public interface IJmriSensor {
+    /** True when the sensor is valid and active. */
+    boolean isActive();
 
     /**
-     * Returns a new JMRI sensor adapter for the given sensor system name.
-     * Returns null if the object cannot be created.
+     * Overrides the state of the JMRI sensor.
+     * This works when using the DevelopmentEntryPoint and may not do anything when
+     * running with a real JMRI instance (the sensor state will be reset when the
+     * sensor is updated by JMRI).
      */
-    IJmriSensor getSensor(String systemName);
-
-    /**
-     * Returns a new JMRI turnout adapter for the given turnout system name.
-     * Returns null if the object cannot be created.
-     */
-    IJmriTurnout getTurnout(String systemName);
+    void setActive(boolean active);
 }

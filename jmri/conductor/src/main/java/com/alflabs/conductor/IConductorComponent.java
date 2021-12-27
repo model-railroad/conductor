@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.v1.script.IScriptComponent;
 import com.alflabs.conductor.v1.script.ScriptModule;
 import com.alflabs.kv.KeyValueServer;

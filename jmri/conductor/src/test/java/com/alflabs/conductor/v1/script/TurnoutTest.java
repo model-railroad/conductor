@@ -18,8 +18,8 @@
 
 package com.alflabs.conductor.v1.script;
 
-import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriTurnout;
 import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
 import org.junit.After;

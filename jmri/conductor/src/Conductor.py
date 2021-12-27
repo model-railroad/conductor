@@ -28,13 +28,13 @@ import jmri
 import jmri.jmrit.automat.AbstractAutomaton as AbstractAutomaton
 
 # noinspection PyUnresolvedReferences
-import com.alflabs.conductor.IJmriProvider as IJmriProvider
+import com.alflabs.conductor.jmri.IJmriProvider as IJmriProvider
 # noinspection PyUnresolvedReferences
-import com.alflabs.conductor.IJmriThrottle as IJmriThrottle
+import com.alflabs.conductor.jmri.IJmriThrottle as IJmriThrottle
 # noinspection PyUnresolvedReferences
-import com.alflabs.conductor.IJmriTurnout as IJmriTurnout
+import com.alflabs.conductor.jmri.IJmriTurnout as IJmriTurnout
 # noinspection PyUnresolvedReferences
-import com.alflabs.conductor.IJmriSensor as IJmriSensor
+import com.alflabs.conductor.jmri.IJmriSensor as IJmriSensor
 # noinspection PyUnresolvedReferences
 import com.alflabs.conductor.EntryPoint as ConductorEntryPoint
 

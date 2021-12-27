@@ -20,8 +20,8 @@ package com.alflabs.conductor.v1.ui;
 
 import com.alflabs.conductor.EntryPoint;
 import com.alflabs.conductor.IConductorComponent;
-import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.IJmriSensor;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
 import com.alflabs.conductor.v1.script.Script;

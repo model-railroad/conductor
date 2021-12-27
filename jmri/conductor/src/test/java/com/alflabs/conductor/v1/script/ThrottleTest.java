@@ -18,8 +18,8 @@
 
 package com.alflabs.conductor.v1.script;
 
-import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.IJmriThrottle;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriThrottle;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.ILogger;

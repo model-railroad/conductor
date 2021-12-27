@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import org.junit.Before;

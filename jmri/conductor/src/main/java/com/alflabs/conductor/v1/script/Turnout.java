@@ -20,8 +20,8 @@ package com.alflabs.conductor.v1.script;
 
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.Prefix;
-import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.IJmriTurnout;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriTurnout;
 import com.alflabs.kv.IKeyValue;
 import com.google.auto.factory.AutoFactory;
 import com.google.auto.factory.Provided;

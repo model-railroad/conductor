@@ -18,8 +18,8 @@
 
 package com.alflabs.conductor.v1.script;
 
-import com.alflabs.conductor.IJmriProvider;
-import com.alflabs.conductor.IJmriSensor;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import dagger.internal.InstanceFactory;
