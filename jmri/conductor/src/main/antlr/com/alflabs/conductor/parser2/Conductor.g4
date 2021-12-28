@@ -17,6 +17,7 @@
  */
 
 grammar Conductor;
+@header{package com.alflabs.conductor.parser2;}
 
 script     : scriptLine ( EOL scriptLine )* EOL? EOF;
 scriptLine : ( defLine | eventLine )? SB_COMMENT?;
