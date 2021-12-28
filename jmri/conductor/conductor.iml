@@ -8,7 +8,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated-src/antlr/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/sources/annotationProcessor/java/main" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/build/generated/sources/annotationProcessor/java/test" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
@@ -23,22 +22,17 @@
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
     </content>
-    <content url="file://$MODULE_DIR$/build/generated-src/antlr/main" />
+    <content url="file://$MODULE_DIR$/build/generated-src/antlr/main">
+      <sourceFolder url="file://$MODULE_DIR$/build/generated-src/antlr/main" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/build/generated-src/antlr/test" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Gradle: org.antlr:antlr4:4.5.3" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.dagger:dagger:2.11" level="project" />
-    <orderEntry type="library" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
-    <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
     <orderEntry type="module" module-name="conductor.common" />
-    <orderEntry type="module" module-name="conductor.LibUtilsJava" />
-    <orderEntry type="module" module-name="conductor.Engine1" />
+    <orderEntry type="module" module-name="conductor.engine1" />
     <orderEntry type="module" module-name="conductor.LibManifest" />
-    <orderEntry type="library" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
+    <orderEntry type="module" module-name="conductor.LibUtilsJava" />
+    <orderEntry type="library" name="Gradle: org.antlr:antlr4:4.5.3" level="project" />
     <orderEntry type="library" name="Gradle: com.google.truth:truth:0.31" level="project" />
     <orderEntry type="library" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
     <orderEntry type="library" name="Gradle: com.google.auto:auto-common:0.6" level="project" />

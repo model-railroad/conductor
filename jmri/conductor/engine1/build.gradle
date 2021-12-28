@@ -16,9 +16,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-plugins {
-    id "java"
-}
+apply plugin: "java"
+apply plugin: "idea"
 
 group "com.alflabs.conductor"
 version "0.2-SNAPSHOT"
@@ -28,5 +27,9 @@ repositories {
 }
 
 dependencies {
-    testCompile "junit:junit:4.12"
+    implementation project(":common")
+    implementation project(":LibManifest")
+    implementation project(":LibUtilsJava")
+
+    testImplementation "junit:junit:4.10"
 }
