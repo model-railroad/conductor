@@ -1,32 +1,32 @@
 #!/bin/bash
 JDIR=""
 if [[ $(uname) =~ CYGWIN_.* ]]; then
-    JDIR=/cygdrive/c/Program\ Files\ \(x86\)/JMRI
+  JDIR=/cygdrive/c/Program\ Files\ \(x86\)/JMRI
 
-    function op() {
-		cp -v "$1" distrib/
-		if [[ -d "$JDIR" ]]; then
-			cp -v "$1" "$JDIR"/"$2"
-		fi
-    }
+  function op() {
+    cp -v "$1" distrib/
+    if [[ -d "$JDIR" ]]; then
+      cp -v "$1" "$JDIR"/"$2"
+    fi
+  }
 else
-    JDIR=~/bin/JMRI
+  JDIR=~/bin/JMRI
     
-    function op() {
+  function op() {
 		cp -v "$1" distrib/
 		if [[ -d "$JDIR" ]]; then
 			ln -sfv "$PWD"/"$1" "$JDIR"/"$2"
 		fi
-    } 
+  }
 fi
 
 if [[ ! -d "$JDIR" ]]; then
-    echo "Invalid script. Please adjust $0"
+  echo "Invalid script. Please adjust $0"
 fi
 
 set -e
 echo; echo "---- Building with gradle..."
-./gradlew build $@
+./gradlew build --console=plain $@
 echo; echo "---- Copying files..."
 op src/Conductor.py                          jython/Conductor.py
 op build/libs/conductor-0.2-SNAPSHOT-all.jar lib/conductor.jar
