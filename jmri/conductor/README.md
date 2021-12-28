@@ -183,3 +183,59 @@ Solution from SO:
 - For JRE 1.6, add -Dsun.java2d.dpiaware=false or -Dsun.java2d.uiScale=2.5
 - For JRE 1.8, find the JRE/bin/java.exe > Properties > Compatibility > override dpi scaling. Meh.
 - My solution is to just run it under Linux and avoid Windows' broken DPI scaling.
+
+
+## Installation and Usage with JMRI
+
+__Conductor__ is a plugin for JMRI. First, Java and JMRI need to be installed for your platform:
+
+- [Java Download Page](https://www.java.com/en/download/manual.jsp).
+- [JMRI Download Page](https://www.jmri.org/download/).
+
+Next, build __Conductor__:
+
+    $ git clone git clone https://bitbucket.org/randall-railroad/automation.git
+    $ cd automation
+    $ ./_init.sh -f
+    $ ./gradlew assemble fatJar
+
+Two files need to be copied into the JMRI installation directory:
+
+    $ cp src/Conductor.py                          JMRI-DIR/jython/Conductor.py
+    $ cp build/libs/conductor-0.2-SNAPSHOT-all.jar JMRI-DIR/lib/conductor.jar
+
+where _JMRI-DIR_ is the location where JMRI was installed.
+On Windows, this defaults to `C:\Program\ Files (x86)\JMRI` although if you choose this and the
+default "Install for all users" mode, you will need Administrator priviledges to copy the files in
+the `lib/` and `jython/` sub-folders.
+
+Once the files are copied, open `PanelPro` and create or select an existing profile.
+
+To perform a one-time test, use the menu `Scripting > Run Script` and select `jython/Conductor.py`.
+If it works, the __Conductor__ window will open.
+
+Tips:
+- Next time `Scripting > Run Script` is used, the default file name is the last one used, in this
+  case `Conductor.py`.
+- Open the default log using `Help > System Console`. Any error loading the jython file is printed
+  there. A typical error is forgetting to install the JAR file in the `lib/` folder.
+- On Windows, the `lib/jar` file gets cached once open by JMRI. Even if you update the file
+  on disk, the new version is sometimes not used till JMRI is closed and restarted.
+
+By default, __Conductor__ tries to open a script named "events.txt" in the JMRI executable directory.
+Instead use the "Load Script" button to load your own script.
+
+For automation purposes, we want __Conductor__ to be opened automatically when the JMRI profile
+gets loaded. This is achieved via the Preference panel. In JMRI:
+
+- Open `Edit > Preferences`.
+- In the preference panel, select the `Start Up` entry on the side list.
+- At the bottom of the Start Up panel, select `Add > Run script`.
+- Select `Conductor.py` in the `jython` directory.
+- Click the `Save` button at the bottom of the preference panel.
+
+When JMRI restarts, the __Conductor__ window will open automatically.
+If you place your automation script in `JMRI/events.txt`, the script starts to run automatically.
+Closing JMRI also closes __Conductor__.
+
+~~
