@@ -2,7 +2,6 @@ package com.alflabs.conductor.util;
 
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
-import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
 import org.junit.Before;

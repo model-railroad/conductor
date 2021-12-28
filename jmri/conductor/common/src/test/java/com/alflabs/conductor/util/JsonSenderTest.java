@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -30,8 +31,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.truth.Truth.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -54,7 +53,7 @@ public class JsonSenderTest {
     @Before
     public void setUp() throws Exception {
         // Mock the executor so that it executes all tasks immediately
-        when(mExecutor.schedule(any(Runnable.class), anyLong(), any(TimeUnit.class)))
+        when(mExecutor.schedule(ArgumentMatchers.any(Runnable.class), ArgumentMatchers.anyLong(), ArgumentMatchers.any(TimeUnit.class)))
                 .thenAnswer((Answer<ScheduledFuture<?>>) invocation -> {
                     ((Runnable) invocation.getArgument(0)).run();
                     return null;
@@ -62,7 +61,7 @@ public class JsonSenderTest {
         doAnswer((Answer<ScheduledFuture<?>>) invocation -> {
             ((Runnable) invocation.getArgument(0)).run();
             return null;
-        }).when(mExecutor).execute(any(Runnable.class));
+        }).when(mExecutor).execute(ArgumentMatchers.any(Runnable.class));
 
         // Format timestamps using ISO 8601, with a fixed UTC timezone to avoid unit test failures.
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
@@ -166,7 +165,7 @@ public class JsonSenderTest {
     public void testSendDataSuccess() throws Exception {
         String url = "https://example.com/url";
         Call call = mock(Call.class);
-        when(mOkHttpClient.newCall(any())).thenReturn(call);
+        when(mOkHttpClient.newCall(ArgumentMatchers.any())).thenReturn(call);
         Response response = new Response.Builder()
                 .code(200)
                 .request(new Request.Builder().url(url).build())
@@ -199,7 +198,7 @@ public class JsonSenderTest {
     public void testSendDataRetry() throws Exception {
         String url = "https://example.com/url";
         Call call = mock(Call.class);
-        when(mOkHttpClient.newCall(any())).thenReturn(call);
+        when(mOkHttpClient.newCall(ArgumentMatchers.any())).thenReturn(call);
         Response badResponse = new Response.Builder()
                 .code(418)
                 .request(new Request.Builder().url(url).build())

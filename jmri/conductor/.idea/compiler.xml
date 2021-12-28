@@ -30,6 +30,7 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.auto.value/auto-value/1.1/f6951c141ea3e89c0f8b01da16834880a1ebf162/auto-value-1.1.jar" />
         </processorPath>
         <module name="conductor" />
+        <module name="conductor.common" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8" />

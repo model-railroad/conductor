@@ -39,6 +39,7 @@ dependencies {
     implementation project(":engine1")
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
+
     implementation "com.google.guava:guava:19.0"
     implementation "com.intellij:forms_rt:7.0.3"
     implementation "com.google.truth:truth:0.31"
