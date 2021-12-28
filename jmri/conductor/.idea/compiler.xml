@@ -31,6 +31,7 @@
         </processorPath>
         <module name="conductor" />
         <module name="conductor.common" />
+        <module name="conductor.engine1" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8" />

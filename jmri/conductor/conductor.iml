@@ -28,8 +28,8 @@
     <content url="file://$MODULE_DIR$/build/generated-src/antlr/test" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="conductor.common" />
     <orderEntry type="module" module-name="conductor.engine1" />
+    <orderEntry type="module" module-name="conductor.common" />
     <orderEntry type="module" module-name="conductor.LibManifest" />
     <orderEntry type="module" module-name="conductor.LibUtilsJava" />
     <orderEntry type="library" name="Gradle: org.antlr:antlr4:4.5.3" level="project" />
