@@ -5,6 +5,8 @@
       <module fileurl="file://$PROJECT_DIR$/conductor.iml" filepath="$PROJECT_DIR$/conductor.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/-73051554/conductor.LibManifest.iml" filepath="$PROJECT_DIR$/.idea/modules/-73051554/conductor.LibManifest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/2099305339/conductor.LibUtilsJava.iml" filepath="$PROJECT_DIR$/.idea/modules/2099305339/conductor.LibUtilsJava.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/conductor.common.iml" filepath="$PROJECT_DIR$/.idea/modules/common/conductor.common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/engine1/conductor.engine1.iml" filepath="$PROJECT_DIR$/.idea/modules/engine1/conductor.engine1.iml" />
     </modules>
   </component>
 </project>

@@ -35,6 +35,8 @@ repositories {
 }
 
 dependencies {
+    implementation project(":common")
+    implementation project(":engine1")
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
     implementation "com.google.guava:guava:19.0"
