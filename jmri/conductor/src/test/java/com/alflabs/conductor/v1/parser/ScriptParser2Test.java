@@ -44,6 +44,7 @@ import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.google.common.base.Charsets;
+import com.google.common.truth.Truth;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
