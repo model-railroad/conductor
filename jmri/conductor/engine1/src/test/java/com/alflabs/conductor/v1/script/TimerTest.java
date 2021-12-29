@@ -21,7 +21,6 @@ package com.alflabs.conductor.v1.script;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.ILogger;
-import com.google.common.truth.Truth;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,23 +54,23 @@ public class TimerTest {
     @Test
     public void testTimer() throws Exception {
 
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mTimer.createFunction(Timer.Function.START).accept(1);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mNow.setNow(141*1000);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mNow.setNow(142*1000);
-        Truth.assertThat(mTimer.isActive()).isTrue();
+        assertThat(mTimer.isActive()).isTrue();
 
         // timer stays active till reset using end
         mNow.setNow(200*1000);
-        Truth.assertThat(mTimer.isActive()).isTrue();
+        assertThat(mTimer.isActive()).isTrue();
 
         mTimer.createFunction(Timer.Function.END).accept(1);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
     }
 
     @Test
@@ -79,17 +78,17 @@ public class TimerTest {
         FakeClock now = new FakeClock(100*1000);
         Timer timer = new Timer(42, "timer", now, mLogger, mEventLogger);
 
-        Truth.assertThat(timer.isActive()).isFalse();
+        assertThat(timer.isActive()).isFalse();
 
         timer.createFunction(Timer.Function.START).accept(1);
-        Truth.assertThat(timer.isActive()).isFalse();
+        assertThat(timer.isActive()).isFalse();
 
         // timer active now
         now.setNow(200*1000);
-        Truth.assertThat(timer.isActive()).isTrue();
+        assertThat(timer.isActive()).isTrue();
 
         timer.reset();
-        Truth.assertThat(timer.isActive()).isFalse();
+        assertThat(timer.isActive()).isFalse();
     }
 
     @Test
@@ -97,29 +96,29 @@ public class TimerTest {
         // Validates that "start" does not restart a timer that is already ongoing.
 
         mTimer.createFunction(Timer.Function.START).accept(1);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mNow.setNow((100+41)*1000);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         // At t+41 s, a new start() should not reset the timer, it should still expire
         // at the original t+42 s.
         mTimer.createFunction(Timer.Function.START).accept(1);
 
         mNow.setNow((100+42)*1000);
-        Truth.assertThat(mTimer.isActive()).isTrue();
+        assertThat(mTimer.isActive()).isTrue();
 
         // However once the timer has been activated, we can restart it even without calling end.
         mTimer.createFunction(Timer.Function.START).accept(1);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mNow.setNow((100+42+41)*1000);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
 
         mNow.setNow((100+42+42)*1000);
-        Truth.assertThat(mTimer.isActive()).isTrue();
+        assertThat(mTimer.isActive()).isTrue();
 
         mTimer.createFunction(Timer.Function.END).accept(1);
-        Truth.assertThat(mTimer.isActive()).isFalse();
+        assertThat(mTimer.isActive()).isFalse();
     }
 }

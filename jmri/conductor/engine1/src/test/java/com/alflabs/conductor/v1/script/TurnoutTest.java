@@ -21,7 +21,6 @@ package com.alflabs.conductor.v1.script;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriTurnout;
 import com.alflabs.kv.IKeyValue;
-import com.google.common.truth.Truth;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -69,7 +68,7 @@ public class TurnoutTest {
         verify(mKeyValue).putValue("T/scriptName", "N", true);
         reset(mKeyValue);
 
-        Truth.assertThat(mTurnout.isActive()).isTrue();
+        assertThat(mTurnout.isActive()).isTrue();
     }
 
     @After
@@ -90,7 +89,7 @@ public class TurnoutTest {
         verify(mJmriTurnout).isNormal();
         verify(mKeyValue).putValue("T/scriptName", "N", true);
 
-        Truth.assertThat(mTurnout.isActive()).isTrue();
+        assertThat(mTurnout.isActive()).isTrue();
     }
 
     @Test
@@ -105,6 +104,6 @@ public class TurnoutTest {
         verify(mJmriTurnout).isNormal();
         verify(mKeyValue).putValue("T/scriptName", "R", true);
 
-        Truth.assertThat(mTurnout.isActive()).isFalse();
+        assertThat(mTurnout.isActive()).isFalse();
     }
 }

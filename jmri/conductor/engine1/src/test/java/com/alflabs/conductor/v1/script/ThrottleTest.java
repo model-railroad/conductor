@@ -24,7 +24,6 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.MockClock;
-import com.google.common.truth.Truth;
 import dagger.internal.InstanceFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -81,7 +80,7 @@ public class ThrottleTest {
                 InstanceFactory.create(mKeyValue),
                 InstanceFactory.create(mEventLogger));
         mThrottle = factory.create(Collections.singletonList(42));
-        Truth.assertThat(mThrottle.getDccAddressesAsString()).isEqualTo("42");
+        assertThat(mThrottle.getDccAddressesAsString()).isEqualTo("42");
         when(mJmriThrottle.getDccAddress()).thenReturn(42);
 
         mThrottle.onExecStart();
@@ -227,16 +226,16 @@ public class ThrottleTest {
 
     @Test
     public void testRepeatFunction() throws Exception {
-        Truth.assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
 
         repeat.accept(0);
-        Truth.assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
 
         repeat.accept(2);
-        Truth.assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(2);
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(2);
 
         repeat.accept(0);
-        Truth.assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
+        assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
     }
 
     @Test

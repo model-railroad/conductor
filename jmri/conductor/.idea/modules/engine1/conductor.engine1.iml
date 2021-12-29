@@ -9,13 +9,14 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated/sources/annotationProcessor/java/main" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated/sources/annotationProcessor/java/test" isTestSource="true" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine1/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine1/build" />
     </content>
-    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main" />
+    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/test" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

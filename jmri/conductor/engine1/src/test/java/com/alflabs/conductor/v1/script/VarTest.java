@@ -24,7 +24,6 @@ import com.alflabs.rx.IStream;
 import com.alflabs.rx.Publishers;
 import com.alflabs.rx.Schedulers;
 import com.alflabs.rx.Streams;
-import com.google.common.truth.Truth;
 import dagger.internal.InstanceFactory;
 import org.junit.Before;
 import org.junit.Rule;
@@ -76,40 +75,40 @@ public class VarTest {
 
     @Test
     public void testStrGetSetValue() throws Exception {
-        Truth.assertThat(mStrVar.get()).isEqualTo("42");
+        assertThat(mStrVar.get()).isEqualTo("42");
 
         mStrSet.accept("32");
-        Truth.assertThat(mStrVar.get()).isEqualTo("32");
+        assertThat(mStrVar.get()).isEqualTo("32");
     }
 
     @Test
     public void testIntGetSetValue() throws Exception {
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(42);
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
 
         mIntSet.accept(-32);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(-32);
+        assertThat(mIntVar.getAsInt()).isEqualTo(-32);
     }
 
     @Test
     public void testIntIncValue() throws Exception {
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(42);
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
 
         mIntInc.accept(12);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(54);
+        assertThat(mIntVar.getAsInt()).isEqualTo(54);
 
         mIntInc.accept(-32);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(22);
+        assertThat(mIntVar.getAsInt()).isEqualTo(22);
     }
 
     @Test
     public void testIntDecValue() throws Exception {
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(42);
+        assertThat(mIntVar.getAsInt()).isEqualTo(42);
 
         mIntDec.accept(12);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(30);
+        assertThat(mIntVar.getAsInt()).isEqualTo(30);
 
         mIntDec.accept(-32);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(62);
+        assertThat(mIntVar.getAsInt()).isEqualTo(62);
     }
 
     @Test
@@ -136,20 +135,20 @@ public class VarTest {
         mIntVar.setImported(true);
 
         mIntSet.accept(43);
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(43);
+        assertThat(mIntVar.getAsInt()).isEqualTo(43);
 
         IPublisher<String> publisher = Publishers.latest();
         mChangedStream.publishWith(publisher);
 
         when(mKeyValue.getValue("V/MyVar")).thenReturn("44");
         publisher.publish("V/MyVar");
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(44);
+        assertThat(mIntVar.getAsInt()).isEqualTo(44);
 
         mIntVar.setImported(false);
 
         when(mKeyValue.getValue("V/MyVar")).thenReturn("45");
         publisher.publish("V/MyVar");
-        Truth.assertThat(mIntVar.getAsInt()).isEqualTo(44);
+        assertThat(mIntVar.getAsInt()).isEqualTo(44);
     }
 
     @Test
@@ -158,30 +157,30 @@ public class VarTest {
         mStrVar.setImported(true);
 
         mStrSet.accept("two");
-        Truth.assertThat(mStrVar.get()).isEqualTo("two");
+        assertThat(mStrVar.get()).isEqualTo("two");
 
         IPublisher<String> publisher = Publishers.latest();
         mChangedStream.publishWith(publisher);
 
         when(mKeyValue.getValue("V/MyVar")).thenReturn("three");
         publisher.publish("V/MyVar");
-        Truth.assertThat(mStrVar.get()).isEqualTo("three");
+        assertThat(mStrVar.get()).isEqualTo("three");
 
         mStrVar.setImported(false);
 
         when(mKeyValue.getValue("V/MyVar")).thenReturn("four");
         publisher.publish("V/MyVar");
-        Truth.assertThat(mStrVar.get()).isEqualTo("three");
+        assertThat(mStrVar.get()).isEqualTo("three");
     }
 
     @Test
     public void testIsActive() throws Exception {
-        Truth.assertThat(mIntVar.isActive()).isTrue();
+        assertThat(mIntVar.isActive()).isTrue();
 
         mIntSet.accept(0);
-        Truth.assertThat(mIntVar.isActive()).isFalse();
+        assertThat(mIntVar.isActive()).isFalse();
 
         mIntSet.accept(-12);
-        Truth.assertThat(mIntVar.isActive()).isTrue();
+        assertThat(mIntVar.isActive()).isTrue();
     }
 }

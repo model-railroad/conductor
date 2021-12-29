@@ -6,7 +6,6 @@ import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.MockClock;
 import com.google.common.base.Charsets;
-import com.google.common.truth.Truth;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okio.Buffer;
@@ -25,6 +24,8 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+
+import static com.google.common.truth.Truth.assertThat;
 
 public class AnalyticsTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
@@ -51,22 +52,22 @@ public class AnalyticsTest {
 
     @Test
     public void testSetTrackingId_FromString() throws IOException {
-        Truth.assertThat(mAnalytics.getAnalyticsId()).isNull();
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
 
         mAnalytics.setAnalyticsId("___ UID -string 1234 'ignored- 5 # Comment \nBlah");
-        Truth.assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
     }
 
     @Test
     public void testSetTrackingId_FromFile() throws IOException {
-        Truth.assertThat(mAnalytics.getAnalyticsId()).isNull();
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
 
         mFileOps.writeBytes(
                 "___ UID -string 1234 'ignored- 5 # Comment \n Blah".getBytes(Charsets.UTF_8),
                 new File("/tmp/id.txt"));
 
         mAnalytics.setAnalyticsId("@/tmp/id.txt");
-        Truth.assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("UID-1234-5");
     }
 
     @Test
@@ -80,13 +81,13 @@ public class AnalyticsTest {
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
         Mockito.verify(mOkHttpClient).newCall(requestCaptor.capture());
         Request req = requestCaptor.getValue();
-        Truth.assertThat(req).isNotNull();
-        Truth.assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/collect");
-        Truth.assertThat(req.method()).isEqualTo("POST");
+        assertThat(req).isNotNull();
+        assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/collect");
+        assertThat(req.method()).isEqualTo("POST");
         Buffer bodyBuffer = new Buffer();
         //noinspection ConstantConditions
         req.body().writeTo(bodyBuffer);
-        Truth.assertThat(bodyBuffer.readUtf8()).isEqualTo(
+        assertThat(bodyBuffer.readUtf8()).isEqualTo(
                 "v=1&tid=UID-1234-5&ds=consist&cid=2b6cc9c3-0eaa-39c1-8909-1ea928529cbd&t=event&ec=CAT&ea=ACT&el=LAB&z=42&qt=0");
     }
 }

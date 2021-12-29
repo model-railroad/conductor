@@ -21,9 +21,10 @@ package com.alflabs.conductor;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.utils.ILogger;
-import com.google.common.truth.Truth;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.google.common.truth.Truth.assertThat;
 
 /** Entry point controlled for development purposes using a fake no-op JMRI interface. */
 public class DevelopmentEntryPoint {
@@ -57,7 +58,7 @@ public class DevelopmentEntryPoint {
         };
         String filePath = "src/test/resources/v2/script_v34_8736+1840+BL.txt";
         boolean parsed = entryPoint.setup(jmriProvider, filePath);
-        Truth.assertThat(parsed).isTrue();
+        assertThat(parsed).isTrue();
         if (parsed) {
             Thread thread = new Thread(() -> mainLoop(jmriProvider, keepRunning, entryPoint), "MainLoop");
             thread.start();
