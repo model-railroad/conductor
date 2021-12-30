@@ -18,7 +18,6 @@
 
 apply plugin: "java"
 apply plugin: "idea"
-apply plugin: "antlr"
 
 group "com.alflabs.conductor"
 version "0.2-SNAPSHOT"
@@ -47,8 +46,6 @@ dependencies {
     implementation "org.jmdns:jmdns:3.5.3"
     implementation "org.slf4j:slf4j-simple:1.7.25"     // used by jmdns
     implementation "com.squareup.okhttp3:okhttp:3.10.0"
-
-    antlr "org.antlr:antlr4:4.5.3"
 
     implementation          "com.google.dagger:dagger:2.22.1"
     annotationProcessor     "com.google.dagger:dagger-compiler:2.22.1"
