@@ -31,7 +31,7 @@ import javax.inject.Singleton;
 import java.io.File;
 
 @Singleton
-@Component(modules = {ConductorModule.class})
+@Component(modules = {CommonModule.class})
 public interface IConductorComponent {
 
     IClock getClock();
@@ -46,7 +46,7 @@ public interface IConductorComponent {
     @Component.Builder
     interface Builder {
         IConductorComponent build();
-        Builder conductorModule(ConductorModule conductorModule);
+        Builder commonModule(CommonModule commonModule);
         @BindsInstance Builder scriptFile(@Named("script") File scriptFile);
     }
 }

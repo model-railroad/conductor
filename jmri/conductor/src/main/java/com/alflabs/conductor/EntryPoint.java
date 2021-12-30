@@ -94,7 +94,7 @@ public class EntryPoint {
         File scriptFile = new File(scriptPath);
         mComponent = DaggerIConductorComponent
                 .builder()
-                .conductorModule(new ConductorModule(jmriProvider))
+                .commonModule(new CommonModule(jmriProvider))
                 .scriptFile(scriptFile)
                 .build();
 

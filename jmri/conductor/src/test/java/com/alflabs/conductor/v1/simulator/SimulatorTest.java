@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.v1.simulator;
 
-import com.alflabs.conductor.ConductorModule;
+import com.alflabs.conductor.CommonModule;
 import com.alflabs.conductor.DaggerIConductorComponent;
 import com.alflabs.conductor.IConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -101,7 +101,7 @@ public class SimulatorTest {
         mFakeClock = new FakeClock(1000);
 
         IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
-                .conductorModule(new ConductorModule(mJmriProvider) {
+                .commonModule(new CommonModule(mJmriProvider) {
                     @Override
                     public IClock provideClock() {
                         return mFakeClock;

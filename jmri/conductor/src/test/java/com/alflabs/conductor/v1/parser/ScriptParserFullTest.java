@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.ConductorModule;
+import com.alflabs.conductor.CommonModule;
 import com.alflabs.conductor.DaggerIConductorComponent;
 import com.alflabs.conductor.IConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -66,7 +66,7 @@ public class ScriptParserFullTest {
         file.deleteOnExit();
 
         IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .conductorModule(new ConductorModule(mJmriProvider) {
+                .commonModule(new CommonModule(mJmriProvider) {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;

@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2017 alf.labs gmail com,
+ * Copyright (C) 2021 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,10 +43,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @Module
-public class ConductorModule {
+public class CommonModule {
     private final IJmriProvider mJmriProvider;
 
-    public ConductorModule(IJmriProvider jmriProvider) {
+    public CommonModule(IJmriProvider jmriProvider) {
         mJmriProvider = jmriProvider;
     }
 

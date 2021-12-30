@@ -46,7 +46,7 @@ public class IConductorComponentTest {
 
         mComponent = DaggerIConductorComponent
                 .builder()
-                .conductorModule(new ConductorModule(mJmriProvider))
+                .commonModule(new CommonModule(mJmriProvider))
                 .scriptFile(file)
                 .build();
     }
