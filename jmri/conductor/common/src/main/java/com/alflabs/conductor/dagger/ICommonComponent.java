@@ -21,8 +21,6 @@ package com.alflabs.conductor.dagger;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.ClockModule;
 import com.alflabs.conductor.util.FileOpsModule;
-import com.alflabs.utils.FileOps;
-import com.alflabs.utils.IClock;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -41,8 +39,6 @@ import javax.inject.Singleton;
         RandomModule.class,
         })
 public interface ICommonComponent {
-    IClock getClock();
-    FileOps getFileOps();
 
     // Design: Use a @Component.Factory instead of @Component.Builder
     // to add @BindsInstance singleton values into the component.

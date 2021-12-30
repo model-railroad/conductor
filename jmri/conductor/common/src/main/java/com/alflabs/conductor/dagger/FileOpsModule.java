@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2021 alf.labs gmail com,
+ * Copyright (C) 2019 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,20 +18,17 @@
 
 package com.alflabs.conductor.dagger;
 
-import com.alflabs.conductor.util.ClockModule;
+import com.alflabs.utils.FileOps;
 import dagger.Module;
+import dagger.Provides;
 
-@Module(includes = {
-        AnalyticsModule.class,
-        ClockModule.class,
-        EventLoggerModule.class,
-        ExecutorModule.class,
-        FileOpsModule.class,
-        HttpClientModule.class,
-        JsonSenderModule.class,
-        KeyValueModule.class,
-        LoggerModule.class,
-        RandomModule.class})
-public abstract class CommonModuleNew {
+import javax.inject.Singleton;
 
+@Module
+public abstract class FileOpsModule {
+    @Singleton
+    @Provides
+    public static FileOps provideFileOps() {
+        return new FileOps();
+    }
 }

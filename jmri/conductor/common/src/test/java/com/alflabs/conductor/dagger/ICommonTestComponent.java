@@ -19,14 +19,8 @@
 package com.alflabs.conductor.dagger;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.util.Analytics;
-import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.FakeClockModule;
 import com.alflabs.conductor.util.FakeFileOpsModule;
-import com.alflabs.conductor.util.JsonSender;
-import com.alflabs.kv.IKeyValue;
-import com.alflabs.utils.FakeClock;
-import com.alflabs.utils.FakeFileOps;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -46,14 +40,6 @@ import javax.inject.Singleton;
         MockRandomModule.class,
         })
 public interface ICommonTestComponent extends ICommonComponent {
-
-    FakeClock getFakeClock();
-    FakeFileOps getFakeFileOps();
-
-    IKeyValue getKeyValue();
-    Analytics getAnalytics();
-    JsonSender getJsonSender();
-    EventLogger getEventLogger();
 
     @Component.Factory
     interface Factory {
