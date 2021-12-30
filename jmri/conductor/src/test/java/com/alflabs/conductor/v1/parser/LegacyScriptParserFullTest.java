@@ -18,9 +18,9 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.dagger.CommonModuleLegacy;
-import com.alflabs.conductor.DaggerIConductorComponent;
-import com.alflabs.conductor.IConductorComponent;
+import com.alflabs.conductor.ILegacyConductorComponent;
+import com.alflabs.conductor.dagger.LegacyCommonModule;
+import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriThrottle;
 import com.alflabs.conductor.v1.script.IScriptComponent;
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
  * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
  * using full script files.
  */
-public class ScriptParserFullTest {
+public class LegacyScriptParserFullTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IJmriProvider mJmriProvider;
@@ -65,8 +65,8 @@ public class ScriptParserFullTest {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
-        IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
+        ILegacyConductorComponent realNowComponent = DaggerILegacyConductorComponent.builder()
+                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;

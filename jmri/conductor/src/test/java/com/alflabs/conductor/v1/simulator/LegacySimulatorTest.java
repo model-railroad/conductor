@@ -18,9 +18,9 @@
 
 package com.alflabs.conductor.v1.simulator;
 
-import com.alflabs.conductor.dagger.CommonModuleLegacy;
-import com.alflabs.conductor.DaggerIConductorComponent;
-import com.alflabs.conductor.IConductorComponent;
+import com.alflabs.conductor.ILegacyConductorComponent;
+import com.alflabs.conductor.dagger.LegacyCommonModule;
+import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
@@ -63,7 +63,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-public class SimulatorTest {
+public class LegacySimulatorTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     // @Mock ILogger mLogger;
@@ -100,8 +100,8 @@ public class SimulatorTest {
 
         mFakeClock = new FakeClock(1000);
 
-        IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
-                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
+        ILegacyConductorComponent fakeNowComponent = DaggerILegacyConductorComponent.builder()
+                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
                     @Override
                     public IClock provideClock() {
                         return mFakeClock;

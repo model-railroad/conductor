@@ -19,7 +19,7 @@
 package com.alflabs.conductor.v1.ui;
 
 import com.alflabs.conductor.EntryPoint;
-import com.alflabs.conductor.IConductorComponent;
+import com.alflabs.conductor.ILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.v1.script.Enum_;
@@ -98,7 +98,7 @@ public class StatusWnd {
     }
 
     public void init(
-            IConductorComponent component,
+            ILegacyConductorComponent component,
             Script script,
             ExecEngine engine,
             Supplier<RPair<EntryPoint, String>> onReloadAction,
@@ -241,7 +241,7 @@ public class StatusWnd {
     }
 
     private void initScript(
-            IConductorComponent component,
+            ILegacyConductorComponent component,
             Script script,
             ExecEngine engine) {
         final int numThrottles = 2; // TODO hack for quick test

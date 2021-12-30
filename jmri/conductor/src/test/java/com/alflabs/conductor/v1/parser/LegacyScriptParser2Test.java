@@ -18,9 +18,9 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.dagger.CommonModuleLegacy;
-import com.alflabs.conductor.DaggerIConductorComponent;
-import com.alflabs.conductor.IConductorComponent;
+import com.alflabs.conductor.dagger.LegacyCommonModule;
+import com.alflabs.conductor.DaggerILegacyConductorComponent;
+import com.alflabs.conductor.ILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
@@ -74,7 +74,7 @@ import static org.mockito.Mockito.when;
  * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
  * using isolated JUnit tests.
  */
-public class ScriptParser2Test {
+public class LegacyScriptParser2Test {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
@@ -102,8 +102,8 @@ public class ScriptParser2Test {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
-        IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
+        ILegacyConductorComponent realNowComponent = DaggerILegacyConductorComponent.builder()
+                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
@@ -125,8 +125,8 @@ public class ScriptParser2Test {
 
         mClock = new FakeClock(1000);
 
-        IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
-                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
+        ILegacyConductorComponent fakeNowComponent = DaggerILegacyConductorComponent.builder()
+                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
                     @Override
                     public IClock provideClock() {
                         return mClock;

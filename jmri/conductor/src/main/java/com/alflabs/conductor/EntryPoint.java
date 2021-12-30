@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.dagger.CommonModuleLegacy;
+import com.alflabs.conductor.dagger.LegacyCommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.JsonSender;
@@ -61,7 +61,7 @@ public class EntryPoint {
     private Script mScript;
     private ExecEngine mEngine;
     private boolean mStopRequested;
-    private IConductorComponent mComponent;
+    private ILegacyConductorComponent mComponent;
     private CountDownLatch mJmDNSLatch;
     private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
@@ -86,16 +86,16 @@ public class EntryPoint {
      */
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
 
-        // FIXME: if "DaggerIConductorComponent" cannot be resolved, 2 things are needed.
+        // FIXME: if "DaggerILegacyConductorComponent" cannot be resolved, 2 things are needed.
         // 1- Build the project.
         // 2- In Intellij, right click build/generated/source/apt/main and mark it as a
         //    generated source folder.
         // For some reason, IJ extracts generated/source/apt/main as a gen folder from the
         // gradle API instead of the proper build/generated/...
         File scriptFile = new File(scriptPath);
-        mComponent = DaggerIConductorComponent
+        mComponent = DaggerILegacyConductorComponent
                 .builder()
-                .commonModuleLegacy(new CommonModuleLegacy(jmriProvider))
+                .legacyCommonModule(new LegacyCommonModule(jmriProvider))
                 .scriptFile(scriptFile)
                 .build();
 
@@ -136,7 +136,7 @@ public class EntryPoint {
         return true;
     }
 
-    protected Simulator getSimulator(IConductorComponent component) {
+    protected Simulator getSimulator(ILegacyConductorComponent component) {
         return null;
     }
 

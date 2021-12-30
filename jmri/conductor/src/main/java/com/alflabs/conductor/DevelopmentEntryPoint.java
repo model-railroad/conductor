@@ -52,7 +52,7 @@ public class DevelopmentEntryPoint {
             }
 
             @Override
-            protected Simulator getSimulator(IConductorComponent component) {
+            protected Simulator getSimulator(ILegacyConductorComponent component) {
                 return new Simulator(logger, component.getClock());
             }
         };

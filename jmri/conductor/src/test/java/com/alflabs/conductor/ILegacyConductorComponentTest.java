@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.dagger.CommonModuleLegacy;
+import com.alflabs.conductor.dagger.LegacyCommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
@@ -33,21 +33,21 @@ import java.io.File;
 
 import static com.google.common.truth.Truth.assertThat;
 
-public class IConductorComponentTest {
+public class ILegacyConductorComponentTest {
     @Rule public MockitoRule mRule = MockitoJUnit.rule();
 
     @Mock IJmriProvider mJmriProvider;
 
-    private IConductorComponent mComponent;
+    private ILegacyConductorComponent mComponent;
 
     @Before
     public void setUp() throws Exception {
         File file = File.createTempFile("conductor_tests", "tmp");
         file.deleteOnExit();
 
-        mComponent = DaggerIConductorComponent
+        mComponent = DaggerILegacyConductorComponent
                 .builder()
-                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider))
+                .legacyCommonModule(new LegacyCommonModule(mJmriProvider))
                 .scriptFile(file)
                 .build();
     }

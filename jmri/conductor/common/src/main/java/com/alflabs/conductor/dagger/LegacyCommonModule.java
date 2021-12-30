@@ -44,10 +44,10 @@ import java.util.concurrent.ScheduledExecutorService;
 
 @Module
 @Deprecated
-public class CommonModuleLegacy {
+public class LegacyCommonModule {
     private final IJmriProvider mJmriProvider;
 
-    public CommonModuleLegacy(IJmriProvider jmriProvider) {
+    public LegacyCommonModule(IJmriProvider jmriProvider) {
         mJmriProvider = jmriProvider;
     }
 
