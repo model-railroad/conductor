@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.dagger.CommonModuleLegacy;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.v1.script.IScriptComponent;
 import com.alflabs.conductor.v1.script.ScriptModule;
@@ -31,7 +32,7 @@ import javax.inject.Singleton;
 import java.io.File;
 
 @Singleton
-@Component(modules = {CommonModule.class})
+@Component(modules = {CommonModuleLegacy.class})
 public interface IConductorComponent {
 
     IClock getClock();
@@ -46,7 +47,7 @@ public interface IConductorComponent {
     @Component.Builder
     interface Builder {
         IConductorComponent build();
-        Builder commonModule(CommonModule commonModule);
+        Builder commonModuleLegacy(CommonModuleLegacy commonModuleLegacy);
         @BindsInstance Builder scriptFile(@Named("script") File scriptFile);
     }
 }

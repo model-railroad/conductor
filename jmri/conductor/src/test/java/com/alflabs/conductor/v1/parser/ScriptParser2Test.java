@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.CommonModule;
+import com.alflabs.conductor.dagger.CommonModuleLegacy;
 import com.alflabs.conductor.DaggerIConductorComponent;
 import com.alflabs.conductor.IConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -103,7 +103,7 @@ public class ScriptParser2Test {
         file.deleteOnExit();
 
         IConductorComponent realNowComponent = DaggerIConductorComponent.builder()
-                .commonModule(new CommonModule(mJmriProvider) {
+                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
                     @Override
                     public FileOps provideFileOps() {
                         return mFileOps;
@@ -126,7 +126,7 @@ public class ScriptParser2Test {
         mClock = new FakeClock(1000);
 
         IConductorComponent fakeNowComponent = DaggerIConductorComponent.builder()
-                .commonModule(new CommonModule(mJmriProvider) {
+                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider) {
                     @Override
                     public IClock provideClock() {
                         return mClock;

@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.dagger.CommonModuleLegacy;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
@@ -46,7 +47,7 @@ public class IConductorComponentTest {
 
         mComponent = DaggerIConductorComponent
                 .builder()
-                .commonModule(new CommonModule(mJmriProvider))
+                .commonModuleLegacy(new CommonModuleLegacy(mJmriProvider))
                 .scriptFile(file)
                 .build();
     }

@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor;
 
+import com.alflabs.conductor.dagger.CommonModuleLegacy;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.JsonSender;
@@ -94,7 +95,7 @@ public class EntryPoint {
         File scriptFile = new File(scriptPath);
         mComponent = DaggerIConductorComponent
                 .builder()
-                .commonModule(new CommonModule(jmriProvider))
+                .commonModuleLegacy(new CommonModuleLegacy(jmriProvider))
                 .scriptFile(scriptFile)
                 .build();
 

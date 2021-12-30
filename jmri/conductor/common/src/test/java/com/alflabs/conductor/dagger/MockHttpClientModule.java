@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2017 alf.labs gmail com,
+ * Copyright (C) 2019 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,32 +16,21 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.v1.script;
+package com.alflabs.conductor.dagger;
 
-import com.alflabs.conductor.v1.parser.Reporter;
-import com.alflabs.kv.IKeyValue;
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.OkHttpClient;
+
+import javax.inject.Singleton;
+
+import static org.mockito.Mockito.mock;
 
 @Module
-public class ScriptModule {
-
-    private final Reporter mReporter;
-    private final IKeyValue mKeyValue;
-
-    public ScriptModule(Reporter reporter, IKeyValue keyValue) {
-        mReporter = reporter;
-        mKeyValue = keyValue;
-    }
-
+public abstract class MockHttpClientModule {
+    @Singleton
     @Provides
-    public Reporter provideReporter() {
-        return mReporter;
-    }
-
-    @Provides
-    @Deprecated
-    public IKeyValue provideKeyValue() {
-        return mKeyValue;
+    public static OkHttpClient provideOkHttpClient() {
+        return mock(OkHttpClient.class);
     }
 }

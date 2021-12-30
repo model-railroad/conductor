@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor;
+package com.alflabs.conductor.dagger;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
@@ -43,10 +43,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 @Module
-public class CommonModule {
+@Deprecated
+public class CommonModuleLegacy {
     private final IJmriProvider mJmriProvider;
 
-    public CommonModule(IJmriProvider jmriProvider) {
+    public CommonModuleLegacy(IJmriProvider jmriProvider) {
         mJmriProvider = jmriProvider;
     }
 
