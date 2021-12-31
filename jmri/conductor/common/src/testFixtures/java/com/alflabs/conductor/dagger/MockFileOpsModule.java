@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.util;
+package com.alflabs.conductor.dagger;
 
 import com.alflabs.utils.FileOps;
 import dagger.Module;
@@ -24,11 +24,13 @@ import dagger.Provides;
 
 import javax.inject.Singleton;
 
+import static org.mockito.Mockito.mock;
+
 @Module
-public abstract class FileOpsModule {
+public abstract class MockFileOpsModule {
     @Singleton
     @Provides
     public static FileOps provideFileOps() {
-        return new FileOps();
+        return mock(FileOps.class);
     }
 }

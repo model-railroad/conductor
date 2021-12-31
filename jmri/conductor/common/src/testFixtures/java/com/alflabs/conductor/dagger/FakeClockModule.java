@@ -16,10 +16,11 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.util;
+package com.alflabs.conductor.dagger;
 
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
+import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.IClock;
-import com.alflabs.utils.JavaClock;
 import dagger.Module;
 import dagger.Provides;
 
@@ -27,16 +28,33 @@ import javax.inject.Singleton;
 import java.time.LocalDateTime;
 
 @Module
-public abstract class ClockModule {
+public abstract class FakeClockModule {
+
+    /** It is permanently 1:42 PM here. */
+    public static final int HOUR = 13;
+    /** It is permanently 1:42 PM here. */
+    public static final int MINUTES = 42;
+    /** It is permanently 1:42:43 PM here. */
+    public static final int SECONDS = 43;
+
     @Singleton
     @Provides
-    public static IClock provideClock() {
-        return new JavaClock();
+    public static FakeClock provideFakeClock() {
+        return new FakeClock(1000);
+    }
+
+    @Singleton
+    @Provides
+    public static IClock provideClock(FakeClock clock) {
+        return clock;
     }
 
     @Singleton
     @Provides
     public static ILocalDateTimeNowProvider provideLocalDateTime() {
-        return LocalDateTime::now;
+        return () -> {
+            // It is permanently 1:42 PM here
+            return LocalDateTime.of(1901, 2, 3, HOUR, MINUTES, SECONDS);
+        };
     }
 }

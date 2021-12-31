@@ -16,44 +16,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.util;
+package com.alflabs.conductor.dagger;
 
-import com.alflabs.utils.FakeClock;
-import com.alflabs.utils.IClock;
+import com.alflabs.utils.FakeFileOps;
+import com.alflabs.utils.FileOps;
 import dagger.Module;
 import dagger.Provides;
 
 import javax.inject.Singleton;
-import java.time.LocalDateTime;
 
 @Module
-public abstract class FakeClockModule {
-
-    /** It is permanently 1:42 PM here. */
-    public static final int HOUR = 13;
-    /** It is permanently 1:42 PM here. */
-    public static final int MINUTES = 42;
-    /** It is permanently 1:42:43 PM here. */
-    public static final int SECONDS = 43;
-
+public abstract class FakeFileOpsModule {
     @Singleton
     @Provides
-    public static FakeClock provideFakeClock() {
-        return new FakeClock(1000);
+    public static FakeFileOps provideFakeFileOps() {
+        return new FakeFileOps();
     }
-
     @Singleton
     @Provides
-    public static IClock provideClock(FakeClock clock) {
-        return clock;
-    }
-
-    @Singleton
-    @Provides
-    public static ILocalDateTimeNowProvider provideLocalDateTime() {
-        return () -> {
-            // It is permanently 1:42 PM here
-            return LocalDateTime.of(1901, 2, 3, HOUR, MINUTES, SECONDS);
-        };
+    public static FileOps provideFileOps(FakeFileOps fakeFileOps) {
+        return fakeFileOps;
     }
 }

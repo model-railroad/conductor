@@ -19,8 +19,6 @@
 package com.alflabs.conductor.dagger;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.util.ClockModule;
-import com.alflabs.conductor.util.FileOpsModule;
 import dagger.BindsInstance;
 import dagger.Component;
 
