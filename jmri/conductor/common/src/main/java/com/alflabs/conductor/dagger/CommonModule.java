@@ -11,6 +11,7 @@ import dagger.Module;
         HttpClientModule.class,
         KeyValueModule.class,
         JsonSenderModule.class,
+        LoggerModule.class,
         RandomModule.class,
 })
 public abstract class CommonModule {

@@ -10,6 +10,7 @@ import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
+import com.alflabs.utils.ILogger;
 import dagger.BindsInstance;
 import dagger.Component;
 import okhttp3.OkHttpClient;
@@ -29,6 +30,7 @@ import static com.google.common.truth.Truth.assertThat;
 public class CommonTestComponentTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
+    @Inject ILogger mLogger;
     @Inject Random mRandom;
     @Inject IKeyValue mKeyValue;
     @Inject Analytics mAnalytics;
@@ -49,6 +51,7 @@ public class CommonTestComponentTest {
 
     @Test
     public void testInjectors() {
+        assertThat(mLogger).isNotNull();
         assertThat(mRandom).isNotNull();
         assertThat(mKeyValue).isNotNull();
         assertThat(mAnalytics).isNotNull();

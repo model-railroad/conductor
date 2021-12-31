@@ -20,6 +20,8 @@ package com.alflabs.conductor.dagger;
 
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.rx.IStream;
+import com.alflabs.rx.Schedulers;
+import com.alflabs.rx.Streams;
 import com.alflabs.utils.ILogger;
 import dagger.Module;
 import dagger.Provides;
@@ -33,34 +35,14 @@ import java.util.Set;
 public abstract class FakeKeyValueModule {
     @Singleton
     @Provides
-    public static IKeyValue provideKeyValue(ILogger logger) {
-//        IKeyValue keyValue = mock(IKeyValue.class);
-//
-//        // Implement KeyValue getValue() and putValue() using a simple object map backend.
-//        Map<Object, Object> storage = new HashMap<>();
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                storage.put(invocation.getArgument(0), invocation.getArgument(1));
-//                return null;
-//            }
-//        }).when(keyValue).putValue(any(), any(), anyBoolean());
-//
-//        when(keyValue.getValue(any())).thenAnswer(new Answer<Object>() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                return storage.get(invocation.getArgument(0));
-//            }
-//        });
-//
-//        return keyValue;
-
+    public static IKeyValue provideKeyValue() {
         return new IKeyValue() {
-            Map<String, String> mStorage = new HashMap<>();
+            private final Map<String, String> mStorage = new HashMap<>();
+            private final IStream<String> mChangedStream = Streams.<String>stream().on(Schedulers.sync());
 
             @Override
             public IStream<String> getChangedStream() {
-                return null;
+                return mChangedStream;
             }
 
             @Override

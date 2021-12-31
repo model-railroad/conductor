@@ -1,6 +1,8 @@
 package com.alflabs.conductor.v1.dagger;
 
-import com.alflabs.conductor.dagger.ICommonTestComponent;
+import com.alflabs.conductor.dagger.CommonTestModule;
+import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.v1.parser.ScriptParser2Test;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -9,15 +11,15 @@ import javax.inject.Singleton;
 import java.io.File;
 
 @Singleton
-@Component(dependencies = { ICommonTestComponent.class })
-public interface IEngine1TestComponent {
+@Component(modules = { CommonTestModule.class })
+public interface IEngine1TestComponent extends IEngine1Component {
 
-    IScriptComponent.Factory newScriptComponent();
+    void inject(ScriptParser2Test scriptParser2Test);
 
     @Component.Factory
     interface Factory {
-        IEngine1TestComponent createComponent(
-                ICommonTestComponent commonComponent,
+        IEngine1TestComponent createTestComponent(
+                @BindsInstance IJmriProvider jmriProvider,
                 @BindsInstance @Named("script") File scriptFile);
     }
 }
