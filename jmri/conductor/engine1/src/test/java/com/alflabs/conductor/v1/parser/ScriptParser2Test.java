@@ -17,11 +17,9 @@ import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.RouteInfo;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
-import com.google.common.base.Charsets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
@@ -30,10 +28,12 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -473,11 +473,9 @@ public class ScriptParser2Test {
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
                 "  Map Map-2 = \"path\\to\\map2.svg\" ";
 
-        when(mFileOps.isFile(new File("path/to/map1.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("path/to/map1.svg"), Charsets.UTF_8)).thenReturn("<svg1/>");
-
-        when(mFileOps.isFile(new File("path\\to\\map2.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("path\\to\\map2.svg"), Charsets.UTF_8)).thenReturn("<svg2/>");
+        // Create test files
+        mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
+        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
 
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
@@ -498,11 +496,9 @@ public class ScriptParser2Test {
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
                 "  Map Map-1 = \"path\\to\\map2.svg\" ";
 
-        when(mFileOps.isFile(new File("path/to/map1.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("path/to/map1.svg"), Charsets.UTF_8)).thenReturn("<svg1/>");
-
-        when(mFileOps.isFile(new File("path\\to\\map2.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("path\\to\\map2.svg"), Charsets.UTF_8)).thenReturn("<svg2/>");
+        // Create test files
+        mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
+        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
 
         Script script = mScriptComponent.createScriptParser2().parse(source);
 
@@ -550,14 +546,15 @@ public class ScriptParser2Test {
         verify(mJmriProvider).getThrottle(100);
         verify(mJmriProvider).getThrottle(200);
 
-        ArgumentCaptor<String> keyCapture = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> valueCapture = ArgumentCaptor.forClass(String.class);
-        verify(mKeyValue, atLeastOnce()).putValue(keyCapture.capture(), valueCapture.capture(), eq(true));
-
-        ArrayList<String> sortedKeys = new ArrayList<>(keyCapture.getAllValues());
-        ArrayList<String> sortedValues = new ArrayList<>(valueCapture.getAllValues());
-        Collections.sort(sortedKeys);
-        Collections.sort(sortedValues);
+        List<String> sortedKeys = mKeyValue.getKeys()
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
+        List<String> sortedValues = sortedKeys
+                .stream()
+                .map(k -> mKeyValue.getValue(k))
+                .sorted()
+                .collect(Collectors.toList());
 
         assertThat(sortedKeys.toArray()).isEqualTo(new String[]
                 { "D/100", "D/200",
