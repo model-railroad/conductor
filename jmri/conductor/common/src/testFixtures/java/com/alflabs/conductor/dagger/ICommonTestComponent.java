@@ -22,6 +22,7 @@ import com.alflabs.conductor.jmri.IJmriProvider;
 import dagger.BindsInstance;
 import dagger.Component;
 
+@Deprecated
 @Component(modules = {
         ExecutorModule.class,
         FakeClockModule.class,

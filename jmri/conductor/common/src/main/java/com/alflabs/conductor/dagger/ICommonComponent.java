@@ -26,6 +26,7 @@ import dagger.Component;
 import javax.inject.Singleton;
 
 @Singleton
+@Deprecated
 @Component(modules = {
         AnalyticsModule.class,
         ClockModule.class,
