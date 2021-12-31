@@ -27,7 +27,7 @@ public class FakeJmriProvider implements IJmriProvider {
     }
 
     @Override
-    public IJmriThrottle getThrotlle(int dccAddress) {
+    public IJmriThrottle getThrottle(int dccAddress) {
         return mThrottles.computeIfAbsent(dccAddress, key -> new IJmriThrottle() {
             @Override
             public void eStop() {

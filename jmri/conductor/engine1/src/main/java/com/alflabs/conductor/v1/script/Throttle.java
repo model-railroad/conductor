@@ -107,10 +107,10 @@ public class Throttle implements IExecEngine {
     public void onExecStart() {
         mJmriThrottles.clear();
         for (Integer dccAddress : mDccAddresses) {
-            IJmriThrottle throtlle = mJmriProvider.getThrotlle(dccAddress);
-            if (throtlle != null) {
-                mJmriThrottles.add(throtlle);
-                updateKV(throtlle.getDccAddress(), getSpeed());
+            IJmriThrottle throttle = mJmriProvider.getThrottle(dccAddress);
+            if (throttle != null) {
+                mJmriThrottles.add(throttle);
+                updateKV(throttle.getDccAddress(), getSpeed());
             }
         }
     }

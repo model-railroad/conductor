@@ -217,7 +217,7 @@ class JmriProvider(IJmriProvider):
         else:
             print tag, msg
 
-    def getThrotlle(self, dccAddress):
+    def getThrottle(self, dccAddress):
         """In: int dccAddress; Out: IJmriThrottle"""
         throttle = None
         try:

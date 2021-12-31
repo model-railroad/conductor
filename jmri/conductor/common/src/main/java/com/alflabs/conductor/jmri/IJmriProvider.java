@@ -28,7 +28,7 @@ public interface IJmriProvider extends ILogger {
      * Returns a new JMRI throttle adapter for the given DCC long address.
      * Returns null if the object cannot be created.
      */
-    IJmriThrottle getThrotlle(int dccAddress);
+    IJmriThrottle getThrottle(int dccAddress);
 
     /**
      * Returns a new JMRI sensor adapter for the given sensor system name.

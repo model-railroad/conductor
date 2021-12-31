@@ -137,7 +137,7 @@ public class LegacySimulatorTest {
                 "'''";
 
         IJmriThrottle jmriThrottle = mock(IJmriThrottle.class);
-        when(mJmriProvider.getThrotlle(42)).thenReturn(jmriThrottle);
+        when(mJmriProvider.getThrottle(42)).thenReturn(jmriThrottle);
 
         Script script = mScriptComponent.createScriptParser2().parse(source);
         ExecEngine engine = mScriptComponent.createScriptExecEngine();
@@ -146,7 +146,7 @@ public class LegacySimulatorTest {
         assertThat(script).isNotNull();
 
         engine.onExecStart();
-        verify(mJmriProvider).getThrotlle(42);
+        verify(mJmriProvider).getThrottle(42);
 
         mSimulator.startAsync(script, "simu");
         mSimulator.join();
@@ -263,7 +263,7 @@ public class LegacySimulatorTest {
         when(mJmriProvider.getSensor(isA(String.class))).thenReturn(jmriSensor);
 
         IJmriThrottle jmriThrottle = mock(IJmriThrottle.class);
-        when(mJmriProvider.getThrotlle(anyInt())).thenReturn(jmriThrottle);
+        when(mJmriProvider.getThrottle(anyInt())).thenReturn(jmriThrottle);
 
         // TODO
         // mSimulator.startAsync(script, "Simulator-1");

@@ -32,7 +32,7 @@ import javax.inject.Inject;
  * <p/>
  * When activated, nothing happens here except setting the proper KV value.
  * The engine will read the new state at the next runtime exec loop and actually send
- * an EStop via the JMRI interface to all defined throtlles. RTAC provides a way to
+ * an EStop via the JMRI interface to all defined throttles. RTAC provides a way to
  * reset the state, which is also handled by the {@link ExecEngine} runtime loop.
  */
 @ScriptScope

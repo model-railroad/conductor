@@ -58,7 +58,7 @@ public class LegacyScriptParserFullTest {
 
     @Before
     public void setUp() throws Exception {
-        when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
+        when(mJmriProvider.getThrottle(42)).thenReturn(mJmriThrottle);
 
         mReporter = new TestReporter();
 

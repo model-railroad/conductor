@@ -71,7 +71,7 @@ public class ThrottleTest {
     @Before
     public void setUp() throws Exception {
         mClock = new MockClock();
-        when(mJmriProvider.getThrotlle(42)).thenReturn(mJmriThrottle);
+        when(mJmriProvider.getThrottle(42)).thenReturn(mJmriThrottle);
 
         ThrottleFactory factory = new ThrottleFactory(
                 InstanceFactory.create(mClock),
@@ -84,7 +84,7 @@ public class ThrottleTest {
         when(mJmriThrottle.getDccAddress()).thenReturn(42);
 
         mThrottle.onExecStart();
-        verify(mJmriProvider).getThrotlle(42);
+        verify(mJmriProvider).getThrottle(42);
         verify(mJmriThrottle, atLeastOnce()).getDccAddress();
         verify(mKeyValue).putValue("D/42", "0", true);
         reset(mKeyValue);
