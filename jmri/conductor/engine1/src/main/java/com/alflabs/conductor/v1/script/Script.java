@@ -21,6 +21,7 @@ package com.alflabs.conductor.v1.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
+import com.alflabs.conductor.v1.dagger.ScriptScope;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;

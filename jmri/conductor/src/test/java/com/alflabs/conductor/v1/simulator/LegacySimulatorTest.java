@@ -24,11 +24,11 @@ import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
+import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
 import com.alflabs.conductor.v1.parser.TestReporter;
 import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.IScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.rx.Schedulers;
 import com.alflabs.rx.Streams;
@@ -74,7 +74,7 @@ public class LegacySimulatorTest {
 
     private FakeClock mFakeClock;
     private TestReporter mReporter;
-    private IScriptComponent mScriptComponent;
+    private ILegacyScriptComponent mScriptComponent;
 
     private Simulator mSimulator;
     private ILogger mLogger = new ILogger() {
@@ -123,7 +123,7 @@ public class LegacySimulatorTest {
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = fakeNowComponent.newScriptComponent(new ScriptModule(mReporter, mKeyValue));
+        mScriptComponent = fakeNowComponent.newLegacyScriptComponent(new LegacyScriptModule(mReporter, mKeyValue));
         mSimulator = new Simulator(mLogger, mClock);
     }
 

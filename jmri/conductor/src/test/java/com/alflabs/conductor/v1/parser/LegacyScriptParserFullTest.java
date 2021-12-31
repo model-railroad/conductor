@@ -23,9 +23,9 @@ import com.alflabs.conductor.dagger.LegacyCommonModule;
 import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriThrottle;
-import com.alflabs.conductor.v1.script.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.utils.FileOps;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -54,7 +54,7 @@ public class LegacyScriptParserFullTest {
     @Mock FileOps mFileOps;
 
     private TestReporter mReporter;
-    private IScriptComponent mScriptComponent;
+    private ILegacyScriptComponent mScriptComponent;
 
     @Before
     public void setUp() throws Exception {
@@ -75,8 +75,8 @@ public class LegacyScriptParserFullTest {
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = realNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, realNowComponent.getKeyValueServer()));
+        mScriptComponent = realNowComponent.newLegacyScriptComponent(
+                new LegacyScriptModule(mReporter, realNowComponent.getKeyValueServer()));
     }
 
     @Test

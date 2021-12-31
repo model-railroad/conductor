@@ -19,6 +19,7 @@
 package com.alflabs.conductor.v1.script;
 
 
+import com.alflabs.conductor.v1.dagger.ScriptScope;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 

@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.v1.script;
+package com.alflabs.conductor.v1.dagger;
 
 import javax.inject.Scope;
 import java.lang.annotation.Documented;

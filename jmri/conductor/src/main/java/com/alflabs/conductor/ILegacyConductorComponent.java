@@ -20,8 +20,8 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.dagger.LegacyCommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.v1.script.IScriptComponent;
-import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
+import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import dagger.BindsInstance;
@@ -43,7 +43,7 @@ public interface ILegacyConductorComponent {
 
     void inject(EntryPoint entryPoint);
 
-    IScriptComponent newScriptComponent(ScriptModule scriptModule);
+    ILegacyScriptComponent newLegacyScriptComponent(LegacyScriptModule legacyScriptModule);
 
     @Component.Builder
     interface Builder {

@@ -16,14 +16,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.v1.script;
+package com.alflabs.conductor.v1.dagger;
 
 import com.alflabs.conductor.v1.parser.ScriptParser2;
+import com.alflabs.conductor.v1.script.ExecEngine;
 import dagger.Subcomponent;
 
 @ScriptScope
-@Subcomponent(modules = { ScriptModule.class })
-public interface IScriptComponent {
+@Subcomponent(modules = { LegacyScriptModule.class })
+public interface ILegacyScriptComponent {
 
     ScriptParser2 createScriptParser2();
     ExecEngine createScriptExecEngine();

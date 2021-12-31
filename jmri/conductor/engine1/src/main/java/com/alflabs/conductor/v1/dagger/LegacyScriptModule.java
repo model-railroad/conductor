@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.v1.script;
+package com.alflabs.conductor.v1.dagger;
 
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.kv.IKeyValue;
@@ -24,12 +24,12 @@ import dagger.Module;
 import dagger.Provides;
 
 @Module
-public class ScriptModule {
+public class LegacyScriptModule {
 
     private final Reporter mReporter;
     private final IKeyValue mKeyValue;
 
-    public ScriptModule(Reporter reporter, IKeyValue keyValue) {
+    public LegacyScriptModule(Reporter reporter, IKeyValue keyValue) {
         mReporter = reporter;
         mKeyValue = keyValue;
     }

@@ -25,9 +25,9 @@ import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.parser.ScriptParser2;
 import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.conductor.v1.ui.StatusWnd;
 import com.alflabs.conductor.util.EventLogger;
@@ -263,8 +263,8 @@ public class EntryPoint {
             }
         };
 
-        IScriptComponent scriptComponent = mComponent.newScriptComponent(
-                new ScriptModule(reporter, mKeyValueServer));
+        ILegacyScriptComponent scriptComponent = mComponent.newLegacyScriptComponent(
+                new LegacyScriptModule(reporter, mKeyValueServer));
 
         try {
             ScriptParser2 parser = scriptComponent.createScriptParser2();

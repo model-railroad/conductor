@@ -28,9 +28,9 @@ import com.alflabs.conductor.jmri.IJmriTurnout;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.script.ScriptModule;
+import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.conductor.v1.script.Timer;
 import com.alflabs.conductor.v1.script.Var;
 import com.alflabs.kv.IKeyValue;
@@ -86,8 +86,8 @@ public class LegacyScriptParser2Test {
 
     private FakeClock mClock;
     private TestReporter mReporter;
-    private IScriptComponent mScriptComponent;
-    private IScriptComponent mFakeNowScriptComponent;
+    private ILegacyScriptComponent mScriptComponent;
+    private ILegacyScriptComponent mFakeNowScriptComponent;
 
     @Before
     public void setUp() throws Exception {
@@ -120,8 +120,8 @@ public class LegacyScriptParser2Test {
                 .scriptFile(file)
                 .build();
 
-        mScriptComponent = realNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, mKeyValue));
+        mScriptComponent = realNowComponent.newLegacyScriptComponent(
+                new LegacyScriptModule(mReporter, mKeyValue));
 
         mClock = new FakeClock(1000);
 
@@ -148,8 +148,8 @@ public class LegacyScriptParser2Test {
                 .scriptFile(file)
                 .build();
 
-        mFakeNowScriptComponent = fakeNowComponent.newScriptComponent(
-                new ScriptModule(mReporter, mKeyValue));
+        mFakeNowScriptComponent = fakeNowComponent.newLegacyScriptComponent(
+                new LegacyScriptModule(mReporter, mKeyValue));
     }
 
     @Test
