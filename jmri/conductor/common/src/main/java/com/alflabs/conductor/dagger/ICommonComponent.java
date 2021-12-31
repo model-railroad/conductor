@@ -24,9 +24,6 @@ import com.alflabs.conductor.util.FileOpsModule;
 import dagger.BindsInstance;
 import dagger.Component;
 
-import javax.inject.Singleton;
-
-@Singleton
 @Component(modules = {
         AnalyticsModule.class,
         ClockModule.class,
