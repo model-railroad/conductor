@@ -19,9 +19,13 @@
 package com.alflabs.conductor.dagger;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.utils.FileOps;
 import dagger.BindsInstance;
 import dagger.Component;
 
+import javax.inject.Singleton;
+
+@Singleton
 @Component(modules = {
         AnalyticsModule.class,
         ClockModule.class,
@@ -34,6 +38,7 @@ import dagger.Component;
         RandomModule.class,
         })
 public interface ICommonComponent {
+//    FileOps getFileOps();
 
     // Design: Use a @Component.Factory instead of @Component.Builder
     // to add @BindsInstance singleton values into the component.

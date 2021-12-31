@@ -38,6 +38,6 @@ public interface ICommonTestComponent extends ICommonComponent {
 
     @Component.Factory
     interface Factory {
-        ICommonTestComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
+        ICommonTestComponent createTestComponent(@BindsInstance IJmriProvider jmriProvider);
     }
 }

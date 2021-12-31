@@ -32,6 +32,7 @@ public abstract class FakeFileOpsModule {
     public static FakeFileOps provideFakeFileOps() {
         return new FakeFileOps();
     }
+
     @Singleton
     @Provides
     public static FileOps provideFileOps(FakeFileOps fakeFileOps) {
