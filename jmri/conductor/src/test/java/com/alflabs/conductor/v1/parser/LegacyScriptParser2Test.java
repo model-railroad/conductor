@@ -74,6 +74,7 @@ import static org.mockito.Mockito.when;
  * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
  * using isolated JUnit tests.
  */
+@Deprecated /* covered by engine1 ScriptParser2Test. */
 public class LegacyScriptParser2Test {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 

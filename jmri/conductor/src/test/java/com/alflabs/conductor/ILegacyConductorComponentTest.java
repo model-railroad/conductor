@@ -33,6 +33,7 @@ import java.io.File;
 
 import static com.google.common.truth.Truth.assertThat;
 
+@Deprecated /* covered by engine1 IEngine1TestComponentTest. */
 public class ILegacyConductorComponentTest {
     @Rule public MockitoRule mRule = MockitoJUnit.rule();
 

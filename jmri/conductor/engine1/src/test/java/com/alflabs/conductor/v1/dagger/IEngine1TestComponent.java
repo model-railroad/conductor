@@ -15,6 +15,7 @@ import java.io.File;
 public interface IEngine1TestComponent extends IEngine1Component {
 
     void inject(ScriptParser2Test scriptParser2Test);
+    void inject(IEngine1TestComponentTest iEngine1TestComponentTest);
 
     @Component.Factory
     interface Factory {
