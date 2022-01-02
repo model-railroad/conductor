@@ -18,24 +18,16 @@
 
 package com.alflabs.conductor.v1.simulator;
 
-import com.alflabs.conductor.ILegacyConductorComponent;
-import com.alflabs.conductor.dagger.LegacyCommonModule;
-import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
-import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
+import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
+import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
+import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.parser.TestReporter;
 import com.alflabs.conductor.v1.script.ExecEngine;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
-import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
-import com.alflabs.rx.Schedulers;
-import com.alflabs.rx.Streams;
 import com.alflabs.utils.FakeClock;
-import com.alflabs.kv.IKeyValue;
-import com.alflabs.utils.FileOps;
-import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -46,86 +38,47 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-/** Converted to engine1.SimulatorTest. */
-@Deprecated
-public class LegacySimulatorTest {
+public class SimulatorTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-    // @Mock ILogger mLogger;
     @Mock IJmriProvider mJmriProvider;
-    @Mock IKeyValue mKeyValue;
-    @Mock FileOps mFileOps;
-    @Mock IClock mClock;
 
-    private FakeClock mFakeClock;
+    @Inject ILogger mLogger;
+    @Inject FakeClock mClock;
+
     private TestReporter mReporter;
-    private ILegacyScriptComponent mScriptComponent;
-
+    private IScriptComponent mScriptComponent;
     private Simulator mSimulator;
-    private ILogger mLogger = new ILogger() {
-        @Override
-        public void d(String tag, String message) {
-            System.out.println(tag + ": " + message);
-        }
-
-        @Override
-        public void d(String tag, String message, Throwable tr) {
-            d(tag, message + " " + tr);
-        }
-    };
 
     @Before
     public void setUp() throws Exception {
         mReporter = new TestReporter();
+        File scriptFile = File.createTempFile("conductor_tests", "tmp");
+        scriptFile.deleteOnExit();
 
-        File file = File.createTempFile("conductor_tests", "tmp");
-        file.deleteOnExit();
+        IEngine1TestComponent component = DaggerIEngine1TestComponent
+                .factory()
+                .createTestComponent(mJmriProvider, scriptFile);
+        component.inject(this);
 
-        when(mKeyValue.getChangedStream()).thenReturn(Streams.<String>stream().on(Schedulers.sync()));
+        mClock.setNow(1000);
 
-        mFakeClock = new FakeClock(1000);
-
-        ILegacyConductorComponent fakeNowComponent = DaggerILegacyConductorComponent.builder()
-                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
-                    @Override
-                    public IClock provideClock() {
-                        return mFakeClock;
-                    }
-
-                    @Override
-                    public FileOps provideFileOps() {
-                        return mFileOps;
-                    }
-
-                    @Override
-                    public ILocalDateTimeNowProvider provideLocalDateTime() {
-                        return () -> {
-                            // It is permanently 1:42 PM here
-                            return LocalDateTime.of(1901, 2, 3, 13, 42, 43);
-                        };
-                    }
-                })
-                .scriptFile(file)
-                .build();
-
-        mScriptComponent = fakeNowComponent.newLegacyScriptComponent(new LegacyScriptModule(mReporter, mKeyValue));
+        mScriptComponent = component
+                .newScriptComponent()
+                .createComponent(mReporter);
         mSimulator = new Simulator(mLogger, mClock);
     }
 
@@ -207,21 +160,22 @@ public class LegacySimulatorTest {
         verify(mJmriProvider).getSensor("NS42");
 
         // The async script calls mClock.sleep() and we wait for that signal.
+        assertThat(mClock.elapsedRealtime()).isEqualTo(1000);
         when(jmriSensor1.isActive()).thenReturn(false);
         AtomicInteger sleepCount = new AtomicInteger(0);
-        doAnswer(invocation -> {
-            sleepCount.incrementAndGet();
-            when(jmriSensor1.isActive()).thenReturn(true);
-            return null;
-        }).when(mClock).sleepWithInterrupt(250);
+        mClock.setSleepCallback(sleepTimeMs -> {
+                    assertThat(sleepTimeMs).isEqualTo(250);
+                    sleepCount.incrementAndGet();
+                    when(jmriSensor1.isActive()).thenReturn(true);
+                });
 
         mSimulator.startAsync(script, "simu");
         mSimulator.join();
+        mClock.setSleepCallback(null);
 
+        assertThat(mClock.elapsedRealtime()).isEqualTo(1250);
         assertThat(sleepCount.get()).isEqualTo(1);
         verify(jmriSensor1, atLeastOnce()).isActive();
-        verify(mClock).sleepWithInterrupt(250);
-        verifyNoMoreInteractions(mClock);
     }
 
     @Test
@@ -235,21 +189,12 @@ public class LegacySimulatorTest {
         assertThat(script).isNotNull();
 
         // The async script calls mClock.sleep() and we wait for that signal.
-        AtomicLong elapsedTime = new AtomicLong(1000);
-        doAnswer(invocation -> elapsedTime.get()).when(mClock).elapsedRealtime();
-
-        doAnswer(invocation -> {
-            elapsedTime.addAndGet(500L);
-            return null;
-        }).when(mClock).sleepWithInterrupt(500);
+        assertThat(mClock.elapsedRealtime()).isEqualTo(1000);
 
         mSimulator.startAsync(script, "simu");
         mSimulator.join();
 
-        assertThat(elapsedTime.get()).isEqualTo(1000 + 5500);
-        verify(mClock, times(11)).sleepWithInterrupt(500);
-        verify(mClock, times(12)).elapsedRealtime();
-        verifyNoMoreInteractions(mClock);
+        assertThat(mClock.elapsedRealtime()).isEqualTo(1000 + 5500);
     }
 
     @Test

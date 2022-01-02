@@ -3,6 +3,7 @@ package com.alflabs.conductor.v1.dagger;
 import com.alflabs.conductor.dagger.CommonTestModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.v1.parser.ScriptParser2Test;
+import com.alflabs.conductor.v1.simulator.SimulatorTest;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -16,6 +17,7 @@ public interface IEngine1TestComponent extends IEngine1Component {
 
     void inject(ScriptParser2Test scriptParser2Test);
     void inject(IEngine1TestComponentTest iEngine1TestComponentTest);
+    void inject(SimulatorTest simulatorTest);
 
     @Component.Factory
     interface Factory {
