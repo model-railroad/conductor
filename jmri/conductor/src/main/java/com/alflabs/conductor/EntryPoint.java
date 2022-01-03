@@ -18,26 +18,31 @@
 
 package com.alflabs.conductor;
 
-import com.alflabs.conductor.dagger.LegacyCommonModule;
+import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
+import com.alflabs.conductor.util.LogException;
+import com.alflabs.conductor.v1.dagger.IEngine1Component;
+import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.parser.ScriptParser2;
 import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.conductor.v1.ui.StatusWnd;
-import com.alflabs.conductor.util.EventLogger;
-import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.Constants;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.RPair;
+import dagger.BindsInstance;
+import dagger.Component;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.jmdns.JmDNS;
 import javax.jmdns.NetworkTopologyDiscovery;
 import javax.jmdns.ServiceInfo;
@@ -61,15 +66,17 @@ public class EntryPoint {
     private Script mScript;
     private ExecEngine mEngine;
     private boolean mStopRequested;
-    private ILegacyConductorComponent mComponent;
+    private LocalComponent mComponent;
     private CountDownLatch mJmDNSLatch;
     private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
     @Inject ILogger mLogger;
+    @Inject IClock mClock;
     @Inject KeyValueServer mKeyValueServer;
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
+    @Inject @Named("script") File mScriptFile;
 
     public Script getScript() {
         return mScript;
@@ -93,11 +100,9 @@ public class EntryPoint {
         // For some reason, IJ extracts generated/source/apt/main as a gen folder from the
         // gradle API instead of the proper build/generated/...
         File scriptFile = new File(scriptPath);
-        mComponent = DaggerILegacyConductorComponent
-                .builder()
-                .legacyCommonModule(new LegacyCommonModule(jmriProvider))
-                .scriptFile(scriptFile)
-                .build();
+        mComponent = DaggerEntryPoint_LocalComponent
+                .factory()
+                .createComponent(jmriProvider, scriptFile);
 
         // Do not use any injected field before this call
         mComponent.inject(this);
@@ -125,7 +130,7 @@ public class EntryPoint {
                     mEngine,
                     this::onReloadAction,
                     this::onStopAction,
-                    getSimulator(mComponent));
+                    getSimulator());
 
         } catch (Exception e) {
             // Ignore. continue.
@@ -136,7 +141,7 @@ public class EntryPoint {
         return true;
     }
 
-    protected Simulator getSimulator(ILegacyConductorComponent component) {
+    protected Simulator getSimulator() {
         return null;
     }
 
@@ -263,20 +268,21 @@ public class EntryPoint {
             }
         };
 
-        ILegacyScriptComponent scriptComponent = mComponent.newLegacyScriptComponent(
-                new LegacyScriptModule(reporter, mKeyValueServer));
+        IScriptComponent scriptComponent = mComponent
+                .newScriptComponent()
+                .createComponent(reporter);
 
         try {
             ScriptParser2 parser = scriptComponent.createScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
-            mScript = parser.parse(mComponent.getScriptFile());
+            mScript = parser.parse(mScriptFile);
             mEngine = scriptComponent.createScriptExecEngine();
             mEngine.onExecStart();
             sendEvent("Start");
             mJsonSender.sendEvent("conductor", null, "on");
         } catch (IOException e) {
-            mLogger.d(TAG, "Script Path: " + mComponent.getScriptFile().getAbsolutePath());
+            mLogger.d(TAG, "Script Path: " + mScriptFile.getAbsolutePath());
             mLogger.d(TAG, "Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
         }
@@ -306,4 +312,21 @@ public class EntryPoint {
         // For testing purposes.
         StatusWnd.open();
     }
+
+    @Singleton
+    @Component(modules = { CommonModule.class })
+    public interface LocalComponent extends IEngine1Component {
+        IScriptComponent.Factory newScriptComponent();
+
+        void inject(EntryPoint entryPoint);
+        void inject(StatusWnd statusWnd);
+
+        @Component.Factory
+        interface Factory {
+            LocalComponent createComponent(
+                    @BindsInstance IJmriProvider jmriProvider,
+                    @BindsInstance @Named("script") File scriptFile);
+        }
+    }
+
 }

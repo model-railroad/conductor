@@ -21,6 +21,7 @@ package com.alflabs.conductor.dagger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.ILogger;
+import dagger.Binds;
 import dagger.Module;
 import dagger.Provides;
 
@@ -30,7 +31,10 @@ import javax.inject.Singleton;
 public abstract class KeyValueModule {
     @Singleton
     @Provides
-    public static IKeyValue provideKeyValue(ILogger logger) {
+    public static KeyValueServer provideKeyValueServer(ILogger logger) {
         return new KeyValueServer(logger);
     }
+
+    @Singleton
+    @Binds abstract IKeyValue bindKeyValue(KeyValueServer keyValueServer);
 }

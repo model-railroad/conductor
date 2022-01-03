@@ -19,9 +19,9 @@
 package com.alflabs.conductor.v1.ui;
 
 import com.alflabs.conductor.EntryPoint;
-import com.alflabs.conductor.ILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
+import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
 import com.alflabs.conductor.v1.script.Script;
@@ -39,11 +39,14 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,6 +82,10 @@ public class StatusWnd {
     private JPanel mSimulationPanel;
     private String mLastError;
 
+    @Inject IJmriProvider mIJmriProvider;
+    @Inject KeyValueServer mKeyValueServer;
+    @Inject @Named("script") File mScriptFile;
+
     private StatusWnd(JFrame frame) {
         mFrame = frame;
 
@@ -98,13 +105,14 @@ public class StatusWnd {
     }
 
     public void init(
-            ILegacyConductorComponent component,
+            EntryPoint.LocalComponent component,
             Script script,
             ExecEngine engine,
             Supplier<RPair<EntryPoint, String>> onReloadAction,
             Runnable onStopAction,
             Simulator optionalSimulator) {
-        mTextScriptName.setText(component.getScriptFile().getAbsolutePath());
+        component.inject(this);
+        mTextScriptName.setText(mScriptFile.getAbsolutePath());
         initScript(component, script, engine);
 
         mButtonReload.addActionListener(actionEvent -> {
@@ -241,7 +249,7 @@ public class StatusWnd {
     }
 
     private void initScript(
-            ILegacyConductorComponent component,
+            IEngine1Component component,
             Script script,
             ExecEngine engine) {
         final int numThrottles = 2; // TODO hack for quick test
@@ -269,13 +277,13 @@ public class StatusWnd {
                 JLabel label = labelDcc[i];
                 button.setEnabled(true);
                 button.addActionListener(actionEvent -> {
-                    askNewDccAddress(throttle, component.getJmriProvider(), label);
+                    askNewDccAddress(throttle, mIJmriProvider, label);
                 });
             }
         }
 
         engine.setHandleListener(() -> mAreaStatus.setText(
-                generateVarStatus(script, engine, component.getKeyValueServer())));
+                generateVarStatus(script, engine, mKeyValueServer)));
     }
 
     private void askNewDccAddress(Throttle throttle, IJmriProvider jmriProvider, JLabel label) {

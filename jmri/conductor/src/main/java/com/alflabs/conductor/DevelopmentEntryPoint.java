@@ -52,8 +52,8 @@ public class DevelopmentEntryPoint {
             }
 
             @Override
-            protected Simulator getSimulator(ILegacyConductorComponent component) {
-                return new Simulator(logger, component.getClock());
+            protected Simulator getSimulator() {
+                return new Simulator(logger, mClock);
             }
         };
         String filePath = "src/test/resources/v2/script_v34_8736+1840+BL.txt";
