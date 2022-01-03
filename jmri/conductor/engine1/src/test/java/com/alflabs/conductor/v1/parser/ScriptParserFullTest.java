@@ -18,15 +18,14 @@
 
 package com.alflabs.conductor.v1.parser;
 
-import com.alflabs.conductor.ILegacyConductorComponent;
-import com.alflabs.conductor.dagger.LegacyCommonModule;
-import com.alflabs.conductor.DaggerILegacyConductorComponent;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriThrottle;
-import com.alflabs.conductor.v1.dagger.ILegacyScriptComponent;
+import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
+import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
+import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.script.Script;
-import com.alflabs.conductor.v1.dagger.LegacyScriptModule;
-import com.alflabs.utils.FileOps;
+import com.alflabs.utils.FakeClock;
+import com.alflabs.utils.FakeFileOps;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import org.junit.Before;
@@ -36,48 +35,47 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.when;
 
 /**
  * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
  * using full script files.
  */
-@Deprecated /* converted to engine1 ScriptParserFullTest */
-public class LegacyScriptParserFullTest {
+public class ScriptParserFullTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
+
+    private TestReporter mReporter;
+    private IScriptComponent mScriptComponent;
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
-    @Mock FileOps mFileOps;
 
-    private TestReporter mReporter;
-    private ILegacyScriptComponent mScriptComponent;
+    @Inject FakeClock mClock;
+    @Inject FakeFileOps mFileOps;
 
     @Before
     public void setUp() throws Exception {
         when(mJmriProvider.getThrottle(42)).thenReturn(mJmriThrottle);
-
         mReporter = new TestReporter();
+        File scriptFile = File.createTempFile("conductor_tests", "tmp");
+        scriptFile.deleteOnExit();
 
-        File file = File.createTempFile("conductor_tests", "tmp");
-        file.deleteOnExit();
+        IEngine1TestComponent component = DaggerIEngine1TestComponent
+                .factory()
+                .createTestComponent(mJmriProvider, scriptFile);
+        mScriptComponent = component
+                .newScriptComponent()
+                .createComponent(mReporter);
 
-        ILegacyConductorComponent realNowComponent = DaggerILegacyConductorComponent.builder()
-                .legacyCommonModule(new LegacyCommonModule(mJmriProvider) {
-                    @Override
-                    public FileOps provideFileOps() {
-                        return mFileOps;
-                    }
-                })
-                .scriptFile(file)
-                .build();
-
-        mScriptComponent = realNowComponent.newLegacyScriptComponent(
-                new LegacyScriptModule(mReporter, realNowComponent.getKeyValueServer()));
+        component.inject(this);
+        mClock.setNow(1000);
     }
 
     @Test
@@ -109,11 +107,8 @@ public class LegacyScriptParserFullTest {
 
     @Test
     public void testScript6() throws Exception {
-        when(mFileOps.isFile(new File("maps/filename1.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("maps/filename1.svg"), Charsets.UTF_8)).thenReturn("svg1");
-
-        when(mFileOps.isFile(new File("maps/filename2.svg"))).thenReturn(true);
-        when(mFileOps.toString(new File("maps/filename2.svg"), Charsets.UTF_8)).thenReturn("svg2");
+        mFileOps.writeBytes("svg1".getBytes(UTF_8), new File("maps/filename1.svg"));
+        mFileOps.writeBytes("svg2".getBytes(UTF_8), new File("maps/filename2.svg"));
 
         String source = getFileSource("script6.txt");
         assertThat(source).isNotNull();
@@ -124,9 +119,7 @@ public class LegacyScriptParserFullTest {
 
     @Test
     public void testScript7() throws Exception {
-        when(mFileOps.isFile(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"))).thenReturn(true);
-        when(mFileOps.toString(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"), Charsets.UTF_8))
-                .thenReturn("GA-ID");
+        mFileOps.writeBytes("GA-ID".getBytes(UTF_8), new File("~/bin/JMRI/rtac_ga_tracking_id.txt"));
 
         String source = getFileSource("script7.txt");
         assertThat(source).isNotNull();
@@ -137,9 +130,7 @@ public class LegacyScriptParserFullTest {
 
     @Test
     public void testScript8() throws Exception {
-        when(mFileOps.isFile(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"))).thenReturn(true);
-        when(mFileOps.toString(new File("~/bin/JMRI/rtac_ga_tracking_id.txt"), Charsets.UTF_8))
-                .thenReturn("GA-ID");
+        mFileOps.writeBytes("GA-ID".getBytes(UTF_8), new File("~/bin/JMRI/rtac_ga_tracking_id.txt"));
 
         String source = getFileSource("script8.txt");
         assertThat(source).isNotNull();
