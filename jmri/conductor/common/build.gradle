@@ -16,12 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-apply plugin: "java-library"
+apply plugin: "java"
 apply plugin: "java-test-fixtures"
 apply plugin: "idea"
 
 group "com.alflabs.conductor"
-version "0.2-SNAPSHOT"
+version "1.3-SNAPSHOT"
 
 repositories {
     mavenCentral()

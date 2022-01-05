@@ -165,6 +165,8 @@ public class JsonSender implements Runnable {
             mExecutor.execute(this);
         } catch (JsonProcessingException e) {
             mLogger.d(TAG, "JSON Sender: Error creating JSON entry", e);
+        } catch (Exception e) {
+            mLogger.d(TAG, "JSON Sender: Unexpected Error", e);
         }
     }
 

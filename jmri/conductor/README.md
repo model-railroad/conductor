@@ -202,7 +202,7 @@ Next, build __Conductor__:
 Two files need to be copied into the JMRI installation directory:
 
     $ cp src/Conductor.py                          JMRI-DIR/jython/Conductor.py
-    $ cp build/libs/conductor-0.2-SNAPSHOT-all.jar JMRI-DIR/lib/conductor.jar
+    $ cp build/libs/conductor-0.3-SNAPSHOT-all.jar JMRI-DIR/lib/conductor.jar
 
 where _JMRI-DIR_ is the location where JMRI was installed.
 On Windows, this defaults to `C:\Program\ Files (x86)\JMRI` although if you choose this and the
