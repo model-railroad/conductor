@@ -16,8 +16,9 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor;
+package com.alflabs.conductor.v1;
 
+import com.alflabs.conductor.EntryPoint;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.utils.ILogger;
@@ -27,8 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.google.common.truth.Truth.assertThat;
 
 /** Entry point controlled for development purposes using a fake no-op JMRI interface. */
-public class DevelopmentEntryPoint {
-    private static final String TAG = DevelopmentEntryPoint.class.getSimpleName();
+public class DevEntryPoint1 {
+    private static final String TAG = DevEntryPoint1.class.getSimpleName();
 
     public static void main(String[] args) {
         FakeJmriProvider jmriProvider = new FakeJmriProvider();
@@ -44,7 +45,7 @@ public class DevelopmentEntryPoint {
                 System.out.println("[" + tag + "] " + message + ": " + tr);
             }
         };
-        EntryPoint entryPoint = new EntryPoint() {
+        EntryPoint1 entryPoint = new EntryPoint1() {
             @Override
             protected void onStopAction() {
                 super.onStopAction();
@@ -65,7 +66,7 @@ public class DevelopmentEntryPoint {
         }
     }
 
-    private static void mainLoop(ILogger logger, AtomicBoolean keepRunning, EntryPoint entryPoint) {
+    private static void mainLoop(ILogger logger, AtomicBoolean keepRunning, EntryPoint1 entryPoint) {
         logger.d(TAG, "Start thread");
         while (keepRunning.get()) {
             entryPoint.handle();

@@ -18,9 +18,9 @@
 
 package com.alflabs.conductor.v1.ui;
 
-import com.alflabs.conductor.EntryPoint;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
+import com.alflabs.conductor.v1.EntryPoint1;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -105,10 +105,10 @@ public class StatusWnd {
     }
 
     public void init(
-            EntryPoint.LocalComponent component,
+            EntryPoint1.LocalComponent component,
             Script script,
             ExecEngine engine,
-            Supplier<RPair<EntryPoint, String>> onReloadAction,
+            Supplier<RPair<EntryPoint1, String>> onReloadAction,
             Runnable onStopAction,
             Simulator optionalSimulator) {
         component.inject(this);
@@ -117,7 +117,7 @@ public class StatusWnd {
 
         mButtonReload.addActionListener(actionEvent -> {
             mLastError = null;
-            RPair<EntryPoint, String> pair = onReloadAction.get();
+            RPair<EntryPoint1, String> pair = onReloadAction.get();
             if (pair.second != null) {
                 mLastError = pair.second;
                 showError(mLastError);
