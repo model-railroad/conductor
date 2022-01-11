@@ -332,5 +332,4 @@ public class EntryPoint1 implements IEntryPoint {
                     @BindsInstance @Named("script") File scriptFile);
         }
     }
-
 }

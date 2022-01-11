@@ -26,7 +26,7 @@ public class DevEntryPoint2 {
         System.out.println(TAG + " - Start");
         EntryPoint2 entry = new EntryPoint2();
 
-        entry.init("v2/scripts/Randall_38.groovy");
+        entry.init("src/test/resources/v2/script_v45_8749+1072+BL191.txt");
         entry.runDevLoop();
         System.out.println(TAG + " - End");
     }
