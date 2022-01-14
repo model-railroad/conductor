@@ -27,6 +27,9 @@ import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
+import com.alflabs.conductor.util.LogException;
+import com.alflabs.conductor.v1.ScriptContext;
+import com.alflabs.conductor.v1.ScriptLoader;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -41,8 +44,11 @@ import dagger.Component;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EntryPoint2 implements IEntryPoint, IWindowCallback {
@@ -51,8 +57,11 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private boolean mIsSimulation;
     private LocalComponent mComponent;
     private StatusWindow2 mWin;
-    private ExecEngine mEngine;
     private Thread mHandleThread;
+    private Thread mWinUpdateThread;
+    private ScriptContext mScriptContext;
+    private final StringBuilder mStatus = new StringBuilder();
+    private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
 
@@ -62,16 +71,21 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
+    @Inject ScriptLoader mScriptLoader;
     @Inject @Named("script") File mScriptFile;
 
-    /** Entry point invoked from DevEntryPoint2. */
+    /**
+     * Entry point invoked from DevEntryPoint2.
+     */
     public void init(@Null String simulationScript) {
         mIsSimulation = true;
         FakeJmriProvider jmriProvider = new FakeJmriProvider();
         setup(jmriProvider, simulationScript);
     }
 
-    /** Entry point invoked directly from JMRI Jython Conductor.py. */
+    /**
+     * Entry point invoked directly from JMRI Jython Conductor.py.
+     */
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
         File scriptFile = new File(scriptPath);
@@ -81,6 +95,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         // Do not use any injected field before this call
         mComponent.inject(this);
+        mScriptContext = new ScriptContext(mComponent.newScriptComponent());
 
         logln("Setup");
 
@@ -93,7 +108,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         return true;
     }
 
-    /** Invoked from JMRI Jython Conductor.py as a loop or from the simulated thread. */
+    /**
+     * Invoked from JMRI Jython Conductor.py as a loop or from the simulated thread
+     * or from _simulHandleThread in the dev environment.
+     */
     @Override
     public boolean handle() {
         if (!mKeepRunning.get()) {
@@ -101,25 +119,28 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
 
-        if (mEngine == null || mPaused.get()) {
-            // TODO poor's man async handling.
+        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
+        // If we have no engine, or it is paused, just idle-wait.
+        if (!engine.isPresent() || mPaused.get()) {
+            // TODO poor man async handling.
             // Consider some kind of CountDownLatch or a long monitor/notify or similar
             // instead of an active wait.
             try {
                 Thread.sleep(330 /*ms*/);
-            } catch (InterruptedException ignore) {}
+            } catch (InterruptedException ignore) {
+            }
             return true;
         }
 
-        if (mEngine != null) {
-            mEngine.onExecHandle();
-        }
+        engine.get().onExecHandle();
         return true;
     }
 
     public void runDevLoop() {
-        mHandleThread = new Thread(this::_simulHandleThread, "EntryPoint2-HandleThread");
-        mHandleThread.start();
+        if (mHandleThread == null) {
+            mHandleThread = new Thread(this::_simulHandleThread, "EntryPoint2-HandleThread");
+            mHandleThread.start();
+        }
     }
 
     private void _simulHandleThread() {
@@ -135,15 +156,51 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         logln("Simul Handle Thread - End");
     }
 
+    private void _windowUpdateThread() {
+        logln("Window Update Thread - Start");
+
+        while (mKeepRunning.get() && mWin != null) {
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    updateWindowLog();
+
+//                    try {
+//                        mUiUpdaters.values().forEach(r -> {
+//                            try {
+//                                r.run();
+//                            } catch (Exception e) {
+//                                logln("Window Update Thread - Exception (ignored): "
+//                                        + ExceptionUtils.getStackTrace(e));
+//                            }
+//                        });
+//                    } catch (ConcurrentModificationException ignore) {
+//                    } catch (Exception e2) {
+//                        logln("Window Update Thread - Exception (ignored): "
+//                                + ExceptionUtils.getStackTrace(e2));
+//                    }
+                });
+
+                Thread.sleep(330 /*ms*/);
+            } catch (InterruptedException | InvocationTargetException ignore) {
+            }
+        }
+
+        logln("Window Update Thread - End");
+    }
+
     private void openWindow() {
-        // TODO: opening the window can fail if this runs from a terminal or as a service.
+        // Note: it's fine for opening the window to fail if this runs from a terminal or as a service.
         try {
             if (GraphicsEnvironment.isHeadless()) {
                 logln("StatusWindow2 skipped: headless graphics environment");
             } else {
                 mWin = new StatusWindow2();
-
                 mWin.open(this);
+
+                if (mWinUpdateThread == null) {
+                    mWinUpdateThread = new Thread(this::_windowUpdateThread, "EntryPoint2-WinUpdate");
+                    mWinUpdateThread.start();
+                }
             }
         } catch (Exception e) {
             logln("StatusWindow2 Failed: " + ExceptionUtils.getStackTrace(e));
@@ -168,16 +225,16 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             }
         }
 
-//        if (mWinUpdateThread != null) {
-//            try {
-//                mWinUpdateThread.join();
-//                logln("Window Update Thread terminated");
-//            } catch (InterruptedException e) {
-//                logln("Window Update Thread join: " + e);
-//            } finally {
-//                mWinUpdateThread = null;
-//            }
-//        }
+        if (mWinUpdateThread != null) {
+            try {
+                mWinUpdateThread.join();
+                logln("Window Update Thread terminated");
+            } catch (InterruptedException e) {
+                logln("Window Update Thread join: " + e);
+            } finally {
+                mWinUpdateThread = null;
+            }
+        }
 
         if (mIsSimulation) {
             logln("Exit Simulation");
@@ -190,31 +247,38 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         logln("onWindowReload");
 
 //        mUiUpdaters.clear();
-//
-//        if (mScriptAccess.mScriptComponent != null) {
-//            // TODO release resources from current script component.
-//            mScriptAccess.reset();
-//        }
 
         if (mWin != null) {
             mWin.updateScriptName(mScriptFile.getName());
         }
 
-//        try {
-//            IScript2Component scriptComp = mScriptLoader.execByName(mScriptPath);
-//            mScriptAccess.set(scriptComp);
-//        } catch (Exception e) {
-//            mLastError.setLength(0);
-//            mLastError.append(e).append('\n').append(ExceptionUtils.getStackTrace(e));
-//            if (mWin == null) {
-//                logln("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
-//            }
+
+//        } catch (IOException e) {
 //        }
+//        return error.toString();
+
+
+        try {
+            // TBD Release any resources from current script component as needed.
+            mScriptContext.reset();
+
+            logln("Script Path: " + mScriptFile.getPath());
+            mScriptLoader.execByPath(mScriptContext, mScriptFile.getPath());
+        } catch (Exception e) {
+            logln("Failed to load event script with the following exception:");
+            LogException.logException(mLogger, TAG, e);
+
+            mLoadError.setLength(0);
+            mLoadError.append(e).append('\n').append(ExceptionUtils.getStackTrace(e));
+            if (mWin == null) {
+                logln("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
+            }
+        }
 //
 //        registerUiThrottles();
 //        registerUiConditionals();
 //
-//        mScriptAccess.mExecEngine2.onExecStart();
+
     }
 
     @Override
@@ -233,6 +297,35 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     }
 
+
+    /** Executes on the Swing EDT thread. */
+    private void updateWindowLog() {
+        if (mWin == null) return;
+
+        mStatus.setLength(0);
+
+        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
+        if (engine.isPresent()) {
+            mStatus.append("Freq: ");
+//            mStatus.append(String.format("%.1f Hz  [%.1f Hz] (%d)\n",
+//                    engine.getActualFrequency(),
+//                    engine.getMaxFrequency(),
+//                    k));
+        }
+//        k = (k + 1) & Integer.MAX_VALUE;
+
+        if (mLoadError.length() > 0) {
+            mStatus.append("\n--- [ LOAD ERROR ] ---\n");
+            mStatus.append(mLoadError);
+        }
+
+        String lastError = mScriptContext.getError();
+        if (lastError.length() > 0) {
+            mStatus.append("\n--- [ LAST ERROR ] ---\n");
+            mStatus.append(lastError);
+        }
+    }
+
     private void logln(String line) {
         if (mLogger == null) {
             System.out.println(TAG + " " + line);
@@ -240,6 +333,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mLogger.d(TAG, line);
         }
     }
+
 
     @Singleton
     @Component(modules = { CommonModule.class })
