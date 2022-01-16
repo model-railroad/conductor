@@ -8,6 +8,7 @@ import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.File;
 
 @Singleton
 public class ScriptLoader {
@@ -20,25 +21,24 @@ public class ScriptLoader {
         mLogger = logger;
     }
 
-    public ScriptContext execByPath(
+    public void execByPath(
             @NonNull ScriptContext scriptContext,
-            @NonNull String path) throws Exception {
+            @NonNull File filePath) throws Exception {
         // Sanitize the path
+        String path = filePath.getPath();
         if (!path.endsWith(".txt")) {
             path += ".txt";
+            filePath = new File(path);
         }
-        String sanitizedPath = path;
-        sanitizedPath = sanitizedPath.replaceAll(".*[/\\\\]", "");
-        sanitizedPath = sanitizedPath.replaceAll("\\..*", "");
 
         IScriptComponent scriptComponent = scriptContext
                 .getScriptComponentFactory()
                 .createComponent(scriptContext.createErrorReporter(mLogger));
-        scriptContext.set(scriptComponent, sanitizedPath);
+        scriptContext.set(scriptComponent, filePath);
 
         try {
             ScriptParser2 parser = scriptComponent.createScriptParser2();
-            parser.parse(sanitizedPath);
+            parser.parse(filePath);
             ExecEngine engine = scriptComponent.createScriptExecEngine();
             engine.onExecStart();
         } catch (Throwable t) {
@@ -50,7 +50,5 @@ public class ScriptLoader {
             }
             throw new Exception(msg, t);
         }
-
-        return scriptContext;
     }
 }

@@ -1,7 +1,6 @@
 package com.alflabs.conductor.v1;
 
 import com.alflabs.annotations.NonNull;
-import com.alflabs.annotations.Null;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -9,13 +8,14 @@ import com.alflabs.conductor.v1.script.Script;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
+import java.io.File;
 import java.util.Optional;
 
 public class ScriptContext {
     private final IScriptComponent.Factory mScriptComponentFactory;
     private final StringBuilder mError = new StringBuilder();
     private IScriptComponent mScriptComponent;
-    private String mScriptPath;
+    @Deprecated private File mScriptFile;
 
     @Inject Script mScript;
     @Inject ExecEngine mExecEngine;
@@ -31,9 +31,9 @@ public class ScriptContext {
         mError.setLength(0);
     }
 
-    public void set(IScriptComponent scriptComp, String scriptPath) {
+    public void set(IScriptComponent scriptComp, File scriptFile) {
         mScriptComponent = scriptComp;
-        mScriptPath = scriptPath;
+        mScriptFile = scriptFile;
         mScriptComponent.inject(this);
     }
 

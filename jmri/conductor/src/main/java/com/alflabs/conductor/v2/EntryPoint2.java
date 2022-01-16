@@ -32,12 +32,20 @@ import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.ScriptLoader;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
+import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
+import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.Sensor;
+import com.alflabs.conductor.v1.script.Timer;
+import com.alflabs.conductor.v1.script.Turnout;
+import com.alflabs.conductor.v1.script.Var;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
+import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.google.common.io.Resources;
 import dagger.BindsInstance;
 import dagger.Component;
 
@@ -48,7 +56,9 @@ import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ConcurrentModificationException;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EntryPoint2 implements IEntryPoint, IWindowCallback {
@@ -196,6 +206,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             } else {
                 mWin = new StatusWindow2();
                 mWin.open(this);
+                mWin.updateScriptName("No Script Loaded");
 
                 if (mWinUpdateThread == null) {
                     mWinUpdateThread = new Thread(this::_windowUpdateThread, "EntryPoint2-WinUpdate");
@@ -211,6 +222,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Override
     public void onQuit() {
         logln("onQuit");
+        mJsonSender.sendEvent("conductor", null, "off");
+        sendEvent("Stop");
+
         mWin = null;
         mKeepRunning.set(false);
 
@@ -246,11 +260,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowReload() {
         logln("onWindowReload");
 
+        boolean wasRunning = mScriptContext.getScriptComponent().isPresent();
 //        mUiUpdaters.clear();
-
-        if (mWin != null) {
-            mWin.updateScriptName(mScriptFile.getName());
-        }
 
 
 //        } catch (IOException e) {
@@ -263,7 +274,19 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mScriptContext.reset();
 
             logln("Script Path: " + mScriptFile.getPath());
-            mScriptLoader.execByPath(mScriptContext, mScriptFile.getPath());
+            mScriptLoader.execByPath(mScriptContext, mScriptFile);
+
+            if (mWin != null) {
+                mWin.updateScriptName(mScriptFile.getName());
+                loadMap();
+            }
+
+            if (wasRunning) {
+                sendEvent("Reload");
+            } else {
+                sendEvent("Start");
+                mJsonSender.sendEvent("conductor", null, "on");
+            }
         } catch (Exception e) {
             logln("Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
@@ -274,11 +297,30 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 logln("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
             }
         }
-//
+
+
+        //
 //        registerUiThrottles();
 //        registerUiConditionals();
 //
 
+    }
+
+    private void loadMap() {
+        Optional<Script> script = mScriptContext.getScript();
+        if (script.isPresent()) {
+            TreeMap<String, MapInfo> maps = script.get().getMaps();
+            logln("@@ LOADED MAPS: " + maps);
+            Optional<MapInfo> mapName = maps.values().stream().findFirst();
+            if (mapName.isPresent()) {
+                String resName = "src/test/resources/v2/" + mapName.get();
+                try {
+                    mWin.displaySvgMap(Resources.getResource(resName));
+                } catch (Exception e) {
+                    logln("Failed to load map '" + resName + "' : " + e);
+                }
+            }
+        }
     }
 
     @Override
@@ -297,22 +339,11 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     }
 
-
     /** Executes on the Swing EDT thread. */
     private void updateWindowLog() {
         if (mWin == null) return;
 
         mStatus.setLength(0);
-
-        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
-        if (engine.isPresent()) {
-            mStatus.append("Freq: ");
-//            mStatus.append(String.format("%.1f Hz  [%.1f Hz] (%d)\n",
-//                    engine.getActualFrequency(),
-//                    engine.getMaxFrequency(),
-//                    k));
-        }
-//        k = (k + 1) & Integer.MAX_VALUE;
 
         if (mLoadError.length() > 0) {
             mStatus.append("\n--- [ LOAD ERROR ] ---\n");
@@ -324,6 +355,85 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append("\n--- [ LAST ERROR ] ---\n");
             mStatus.append(lastError);
         }
+
+        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
+        Optional<Script> script = mScriptContext.getScript();
+        if (engine.isPresent() && script.isPresent()) {
+            try {
+                appendVarStatus(mStatus, script.get(), engine.get(), mKeyValueServer);
+            } catch (ConcurrentModificationException ignore) {}
+        }
+
+        mWin.updateLog(mStatus.toString());
+    }
+
+    private static void appendVarStatus(
+            StringBuilder outStatus,
+            Script script,
+            ExecEngine engine,
+            KeyValueServer kvServer) {
+
+        outStatus.append("Freq: ");
+        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
+                engine.getActualFrequency(),
+                engine.getMaxFrequency()));
+
+        outStatus.append("--- [ TURNOUTS ] ---\n");
+        int i = 0;
+        for (String name : script.getTurnoutNames()) {
+            Turnout turnout = script.getTurnout(name);
+            outStatus.append(name.toUpperCase()).append(": ").append(turnout.isActive() ? 'N' : 'R');
+            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        appendNewLine(outStatus);
+
+        outStatus.append("--- [ SENSORS ] ---\n");
+        i = 0;
+        for (String name : script.getSensorNames()) {
+            Sensor sensor = script.getSensor(name);
+            outStatus.append(name.toUpperCase()).append(": ").append(sensor.isActive() ? '1' : '0');
+            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        appendNewLine(outStatus);
+
+        outStatus.append("--- [ TIMERS ] ---\n");
+        i = 0;
+        for (String name : script.getTimerNames()) {
+            Timer timer = script.getTimer(name);
+            outStatus.append(name).append(':').append(timer.isActive() ? '1' : '0');
+            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        appendNewLine(outStatus);
+
+        outStatus.append("--- [ ENUMS ] ---\n");
+        i = 0;
+        for (String name : script.getEnumNames()) {
+            Enum_ enum_ = script.getEnum(name);
+            outStatus.append(name).append(':').append(enum_.get());
+            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        appendNewLine(outStatus);
+
+        outStatus.append("--- [ VARS ] ---\n");
+        i = 0;
+        for (String name : script.getVarNames()) {
+            Var var = script.getVar(name);
+            outStatus.append(name).append(':').append(var.getAsInt());
+            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
+        }
+        appendNewLine(outStatus);
+
+        outStatus.append("--- [ KV Server ] ---\n");
+        outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
+        for (String key : kvServer.getKeys()) {
+            outStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
+        }
+    }
+
+    private static void appendNewLine(StringBuilder outStatus) {
+        if (outStatus.charAt(outStatus.length() - 1) != '\n') {
+            outStatus.append('\n');
+        }
     }
 
     private void logln(String line) {
@@ -334,6 +444,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         }
     }
 
+
+    private void sendEvent(String action) {
+        mAnalytics.sendEvent("Conductor", action, "", "Conductor");
+    }
 
     @Singleton
     @Component(modules = { CommonModule.class })
