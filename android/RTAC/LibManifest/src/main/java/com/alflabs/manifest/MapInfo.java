@@ -18,6 +18,9 @@
 
 package com.alflabs.manifest;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Information on one Map served by Conductor.
  * <p/>
@@ -26,13 +29,16 @@ package com.alflabs.manifest;
 public class MapInfo {
     private String name;     // field name exported to JSON
     private String svg;      // field name exported to JSON
+    private String uri;      // field name exported to JSON
 
-    /** Constructor needed by the JSON ObjectMapper. */
-    protected MapInfo() {}
-
-    public MapInfo(String name, String svg) {
+    @JsonCreator
+    public MapInfo(
+            @JsonProperty("name") String name,
+            @JsonProperty("svg") String svg,
+            @JsonProperty("uri") String uri) {
         this.name = name;
         this.svg = svg;
+        this.uri = uri == null ? name : uri; // for legacy before uri was present
     }
 
     public String getName() {
@@ -43,10 +49,15 @@ public class MapInfo {
         return svg;
     }
 
+    public String getUri() {
+        return uri;
+    }
+
     @Override
     public String toString() {
         return "MapInfo{" +
                 "name='" + name + '\'' +
+                ", uri='" + uri + '\'' +
                 ", svg='" + svg + '\'' +
                 '}';
     }
@@ -59,12 +70,14 @@ public class MapInfo {
         MapInfo mapInfo = (MapInfo) o;
 
         if (!name.equals(mapInfo.name)) return false;
+        if (!uri.equals(mapInfo.uri)) return false;
         return svg.equals(mapInfo.svg);
     }
 
     @Override
     public int hashCode() {
         int result = name.hashCode();
+        result = 31 * result + uri.hashCode();
         result = 31 * result + svg.hashCode();
         return result;
     }

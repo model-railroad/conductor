@@ -310,10 +310,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         Optional<Script> script = mScriptContext.getScript();
         if (script.isPresent()) {
             TreeMap<String, MapInfo> maps = script.get().getMaps();
-            logln("@@ LOADED MAPS: " + maps);
             Optional<MapInfo> mapName = maps.values().stream().findFirst();
             if (mapName.isPresent()) {
-                String resName = "src/test/resources/v2/" + mapName.get();
+                String resName = "maps/" + mapName.get().getUri();
+                logln("Loading map: " + resName);
                 try {
                     mWin.displaySvgMap(Resources.getResource(resName));
                 } catch (Exception e) {

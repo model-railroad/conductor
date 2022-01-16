@@ -248,7 +248,8 @@ public class ScriptParser2 {
                     return;
                 }
 
-                mScript.addMap(varName, new MapInfo(varName, svg));
+                String uri = svgFile.getName();
+                mScript.addMap(varName, new MapInfo(varName, svg, uri));
 
             } else {
                 String type = ctx.defStrType().getText().toLowerCase(Locale.US);

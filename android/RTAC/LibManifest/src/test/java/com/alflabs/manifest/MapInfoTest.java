@@ -30,11 +30,12 @@ public class MapInfoTest {
 
     @Test
     public void testGetSet() throws Exception {
-        MapInfo m1 = new MapInfo("Map Name", "svg content");
+        MapInfo m1 = new MapInfo("Map Name", "svg content", "uri/path/svg");
         assertThat(m1.getName()).isEqualTo("Map Name");
+        assertThat(m1.getUri()).isEqualTo("uri/path/svg");
         assertThat(m1.getSvg()).isEqualTo("svg content");
 
-        MapInfo m2 = new MapInfo("Map Name", "svg content");
+        MapInfo m2 = new MapInfo("Map Name", "svg content", "uri/path/svg");
         assertThat(m1.equals(m2)).isTrue();
         assertThat(m1.hashCode()).isEqualTo(m2.hashCode());
     }

@@ -30,12 +30,12 @@ public class MapInfosTest {
 
     @Test
     public void testGetSet() throws Exception {
-        MapInfo m1 = new MapInfo("Map 1", "svg content 1");
-        MapInfo m2 = new MapInfo("Map 2", "svg content 2");
+        MapInfo m1 = new MapInfo("Map 1", "svg content 1", "uri/svg1");
+        MapInfo m2 = new MapInfo("Map 2", "svg content 2", "uri/svg2");
         MapInfos ms = new MapInfos(new MapInfo[] { m1, m2 });
 
-        MapInfo e1 = new MapInfo("Map 1", "svg content 1");
-        MapInfo e2 = new MapInfo("Map 2", "svg content 2");
+        MapInfo e1 = new MapInfo("Map 1", "svg content 1", "uri/svg1");
+        MapInfo e2 = new MapInfo("Map 2", "svg content 2", "uri/svg2");
         MapInfos es = new MapInfos(new MapInfo[] { e1, e2 });
 
         assertThat(ms.getMapInfos()).isEqualTo(new MapInfo[] { m1, m2 });
@@ -47,18 +47,28 @@ public class MapInfosTest {
 
     @Test
     public void testToJson() throws Exception {
-        MapInfo m1 = new MapInfo("Map 1", "svg content 1");
-        MapInfo m2 = new MapInfo("Map 2", "svg content 2");
+        MapInfo m1 = new MapInfo("Map 1", "svg content 1", "uri/svg1");
+        MapInfo m2 = new MapInfo("Map 2", "svg content 2", "uri/svg2");
         MapInfos ms = new MapInfos(new MapInfo[] { m1, m2 });
-        assertThat(ms.toJsonString()).isEqualTo("{\"mapInfos\":[{\"name\":\"Map 1\",\"svg\":\"svg content 1\"},{\"name\":\"Map 2\",\"svg\":\"svg content 2\"}]}");
+        assertThat(ms.toJsonString()).isEqualTo("{\"mapInfos\":[{\"name\":\"Map 1\",\"svg\":\"svg content 1\",\"uri\":\"uri/svg1\"},{\"name\":\"Map 2\",\"svg\":\"svg content 2\",\"uri\":\"uri/svg2\"}]}");
+    }
+
+    @Test
+    public void testFromJson_LegacyNoUri() throws Exception {
+        MapInfos rs = MapInfos.parseJson("{\"mapInfos\":[{\"name\":\"Map 1\",\"svg\":\"svg content 1\"},{\"name\":\"Map 2\",\"svg\":\"svg content 2\"}]}");
+
+        MapInfo e1 = new MapInfo("Map 1", "svg content 1", "Map 1");
+        MapInfo e2 = new MapInfo("Map 2", "svg content 2", "Map 2");
+        MapInfos es = new MapInfos(new MapInfo[] { e1, e2 });
+        assertThat(rs).isEqualTo(es);
     }
 
     @Test
     public void testFromJson() throws Exception {
-        MapInfos rs = MapInfos.parseJson("{\"mapInfos\":[{\"name\":\"Map 1\",\"svg\":\"svg content 1\"},{\"name\":\"Map 2\",\"svg\":\"svg content 2\"}]}");
+        MapInfos rs = MapInfos.parseJson("{\"mapInfos\":[{\"name\":\"Map 1\",\"svg\":\"svg content 1\",\"uri\":\"uri/svg1\"},{\"name\":\"Map 2\",\"svg\":\"svg content 2\",\"uri\":\"uri/svg2\"}]}");
 
-        MapInfo e1 = new MapInfo("Map 1", "svg content 1");
-        MapInfo e2 = new MapInfo("Map 2", "svg content 2");
+        MapInfo e1 = new MapInfo("Map 1", "svg content 1", "uri/svg1");
+        MapInfo e2 = new MapInfo("Map 2", "svg content 2", "uri/svg2");
         MapInfos es = new MapInfos(new MapInfo[] { e1, e2 });
         assertThat(rs).isEqualTo(es);
     }
