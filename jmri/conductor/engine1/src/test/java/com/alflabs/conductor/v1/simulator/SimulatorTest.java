@@ -80,7 +80,7 @@ public class SimulatorTest {
         mClock.setNow(1000);
 
         mScriptComponent = component
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(mReporter);
         mSimulator = new Simulator(mLogger, mClock);
     }
@@ -97,8 +97,8 @@ public class SimulatorTest {
         IJmriThrottle jmriThrottle = mock(IJmriThrottle.class);
         when(mJmriProvider.getThrottle(42)).thenReturn(jmriThrottle);
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -127,8 +127,8 @@ public class SimulatorTest {
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
         when(mJmriProvider.getSensor("NS43")).thenReturn(jmriSensor2);
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -153,8 +153,8 @@ public class SimulatorTest {
         IJmriSensor jmriSensor1 = mock(IJmriSensor.class);
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -186,7 +186,7 @@ public class SimulatorTest {
         String source = "" +
                 "String simu = '''Wait 5.5s ; End'''";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -204,7 +204,7 @@ public class SimulatorTest {
     public void testSimul1() throws Exception {
         String source = getFileSource("simul1.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 

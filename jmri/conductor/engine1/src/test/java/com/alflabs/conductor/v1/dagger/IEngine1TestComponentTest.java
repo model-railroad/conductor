@@ -23,7 +23,6 @@ import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.parser.TestReporter;
 import com.alflabs.kv.IKeyValue;
-import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.IClock;
 import org.junit.Before;
@@ -67,10 +66,10 @@ public class IEngine1TestComponentTest {
     @Test
     public void testCreateScriptComponent_IsNotSingleton() {
         IScriptComponent scriptComponent1 = mComponent
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(mReporter);
         IScriptComponent scriptComponent2 = mComponent
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(mReporter);
         assertThat(scriptComponent1).isNotNull();
         assertThat(scriptComponent2).isNotNull();

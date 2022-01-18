@@ -28,9 +28,9 @@ import dagger.Subcomponent;
 @ScriptScope
 @Subcomponent
 public interface IScriptComponent {
-    ScriptParser2 createScriptParser2();    // TODO rename getScriptParser2
-    ExecEngine createScriptExecEngine();    // TODO rename getExecEngine
     Script getScript();
+    ExecEngine getExecEngine();
+    ScriptParser2 getScriptParser2();
 
     @Subcomponent.Factory
     interface Factory {

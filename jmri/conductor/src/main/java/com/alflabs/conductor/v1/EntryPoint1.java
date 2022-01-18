@@ -271,7 +271,7 @@ public class EntryPoint1 implements IEntryPoint {
         };
 
         IScriptComponent scriptComponent = mComponent
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(reporter);
 
         File file = null;
@@ -280,11 +280,11 @@ public class EntryPoint1 implements IEntryPoint {
                     .getScriptFile()
                     .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
 
-            ScriptParser2 parser = scriptComponent.createScriptParser2();
+            ScriptParser2 parser = scriptComponent.getScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
             mScript = parser.parse(file);
-            mEngine = scriptComponent.createScriptExecEngine();
+            mEngine = scriptComponent.getExecEngine();
             mEngine.onExecStart();
             sendEvent("Start");
             mJsonSender.sendEvent("conductor", null, "on");
@@ -325,7 +325,7 @@ public class EntryPoint1 implements IEntryPoint {
     @Singleton
     @Component(modules = { CommonModule.class })
     public interface LocalComponent extends IEngine1Component {
-        IScriptComponent.Factory newScriptComponent();
+        IScriptComponent.Factory getScriptComponentFactory();
 
         void inject(EntryPoint1 entryPoint);
         void inject(StatusWnd statusWnd);

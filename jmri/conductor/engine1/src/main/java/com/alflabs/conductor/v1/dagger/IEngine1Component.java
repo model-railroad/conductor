@@ -10,7 +10,7 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules = { CommonModule.class })
 public interface IEngine1Component {
-    IScriptComponent.Factory newScriptComponent();
+    IScriptComponent.Factory getScriptComponentFactory();
 
     @Component.Factory
     interface Factory {

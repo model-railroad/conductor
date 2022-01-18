@@ -58,9 +58,9 @@ public class ScriptLoader {
         scriptContext.setScriptComponent(scriptComponent);
 
         try {
-            ScriptParser2 parser = scriptComponent.createScriptParser2();
+            ScriptParser2 parser = scriptComponent.getScriptParser2();
             parser.parse(file);
-            ExecEngine engine = scriptComponent.createScriptExecEngine();
+            ExecEngine engine = scriptComponent.getExecEngine();
             engine.onExecStart();
         } catch (Throwable t) {
             // Throwable t2 = StackTraceUtils.sanitize(t); -- for Groovy scripting only

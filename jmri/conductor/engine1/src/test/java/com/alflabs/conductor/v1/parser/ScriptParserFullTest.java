@@ -72,7 +72,7 @@ public class ScriptParserFullTest {
                 .factory()
                 .createTestComponent(mJmriProvider);
         mScriptComponent = component
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(mReporter);
 
         component.inject(this);
@@ -84,7 +84,7 @@ public class ScriptParserFullTest {
     public void testScript1() throws Exception {
         String source = getFileSource("script1.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -93,7 +93,7 @@ public class ScriptParserFullTest {
     public void testScript2() throws Exception {
         String source = getFileSource("script2.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -102,7 +102,7 @@ public class ScriptParserFullTest {
     public void testScript4() throws Exception {
         String source = getFileSource("script4.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -114,7 +114,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script6.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -125,7 +125,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script7.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -136,7 +136,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script8.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }

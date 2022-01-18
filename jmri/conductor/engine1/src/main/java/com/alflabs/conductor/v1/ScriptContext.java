@@ -86,7 +86,7 @@ public class ScriptContext {
         if (mScriptComponent == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(mScriptComponent.createScriptExecEngine());
+        return Optional.ofNullable(mScriptComponent.getExecEngine());
     }
 
     /** Convenience method to return the current parsed Script. Can be null. */

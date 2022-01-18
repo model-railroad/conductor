@@ -87,7 +87,7 @@ public class ScriptParser2Test {
                 .factory()
                 .createTestComponent(mJmriProvider);
         mScriptComponent = component
-                .newScriptComponent()
+                .getScriptComponentFactory()
                 .createComponent(mReporter);
 
         component.inject(this);
@@ -103,7 +103,7 @@ public class ScriptParser2Test {
                 "Int My-Var = 3\n" +
                 "int id2=4\n" +
                 "int __id3__=5\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -118,7 +118,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineInt() throws Exception {
         String source = "  Int VALUE    = 5201 # d&rgw ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -133,7 +133,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineExportInt() throws Exception {
         String source = " Export Int VALUE    = 5201 # d&rgw ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -149,7 +149,7 @@ public class ScriptParser2Test {
     public void testDefineImportExportInt() throws Exception {
         String source = " Import Export Int VALUE1 = 5201 # d&rgw \n" +
                 " Export Import Int Value2 = 42";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -170,7 +170,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineInt_missingId() throws Exception {
         String source = "  Int = 5201 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: missing ID at '='.");
         assertThat(script).isNotNull();
@@ -181,7 +181,7 @@ public class ScriptParser2Test {
         String source = "" +
                 "  INT VALUE    = 5201 \n " +
                 "int value = 42";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'value' is already defined.\n" +
@@ -198,7 +198,7 @@ public class ScriptParser2Test {
                 " A -> value += 1 \n" +
                 " A -> value -= 12 \n" +
                 " B -> value += value ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -217,7 +217,7 @@ public class ScriptParser2Test {
                 " A -> value += 42.43 \n" +
                 " A -> value += -12 \n" +  // Note negative values aren't parsed yet
                 " B -> value -= invalid-id ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 4: extraneous input '.43' expecting {<EOF>, EOL, SB_COMMENT, ';'}.\n" +
@@ -232,7 +232,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineString() throws Exception {
         String source = "  String VALUE    = \"5201 # d&rgw\" ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -247,7 +247,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineExportString() throws Exception {
         String source = " Export String VALUE    = \"5201 # d&rgw\" ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -263,7 +263,7 @@ public class ScriptParser2Test {
     public void testDefineImportExportString() throws Exception {
         String source = " Import Export String VALUE1    = \"5201 # d&rgw\" \n" +
                 " Export Import String value2    = \"something else\"";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -288,7 +288,7 @@ public class ScriptParser2Test {
                 "    be split on as many lines as needed. It cannot\n" +
                 "    however contain any \"single-quotes\" (for grammar\n" +
                 "    simplification).''' ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -304,7 +304,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineString_missingId() throws Exception {
         String source = "  String = \"Address 5201\" ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: missing ID at '='.");
         assertThat(script).isNotNull();
@@ -315,7 +315,7 @@ public class ScriptParser2Test {
         String source = "" +
                 "  String VALUE    = \"Address 5201\" \n " +
                 "String value = \"Address 42\"";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'value' is already defined.\n" +
@@ -326,7 +326,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineSensor() throws Exception {
         String source = "  Sensor Alias   = NS784 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -339,7 +339,7 @@ public class ScriptParser2Test {
         String source = "" +
                 "Sensor Alias   = NS784 \n " +
                 "sensor alias   = B42";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'alias' is already defined.\n" +
@@ -350,7 +350,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineSensor_invalidValue() throws Exception {
         String source = "sensor alias   = 42";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: mismatched input '42' expecting ID.");
         assertThat(script).isNotNull();
@@ -359,7 +359,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineTurnout() throws Exception {
         String source = "  Turnout TT   = NS784 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -370,7 +370,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineThrottle() throws Exception {
         String source = "  Throttle TH   = 5201 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -381,7 +381,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineThrottle_invalidDccAddress() throws Exception {
         String source = "  Throttle TH   = Block42 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: mismatched input 'Block42' expecting NUM.");
         assertThat(script).isNotNull();
@@ -390,7 +390,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineMultiThrottle() throws Exception {
         String source = "  Throttle TH   = 5201 5202 5203 5204 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -401,7 +401,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineMultiThrottle_invalidDccAddress() throws Exception {
         String source = "  Throttle TH   = 5201 5202 Block42 5203 5204 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("Error at line 1: extraneous input 'Block42' expecting {<EOF>, EOL, SB_COMMENT, NUM}.");
         assertThat(script).isNotNull();
@@ -410,7 +410,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineTimer() throws Exception {
         String source = "  Timer Timer-1 = 5 ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -423,7 +423,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineEnum() throws Exception {
         String source = "  Enum EN   = Init Idle Fwd Rev ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -439,7 +439,7 @@ public class ScriptParser2Test {
     @Test
     public void testDefineExportedEnum() throws Exception {
         String source = " Export Enum EN   = Init Idle Fwd Rev ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -456,7 +456,7 @@ public class ScriptParser2Test {
     public void testDefineImportExportEnum() throws Exception {
         String source = " Import Export Enum EN   = Init Idle Fwd Rev \n" +
                 " Export Import Enum AB   = A B";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -481,7 +481,7 @@ public class ScriptParser2Test {
         String source = "" +
                 "Enum EN   = Init Idle Fwd Rev \n" +
                 "Enum EN   = Init Idle";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'EN' is already defined.\n" +
@@ -499,7 +499,7 @@ public class ScriptParser2Test {
         mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
         mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -522,7 +522,7 @@ public class ScriptParser2Test {
         mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
         mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'Map-1' is already defined.\n" +
@@ -543,7 +543,7 @@ public class ScriptParser2Test {
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n" +
                 "Route Branchline=toggle:bl-toggle,status:bl-status,counter:bl-counter,throttle:blt-200\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -555,7 +555,7 @@ public class ScriptParser2Test {
                 new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "V/pa-counter", "D/100"));
         assertThat(routes).hasSize(2);
 
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         IJmriThrottle jmriThrottle100 = mock(IJmriThrottle.class);
         IJmriThrottle jmriThrottle200 = mock(IJmriThrottle.class);
@@ -609,7 +609,7 @@ public class ScriptParser2Test {
                 "Sensor BL-Toggle = NS430\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n" +
                 "Route Passenger  = toggle:bl-toggle,status:bl-status,counter:bl-counter,throttle:blt-200\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 10: Name 'Passenger' is already defined.\n" +
@@ -623,7 +623,7 @@ public class ScriptParser2Test {
                 "Enum PA-Status   = INIT IDLE FWD\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: Route 'Passenger': Id 'PA-100' for argument 'throttle' is not defined.\n" +
@@ -642,7 +642,7 @@ public class ScriptParser2Test {
                 "Int  PA-Counter  = 1\n" +
                 "Sensor PA-Toggle = NS420\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 4: Route 'Passenger': Id 'PA-Status' for argument 'status' is not defined.\n" +
@@ -661,7 +661,7 @@ public class ScriptParser2Test {
                 "Int  PA-Counter  = 1\n" +
                 "Enum PA-Status   = INIT IDLE FWD\n" +
                 "Route Passenger  = Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 4: Route 'Passenger': Id 'PA-Toggle' for argument 'toggle' is not defined.\n" +
@@ -682,7 +682,7 @@ public class ScriptParser2Test {
                 "Sensor PA-Toggle = NS420\n" +
                 "Sensor MyToggle  = NS421\n" +
                 "Route Passenger  = Toggle: MyToggle, Throttle: PA-100, Status: PA-Status, Counter: PA-Counter, Toggle: PA-Toggle\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 6: Route 'Passenger': Argument 'toggle' is already defined.\n" +
@@ -701,7 +701,7 @@ public class ScriptParser2Test {
         String source = "" +
                 "Int My-Var=1\n" +
                 "my-var->my-var=2\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -714,8 +714,8 @@ public class ScriptParser2Test {
         String source = "" +
                 "Enum State = Init Idle Fwd Rev\n" +
                 "State == INIT -> State = Idle\n";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -736,8 +736,8 @@ public class ScriptParser2Test {
                 "String Value = \"a\" \n" +
                 "State == Init -> value = \"bc\" \n" +
                 "State == Set  -> value = \"d{e}\"";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -760,8 +760,8 @@ public class ScriptParser2Test {
                 "Int Value = 42 \n" +
                 "Value == Constant -> value = 1 \n" +
                 "Value != Constant -> value = 2";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -785,8 +785,8 @@ public class ScriptParser2Test {
                 "Int Value = 0 \n" +
                 "State == Init -> value = 1 \n" +
                 "State == Set  -> value = 2";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -809,8 +809,8 @@ public class ScriptParser2Test {
                 "Int Value = 1 \n" +
                 "State == Init -> value += 1 \n" +
                 "State == Set  -> value -= 5";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -842,7 +842,7 @@ public class ScriptParser2Test {
                 "t1 !forward    -> t1 stop \n" +
                 "!forward       -> t1 stop\n" +
                 "block stopped  -> t1 stop";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: extraneous input 'stop' expecting {'->', '&'}.\n" +
@@ -876,7 +876,7 @@ public class ScriptParser2Test {
                 "t1 forward -> t1 forward = -12\n" +
                 "t1 forward -> t1 forward = B42\n" +
                 "t1 forward -> t1 forward = block" ;
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("" +
                 "Error at line 3: no viable alternative at input 'stopped'.\n" +
@@ -913,8 +913,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 forward = speed \n" +
                 "t1 forward -> t1 stop";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -944,8 +944,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -976,8 +976,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 forward = speed ; t1 stop \n" +
                 "t1 forward -> t1 stop ; t1 forward = speed ";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1039,8 +1039,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 f1 = 1 ; t1 f0     ; t1 f28 = 42 \n" +
                 "t1 forward -> t1 f1     ; t1 f0 = 0 ; t1 f28 = 0  ";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1070,8 +1070,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 Repeat = 2 \n" +
                 "t1 forward -> t1 repeat = 0  ";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1099,8 +1099,8 @@ public class ScriptParser2Test {
                 "state == init & t1 stopped -> state = idle\n" +
                 "state == idle & t1 forward -> state = fwd \n" +
                 "state == fwd  & t1 reverse -> state = other ";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1133,8 +1133,8 @@ public class ScriptParser2Test {
                 "t1 stopped ->myVar=0\n" +
                 "t1 forward ->myVar=1 ";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1160,8 +1160,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 Sound=0 \n" +
                 "t1 forward -> t1 Sound=1";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1190,8 +1190,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> t1 Light=0 \n" +
                 "t1 forward -> t1 Light=1";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1217,8 +1217,8 @@ public class ScriptParser2Test {
                 "t1 stopped -> T1 Horn \n" +
                 "t1 forward -> T1 Horn=1";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1248,8 +1248,8 @@ public class ScriptParser2Test {
                 " b1 & !b777 -> t1 Sound=0 \n" +
                 " B1 &  B777 -> T1 Sound=1 \n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1303,8 +1303,8 @@ public class ScriptParser2Test {
                 "e1 == Off -> S1 = inactive \n" +
                 "e1 == On  -> S1 = active \n";
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1341,8 +1341,8 @@ public class ScriptParser2Test {
                 "   t1 reverse ; \n" +
                 "   t2 normal \n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1389,8 +1389,8 @@ public class ScriptParser2Test {
                 " T1        -> th sound = 0 \n" +
                 "!t2        -> th sound = 1 \n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1437,8 +1437,8 @@ public class ScriptParser2Test {
                 "T1         -> th horn ; t2 start \n" +
                 "t2         -> t1 end ; th forward = 1 \n" ; // "Timer end" is optional
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1483,8 +1483,8 @@ public class ScriptParser2Test {
                 "T5         -> th sound = 1 \n" +
                 "T9         -> th light = 1\n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1528,8 +1528,8 @@ public class ScriptParser2Test {
                 "T5         -> th sound = 1 \n" +
                 "T9         -> th light = 1\n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1575,8 +1575,8 @@ public class ScriptParser2Test {
                 "do == do -> A-T1 Start ; A-T2 Start ; B-T3 Start ; C-T4 Start ; D-T5 Start \n" +
                 "D-T5 -> Reset Timers = \"A- B-\" \n " ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1621,8 +1621,8 @@ public class ScriptParser2Test {
                 " B1 + 5 &  b2+6  -> T1 Sound=1 ; \n" +
                 " B1 + 5 &  b2+7  -> T1 Sound=0 ; \n" ;
 
-        Script script = mScriptComponent.createScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.createScriptExecEngine();
+        Script script = mScriptComponent.getScriptParser2().parse(source);
+        ExecEngine engine = mScriptComponent.getExecEngine();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -1726,7 +1726,7 @@ public class ScriptParser2Test {
     @Test
     public void testBuiltInVariables() throws IOException {
         String source = "";
-        Script script = mScriptComponent.createScriptParser2().parse(source);
+        Script script = mScriptComponent.getScriptParser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();

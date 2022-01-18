@@ -463,7 +463,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Singleton
     @Component(modules = { CommonModule.class })
     public interface LocalComponent extends IEngine1Component {
-        IScriptComponent.Factory newScriptComponent();  // TODO rename getSCFactory
+        IScriptComponent.Factory getScriptComponentFactory();
 
         void inject(EntryPoint2 entryPoint);
 
