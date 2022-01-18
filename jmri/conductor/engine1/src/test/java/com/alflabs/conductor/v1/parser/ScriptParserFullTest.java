@@ -20,6 +20,7 @@ package com.alflabs.conductor.v1.parser;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriThrottle;
+import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
@@ -38,7 +39,6 @@ import org.mockito.junit.MockitoRule;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -59,6 +59,7 @@ public class ScriptParserFullTest {
 
     @Inject FakeClock mClock;
     @Inject FakeFileOps mFileOps;
+    @Inject ScriptContext mScriptContext;
 
     @Before
     public void setUp() throws Exception {
@@ -69,12 +70,13 @@ public class ScriptParserFullTest {
 
         IEngine1TestComponent component = DaggerIEngine1TestComponent
                 .factory()
-                .createTestComponent(mJmriProvider, scriptFile);
+                .createTestComponent(mJmriProvider);
         mScriptComponent = component
                 .newScriptComponent()
                 .createComponent(mReporter);
 
         component.inject(this);
+        mScriptContext.setScriptFile(scriptFile);
         mClock.setNow(1000);
     }
 

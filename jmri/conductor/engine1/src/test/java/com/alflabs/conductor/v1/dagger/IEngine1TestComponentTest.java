@@ -20,6 +20,7 @@ package com.alflabs.conductor.v1.dagger;
 
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.parser.TestReporter;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.kv.KeyValueServer;
@@ -39,11 +40,11 @@ import static com.google.common.truth.Truth.assertThat;
 public class IEngine1TestComponentTest {
     @Rule public MockitoRule mRule = MockitoJUnit.rule();
 
-
     @Inject IKeyValue mKeyValue1;
     @Inject IKeyValue mKeyValue2;
     @Inject IClock mClock;
     @Inject FakeClock mFakeClock;
+    @Inject ScriptContext mScriptContext;
 
     private TestReporter mReporter;
     private IJmriProvider mJmriProvider;
@@ -58,8 +59,9 @@ public class IEngine1TestComponentTest {
 
         mComponent = DaggerIEngine1TestComponent
                 .factory()
-                .createTestComponent(mJmriProvider, scriptFile);
+                .createTestComponent(mJmriProvider);
         mComponent.inject(this);
+        mScriptContext.setScriptFile(scriptFile);
     }
 
     @Test

@@ -42,7 +42,6 @@ import dagger.BindsInstance;
 import dagger.Component;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.jmdns.JmDNS;
 import javax.jmdns.NetworkTopologyDiscovery;
@@ -77,7 +76,7 @@ public class EntryPoint1 implements IEntryPoint {
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
-    @Inject @Named("script") File mScriptFile;
+    @Inject ScriptContext mScriptContext;
 
     public Script getScript() {
         return mScript;
@@ -104,10 +103,11 @@ public class EntryPoint1 implements IEntryPoint {
         File scriptFile = new File(scriptPath);
         mComponent = DaggerEntryPoint1_LocalComponent
                 .factory()
-                .createComponent(jmriProvider, scriptFile);
+                .createComponent(jmriProvider);
 
         // Do not use any injected field before this call
         mComponent.inject(this);
+        mScriptContext.setScriptFile(scriptFile);
 
         mLogger.d(TAG, "Setup");
 
@@ -274,17 +274,22 @@ public class EntryPoint1 implements IEntryPoint {
                 .newScriptComponent()
                 .createComponent(reporter);
 
+        File file = null;
         try {
+            file = mScriptContext
+                    .getScriptFile()
+                    .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
+
             ScriptParser2 parser = scriptComponent.createScriptParser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
-            mScript = parser.parse(mScriptFile);
+            mScript = parser.parse(file);
             mEngine = scriptComponent.createScriptExecEngine();
             mEngine.onExecStart();
             sendEvent("Start");
             mJsonSender.sendEvent("conductor", null, "on");
         } catch (IOException e) {
-            mLogger.d(TAG, "Script Path: " + mScriptFile.getAbsolutePath());
+            mLogger.d(TAG, "Script Path: " + (file == null ? "Not Defined" : file.getAbsolutePath()));
             mLogger.d(TAG, "Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
         }
@@ -327,9 +332,7 @@ public class EntryPoint1 implements IEntryPoint {
 
         @Component.Factory
         interface Factory {
-            LocalComponent createComponent(
-                    @BindsInstance IJmriProvider jmriProvider,
-                    @BindsInstance @Named("script") File scriptFile);
+            LocalComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
         }
     }
 }

@@ -45,17 +45,16 @@ import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.google.common.io.Resources;
 import dagger.BindsInstance;
 import dagger.Component;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.TreeMap;
@@ -69,7 +68,6 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
-    private ScriptContext mScriptContext;
     private final StringBuilder mStatus = new StringBuilder();
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
@@ -82,7 +80,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
     @Inject ScriptLoader mScriptLoader;
-    @Inject @Named("script") File mScriptFile;
+    @Inject ScriptContext mScriptContext;
 
     /**
      * Entry point invoked from DevEntryPoint2.
@@ -101,11 +99,11 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         File scriptFile = new File(scriptPath);
         mComponent = DaggerEntryPoint2_LocalComponent
                 .factory()
-                .createComponent(jmriProvider, scriptFile);
+                .createComponent(jmriProvider);
 
         // Do not use any injected field before this call
         mComponent.inject(this);
-        mScriptContext = new ScriptContext(mComponent.newScriptComponent());
+        mScriptContext.setScriptFile(scriptFile);
 
         logln("Setup");
 
@@ -225,7 +223,6 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         mJsonSender.sendEvent("conductor", null, "off");
         sendEvent("Stop");
 
-        mWin = null;
         mKeepRunning.set(false);
 
         if (mHandleThread != null) {
@@ -240,6 +237,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         }
 
         if (mWinUpdateThread != null) {
+            // TODO sometimes the win update threads is still stuck on the Swing invokeAndWait.
             try {
                 mWinUpdateThread.join();
                 logln("Window Update Thread terminated");
@@ -250,6 +248,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             }
         }
 
+        mWin = null;
         if (mIsSimulation) {
             logln("Exit Simulation");
             System.exit(0);
@@ -273,11 +272,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             // TBD Release any resources from current script component as needed.
             mScriptContext.reset();
 
-            logln("Script Path: " + mScriptFile.getPath());
-            mScriptLoader.execByPath(mScriptContext, mScriptFile);
+            File file = mScriptContext
+                    .getScriptFile()
+                    .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
+            logln("Script Path: " + file.getPath());
+            mScriptLoader.execByPath(mScriptContext);
 
             if (mWin != null) {
-                mWin.updateScriptName(mScriptFile.getName());
+                mWin.updateScriptName(file.getName());
                 loadMap();
             }
 
@@ -307,17 +309,26 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void loadMap() {
+        if (!mScriptContext.getScriptFile().isPresent()) {
+            return;
+        }
+        File scriptFile = mScriptContext.getScriptFile().get();
+        File scriptDir = scriptFile.getParentFile();
+
         Optional<Script> script = mScriptContext.getScript();
         if (script.isPresent()) {
             TreeMap<String, MapInfo> maps = script.get().getMaps();
             Optional<MapInfo> mapName = maps.values().stream().findFirst();
             if (mapName.isPresent()) {
-                String resName = "maps/" + mapName.get().getUri();
-                logln("Loading map: " + resName);
+                String svgName = mapName.get().getUri();
+                File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
+                URI svgUri = svgFile.toURI();
+
+                logln("Loading map: " + svgUri);
                 try {
-                    mWin.displaySvgMap(Resources.getResource(resName));
+                    mWin.displaySvgMap(svgUri);
                 } catch (Exception e) {
-                    logln("Failed to load map '" + resName + "' : " + e);
+                    logln("Failed to load map '" + svgName + "' : " + e);
                 }
             }
         }
@@ -452,15 +463,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Singleton
     @Component(modules = { CommonModule.class })
     public interface LocalComponent extends IEngine1Component {
-        IScriptComponent.Factory newScriptComponent();
+        IScriptComponent.Factory newScriptComponent();  // TODO rename getSCFactory
 
         void inject(EntryPoint2 entryPoint);
 
         @Component.Factory
         interface Factory {
-            LocalComponent createComponent(
-                    @BindsInstance IJmriProvider jmriProvider,
-                    @BindsInstance @Named("script") File scriptFile);
+            LocalComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
         }
     }
 }

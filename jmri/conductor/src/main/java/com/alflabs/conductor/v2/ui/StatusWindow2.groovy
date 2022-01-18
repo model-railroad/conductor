@@ -219,7 +219,7 @@ class StatusWindow2 {
         return wx.get()
     }
 
-    void displaySvgMap(URL mapUrl) {
+    void displaySvgMap(URI mapUrl) {
         mSwingBuilder.edt {
             mModifSvgQueue.clear()
             mBlockColorMap.clear()

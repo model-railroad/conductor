@@ -1,6 +1,25 @@
+/*
+ * Project: Conductor
+ * Copyright (C) 2022 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.alflabs.conductor.v1;
 
 import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
 import com.alflabs.conductor.v1.parser.Reporter;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -8,33 +27,46 @@ import com.alflabs.conductor.v1.script.Script;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.File;
 import java.util.Optional;
 
+/**
+ * A global singleton context for the currently running script.
+ * It holds the current script filename, the script-scoped component, and the loading error.
+ */
+@Singleton
 public class ScriptContext {
     private final IScriptComponent.Factory mScriptComponentFactory;
     private final StringBuilder mError = new StringBuilder();
     private IScriptComponent mScriptComponent;
-    @Deprecated private File mScriptFile;
+    private File mScriptFile;
 
-    @Inject Script mScript;
-    @Inject ExecEngine mExecEngine;
-
-    public ScriptContext(@NonNull IScriptComponent.Factory scriptComponentFactory) {
+    @Inject
+    public ScriptContext(IScriptComponent.Factory scriptComponentFactory) {
         mScriptComponentFactory = scriptComponentFactory;
     }
 
     public void reset() {
         mScriptComponent = null;
-        mExecEngine = null;
-        mScript = null;
         mError.setLength(0);
     }
 
-    public void set(IScriptComponent scriptComp, File scriptFile) {
+    @SuppressWarnings("UnusedReturnValue")
+    public ScriptContext setScriptComponent(@Null IScriptComponent scriptComp) {
         mScriptComponent = scriptComp;
+        return this;
+    }
+
+    @SuppressWarnings("UnusedReturnValue")
+    public ScriptContext setScriptFile(@Null File scriptFile) {
         mScriptFile = scriptFile;
-        mScriptComponent.inject(this);
+        return this;
+    }
+
+    @NonNull
+    public Optional<File> getScriptFile() {
+        return Optional.ofNullable(mScriptFile);
     }
 
     @NonNull
@@ -51,13 +83,19 @@ public class ScriptContext {
     /** Convenience method to return the ScriptComponent.ExecEngine. Can be null. */
     @NonNull
     public Optional<ExecEngine> getExecEngine() {
-        return Optional.ofNullable(mExecEngine);
+        if (mScriptComponent == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(mScriptComponent.createScriptExecEngine());
     }
 
     /** Convenience method to return the current parsed Script. Can be null. */
     @NonNull
     public Optional<Script> getScript() {
-        return Optional.ofNullable(mScript);
+        if (mScriptComponent == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(mScriptComponent.getScript());
     }
 
     /** Returns the errors accumulated by the error reporter, if any. */

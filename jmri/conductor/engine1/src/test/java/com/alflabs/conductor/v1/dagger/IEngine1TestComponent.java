@@ -8,9 +8,7 @@ import com.alflabs.conductor.v1.simulator.SimulatorTest;
 import dagger.BindsInstance;
 import dagger.Component;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.File;
 
 @Singleton
 @Component(modules = { CommonTestModule.class })
@@ -23,8 +21,6 @@ public interface IEngine1TestComponent extends IEngine1Component {
 
     @Component.Factory
     interface Factory {
-        IEngine1TestComponent createTestComponent(
-                @BindsInstance IJmriProvider jmriProvider,
-                @BindsInstance @Named("script") File scriptFile);
+        IEngine1TestComponent createTestComponent(@BindsInstance IJmriProvider jmriProvider);
     }
 }

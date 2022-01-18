@@ -22,6 +22,7 @@ import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
 import com.alflabs.conductor.jmri.IJmriTurnout;
+import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IScriptComponent;
@@ -72,6 +73,7 @@ public class ScriptParser2Test {
     @Inject IKeyValue mKeyValue;
     @Inject FakeFileOps mFileOps;
     @Inject FakeClock mClock;
+    @Inject ScriptContext mScriptContext;
 
 
     @Before
@@ -83,12 +85,13 @@ public class ScriptParser2Test {
 
         IEngine1TestComponent component = DaggerIEngine1TestComponent
                 .factory()
-                .createTestComponent(mJmriProvider, scriptFile);
+                .createTestComponent(mJmriProvider);
         mScriptComponent = component
                 .newScriptComponent()
                 .createComponent(mReporter);
 
         component.inject(this);
+        mScriptContext.setScriptFile(scriptFile);
         mClock.setNow(1000);
     }
 

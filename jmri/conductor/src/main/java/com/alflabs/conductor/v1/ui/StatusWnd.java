@@ -20,7 +20,9 @@ package com.alflabs.conductor.v1.ui;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
+import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.v1.EntryPoint1;
+import com.alflabs.conductor.v1.ScriptContext;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine;
@@ -31,7 +33,6 @@ import com.alflabs.conductor.v1.script.Timer;
 import com.alflabs.conductor.v1.script.Turnout;
 import com.alflabs.conductor.v1.script.Var;
 import com.alflabs.conductor.v1.simulator.Simulator;
-import com.alflabs.conductor.util.LogException;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.RPair;
 import com.alflabs.utils.StringUtils;
@@ -40,9 +41,21 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
 import javax.inject.Inject;
-import javax.inject.Named;
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.WindowConstants;
+import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -84,7 +97,7 @@ public class StatusWnd {
 
     @Inject IJmriProvider mIJmriProvider;
     @Inject KeyValueServer mKeyValueServer;
-    @Inject @Named("script") File mScriptFile;
+    @Inject ScriptContext mScriptContext;
 
     private StatusWnd(JFrame frame) {
         mFrame = frame;
@@ -112,7 +125,8 @@ public class StatusWnd {
             Runnable onStopAction,
             Simulator optionalSimulator) {
         component.inject(this);
-        mTextScriptName.setText(mScriptFile.getAbsolutePath());
+        File file = mScriptContext.getScriptFile().orElse(new File("Not_Defined"));
+        mTextScriptName.setText(file.getPath());
         initScript(component, script, engine);
 
         mButtonReload.addActionListener(actionEvent -> {
