@@ -16,8 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-apply plugin: "groovy"    // plugin compiles both groovy and java files
-//apply plugin: "java"    // plugin only compiles java files -- not needed
+apply plugin: "java"
 apply plugin: "idea"
 
 group "com.alflabs.conductor"
@@ -27,31 +26,10 @@ repositories {
     mavenCentral()
 }
 
-group "com.alflabs.conductor"
-version "1.3-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
-// Due to cross Java-Groovy dependency, move the Java source path into the groovy source path.
-// This compiles all Java code with the Groovy plugin to satisfy cross-dependencies.
-sourceSets {
-    main.groovy.srcDirs += main.java.srcDirs
-    main.java.srcDirs = []
-}
-
-compileGroovy {
-    doFirst {
-        // Print both source sets to clarify what's going on.
-        println("@@ main.java.srcDirs = " +  sourceSets.main.java.srcDirs)
-        println("@@ main.groovy.srcDirs = " + sourceSets.main.groovy.srcDirs)
-    }
-}
-
 dependencies {
     implementation project(":common")
     implementation project(":engine1")
+    implementation project(":ui2")
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
 
@@ -63,7 +41,6 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:1.7.25"     // used by jmdns
     implementation "com.squareup.okhttp3:okhttp:3.10.0"
     implementation "org.codehaus.groovy:groovy-all:3.0.8"
-    implementation "org.apache.xmlgraphics:batik-swing:1.14"
 
     implementation          "com.google.dagger:dagger:2.22.1"
     annotationProcessor     "com.google.dagger:dagger-compiler:2.22.1"
