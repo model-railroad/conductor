@@ -1,0 +1,573 @@
+#
+# Project: Conductor
+# Copyright (C) 2022 alf.labs gmail com,
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+# sensors
+
+Sensor BLParked     = NS752      # 48:1
+Sensor BLStation    = NS753      # 48:2
+Sensor BLTunnel     = NS754      # 48:3
+Sensor BLReverse    = NS755      # 48:4
+Sensor BLRun        = NS765      # 48:14, Disconnected BL activation button
+
+Sensor B310         = NS768      # 49:1
+Sensor B311         = NS769      # 49:2
+Sensor B320         = NS770      # 49:3
+Sensor B321         = NS771      # 49:4
+Sensor B330         = NS773      # 49:6
+Sensor B340         = NS774      # 49:7
+Sensor B360         = NS775      # 49:8
+Sensor B370         = NS776      # 49:9
+Sensor Old-BL-Toggle= NS781      # 49:14 Unused BL automation toggle
+
+Sensor Old-PA-Toggle= NS784      # 50:1, Unused PA automation toggle
+Sensor Old-PA-Run   = NS785      # 50:2, Unused PA activation button
+Sensor B503a        = NS786      # 50:3
+Sensor B503b        = NS787      # 50:4
+Sensor AIU-Motion   = NS797      # 50:14
+
+Sensor BL-Toggle    = NS828      # 52:13
+Sensor PA-Toggle    = NS829      # 52:14
+
+# turnouts
+
+Turnout T311        = NT311
+Turnout T320        = NT320
+Turnout T321        = NT321
+Turnout T322        = NT322
+Turnout T324        = NT324
+Turnout T326        = NT326
+Turnout T330        = NT330
+Turnout T370        = NT370
+Turnout T504        = NT504
+
+# Maps
+
+Map Mainline = "Conductor Map Mainline 1.svg"
+
+# JSON tracking
+
+JSON-URL = "@~/bin/JMRI/rtac_json_url.txt"
+
+# GA Tracking
+
+GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+String GA-URL = "http://consist.alfray.com/train/"
+
+# Limited Run Mode
+
+Enum Limitation = Full Limited
+
+# -----------------
+# Global STOP Timer
+# -----------------
+#
+# Any route must be shorter than this to reach destination and cancel the timer.
+# The "Reset Timer" action (typically on PA-Toggle off) will clear this.
+
+Timer PA-Error-Timer = 600   # 10 minutes
+
+
+# -----------------
+# Motion
+# -----------------
+
+Int AIU-Motion-Counter = 0
+
+AIU-Motion  ->
+    RTAC-Motion = On ;
+    AIU-Motion-Counter += 1 ;
+    GA-Event Category: Motion, Action: Start, Label: AIU, User: AIU-Motion-Counter
+
+!AIU-Motion ->
+    RTAC-Motion = Off ;
+    GA-Event Category: Motion, Action: Stop, Label: AIU, User: AIU-Motion-Counter
+
+
+# ---------
+# End of the Day
+# ---------
+
+Int End-Of-Day-HHMM = 1650
+
+PA-Toggle & Conductor-Time == End-Of-Day-HHMM -> PA-Toggle = Inactive
+BL-Toggle & Conductor-Time == End-Of-Day-HHMM -> BL-Toggle = Inactive
+
+PA-Toggle  -> RTAC-PSA-Text = "Automation Started"
+
+!PA-Toggle & Conductor-Time == End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Turned Off\nat 4:50 PM"
+
+!PA-Toggle & Conductor-Time != End-Of-Day-HHMM ->
+              RTAC-PSA-Text = "{c:red}Automation Stopped"
+
+
+# ---------
+# Events PA
+# ---------
+
+Enum PA-State = Idle Station Running Manual Error Wait
+Enum PA-Train = Passenger Freight
+Int PA-Start-Counter = 0
+
+Throttle AM = 8749      # Full Amtrak route
+Throttle SP = 1072      # "Short Passenger" (now Freight) on limited Amtrak route
+
+Function PA-Fn-Release-Route -> {
+    T311 Normal ;
+    T320 Normal ;
+    T321 Normal
+}
+
+Route PA-Idle-Route {
+    Self.Manager = Idle
+}
+
+Route Passenger-Route {
+    Self.Throttle = AM
+    Self.Blocks = B503b, B503a, B321, B330, B340, B360, B370, B360, B340, B330, B321, B503a, B503b
+    # Self.Manager = Sequence                                       -- implied
+    # Enum AM-State = Idle Station Starting AM-Up AM-Summit AM-Down -- not used
+    # Self.Toggle = PA-Toggle                                       -- not used
+    # Self.Counter = PA-Start-Counter                               -- not used
+
+    Int AM-Leaving-Speed    = 6
+    Int AM-Station-Speed    = 12
+    Int AM-Summit-Speed     = 6
+    Int AM-Summit-Bridge-Speed = 4
+    Int AM-Sonora-Speed     = 8
+    Int AM-Crossover-Speed  = 4
+    Int AM-Full-Speed       = 12
+
+    Timer AM-Leaving-To-Full-Speed = 15
+    Timer AM-Timer-B321-Up-Doppler = 27
+    Timer AM-Timer-B330-Up-Resume = 12
+    Timer AM-Timer-B340-Up-Horn = 5
+    Timer AM-Timer-B370-Forward-Stop = 17  # time running at AM-Summit-Speed before stopping
+    Timer AM-Timer-B370-Pause-Delay  = 16
+    Timer AM-Timer-B360-Full-Reverse = 12
+    Timer AM-Timer-B330-Down-Speed = 8
+    Timer AM-Timer-B321-Down-Crossover = 27
+    Timer AM-Timer-B503b-Down-Stop = 20
+    Timer AM-Timer-Down-Station-Lights-Off = 10
+
+    Function AM-Fn-Acquire-Route -> {
+        T311 Reverse;
+        T320 Normal ;
+        T321 Normal ;
+        T322 Normal ;
+        T326 Normal ;
+        T330 Reverse ;
+        T370 Normal ;
+        T504 Normal
+    }
+
+    Function OnActivate -> {
+        RTAC-PSA-Text = "{c:blue}Currently Running:\n\nPassenger" ;
+        JSON-Event "Depart" "Passenger" ;
+        AM Light = 1; AM Sound = 1;
+        SP Sound = 0;
+        AM Forward = AM-Leaving-Speed ;
+        AM Horn ;
+        AM-Fn-Acquire-Route ;
+        AM F1 = 1 ;
+        After AM-Delayed-Horn -> AM Horn
+    }
+
+    # PA-Toggle off reverts train to down but only on specific "safe" blocks
+    # (e.g. not in B503a/B503b because stop distances puts us in the next block)
+    Block B321 Forward -> { !PA-Toggle -> AM Reverse = AM-Summit-Speed }
+    Block B330 Forward -> { !PA-Toggle -> AM Reverse = AM-Summit-Speed }
+    Block B340 Forward -> { !PA-Toggle -> AM Reverse = AM-Summit-Speed }
+
+    Enter B503b Stopped -> {
+        AM Forward = AM-Leaving-Speed ;
+        AM F1 = 0 ;
+        SP Sound = 0
+    }
+
+    # Enter B503a Forward -> no-op
+
+    Enter B321 Forward -> {
+        # Wait for train to have cleared up T320 before switching to full speed.
+        # The problem is that B321 activates as train hits diverted leg of turnout.
+        After AM-Leaving-To-Full-Speed -> AM Forward = AM-Full-Speed ;
+        # Mid-Station doppler on the way up
+        After AM-Timer-B321-Up-Doppler -> { AM F9 = 1 ; AM F9 = 0 }
+    }
+
+    # Sonora speed reduction
+    Enter B330 Forward -> {
+        AM Forward = AM-Sonora-Speed ;
+        After AM-Timer-B330-Up-Resume -> {
+            AM Forward = AM-Full-Speed ;
+            AM Horn
+        }
+    }
+
+    # After tunnel on the way up
+    Enter B340 Forward -> {
+        After AM-Timer-B340-Up-Horn Start -> AM Horn
+    }
+
+    # --- PA State: AM Summit
+
+    Enter B360 Forward -> {
+        PA-Error-Timer Start
+    }
+
+    Enter B370 Forward -> {
+        After 4 -> {
+            AM Forward = AM-Summit-Speed ;
+            AM F1 = 1
+        } Then After AM-Timer-B370-Forward-Stop -> {
+            AM Stop ;
+            AM Horn
+        }
+    }
+
+    Enter B370 Stopped -> {
+        After AM-Timer-B370-Pause-Delay -> {
+            AM F1 = 0 ;
+            AM Horn;
+            AM Reverse = AM-Summit-Speed
+        }
+    }
+
+    Enter B360 Reverse -> {
+        PA-Error-Timer Start
+        After AM-Timer-B360-Full-Reverse -> AM Reverse = AM-Full-speed
+    }
+
+    Enter B330 Reverse -> {
+        After AM-Timer-B330-Down-Speed -> {
+            AM Horn ;
+            AM Reverse = AM-Sonora-Speed
+        }
+    }
+
+    Enter B321 Reverse -> {
+        AM Reverse = AM-Full-Speed ;
+        AM F9 = 1 ; AM F9 = 0 ;
+        After AM-Timer-B321-Down-Crossover -> {
+            AM Horn ;
+            AM F1 = 1 ;
+            AM Reverse = AM-Crossover-Speed
+        }
+    }
+
+    Enter B503a Reverse -> {
+        After AM-Timer-B503b-Down-Stop -> {
+          AM Stop ;
+          AM Horn ;
+          AM F1 = 0;
+          AM-Timer-Down-Station-Lights-Off Start ;
+          PA-Error-Timer End
+        }
+    }
+
+    Block B503a Stopped -> {
+        AM-Timer-Down-Station-Lights-Off -> {
+            GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
+            PA-Train = Freight ;
+            PA-State = Wait ;
+            PA-Route Activate = PA-Idle-Route
+        }
+    }
+}
+
+Route Freight-Route {
+    Self.Throttle = SP
+    Self.Blocks = B311, B321, B311
+    # Enum SP-State = Idle Station Starting SP-Up SP-Up2 SP-Up3 SP-Down -- not used
+    # Self.Toggle = PA-Toggle                                           -- not used
+    # Self.Counter = PA-Start-Counter                                   -- not used
+
+    # Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
+    Int SP-Forward-Speed    = 8
+    Int SP-Reverse-Speed    = 4
+    Int SP-Station-Speed    = 2
+
+    Timer SP-Timer-Up-Slow = 40      # B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+    Timer SP-Timer-Up-Stop = 12      # Time on slow down before stop
+    Timer SP-Timer-Up-Reverse = 30   # Time stopped before reverse
+    Timer SP-Timer-Down-Slow = 24    # Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+    Timer SP-Timer-Down-Stop = 16    # Time on slow down before stop.
+    Timer SP-Timer-Down-Off  = 20
+
+    Function SP-Fn-Acquire-Route ->
+        T311 Normal;
+        T320 Normal ;
+        T321 Normal ;
+        T322 Normal ;
+        T326 Normal ;
+        T330 Reverse ;
+        T504 Normal ;
+
+    Function OnActivate -> {
+        RTAC-PSA-Text = "{c:#FF008800}Currently Running:\n\nFreight" ;
+    }
+
+    Timer SP-Sound-Started = 2
+
+    Enter B311 Stopped -> {
+        SP Light = 1 ;
+        SP F5 = 1;
+        SP Sound = 1 ;
+        AM Sound = 0 ;
+        After SP-Sound-Started Start -> {
+            SP Horn ;
+            SP Light = 1 ;
+            SP F1 = 0;
+            SP Forward = SP-Forward-Speed ;
+            SP-Fn-Acquire-Route ;
+            JSON-Event "Depart" "Freight"
+        } Then After 2 -> SP Horn
+    }
+
+    # Enter B311 Forward -> no op
+
+    Enter B321 Forward -> {
+        SP Forward = SP-Forward-Speed ;
+        After SP-Timer-Up-Slow -> {
+            SP Horn ;
+            SP F1 = 1;
+            SP Forward = SP-Station-Speed ;
+        } Then After SP-Timer-Up-Stop -> {
+            SP Horn ;
+            SP Stop ;
+            SP F1 = 0;
+        }
+    }
+
+    Block B321 Forward -> {
+        # PA-Toggle off reverts train to down but not in the start block.
+        # (we can't change the timer to stop in block B311 if we're already in it).
+        !PA-Toggle -> SP Stop
+    }
+
+    # Error case: we should never reach block B330.  TODO: how to prevent error here?
+    B330 & SP Forward -> SP Reverse = SP-Reverse-Speed
+
+    Enter B321 Stopped -> {
+        After SP-Timer-Up-Reverse -> {
+            # This is the long stop at the station
+            SP Horn ;
+            SP Reverse = SP-Reverse-Speed
+        }
+    }
+
+    Timer SP-Timer-Reverse-Horn = 2
+    Enter B321 Reverse -> {
+        PA-Error-Timer Start ;
+        SP F1 = 1;
+        After SP-Timer-Reverse-Horn      -> SP Horn
+        Then After SP-Timer-Reverse-Horn -> SP Horn
+    }
+
+    Enter B311 Reverse -> {
+        SP F1 = 0;
+        SP Horn ;
+        SP Stop ;
+        PA-Error-Timer End ;
+        SP-Timer-Down-Off Start
+    }
+
+    Timer SP-Sound-Stopped = 2
+    Block B311 Stopped -> {
+        SP-Timer-Down-Off -> {
+            SP Horn ;
+            SP F1 = 0;
+            SP Light = 0 ;
+            SP F5 = 0 ;
+            After SP-Sound-Stopped -> {
+                SP Sound = 0 ;
+                AM Sound = 1 ;
+                GA-Event Category: Activation, Action: Stop, Label: PA-Train, User: PA-Start-Counter ;
+                PA-Train = Passenger ;
+                PA-State = Wait ;
+                PA-Route Activate = PA-Idle-Route
+            }
+        }
+    }
+}
+
+Route Manual-Route {
+    Enum PA-Manual = Up In370
+
+    Function OnActivate ->
+        PA-Manual = Up ;
+        AM Horn ;
+        SP Horn ;
+        T330 Normal ;
+        RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused"
+
+    PA-Manual == Up & B370 -> PA-Manual = In370
+
+    PA-Manual == In370 & !B370 ->
+        PA-State = Station ;
+        AM Horn ;
+        SP Horn ;
+        PA-Route Activate = PA-Idle-Route
+}
+
+ActiveRoute PA-Route = PA-Idle-Route Passenger-Route Freight-Route Manual-Route
+
+
+# --- PA State: Error
+#
+# Note this state can only be cleared using an RTAC reset.
+
+PA-Error-Timer -> PA-State = Error
+
+PA-State == Error ->
+    Passenger-Route OnError ;
+    Freight-Route OnError ;
+    AM Repeat = 1 ;
+    SP Repeat = 1 ;
+    AM Stop ;
+    SP Stop ;
+    AM Sound = 0; AM Light = 0; AM F1 = 0 ;
+    SP Sound = 0; SP Light = 0; SP F5 = 0; SP F1 = 0 ;
+    GA-Event Category: Automation, Action: Error,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:red}{c:white}Automation ERROR" ;
+    ESTOP
+
+
+# --- PA State: Idle
+# Idle to station must be done within the error-timer time, otherwise enter error mode.
+
+Timer PA-Timer-Stop-Sound-Off = 10
+Timer PA-Timer-Check-Track = 2
+
+PA-State == Idle & PA-Toggle ->
+    AM Sound = 1; AM Light = 1;
+    SP Sound = 1; SP Light = 1;
+    AM Stop ;
+    SP Stop ;
+    AM Repeat = 2 ;
+    SP Repeat = 2 ;
+    PA-Fn-Release-Route ;
+    PA-Timer-Check-Track Start ;
+    PA-Error-Timer Start
+
+# Idle to station can only be done once track is cleared with BOTH trains at startup location.
+PA-State == Idle & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b ->
+    PA-Timer-Check-Track End ;
+    PA-Error-Timer End ;
+    PA-State = Station
+
+# RM DEBUG... if B503b train is missing, use the Freight
+# Idle to station can only be done once track is cleared with BOTH trains at startup location.
+PA-State == Idle & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & !B503b & PA-Train == Passenger ->
+    PA-Timer-Check-Track End ;
+    PA-Error-Timer End ;
+    PA-Train = Freight ;
+    PA-State = Station
+PA-State == Wait & PA-Toggle & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & !B503b & PA-Train == Passenger ->
+    PA-Train = Freight
+
+PA-State == Idle & PA-Toggle & PA-Timer-Check-Track ->
+    GA-Event Category: Automation, Action: Warning,  Label: Passenger, User: Staff ;
+    RTAC-PSA-Text = "{b:blue}{c:white}Automation Warning\nCheck Track"
+
+PA-State == Idle & !PA-Toggle ->
+    PA-Timer-Check-Track End ;
+    PA-Error-Timer End ;
+    AM Light = 0 ;
+    SP Light = 0 ;
+    AM Stop ;
+    SP Stop ;
+    PA-Timer-Stop-Sound-Off Start ;
+    PA-Timer-Release-Route Start
+
+PA-State == Idle & PA-Timer-Stop-Sound-Off ->
+    AM Sound = 0 ;
+    SP Sound = 0 ;
+
+PA-Toggle  -> AM Repeat = 2 ; SP Repeat = 2
+
+!PA-Toggle -> AM Repeat = 0 ; SP Repeat = 0 ; AM F1 = 0 ; SP F1 = 0
+
+PA-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Passenger, User: Staff
+!PA-Toggle -> GA-Event Category: Automation, Action: Off, Label: Passenger, User: Staff
+
+PA-Toggle  -> JSON-Event "Toggle" "Passenger" = "On"
+!PA-Toggle -> JSON-Event "Toggle" "Passenger" = "Off"
+
+
+# --- PA State: Manual
+#
+# Note: Manual mode can only be engaged if route is free going up.
+
+Function PA-Go-To-Manual ->
+    RTAC-PSA-Text = "Manual Mode\n\nAutomation Paused" ;
+    PA-State = Manual ;
+    PA-Route Activate = Manual-Route ;
+
+PA-State == Station & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual
+PA-State == Wait    & B320 & !B330 & !B340 & !B360 & !B370 -> PA-Go-To-Manual
+
+
+
+# --- PA State: Wait (to station)
+
+# RM DEBUG: Use 5 here instead of 60
+Timer PA-Timer-Wait = 60  # 1 minute
+PA-State == Wait -> PA-Timer-Wait Start
+
+PA-Timer-Wait -> PA-State = Station
+
+
+# --- PA State: Station
+
+# Departure from Station (going up)
+# REQUIRES both trains on B503b/B311 and stopped.
+# B320 must be free (it triggers the manual mode).
+# We must have all the route free till B370 before starting.
+PA-Train == Passenger & PA-State == Station & B311 & !B320 & !B321 & !B330 & !B340 & !B360 & !B370 & B503b & AM Stopped & SP Stopped & AIU-Motion ->
+    PA-State = Running
+PA-Train == Freight   & PA-State == Station & B311 & !B320 & !B321 & !B330 & AM Stopped & SP Stopped & AIU-Motion ->
+    PA-State = Running
+
+PA-State == Starting ->
+    PA-Start-Counter += 1 ;
+    GA-Page URL: GA-URL, Path: PA-Train, User: PA-Start-Counter ;
+    GA-Event Category: Activation, Action: Start, Label: PA-Train, User: PA-Start-Counter ;
+    Reset Timers = "PA AM SP"
+
+PA-State == Station & PA-Toggle & PA-Train == Passenger ->
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger"
+PA-State == Wait    & PA-Toggle & PA-Train == Passenger ->
+    RTAC-PSA-Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+PA-State == Station & PA-Toggle & PA-Train == Freight  ->
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight"
+PA-State == Wait    & PA-Toggle & PA-Train == Freight  ->
+    RTAC-PSA-Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+
+# DEBUG place to force AM-up vs SP-up
+PA-State == Running & PA-Train == Passenger ->
+    PA-Route Activate = Passenger-Route
+PA-State == Running & PA-Train == Freight   ->
+    PA-Route Activate = Freight-Route
+
+PA-State == Station & !PA-Toggle ->
+    Reset Timers = "PA AM SP" ;
+    PA-State = Idle ;
+
+
+# ---------
