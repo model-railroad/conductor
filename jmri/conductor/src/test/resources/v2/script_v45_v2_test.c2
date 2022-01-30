@@ -570,4 +570,236 @@ PA-State == Station & !PA-Toggle ->
     PA-State = Idle ;
 
 
+
 # ---------
+# Events BL
+# ---------
+
+Throttle BL = 191
+
+Int BL-Speed = 10
+Int BL-Speed-Station = 6
+
+Enum BL-State = Wait Shuttle Rev3
+
+Int BL-Start-Counter = 0
+
+BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, User: Staff
+!BL-Toggle -> GA-Event Category: Automation, Action: Off, Label: Branchline, User: Staff
+
+BL-Toggle  -> JSON-Event "Toggle" "Branchline" = "On"
+!BL-Toggle -> JSON-Event "Toggle" "Branchline" = "Off"
+
+
+Route BL-Idle-Route {
+    Self.Manager = Idle
+}
+
+Route BL-Shuttle-Route {
+    Self.Throttle = BL
+    # Self.Manager = Sequence -- implied
+    Self.Timeout = 60 # 1 minute
+    Self.Blocks = BLParked, BLStation, BLTunnel, BLReverse, BLTunnel, BLStation, BLParked
+
+    Timer BL-Timer-RevStation-Stop = 4
+    Timer BL-Timer-RevStation-Pause = 25
+    Timer BL-Timer-Station-Stop = 6
+    Timer BL-Timer-Station-Rev3 = 8
+
+    Function OnActivate -> {
+        # It's ok to start either from BLParked or BLStation
+        !BLParked & BLStation -> Self.Block = BLStation
+    }
+
+    Function OnRecover -> {
+        # Try to bring it backwards to the station
+        BL Reverse = BL-Speed-Station ;
+        BL F1 = 1 ;
+    }
+
+    Function DoStart -> {
+        BL Horn ;
+        BL F1 = 1 ;
+        After BL-Timer-Start-Delay -> {
+            BL F1 = 0 ;
+            BL Horn ;
+            BL Forward = BL-Speed ;
+        }
+    }
+
+    Enter BLParked Stopped -> {
+        # When starting from BLParked
+        BL-State == Shuttle -> DoStart
+    }
+
+    Enter BLStation Stopped -> {
+        # When starting from BLStation
+        BL-State == Shuttle -> DoStart
+    }
+
+    Enter BLStation Forward -> {
+        JSON-Event "Depart" "Branchline"
+    }
+
+    Enter BLTunnel Forward -> {
+        BL Horn ;
+    }
+
+    Enter BLReverse Forward -> {
+        BL Horn ;
+        BL F1 = 1 ;
+        After BL-Timer-RevStation-Stop -> {
+            # Toggle Stop/Reverse/Stop to turn off the Reverse front light.
+            # Next event should still be the BLReverse Stopped one.
+            BL Stop ;
+            BL Horn ;
+            BL Reverse = 1 ;
+            BL Stop
+        }
+        BL-Timer-Bell-Delay Start ;
+    }
+
+    Enter BLReverse Stopped -> {
+        After BL-Timer-RevStation-Pause -> {
+            BL F1 = 1 ;
+            BL Horn
+        } Then After 5 {
+            BL Reverse = BL-Speed ;
+        }
+    }
+
+    Enter BLReverse Reverse -> {
+        BL Light = 1
+        BL F1 = 0 ;
+        BL F8 = 1 ;
+        BL F9 = 1 ;
+        BL F10 = 1 ;
+        BL Horn ;
+    }
+
+    Enter BLTunnel Reverse -> {
+        BL Horn ;
+    }
+
+    Enter BLStation Reverse -> {
+        BL-State == Shuttle -> {
+            BL F1 = 1 ;
+            T324 Normal ;
+            BL Reverse = BL-Speed-Station ;
+            After BL-Timer-Station-Stop Start -> {
+                BL Stop ;
+                BL Horn ;
+                # We have more to do here but we're in stopped state now, so let's continue below
+                BL-State = Rev3
+            }
+        }
+    }
+
+    Enter BLStation Stopped -> {
+        BL-State == Rev3 -> {
+            After BL-Timer-Station-Rev3 -> {
+                BL Horn ;
+                BL Reverse = BL-Speed-Station ;
+            }
+        }
+    }
+
+    Enter BLParked Reverse -> {
+        # We went too far, but it's not a problem / not an error.
+        BL Stop
+        After 3 -> {
+            BL F1 = 0
+        } Then After 2 -> {
+            BL F8 = 0 ;
+            BL F9 = 0 ;
+            BL F10 = 0 ;
+            BL-State = Wait ;
+            BL-Route Activate = BL-Idle-Route ;
+        }
+    }
+}
+
+Route BL-StationToParked-Route {
+    Self.Throttle = BL
+    Self.Blocks = BLStation, BLParked
+
+    Function OnActivate -> {
+        !BLParked -> BL Reverse = BL-Speed-Station ;
+    }
+
+    Enter BLStation Reverse -> {
+        BL F1 = 1
+    }
+
+    Enter BLParked Reverse -> {
+        BL Stop
+    }
+
+    Enter BLParked Stopped -> {
+        After 3 -> BL F1 = 0
+        Then After 2 -> {
+            BL F8 = 0 ;
+            BL F9 = 0 ;
+            BL F10 = 0 ;
+            BL-State = Wait ;
+            BL-Route Activate = BL-Idle-Route ;
+        }
+    }
+}
+
+ActiveRoute BL-Route = BL-Idle-Route BL-Shuttle-Route BL-StationToParked-Route
+
+# --- BL State: Error
+
+BL-Route.IsError ->
+    BL-Route Activate = BL-Idle-Route ;
+    BL Repeat = 1 ;
+    BL Stop ;
+    BL Sound = 0;
+    GA-Event Category: Automation, Action: Error,  Label: Branchline, User: Staff
+
+# --- BL State: Wait
+
+Timer BL-Timer-Wait = 120  # 300=5 minutes -- changed to 2 minutes
+
+BL-Route == BL-Idle-Route & !BL-Toggle ->
+    BL-State = ToParked
+    BL-Route Activate = BL-StationToParked-Route ;
+
+BL-State == Wait ->
+    Reset Timers = "BL" ;
+    BL-Timer-Wait Start ;
+    BL Stop
+
+BL-Timer-Wait & BL-Toggle ->
+    BL-State = Shuttle
+    BL-Route Activate = BL-Shuttle-Route
+
+BL-Toggle ->
+    BL Repeat = 2 ;
+    BL Light = 0
+
+!BL-Toggle ->
+    BL Repeat = 0 ;
+    BL Light = 0 ;
+    BL F1 = 0 ;
+    BL F8 = 0 ;
+    BL F9 = 0 ;
+    BL F10 = 0
+
+
+# ------------------
+# Automatic Turnouts
+# ------------------
+
+# If automation is off, T330 is automatically selected:
+# B320 -> B330 via T330 Normal
+# B321 -> B330 via T330 Reverse
+
+!PA-Toggle & !B330 &  B320 & !B321 -> T330 Normal
+!PA-Toggle & !B330 & !B320 &  B321 -> T330 Reverse
+
+
+# ---------
+
+
