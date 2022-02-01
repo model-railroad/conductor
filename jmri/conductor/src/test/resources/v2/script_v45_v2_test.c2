@@ -68,18 +68,6 @@ JSON-URL = "@~/bin/JMRI/rtac_json_url.txt"
 GA-Tracking-Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 String GA-URL = "http://consist.alfray.com/train/"
 
-# Limited Run Mode
-
-Enum Limitation = Full Limited
-
-# -----------------
-# Global STOP Timer
-# -----------------
-#
-# Any route must be shorter than this to reach destination and cancel the timer.
-# The "Reset Timer" action (typically on PA-Toggle off) will clear this.
-
-Timer PA-Error-Timer = 600   # 10 minutes
 
 
 # -----------------
@@ -225,7 +213,6 @@ Route Passenger-Route {
     # --- PA State: AM Summit
 
     Enter B360 Forward -> {
-        PA-Error-Timer Start
     }
 
     Enter B370 Forward -> {
@@ -247,7 +234,6 @@ Route Passenger-Route {
     }
 
     Enter B360 Reverse -> {
-        PA-Error-Timer Start
         After AM-Timer-B360-Full-Reverse -> AM Reverse = AM-Full-speed
     }
 
@@ -274,7 +260,6 @@ Route Passenger-Route {
           AM Horn ;
           AM F1 = 0;
           AM-Timer-Down-Station-Lights-Off Start ;
-          PA-Error-Timer End
         }
     }
 
@@ -370,7 +355,6 @@ Route Freight-Route {
 
     Timer SP-Timer-Reverse-Horn = 2
     Enter B321 Reverse -> {
-        PA-Error-Timer Start ;
         SP F1 = 1;
         After SP-Timer-Reverse-Horn      -> SP Horn
         Then After SP-Timer-Reverse-Horn -> SP Horn
@@ -380,7 +364,6 @@ Route Freight-Route {
         SP F1 = 0;
         SP Horn ;
         SP Stop ;
-        PA-Error-Timer End ;
         SP-Timer-Down-Off Start
     }
 

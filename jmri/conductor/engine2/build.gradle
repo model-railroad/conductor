@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2017 alf.labs gmail com,
+ * Copyright (C) 2022 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,15 +16,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-rootProject.name = "conductor"
+apply plugin: "groovy"
+apply plugin: "idea"
 
-include "LibUtilsJava"
-project(":LibUtilsJava").projectDir = new File(rootProject.projectDir, "../../android/RTAC/LibUtils/LibUtilsJava")
+group "com.alflabs.conductor"
+version "1.3-SNAPSHOT"
 
-include "LibManifest"
-project(":LibManifest").projectDir = new File(rootProject.projectDir, "../../android/RTAC/LibManifest")
+repositories {
+    mavenCentral()
+}
 
-include "common"
-include "engine1"
-include "engine2"
-include "ui2"
+dependencies {
+    implementation project(":common")
+
+    implementation "org.codehaus.groovy:groovy-all:3.0.8"
+
+    testImplementation testFixtures(project(":common"))
+    testImplementation testFixtures(project(":engine1"))
+    testImplementation "junit:junit:4.10"
+    testImplementation "com.google.truth:truth:0.31"
+    testImplementation "org.mockito:mockito-core:2.2.9"
+    testImplementation "com.google.guava:guava:19.0"
+}

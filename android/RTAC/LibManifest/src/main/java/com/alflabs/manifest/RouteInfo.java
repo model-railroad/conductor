@@ -37,7 +37,7 @@ public class RouteInfo {
      * Static description for a route.
      * <p/>
      * The route info uses <em>keys</em>, e.g. the names exported in the KV Server with
-     * their prefixes. This are not just the raw IDs using in the script. E.g. a sensor
+     * their prefixes. These are not just the raw IDs using in the script. E.g. a sensor
      * id "B330" would be exported as key "S/B330".
      *
      * @param name The name of the route.

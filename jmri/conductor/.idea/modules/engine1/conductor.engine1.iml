@@ -12,14 +12,19 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated/sources/annotationProcessor/java/main" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated/sources/annotationProcessor/java/test" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/src/testFixtures/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine1/src/testFixtures/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine1/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine1/build" />
     </content>
     <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main">
       <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/main" isTestSource="false" />
     </content>
-    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/test" />
-    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/testFixtures" />
+    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/test" isTestSource="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/testFixtures">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine1/build/generated-src/antlr/testFixtures" isTestSource="false" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="conductor.common" />
