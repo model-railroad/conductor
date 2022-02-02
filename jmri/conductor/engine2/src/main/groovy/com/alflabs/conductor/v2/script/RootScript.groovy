@@ -2,21 +2,44 @@ package com.alflabs.conductor.v2.script
 
 class RootScript extends Script {
 
+    private Map<String, Sensor> mSensors = new TreeMap<>()
+    private Map<String, Block> mBlocks = new TreeMap<>()
+    private Map<String, Turnout> mTurnouts = new TreeMap<>()
+    private Map<String, MapInfo> mMaps = new TreeMap<>()
+
     @Override
     Object run() {
         return null
     }
 
     Sensor sensor(String systemName) {
-        return new Sensor(systemName)
+        return mSensors.computeIfAbsent(systemName) {
+            name -> new Sensor(name)
+        }
+    }
+
+    Map<String, Sensor> sensors() {
+        return mSensors.asUnmodifiable()
     }
 
     Block block(String systemName) {
-        return new Block(systemName)
+        return mBlocks.computeIfAbsent(systemName) {
+            name -> new Block(name)
+        }
+    }
+
+    Map<String, Block> blocks() {
+        return mBlocks.asUnmodifiable()
     }
 
     Turnout turnout(String systemName) {
-        return new Turnout(systemName)
+        return mTurnouts.computeIfAbsent(systemName) {
+            name -> new Turnout(name)
+        }
+    }
+
+    Map<String, Turnout> turnouts() {
+        return mTurnouts.asUnmodifiable()
     }
 
     MapInfo map(
@@ -26,6 +49,11 @@ class RootScript extends Script {
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_ONLY
         code.call()
+        mMaps.put(map.name, map)
         return map
+    }
+
+    Map<String, MapInfo> maps() {
+        return mMaps.asUnmodifiable()
     }
 }

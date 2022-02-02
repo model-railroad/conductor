@@ -7,6 +7,11 @@ class MapInfo {
     MapInfo() {
     }
 
+    MapInfo(String name, String svg) {
+        mName = name
+        mSvg = svg
+    }
+
     String getName() {
         return mName;
     }
@@ -29,4 +34,22 @@ class MapInfo {
 //        }
     }
 
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+
+        MapInfo mapInfo = (MapInfo) o
+
+        if (mName != mapInfo.mName) return false
+        if (mSvg != mapInfo.mSvg) return false
+
+        return true
+    }
+
+    int hashCode() {
+        int result
+        result = mName.hashCode()
+        result = 31 * result + mSvg.hashCode()
+        return result
+    }
 }
