@@ -6,6 +6,7 @@ class RootScript extends Script {
     private Map<String, Block> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
+    private List<Rule> mRules = new ArrayList<>()
 
     @Override
     Object run() {
@@ -55,5 +56,13 @@ class RootScript extends Script {
 
     Map<String, MapInfo> maps() {
         return mMaps.asUnmodifiable()
+    }
+
+    Rule on(
+            @DelegatesTo(strategy = Closure.DELEGATE_ONLY, value = RootScript)
+            Closure<Boolean> condition) {
+        def rule = new Rule(condition)
+        mRules.add(rule)
+        return rule
     }
 }

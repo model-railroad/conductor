@@ -20,6 +20,7 @@ MyStringVar = "This string is exported. Value is " + LocalVar3
 MyIntVar = 42 + LocalVar3
 MyLongVar = 43L
 MyLongVar++
+MyBooleanVar = false
 
 // Sensors
 
@@ -40,3 +41,17 @@ map {
     svg  = "Map 1.svg"
 }
 
+// Rules: Conditions -> Actions
+
+on { false } then { MyIntVar = 0 }
+on { true } then { MyIntVar = 1 }
+
+on { Toggle } then {
+    MyBooleanVar = true
+    MyLongVar += 1
+}
+
+on { !Toggle } then {
+    MyBooleanVar = true
+    MyLongVar += 1
+}
