@@ -5,12 +5,27 @@ class RootScript extends Script {
     private Map<String, Sensor> mSensors = new TreeMap<>()
     private Map<String, Block> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
+    private Map<String, Timer> mTimers = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private List<Rule> mRules = new ArrayList<>()
 
     @Override
     Object run() {
         return null
+    }
+
+    void resolvePendingVars(Binding scriptBinding) {
+        for (entry in scriptBinding.getVariables().entrySet()) {
+            def k = entry.key
+            def v = entry.value
+            if (v instanceof BaseVar) {
+                ((BaseVar) v).setVarName((String) k)
+                println "Var[$k] => $v"
+                if (v instanceof Timer) {
+                    mTimers.put((String) k, (Timer) v)
+                }
+            }
+        }
     }
 
     Sensor sensor(String systemName) {
@@ -41,6 +56,14 @@ class RootScript extends Script {
 
     Map<String, Turnout> turnouts() {
         return mTurnouts.asUnmodifiable()
+    }
+
+    Timer timer(int delay) {
+        return new Timer(delay)
+    }
+
+    Map<String, Timer> timers() {
+        return mTimers.asUnmodifiable()
     }
 
     MapInfo map(

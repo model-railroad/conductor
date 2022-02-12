@@ -4,6 +4,7 @@ import com.alflabs.conductor.v2.script.Block;
 import com.alflabs.conductor.v2.script.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
 import com.alflabs.conductor.v2.script.Sensor;
+import com.alflabs.conductor.v2.script.Timer;
 import com.alflabs.conductor.v2.script.Turnout;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -31,6 +32,7 @@ public class ScriptTest {
 
         mScript = loadScript(scriptName, scriptText);
         runScript();
+        mScript.resolvePendingVars(mBinding);
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -82,8 +84,10 @@ public class ScriptTest {
         assertThat(mBinding.getVariable("B311")).isInstanceOf(Block.class);
 
         assertThat(mScript.blocks()).containsKey("NS768");
+
         assertThat(mBinding.getVariable("B310"))
                 .isSameAs(mScript.blocks().get("NS768"));
+        assertThat(mScript.blocks().get("NS768").getVarName()).isEqualTo("B310");
     }
 
     @Test
@@ -94,6 +98,7 @@ public class ScriptTest {
         assertThat(mScript.sensors()).containsKey("NS829");
         assertThat(mBinding.getVariable("Toggle"))
                 .isSameAs(mScript.sensors().get("NS829"));
+        assertThat(mScript.sensors().get("NS829").getVarName()).isEqualTo("Toggle");
     }
 
     @Test
@@ -104,6 +109,19 @@ public class ScriptTest {
         assertThat(mScript.turnouts()).containsKey("NT311");
         assertThat(mBinding.getVariable("T311"))
                 .isSameAs(mScript.turnouts().get("NT311"));
+        assertThat(mScript.turnouts().get("NT311").getVarName()).isEqualTo("T311");
+    }
+
+    @Test
+    public void testTimer() {
+        assertThat(mBinding.getVariables()).containsKey("MyTimer1");
+        assertThat(mBinding.getVariable("MyTimer1")).isInstanceOf(Timer.class);
+
+        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getDelay())
+                .isEqualTo(15);
+        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getVarName())
+                .isEqualTo("MyTimer1");
+        assertThat(mScript.timers()).containsKey("MyTimer1");
     }
 
     @Test

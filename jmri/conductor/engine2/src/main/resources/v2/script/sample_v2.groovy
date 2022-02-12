@@ -34,6 +34,10 @@ Toggle      = sensor "NS829"      // 52:14
 
 T311        = turnout "NT311"
 
+// Timers
+
+MyTimer1    = timer 15
+
 // Maps
 
 map {
