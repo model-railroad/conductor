@@ -107,13 +107,22 @@ public class ScriptTest {
     }
 
     @Test
-    public void testStringVariables() {
-        assertThat(mBinding.getVariables()).containsKey("JSON_URL");
-        assertThat(mBinding.getVariables()).containsKey("GA_Tracking_Id");
-        assertThat(mBinding.getVariables()).containsKey("GA_URL");
-        assertThat(mBinding.getVariable("JSON_URL")).isInstanceOf(String.class);
-        assertThat(mBinding.getVariable("GA_Tracking_Id")).isInstanceOf(String.class);
-        assertThat(mBinding.getVariable("GA_URL")).isInstanceOf(String.class);
+    public void testVariables() {
+        assertThat(mBinding.getVariables().keySet()).containsAllOf(
+                "B310", "B311",
+                "T311",
+                "Toggle",
+                "MyStringVar", "MyIntVar", "MyLongVar");
+        assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar1");
+        assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar2");
+        assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar3");
+
+        assertThat(mBinding.getVariable("MyStringVar")).isInstanceOf(String.class);
+        assertThat(mBinding.getVariable("MyStringVar")).isEqualTo("This string is exported. Value is 42");
+        assertThat(mBinding.getVariable("MyIntVar")).isInstanceOf(Integer.class);
+        assertThat(mBinding.getVariable("MyIntVar")).isEqualTo(42+42);
+        assertThat(mBinding.getVariable("MyLongVar")).isInstanceOf(Long.class);
+        assertThat(mBinding.getVariable("MyLongVar")).isEqualTo(44);
     }
 
     @SuppressWarnings("unchecked")

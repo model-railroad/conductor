@@ -6,7 +6,22 @@ import groovy.transform.BaseScript
 
 @BaseScript RootScript baseScript
 
-// sensors
+
+// Variables
+// Variables that must be seen/exported by the ExecEngine cannot be declared with a def or
+// type keyword. They must be specified without "def", directly. Type is inferred.
+// Local variables can be used but they are "invisible" to the script engine.
+
+def LocalVar1 = "This variable is never seen by the ExecEngine"
+String LocalVar2 = "Neither is this one"
+int LocalVar3 = 42 // we can't use this either
+
+MyStringVar = "This string is exported. Value is " + LocalVar3
+MyIntVar = 42 + LocalVar3
+MyLongVar = 43L
+MyLongVar++
+
+// Sensors
 
 B310        = block  "NS768"      // 49:1
 B311        = block  "NS769"      // 49:2
@@ -14,7 +29,7 @@ B311        = block  "NS769"      // 49:2
 Toggle      = sensor "NS829"      // 52:14
 
 
-// turnouts
+// Turnouts
 
 T311        = turnout "NT311"
 
@@ -25,11 +40,3 @@ map {
     svg  = "Map 1.svg"
 }
 
-// JSON tracking
-
-JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
-
-// GA Tracking
-
-GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
-GA_URL = "http://consist.alfray.com/train/"
