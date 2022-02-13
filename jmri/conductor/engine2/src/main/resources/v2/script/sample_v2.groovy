@@ -22,6 +22,9 @@ MyLongVar = 43L
 MyLongVar++
 MyBooleanVar = false
 
+def On = true
+def Off = false
+
 // Sensors
 
 B310        = block  "NS768"      // 49:1
@@ -83,4 +86,23 @@ on { !Toggle } then {
     MyLongVar += 1
     MyTimer1.reset()
     ResetTurnouts()
+}
+
+on { MyTimer1 } then {
+    Train1.horn()
+    Train1.light(On)
+    Train1.forward(5)
+    Train2.stop()
+}
+
+on { B310 } then {
+    Train1.stop()
+    Train1.horn()
+    Train1.light(Off)
+    Train2.reverse(10)
+}
+
+on { B311 } then {
+    Train1.stop()
+    Train2.stop()
 }

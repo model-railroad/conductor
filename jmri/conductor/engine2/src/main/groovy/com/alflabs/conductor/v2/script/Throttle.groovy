@@ -4,6 +4,8 @@ class Throttle extends BaseVar {
     private final int mDccAddress
     private boolean mIsStarted
     private int mSpeed = 0
+    private boolean mLight
+    private boolean mF1
 
     Throttle(int dccAddress) {
         this.mDccAddress = dccAddress
@@ -23,6 +25,9 @@ class Throttle extends BaseVar {
     }
 
     // forward as a setter property: { Throttle.forward = speed }
+    // Design-wise, Groovy makes it possible to have both the setter and the function to set
+    // a value in the DSL, however it seems a tad confusing since no-argument methods must be
+    // invoked as function (with parens). In the final DSL we'll disable the setter version.
     void setForward(int speed) {
         forward(speed)
     }
@@ -36,10 +41,6 @@ class Throttle extends BaseVar {
         mSpeed = -speed
     }
 
-    void setReverse(int speed) {
-        reverse(speed)
-    }
-
     boolean isReverse() {
         return mSpeed < 0
     }
@@ -50,6 +51,26 @@ class Throttle extends BaseVar {
 
     boolean isStopped() {
         return mSpeed == 0
+    }
+
+    void horn() {
+        // no-op
+    }
+
+    void light(boolean lightOn) {
+        mLight = lightOn
+    }
+
+    boolean isLight() {
+        return mLight
+    }
+
+    void F1(boolean functionOn) {
+        mF1 = functionOn
+    }
+
+    boolean isF1() {
+        return mF1
     }
 
 }

@@ -230,14 +230,17 @@ public class ScriptTest {
                 "on { !Sensor1 } then { Train1.stop()  } \n" +
                 "on {  Sensor1 &&  Sensor2 } then { Train1.forward(5) } \n" +
                 "on {  Sensor1 && !Sensor2 } then { Train1.reverse(7) } \n" +
+                "on { Train1.forward } then { Train1.light(true); Train1.horn(); Train1.F1(true) } \n" +
+                "on { Train1.stopped } then { Train1.light(false); Train1.horn(); Train1.F1(false) } \n" +
                 // Syntax using an action setter property (not a function) + getter (for condition)
+                // Only "forward" has this, as an example it is possible, and why it's confusing.
                 "on { Train1.forward } then { Train2.forward = 42 } \n" +
-                "on { Train1.reverse } then { Train2.reverse = 43 } \n" +
+                "on { Train1.reverse } then { Train2.reverse(43) } \n" +
                 // Stop must be a function as it has no value, it cannot be a property.
                 "on { Train1.stopped } then { Train2.stop() } \n"
         );
 
-        assertThat(mScript.rules().size()).isEqualTo(6);
+        assertThat(mScript.rules().size()).isEqualTo(8);
 
         Throttle train1 = mScript.throttles().get("Train1");
         Throttle train2 = mScript.throttles().get("Train2");
@@ -250,6 +253,8 @@ public class ScriptTest {
         sensor1.setActive(false);
         mScript.executeRules();
         assertThat(train1.getSpeed()).isEqualTo(0);
+        assertThat(train1.isLight()).isEqualTo(false);
+        assertThat(train1.isF1()).isEqualTo(false);
         assertThat(train2.getSpeed()).isEqualTo(0);
 
         // Note: actions are always executed after all conditions are checked. Thus
@@ -260,8 +265,11 @@ public class ScriptTest {
         sensor2.setActive(true);
         mScript.executeRules();
         assertThat(train1.getSpeed()).isEqualTo(5);
-        assertThat(train2.getSpeed()).isEqualTo(0); // train2.forward condition is not active yet.
+        assertThat(train2.getSpeed()).isEqualTo(0);
+        // train1.forward condition is not active yet until the next execution pass.
         mScript.executeRules();
+        assertThat(train1.isLight()).isEqualTo(true);
+        assertThat(train1.isF1()).isEqualTo(true);
         assertThat(train2.getSpeed()).isEqualTo(42);
 
         sensor1.setActive(true);
