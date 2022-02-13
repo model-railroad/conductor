@@ -8,9 +8,15 @@ class Rule {
         this.mCondition = condition
     }
 
-    void then(
-            @DelegatesTo(strategy = Closure.DELEGATE_ONLY, value = RootScript)
-            Closure action) {
+    void then(@DelegatesTo(RootScript) Closure action) {
         this.mAction = action
+    }
+
+    boolean evaluateCondition() {
+        return mCondition.call()
+    }
+
+    void evaluateAction() {
+        mAction.call()
     }
 }

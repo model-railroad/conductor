@@ -33,16 +33,32 @@ Toggle      = sensor "NS829"      // 52:14
 // Turnouts
 
 T311        = turnout "NT311"
+T312        = turnout "NT312"
 
 // Timers
 
-MyTimer1    = timer 15
+MyTimer1    = timer 5
+MyTimer2    = timer 15
 
 // Maps
 
 map {
     name = "Mainline"
     svg  = "Map 1.svg"
+}
+
+// Functions
+
+def AlignTurnouts() {
+    // Syntax warning: 'T311.reverse' is a property getter, which does
+    // not exist, whereas 'T311.reverse()' is a function call.
+    T311.reverse()
+    T312.reverse()
+}
+
+def ResetTurnouts() {
+    T311.normal()
+    T312.normal()
 }
 
 // Rules: Conditions -> Actions
@@ -53,9 +69,13 @@ on { true } then { MyIntVar = 1 }
 on { Toggle } then {
     MyBooleanVar = true
     MyLongVar += 1
+    MyTimer1.start()
+    AlignTurnouts()
 }
 
 on { !Toggle } then {
     MyBooleanVar = true
     MyLongVar += 1
+    MyTimer1.reset()
+    ResetTurnouts()
 }

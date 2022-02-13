@@ -27,9 +27,22 @@ public class ScriptTest {
 
     @Before
     public void setUp() throws Exception {
-        String scriptName = "sample_v2";
-        String scriptText = readScriptText(scriptName);
+    }
 
+    private void loadScriptFromFile(String scriptName) throws Exception {
+        String scriptText = readScriptText(scriptName);
+        loadScriptFromText(scriptText);
+    }
+
+    private void loadScriptFromText(String scriptText) throws Exception {
+        loadScriptFromText("local", scriptText);
+    }
+
+    private void loadScriptFromText(String scriptName, String scriptText) throws Exception {
+        // Important order: we need to load the script, and then _execute_ it in order
+        // for all variables to be created in the bindings. Only after can we find their
+        // names and resolve them. Local variables (defined with 'def' or a type) are not
+        // visible in the binding, and we cannot resolve these.
         mScript = loadScript(scriptName, scriptText);
         runScript();
         mScript.resolvePendingVars(mBinding);
@@ -77,7 +90,9 @@ public class ScriptTest {
     }
 
     @Test
-    public void testBlock() {
+    public void testBlock() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mBinding.getVariables()).containsKey("B310");
         assertThat(mBinding.getVariables()).containsKey("B311");
         assertThat(mBinding.getVariable("B310")).isInstanceOf(Block.class);
@@ -85,51 +100,55 @@ public class ScriptTest {
 
         assertThat(mScript.blocks()).containsKey("NS768");
 
-        assertThat(mBinding.getVariable("B310"))
-                .isSameAs(mScript.blocks().get("NS768"));
+        assertThat(mBinding.getVariable("B310")).isSameAs(mScript.blocks().get("NS768"));
         assertThat(mScript.blocks().get("NS768").getVarName()).isEqualTo("B310");
     }
 
     @Test
-    public void testSensor() {
+    public void testSensor() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mBinding.getVariables()).containsKey("Toggle");
         assertThat(mBinding.getVariable("Toggle")).isInstanceOf(Sensor.class);
 
         assertThat(mScript.sensors()).containsKey("NS829");
-        assertThat(mBinding.getVariable("Toggle"))
-                .isSameAs(mScript.sensors().get("NS829"));
+        assertThat(mBinding.getVariable("Toggle")).isSameAs(mScript.sensors().get("NS829"));
         assertThat(mScript.sensors().get("NS829").getVarName()).isEqualTo("Toggle");
     }
 
     @Test
-    public void testTurnout() {
+    public void testTurnout() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mBinding.getVariables()).containsKey("T311");
         assertThat(mBinding.getVariable("T311")).isInstanceOf(Turnout.class);
 
         assertThat(mScript.turnouts()).containsKey("NT311");
-        assertThat(mBinding.getVariable("T311"))
-                .isSameAs(mScript.turnouts().get("NT311"));
+        assertThat(mBinding.getVariable("T311")).isSameAs(mScript.turnouts().get("NT311"));
         assertThat(mScript.turnouts().get("NT311").getVarName()).isEqualTo("T311");
     }
 
     @Test
-    public void testTimer() {
+    public void testTimer() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mBinding.getVariables()).containsKey("MyTimer1");
         assertThat(mBinding.getVariable("MyTimer1")).isInstanceOf(Timer.class);
 
-        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getDelay())
-                .isEqualTo(15);
-        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getVarName())
-                .isEqualTo("MyTimer1");
+        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getDelay()).isEqualTo(5);
+        assertThat(((Timer) mBinding.getVariable("MyTimer1")).getVarName()).isEqualTo("MyTimer1");
         assertThat(mScript.timers()).containsKey("MyTimer1");
     }
 
     @Test
-    public void testVariables() {
+    public void testVariables() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mBinding.getVariables().keySet()).containsAllOf(
                 "B310", "B311",
                 "T311",
                 "Toggle",
+                "MyTimer1", "MyTimer2",
                 "MyStringVar", "MyIntVar", "MyLongVar");
         assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar1");
         assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar2");
@@ -145,7 +164,9 @@ public class ScriptTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testMapInfo() {
+    public void testMapInfo() throws Exception {
+        loadScriptFromFile("sample_v2");
+
         assertThat(mScript.maps()).containsExactly(
                 "Mainline",
                 new MapInfo("Mainline", "Map 1.svg"));
@@ -153,5 +174,31 @@ public class ScriptTest {
         assertThat(mBinding.getVariables().values()
                 .stream().map(v -> v.getClass().getSimpleName()).toArray())
                 .asList().doesNotContain("MapInfo");
+    }
+
+    @Test
+    public void testSimpleRule() throws Exception {
+        loadScriptFromText("" +
+                "Turnout1 = turnout \"NT1\" \n" +
+                "Sensor1  = sensor  \"S01\" \n" +
+                "on {  Sensor1 } then { Turnout1.normal()  } \n" +
+                "on { !Sensor1 } then { Turnout1.reverse() } \n"
+        );
+
+        assertThat(mScript.rules().size()).isEqualTo(2);
+
+        Turnout turnout1 = mScript.turnouts().get("NT1");
+        Sensor sensor1 = mScript.sensors().get("S01");
+
+        assertThat(sensor1.isActive()).isFalse();
+        assertThat(turnout1.isNormal()).isTrue();
+
+        sensor1.setActive(true);
+        mScript.executeRules();
+        assertThat(turnout1.isNormal()).isTrue();
+
+        sensor1.setActive(false);
+        mScript.executeRules();
+        assertThat(turnout1.isNormal()).isFalse();
     }
 }

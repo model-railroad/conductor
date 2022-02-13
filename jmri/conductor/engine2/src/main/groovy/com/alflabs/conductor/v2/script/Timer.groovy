@@ -2,6 +2,7 @@ package com.alflabs.conductor.v2.script
 
 class Timer extends BaseActive {
     private final int mDelay
+    private boolean mIsStarted
 
     Timer(int delay) {
         this.mDelay = delay
@@ -11,7 +12,15 @@ class Timer extends BaseActive {
         return mDelay
     }
 
-    void setTriggered(boolean triggered) {
-        setActive(triggered)
+    void start() {
+        mIsStarted = true
+    }
+
+    void reset() {
+        mIsStarted = false
+    }
+
+    boolean isStarted() {
+        return mIsStarted
     }
 }

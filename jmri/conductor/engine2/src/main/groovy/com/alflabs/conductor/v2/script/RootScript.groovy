@@ -14,6 +14,7 @@ class RootScript extends Script {
         return null
     }
 
+    /** Called after the first script runScript to collect all global variables' names. */
     void resolvePendingVars(Binding scriptBinding) {
         for (entry in scriptBinding.getVariables().entrySet()) {
             def k = entry.key
@@ -26,6 +27,27 @@ class RootScript extends Script {
                 }
             }
         }
+    }
+
+    /** Executes all Rules. */
+    void executeRules() {
+        List<Rule> activeRules = new ArrayList<>()
+
+        // First collect all rules with an active condititon.
+        for (Rule rule : mRules) {
+            if (rule.evaluateCondition()) {
+                activeRules.add(rule)
+            }
+        }
+
+        // Second execute all actions in the order they are defined.
+        for (Rule rule : activeRules) {
+            rule.evaluateAction()
+        }
+    }
+
+    List<Rule> rules() {
+        return mRules.asUnmodifiable()
     }
 
     Sensor sensor(String systemName) {
@@ -66,9 +88,7 @@ class RootScript extends Script {
         return mTimers.asUnmodifiable()
     }
 
-    MapInfo map(
-            @DelegatesTo(strategy = Closure.DELEGATE_ONLY, value = MapInfo)
-            Closure cl) {
+    MapInfo map(@DelegatesTo(MapInfo) Closure cl) {
         def map = new MapInfo()
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_ONLY
@@ -81,9 +101,10 @@ class RootScript extends Script {
         return mMaps.asUnmodifiable()
     }
 
-    Rule on(
-            @DelegatesTo(strategy = Closure.DELEGATE_ONLY, value = RootScript)
-            Closure<Boolean> condition) {
+    Rule on(@DelegatesTo(RootScript) Closure<Boolean> condition) {
+        //println "condition.delegate = ${condition.delegate}"      // => is RootScript
+        //println "condition.owner = ${condition.owner}"            // => is RootScript
+        //println "condition.this = ${condition.thisObject}"        // => is RootScript
         def rule = new Rule(condition)
         mRules.add(rule)
         return rule
