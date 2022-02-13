@@ -4,6 +4,7 @@ import com.alflabs.conductor.v2.script.Block;
 import com.alflabs.conductor.v2.script.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
 import com.alflabs.conductor.v2.script.Sensor;
+import com.alflabs.conductor.v2.script.Throttle;
 import com.alflabs.conductor.v2.script.Timer;
 import com.alflabs.conductor.v2.script.Turnout;
 import com.google.common.base.Charsets;
@@ -90,7 +91,7 @@ public class ScriptTest {
     }
 
     @Test
-    public void testBlock() throws Exception {
+    public void testVarBlock() throws Exception {
         loadScriptFromFile("sample_v2");
 
         assertThat(mBinding.getVariables()).containsKey("B310");
@@ -102,10 +103,11 @@ public class ScriptTest {
 
         assertThat(mBinding.getVariable("B310")).isSameAs(mScript.blocks().get("NS768"));
         assertThat(mScript.blocks().get("NS768").getVarName()).isEqualTo("B310");
+        assertThat(mScript.blocks().get("B310").getVarName()).isEqualTo("B310");
     }
 
     @Test
-    public void testSensor() throws Exception {
+    public void testVarSensor() throws Exception {
         loadScriptFromFile("sample_v2");
 
         assertThat(mBinding.getVariables()).containsKey("Toggle");
@@ -114,10 +116,11 @@ public class ScriptTest {
         assertThat(mScript.sensors()).containsKey("NS829");
         assertThat(mBinding.getVariable("Toggle")).isSameAs(mScript.sensors().get("NS829"));
         assertThat(mScript.sensors().get("NS829").getVarName()).isEqualTo("Toggle");
+        assertThat(mScript.sensors().get("Toggle").getVarName()).isEqualTo("Toggle");
     }
 
     @Test
-    public void testTurnout() throws Exception {
+    public void testVarTurnout() throws Exception {
         loadScriptFromFile("sample_v2");
 
         assertThat(mBinding.getVariables()).containsKey("T311");
@@ -126,10 +129,11 @@ public class ScriptTest {
         assertThat(mScript.turnouts()).containsKey("NT311");
         assertThat(mBinding.getVariable("T311")).isSameAs(mScript.turnouts().get("NT311"));
         assertThat(mScript.turnouts().get("NT311").getVarName()).isEqualTo("T311");
+        assertThat(mScript.turnouts().get("T311").getVarName()).isEqualTo("T311");
     }
 
     @Test
-    public void testTimer() throws Exception {
+    public void testVarTimer() throws Exception {
         loadScriptFromFile("sample_v2");
 
         assertThat(mBinding.getVariables()).containsKey("MyTimer1");
@@ -141,6 +145,18 @@ public class ScriptTest {
     }
 
     @Test
+    public void testVarThrottle() throws Exception {
+        loadScriptFromFile("sample_v2");
+
+        assertThat(mBinding.getVariables()).containsKey("Train1");
+        assertThat(mBinding.getVariable("Train1")).isInstanceOf(Throttle.class);
+
+        assertThat(((Throttle) mBinding.getVariable("Train1")).getDccAddress()).isEqualTo(1001);
+        assertThat(((Throttle) mBinding.getVariable("Train1")).getVarName()).isEqualTo("Train1");
+        assertThat(mScript.throttles()).containsKey("Train1");
+    }
+
+    @Test
     public void testVariables() throws Exception {
         loadScriptFromFile("sample_v2");
 
@@ -148,6 +164,7 @@ public class ScriptTest {
                 "B310", "B311",
                 "T311",
                 "Toggle",
+                "Train1", "Train2",
                 "MyTimer1", "MyTimer2",
                 "MyStringVar", "MyIntVar", "MyLongVar");
         assertThat(mBinding.getVariables().keySet()).doesNotContain("LocalVar1");
@@ -177,7 +194,7 @@ public class ScriptTest {
     }
 
     @Test
-    public void testSimpleRule() throws Exception {
+    public void testRuleTurnout() throws Exception {
         loadScriptFromText("" +
                 "Turnout1 = turnout \"NT1\" \n" +
                 "Sensor1  = sensor  \"S01\" \n" +
@@ -187,8 +204,8 @@ public class ScriptTest {
 
         assertThat(mScript.rules().size()).isEqualTo(2);
 
-        Turnout turnout1 = mScript.turnouts().get("NT1");
-        Sensor sensor1 = mScript.sensors().get("S01");
+        Turnout turnout1 = mScript.turnouts().get("Turnout1");
+        Sensor sensor1 = mScript.sensors().get("Sensor1");
 
         assertThat(sensor1.isActive()).isFalse();
         assertThat(turnout1.isNormal()).isTrue();
@@ -200,5 +217,64 @@ public class ScriptTest {
         sensor1.setActive(false);
         mScript.executeRules();
         assertThat(turnout1.isNormal()).isFalse();
+    }
+
+    @Test
+    public void testRuleThrottle() throws Exception {
+        loadScriptFromText("" +
+                "Train1  = throttle 1001 \n" +
+                "Train2  = throttle 1002 \n" +
+                "Sensor1 = sensor  \"S01\" \n" +
+                "Sensor2 = sensor  \"S02\" \n" +
+                // Syntax using an action as a function
+                "on { !Sensor1 } then { Train1.stop()  } \n" +
+                "on {  Sensor1 &&  Sensor2 } then { Train1.forward(5) } \n" +
+                "on {  Sensor1 && !Sensor2 } then { Train1.reverse(7) } \n" +
+                // Syntax using an action setter property (not a function) + getter (for condition)
+                "on { Train1.forward } then { Train2.forward = 42 } \n" +
+                "on { Train1.reverse } then { Train2.reverse = 43 } \n" +
+                // Stop must be a function as it has no value, it cannot be a property.
+                "on { Train1.stopped } then { Train2.stop() } \n"
+        );
+
+        assertThat(mScript.rules().size()).isEqualTo(6);
+
+        Throttle train1 = mScript.throttles().get("Train1");
+        Throttle train2 = mScript.throttles().get("Train2");
+        Sensor sensor1 = mScript.sensors().get("S01");
+        Sensor sensor2 = mScript.sensors().get("S02");
+
+        assertThat(train1.getSpeed()).isEqualTo(0);
+        assertThat(train2.getSpeed()).isEqualTo(0);
+
+        sensor1.setActive(false);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(0);
+        assertThat(train2.getSpeed()).isEqualTo(0);
+
+        // Note: actions are always executed after all conditions are checked. Thus
+        // changing the throttle speed does _not_ change conditions in same loop,
+        // it only changes conditions in the next loop. This ensures eval consistency.
+
+        sensor1.setActive(true);
+        sensor2.setActive(true);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(5);
+        assertThat(train2.getSpeed()).isEqualTo(0); // train2.forward condition is not active yet.
+        mScript.executeRules();
+        assertThat(train2.getSpeed()).isEqualTo(42);
+
+        sensor1.setActive(true);
+        sensor2.setActive(false);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(-7);
+        mScript.executeRules();
+        assertThat(train2.getSpeed()).isEqualTo(-43);
+
+        sensor1.setActive(false);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(0);
+        mScript.executeRules();
+        assertThat(train2.getSpeed()).isEqualTo(0);
     }
 }

@@ -6,6 +6,7 @@ class RootScript extends Script {
     private Map<String, Block> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
     private Map<String, Timer> mTimers = new TreeMap<>()
+    private Map<String, Throttle> mThrottles = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private List<Rule> mRules = new ArrayList<>()
 
@@ -21,9 +22,17 @@ class RootScript extends Script {
             def v = entry.value
             if (v instanceof BaseVar) {
                 ((BaseVar) v).setVarName((String) k)
-                println "Var[$k] => $v"
-                if (v instanceof Timer) {
+                // DEBUG // println "Var[$k] => $v"
+                if (v instanceof Sensor) {
+                    mSensors.put((String) k, (Sensor) v)
+                } else if (v instanceof Block) {
+                    mBlocks.put((String) k, (Block) v)
+                } else if (v instanceof Turnout) {
+                    mTurnouts.put((String) k, (Turnout) v)
+                } else if (v instanceof Timer) {
                     mTimers.put((String) k, (Timer) v)
+                } else if (v instanceof Throttle) {
+                    mThrottles.put((String) k, (Throttle) v)
                 }
             }
         }
@@ -86,6 +95,14 @@ class RootScript extends Script {
 
     Map<String, Timer> timers() {
         return mTimers.asUnmodifiable()
+    }
+
+    Throttle throttle(int dccAddress) {
+        return new Throttle(dccAddress)
+    }
+
+    Map<String, Throttle> throttles() {
+        return mThrottles.asUnmodifiable()
     }
 
     MapInfo map(@DelegatesTo(MapInfo) Closure cl) {

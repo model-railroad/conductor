@@ -40,6 +40,11 @@ T312        = turnout "NT312"
 MyTimer1    = timer 5
 MyTimer2    = timer 15
 
+// Throttles
+
+Train1      = throttle 1001
+Train2      = throttle 2001
+
 // Maps
 
 map {
