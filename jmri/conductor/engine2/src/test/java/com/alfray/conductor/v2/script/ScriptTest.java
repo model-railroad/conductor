@@ -18,6 +18,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -157,11 +160,20 @@ public class ScriptTest {
     }
 
     @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testVariables() throws Exception {
         loadScriptFromFile("sample_v2");
 
+        // Check that no global variable is null (which typically indicates a getter method
+        // lacks a return statement).
+        assertThat(mBinding.getVariables().entrySet()
+                .stream()
+                .filter((Predicate<Map.Entry>) e -> e.getValue() == null)
+                .toArray()).isEmpty();
+
         assertThat(mBinding.getVariables().keySet()).containsAllOf(
                 "B310", "B311",
+                "B311_fwd",
                 "T311",
                 "Toggle",
                 "Train1", "Train2",
@@ -179,8 +191,8 @@ public class ScriptTest {
         assertThat(mBinding.getVariable("MyLongVar")).isEqualTo(44);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
+    @SuppressWarnings("unchecked")
     public void testMapInfo() throws Exception {
         loadScriptFromFile("sample_v2");
 

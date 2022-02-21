@@ -108,7 +108,7 @@ class RootScript extends Script {
     MapInfo map(@DelegatesTo(MapInfo) Closure cl) {
         def map = new MapInfo()
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
-        code.resolveStrategy = Closure.DELEGATE_ONLY
+        code.resolveStrategy = Closure.DELEGATE_FIRST
         code.call()
         mMaps.put(map.name, map)
         return map
@@ -126,4 +126,35 @@ class RootScript extends Script {
         mRules.add(rule)
         return rule
     }
+
+    Route route(@DelegatesTo(RouteInfo) Closure cl) {
+        def info = new RouteInfo()
+        def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
+        code.resolveStrategy = Closure.DELEGATE_FIRST
+        code.call()
+        return new Route(info)
+    }
+
+    // as a function: manager = idle()
+    IRouteManager idle() {
+        return new IdleManager()
+    }
+
+    // as a property getter: manager = idle
+    //IRouteManager getIdle() {
+    //    return idle()
+    //}
+
+    IRouteManager sequence(@DelegatesTo(SequenceInfo) Closure cl) {
+        def info = new SequenceInfo()
+        def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
+        code.resolveStrategy = Closure.DELEGATE_FIRST
+        code.call()
+        return new SequenceManager(info)
+    }
+
+    SequenceNode node(Block block, @DelegatesTo(RootScript) Closure action) {
+        return new SequenceNode(block, action)
+    }
+
 }

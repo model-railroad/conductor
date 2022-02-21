@@ -1,3 +1,4 @@
+//file:noinspection GrMethodMayBeStatic
 package v2.script
 
 
@@ -105,4 +106,42 @@ on { B310 } then {
 on { B311 } then {
     Train1.stop()
     Train2.stop()
+}
+
+Route_Idle = route {
+    manager = idle()
+}
+
+def _leaving_speed = 5
+def _mainline_speed = 10
+def _reverse_speed = 8
+
+Route1 = route {
+
+    onActivate {
+        Train1.light(true)
+        Train1.horn()
+        Train1.forward(_leaving_speed)
+    }
+
+    // Nodes must be declared before the node graph.
+    // Nodes can be global or local variables.
+
+    def B310_fwd = node(B310) {
+        Train1.horn()
+    }
+
+    B311_fwd = node(B311) {
+        Train1.horn()
+    }
+
+    def B310_rev = node(B310) {
+        Train1.horn()
+    }
+
+    manager = sequence {
+        throttle = Train1
+        timeout = 60
+        nodes = [ B310_fwd, B311_fwd, B310_rev ]
+    }
 }
