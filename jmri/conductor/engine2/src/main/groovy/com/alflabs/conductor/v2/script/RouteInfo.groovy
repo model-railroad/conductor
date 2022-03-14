@@ -6,7 +6,4 @@ class RouteInfo {
     void setManager(IRouteManager manager) {
         mManager = manager
     }
-
-    void onActivate(@DelegatesTo(RootScript) Closure action) {
-    }
 }

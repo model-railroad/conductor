@@ -1,9 +1,11 @@
 package com.alflabs.conductor.v2.script
 
-class Route {
+class Route extends BaseVar {
     private final RouteInfo mRouteInfo
+    private final IRouteManager mManager
 
-    Route(RouteInfo routeInfo) {
-        this.mRouteInfo = routeInfo
+    Route(IRouteManager manager) {
+        this.mManager = manager
+        // this.mRouteInfo = routeInfo
     }
 }

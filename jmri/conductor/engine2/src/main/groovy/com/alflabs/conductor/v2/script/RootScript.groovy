@@ -8,6 +8,8 @@ class RootScript extends Script {
     private Map<String, Timer> mTimers = new TreeMap<>()
     private Map<String, Throttle> mThrottles = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
+    private Map<String, Route> mRoutes = new TreeMap<>()
+    private Map<String, ActiveRoute> mActiveRoutes = new TreeMap<>()
     private List<Rule> mRules = new ArrayList<>()
 
     @Override
@@ -33,6 +35,10 @@ class RootScript extends Script {
                     mTimers.put((String) k, (Timer) v)
                 } else if (v instanceof Throttle) {
                     mThrottles.put((String) k, (Throttle) v)
+                } else if (v instanceof Route) {
+                    mRoutes.put((String) k, (Route) v)
+                } else if (v instanceof ActiveRoute) {
+                    mActiveRoutes.put((String) k, (ActiveRoute) v)
                 }
             }
         }
@@ -127,12 +133,12 @@ class RootScript extends Script {
         return rule
     }
 
-    Route route(@DelegatesTo(RouteInfo) Closure cl) {
-        def info = new RouteInfo()
-        def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
-        code.resolveStrategy = Closure.DELEGATE_FIRST
-        code.call()
-        return new Route(info)
+    Route route(IRouteManager manager) {
+        return new Route(manager)
+    }
+
+    Map<String, Route> routes() {
+        return mRoutes.asUnmodifiable()
     }
 
     // as a function: manager = idle()
@@ -155,6 +161,18 @@ class RootScript extends Script {
 
     SequenceNode node(Block block, @DelegatesTo(RootScript) Closure action) {
         return new SequenceNode(block, action)
+    }
+
+    ActiveRoute activeRoute(@DelegatesTo(ActiveRouteInfo) Closure cl) {
+        def info = new ActiveRouteInfo()
+        def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
+        code.resolveStrategy = Closure.DELEGATE_FIRST
+        code.call()
+        return new ActiveRoute(info)
+    }
+
+    Map<String, ActiveRoute> activeRoutes() {
+        return mActiveRoutes.asUnmodifiable()
     }
 
 }

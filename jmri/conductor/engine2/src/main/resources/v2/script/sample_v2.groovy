@@ -108,15 +108,15 @@ on { B311 } then {
     Train2.stop()
 }
 
-Route_Idle = route {
-    manager = idle()
-}
+Route_Idle = route idle()
 
 def _leaving_speed = 5
 def _mainline_speed = 10
 def _reverse_speed = 8
 
-Route1 = route {
+Route1 = route sequence {
+    throttle = Train1
+    timeout = 60
 
     onActivate {
         Train1.light(true)
@@ -139,9 +139,10 @@ Route1 = route {
         Train1.horn()
     }
 
-    manager = sequence {
-        throttle = Train1
-        timeout = 60
-        nodes = [ B310_fwd, B311_fwd, B310_rev ]
-    }
+    nodes = [ [ B310_fwd, B311_fwd, B310_rev ],
+              [ B310_fwd, B310_rev ] ]
+}
+
+PA_Route = activeRoute {
+    routes = [ Route_Idle, Route1 ]
 }

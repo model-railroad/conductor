@@ -3,7 +3,7 @@ package com.alflabs.conductor.v2.script
 class SequenceInfo {
     Throttle mThrottle
     int mTimeout
-    final List<SequenceNode> mNodes = new ArrayList<>()
+    final List<List<SequenceNode>> mNodes = new ArrayList<>()
 
     void setThrottle(Throttle throttle) {
         mThrottle = throttle
@@ -13,7 +13,48 @@ class SequenceInfo {
         mTimeout = timeout
     }
 
-    void setNodes(SequenceNode[] nodes) {
-        mNodes.addAll(nodes)
+    /**
+     * Syntax 1: nodes = [ node1, node2, ..., nodeN ] <br/>
+     * or <br/>
+     * Syntax 2: nodes = [ [ node1, node2, ..., nodeN ], [ array2 ], ...[ arrayN ] ] <br/>
+     */
+    void setNodes(Object nodes) {
+        // Syntax 1: nodes is an array of SequenceNode (no sub-arrays).
+        def nodeList = toNodeList(nodes)
+        if (nodeList != null) {
+            mNodes.add(nodeList)
+            return
+        }
+
+        // Syntax 2: nodes is an array of arrays of SequenceNode (only sub-arrays, only 1 level).
+        for (Object node in nodes) {
+            nodeList = toNodeList(node)
+            if (nodeList != null) {
+                mNodes.add(nodeList)
+                continue
+            }
+            // This is not an array of just SequenceNodes, so can't convert to a List.
+            throw new IllegalArgumentException(
+                    "Expected [ [ node1, node2 ], [ node3...] ] but got sub-array containing "
+                    + node.class.simpleName)
+        }
+    }
+
+    private static List<SequenceNode> toNodeList(Object nodes) {
+        //DEBUG println "toNodeList = ${(nodes instanceof Iterable<?>)}, ${nodes.class} -> $nodes"
+        if (!(nodes instanceof Iterable<?>)) { return null }
+        def nodeList = new ArrayList<SequenceNode>()
+        for (Object node in nodes) {
+            if (node instanceof SequenceNode) {
+                nodeList.add(node)
+            } else {
+                // This is not an array of just SequenceNodes, so can't convert to a List.
+                return null;
+            }
+        }
+        return nodeList
+    }
+
+    void onActivate(@DelegatesTo(RootScript) Closure action) {
     }
 }

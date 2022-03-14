@@ -1,5 +1,6 @@
 package com.alfray.conductor.v2.script;
 
+import com.alflabs.conductor.v2.script.BaseVar;
 import com.alflabs.conductor.v2.script.Block;
 import com.alflabs.conductor.v2.script.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
@@ -18,11 +19,14 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static com.google.common.truth.Truth.assertThat;
+import static java.util.stream.Collectors.*;
 
 public class ScriptTest {
 
@@ -296,5 +300,36 @@ public class ScriptTest {
         assertThat(train1.getSpeed()).isEqualTo(0);
         mScript.executeRules();
         assertThat(train2.getSpeed()).isEqualTo(0);
+    }
+
+    @Test
+    public void testRoute() throws Exception {
+        loadScriptFromText("" +
+                "Train1  = throttle 1001 \n" +
+                "Block1 = block \"B01\" \n" +
+                "Route_Idle = route idle() \n" +
+                "Route_Seq = route sequence { \n" +
+                    "throttle = Train1 \n" +
+                    "timeout = 42 \n" +
+                    "node1 = node(Block1) { } \n" +
+                    "def node2 = node(Block1) { } \n" +
+                    "nodes = [ [ node1, node2 ], [ node2, node1  ] ] \n" +
+                "} \n" +
+                "Routes = activeRoute { routes = [ Route_Idle, Route_Seq ] } \n"
+        );
+
+        assertThat(mScript.rules().size()).isEqualTo(0);
+        Throttle train1 = mScript.throttles().get("Train1");
+        Block block1 = mScript.blocks().get("B01");
+
+        assertThat(mScript.routes()).containsKey("Route_Idle");
+        assertThat(mScript.routes()).containsKey("Route_Seq");
+        assertThat(mScript.activeRoutes()).containsKey("Routes");
+        assertThat(
+                Arrays.stream(mScript.activeRoutes().get("Routes").getRoutes())
+                        .map(BaseVar::getVarName).collect(toList()))
+                .containsExactly("Route_Idle", "Route_Seq");
+
+        // TBD: route nodes should have more than 1 node in each branch.
     }
 }
