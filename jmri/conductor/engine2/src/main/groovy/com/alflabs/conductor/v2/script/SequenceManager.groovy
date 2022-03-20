@@ -6,4 +6,14 @@ class SequenceManager implements IRouteManager {
     SequenceManager(SequenceInfo sequenceInfo) {
         mSequenceInfo = sequenceInfo
     }
+
+    SequenceInfo getSequenceInfo() {
+        return mSequenceInfo
+    }
+
+    @Override
+    List<IRule> evaluateRules() {
+        // TBD evaluate onActive, nodes onEnter, etc.
+        return Collections.emptyList()
+    }
 }

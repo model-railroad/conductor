@@ -1,16 +1,25 @@
 package com.alflabs.conductor.v2.script
 
 class SequenceInfo {
-    Throttle mThrottle
-    int mTimeout
-    final List<List<SequenceNode>> mNodes = new ArrayList<>()
+    private Throttle mThrottle
+    private int mTimeout
+    private final List<List<SequenceNode>> mNodes = new ArrayList<>()
+    private IRule mOnActivateRule
 
     void setThrottle(Throttle throttle) {
         mThrottle = throttle
     }
 
+    Throttle getThrottle() {
+        return mThrottle
+    }
+
     void setTimeout(int timeout) {
         mTimeout = timeout
+    }
+
+    int getTimeout() {
+        return mTimeout
     }
 
     /**
@@ -38,6 +47,11 @@ class SequenceInfo {
                     "Expected [ [ node1, node2 ], [ node3...] ] but got sub-array containing "
                     + node.class.simpleName)
         }
+
+        // TBD: route nodes should have more than 1 node in each branch (warning level).
+        // TBD: construct a linked graph, not just a list-of-lists.
+        // TBD: fail on isolated islands in graph.
+        // TBD: pretty-print the graph for debug output.
     }
 
     private static List<SequenceNode> toNodeList(Object nodes) {
@@ -55,6 +69,15 @@ class SequenceInfo {
         return nodeList
     }
 
+    List<List<SequenceNode>> getNodes() {
+        return mNodes.asUnmodifiable()
+    }
+
     void onActivate(@DelegatesTo(RootScript) Closure action) {
+        mOnActivateRule = new RuleAlways(action)
+    }
+
+    IRule getOnActivateRule() {
+        return mOnActivateRule
     }
 }

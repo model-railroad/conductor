@@ -1,6 +1,6 @@
 package com.alflabs.conductor.v2.script
 
-class Rule {
+class Rule implements IRule {
     private final Closure<Boolean> mCondition
     private Closure mAction
 
@@ -12,10 +12,12 @@ class Rule {
         this.mAction = action
     }
 
+    @Override
     boolean evaluateCondition() {
         return mCondition.call()
     }
 
+    @Override
     void evaluateAction() {
         mAction.call()
     }

@@ -10,7 +10,7 @@ class RootScript extends Script {
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private Map<String, Route> mRoutes = new TreeMap<>()
     private Map<String, ActiveRoute> mActiveRoutes = new TreeMap<>()
-    private List<Rule> mRules = new ArrayList<>()
+    private List<IRule> mRules = new ArrayList<>()
 
     @Override
     Object run() {
@@ -46,22 +46,30 @@ class RootScript extends Script {
 
     /** Executes all Rules. */
     void executeRules() {
-        List<Rule> activeRules = new ArrayList<>()
+        List<IRule> activeRules = new ArrayList<>()
 
         // First collect all rules with an active condititon.
-        for (Rule rule : mRules) {
+        for (IRule rule : mRules) {
             if (rule.evaluateCondition()) {
                 activeRules.add(rule)
             }
         }
 
+        // TBD parse all active routes, and queue all onEnter / onActivate rules.
+        for (ActiveRoute activeRoute : mActiveRoutes) {
+            List<IRule> rules = activeRoute.evaluateRules()
+            if (rules != null && !rules.isEmpty()) {
+                activeRules.addAll(rules)
+            }
+        }
+
         // Second execute all actions in the order they are defined.
-        for (Rule rule : activeRules) {
+        for (IRule rule : activeRules) {
             rule.evaluateAction()
         }
     }
 
-    List<Rule> rules() {
+    List<IRule> rules() {
         return mRules.asUnmodifiable()
     }
 

@@ -2,9 +2,13 @@ package com.alfray.conductor.v2.script;
 
 import com.alflabs.conductor.v2.script.BaseVar;
 import com.alflabs.conductor.v2.script.Block;
+import com.alflabs.conductor.v2.script.IRule;
 import com.alflabs.conductor.v2.script.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
+import com.alflabs.conductor.v2.script.Route;
 import com.alflabs.conductor.v2.script.Sensor;
+import com.alflabs.conductor.v2.script.SequenceInfo;
+import com.alflabs.conductor.v2.script.SequenceManager;
 import com.alflabs.conductor.v2.script.Throttle;
 import com.alflabs.conductor.v2.script.Timer;
 import com.alflabs.conductor.v2.script.Turnout;
@@ -21,9 +25,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.stream.Collectors.*;
@@ -329,7 +331,29 @@ public class ScriptTest {
                 Arrays.stream(mScript.activeRoutes().get("Routes").getRoutes())
                         .map(BaseVar::getVarName).collect(toList()))
                 .containsExactly("Route_Idle", "Route_Seq");
+    }
 
-        // TBD: route nodes should have more than 1 node in each branch.
+    @Test
+    public void testRouteSequence_OnActivate() throws Exception {
+        loadScriptFromFile("sample_v2");
+        Throttle train1 = mScript.throttles().get("Train1");
+
+        assertThat(mScript.routes()).containsKey("Route1");
+        Route seq = mScript.routes().get("Route1");
+
+        assertThat(seq.getManager()).isInstanceOf(SequenceManager.class);
+        SequenceManager seqMan = (SequenceManager) seq.getManager();
+
+        assertThat(seqMan.getSequenceInfo()).isNotNull();
+        SequenceInfo seqInfo = seqMan.getSequenceInfo();
+
+        assertThat(seqInfo.getThrottle()).isSameAs(train1);
+        assertThat(seqInfo.getNodes()).hasSize(2);
+
+        assertThat(seqInfo.getOnActivateRule()).isNotNull();
+        IRule onActivateRule = seqInfo.getOnActivateRule();
+        assertThat(train1.isLight()).isEqualTo(false);
+        onActivateRule.evaluateAction();
+        assertThat(train1.isLight()).isEqualTo(true);
     }
 }
