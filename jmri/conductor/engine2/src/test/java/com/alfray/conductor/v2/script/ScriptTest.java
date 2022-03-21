@@ -154,6 +154,9 @@ public class ScriptTest {
         assertThat(((Timer) mBinding.getVariable("MyTimer1")).getDelay()).isEqualTo(5);
         assertThat(((Timer) mBinding.getVariable("MyTimer1")).getVarName()).isEqualTo("MyTimer1");
         assertThat(mScript.timers()).containsKey("MyTimer1");
+
+        assertThat(mScript.timers()).containsKey("@timer@42");
+        assertThat(mScript.timers().get("@timer@42").getDelay()).isEqualTo(42);
     }
 
     @Test

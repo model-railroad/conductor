@@ -8,6 +8,7 @@ class RootScript extends Script {
     private Map<String, Block> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
     private Map<String, Timer> mTimers = new TreeMap<>()
+    private List<Timer> mAnonymousTimers = new ArrayList<>();
     private Map<String, Throttle> mThrottles = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private Map<String, Route> mRoutes = new TreeMap<>()
@@ -35,6 +36,7 @@ class RootScript extends Script {
                     mTurnouts.put((String) k, (Turnout) v)
                 } else if (v instanceof Timer) {
                     mTimers.put((String) k, (Timer) v)
+                    mAnonymousTimers.remove(v)
                 } else if (v instanceof Throttle) {
                     mThrottles.put((String) k, (Throttle) v)
                 } else if (v instanceof Route) {
@@ -44,6 +46,15 @@ class RootScript extends Script {
                 }
             }
         }
+
+        for (Timer t in mAnonymousTimers) {
+            if (mTimers.containsKey(t.varName)) {
+                // Make name unique
+                t.varName = String.format("%s_%08x", t.varName, t.hashCode())
+            }
+            mTimers.put(t.varName, t)
+        }
+        mAnonymousTimers.clear()
     }
 
     /** Executes all Rules. */
@@ -114,7 +125,10 @@ class RootScript extends Script {
 
     @NonNull
     Timer timer(int delay) {
-        return new Timer(delay)
+        def t = new Timer(delay)
+        t.setVarName("@timer@${delay}")
+        mAnonymousTimers.add(t)
+        return t
     }
 
     @NonNull
@@ -155,6 +169,15 @@ class RootScript extends Script {
         def rule = new Rule(condition)
         mRules.add(rule)
         return rule
+    }
+
+    @NonNull
+    Rule after(Timer timer) {
+        def cl_cond = {
+            //noinspection ChangeToOperator
+            timer.asBoolean()
+        }
+        return on(cl_cond)
     }
 
     @NonNull

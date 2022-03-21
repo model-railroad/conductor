@@ -108,6 +108,14 @@ on { B311 } then {
     Train2.stop()
 }
 
+after(MyTimer2) then {
+    Train1.light(true)
+}
+
+after(timer(42)) then {
+    Train1.light(true)
+}
+
 Route_Idle = route idle()
 
 def _leaving_speed = 5
