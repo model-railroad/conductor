@@ -65,7 +65,7 @@ class RootScript extends Script {
 
         // Second execute all actions in the order they are defined.
         for (IRule rule : activeRules) {
-            rule.evaluateAction()
+            rule.evaluateAction(this)
         }
     }
 
@@ -167,7 +167,7 @@ class RootScript extends Script {
         return new SequenceManager(info)
     }
 
-    SequenceNode node(Block block, @DelegatesTo(RootScript) Closure action) {
+    SequenceNode node(Block block, @DelegatesTo(SequenceNodeEvents) Closure action) {
         return new SequenceNode(block, action)
     }
 

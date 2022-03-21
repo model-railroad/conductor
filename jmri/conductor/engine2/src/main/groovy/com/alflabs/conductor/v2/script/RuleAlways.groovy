@@ -14,7 +14,9 @@ class RuleAlways implements IRule {
     }
 
     @Override
-    void evaluateAction() {
-        mAction.call()
+    void evaluateAction(RootScript rootScript) {
+        def code = mAction.rehydrate(rootScript /*delegate*/, rootScript /*owner*/, rootScript /*this*/)
+        code.resolveStrategy = Closure.DELEGATE_FIRST
+        code.call()
     }
 }

@@ -18,7 +18,9 @@ class Rule implements IRule {
     }
 
     @Override
-    void evaluateAction() {
-        mAction.call()
+    void evaluateAction(RootScript rootScript) {
+        def code = mAction.rehydrate(rootScript /*delegate*/, this /*owner*/, this /*this*/)
+        code.resolveStrategy = Closure.DELEGATE_FIRST
+        code.call()
     }
 }

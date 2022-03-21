@@ -128,15 +128,30 @@ Route1 = route sequence {
     // Nodes can be global or local variables.
 
     def B310_fwd = node(B310) {
-        Train1.horn()
+        onEnter {
+            Train1.forward(_leaving_speed)
+        }
+        whileOccupied {
+            Train1.light(true)
+        }
+        onTrailing {
+            Train1.forward(_mainline_speed)
+        }
+        onEmpty {
+            Train1.light(false)
+        }
     }
 
     B311_fwd = node(B311) {
-        Train1.horn()
+        onEnter {
+            Train1.horn()
+        }
     }
 
     def B310_rev = node(B310) {
-        Train1.horn()
+        onEnter {
+            Train1.horn()
+        }
     }
 
     nodes = [ [ B310_fwd, B311_fwd, B310_rev ],

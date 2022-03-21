@@ -9,6 +9,7 @@ import com.alflabs.conductor.v2.script.Route;
 import com.alflabs.conductor.v2.script.Sensor;
 import com.alflabs.conductor.v2.script.SequenceInfo;
 import com.alflabs.conductor.v2.script.SequenceManager;
+import com.alflabs.conductor.v2.script.SequenceNode;
 import com.alflabs.conductor.v2.script.Throttle;
 import com.alflabs.conductor.v2.script.Timer;
 import com.alflabs.conductor.v2.script.Turnout;
@@ -18,8 +19,12 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.StackTraceUtils;
+import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.net.URL;
@@ -31,7 +36,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static java.util.stream.Collectors.*;
 
 public class ScriptTest {
-
     private Binding mBinding;
     private RootScript mScript;
 
@@ -192,7 +196,7 @@ public class ScriptTest {
         assertThat(mBinding.getVariable("MyStringVar")).isInstanceOf(String.class);
         assertThat(mBinding.getVariable("MyStringVar")).isEqualTo("This string is exported. Value is 42");
         assertThat(mBinding.getVariable("MyIntVar")).isInstanceOf(Integer.class);
-        assertThat(mBinding.getVariable("MyIntVar")).isEqualTo(42+42);
+        assertThat(mBinding.getVariable("MyIntVar")).isEqualTo(42 + 42);
         assertThat(mBinding.getVariable("MyLongVar")).isInstanceOf(Long.class);
         assertThat(mBinding.getVariable("MyLongVar")).isEqualTo(44);
     }
@@ -311,11 +315,11 @@ public class ScriptTest {
                 "Block1 = block \"B01\" \n" +
                 "Route_Idle = route idle() \n" +
                 "Route_Seq = route sequence { \n" +
-                    "throttle = Train1 \n" +
-                    "timeout = 42 \n" +
-                    "node1 = node(Block1) { } \n" +
-                    "def node2 = node(Block1) { } \n" +
-                    "nodes = [ [ node1, node2 ], [ node2, node1  ] ] \n" +
+                "throttle = Train1 \n" +
+                "timeout = 42 \n" +
+                "node1 = node(Block1) { } \n" +
+                "def node2 = node(Block1) { } \n" +
+                "nodes = [ [ node1, node2 ], [ node2, node1  ] ] \n" +
                 "} \n" +
                 "Routes = activeRoute { routes = [ Route_Idle, Route_Seq ] } \n"
         );
@@ -353,7 +357,57 @@ public class ScriptTest {
         assertThat(seqInfo.getOnActivateRule()).isNotNull();
         IRule onActivateRule = seqInfo.getOnActivateRule();
         assertThat(train1.isLight()).isEqualTo(false);
-        onActivateRule.evaluateAction();
+        onActivateRule.evaluateAction(mScript);
         assertThat(train1.isLight()).isEqualTo(true);
     }
+
+    @Test
+    public void testRouteSequence_Nodes() throws Exception {
+        loadScriptFromFile("sample_v2");
+        Throttle train1 = mScript.throttles().get("Train1");
+
+        SequenceInfo seqInfo =
+                ((SequenceManager) mScript.routes().get("Route1").getManager()).getSequenceInfo();
+        SequenceNode node = seqInfo.getNodes().get(0).get(0);
+        assertThat(node).isNotNull();
+
+        assertThat(train1.getSpeed()).isEqualTo(0);
+        assertThat(train1.isLight()).isEqualTo(false);
+
+        node.getEvents().getOnEnterRule().evaluateAction(mScript);
+        assertThat(train1.getSpeed()).isEqualTo(5);
+        assertThat(train1.isLight()).isEqualTo(false);
+
+        node.getEvents().getWhileOccupiedRule().evaluateAction(mScript);
+        assertThat(train1.getSpeed()).isEqualTo(5);
+        assertThat(train1.isLight()).isEqualTo(true);
+
+        node.getEvents().getOnTrailingRule().evaluateAction(mScript);
+        assertThat(train1.getSpeed()).isEqualTo(10);
+        assertThat(train1.isLight()).isEqualTo(true);
+
+        node.getEvents().getOnEmptyRule().evaluateAction(mScript);
+        assertThat(train1.getSpeed()).isEqualTo(10);
+        assertThat(train1.isLight()).isEqualTo(false);
+    }
+
+    @Test
+    public void testRouteSequence_Nodes_NoDirectCommands() {
+        Exception thrown = Assert.assertThrows(Exception.class,
+                () -> {
+                    loadScriptFromText("" +
+                            "Train1  = throttle 1001 \n" +
+                            "Block1 = block \"B01\" \n" +
+                            "Route_Seq = route sequence { \n" +
+                            "throttle = Train1 \n" +
+                            "timeout = 42 \n" +
+                            "node1 = node(Block1) { Train1.horn() } \n" +
+                            "nodes = [ [ node1, node1 ] ] \n" +
+                            "} \n");
+                });
+
+        assertThat(thrown.getMessage()).contains(
+          "No such property: Train1 for class: com.alflabs.conductor.v2.script.SequenceNodeEvents");
+    }
 }
+
