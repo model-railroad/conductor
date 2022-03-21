@@ -1,5 +1,7 @@
 package com.alflabs.conductor.v2.script
 
+import com.alflabs.annotations.NonNull
+
 class MapInfo {
     private String mName
     private String mSvg
@@ -7,24 +9,27 @@ class MapInfo {
     MapInfo() {
     }
 
-    MapInfo(String name, String svg) {
+    MapInfo(@NonNull String name,
+            @NonNull String svg) {
         mName = name
         mSvg = svg
     }
 
+    @NonNull
     String getName() {
         return mName;
     }
 
-    void setName(String name) {
+    void setName(@NonNull String name) {
         mName = name;
     }
 
+    @NonNull
     String getSvg() {
         return mSvg;
     }
 
-    void setSvg(String svg) throws IOException {
+    void setSvg(@NonNull String svg) throws IOException {
         mSvg = svg;
 
 //        if (svg.startsWith("@")) {

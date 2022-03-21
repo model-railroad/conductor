@@ -1,5 +1,6 @@
 package com.alfray.conductor.v2.script;
 
+import com.alflabs.annotations.NonNull;
 import com.alflabs.conductor.v2.script.BaseVar;
 import com.alflabs.conductor.v2.script.Block;
 import com.alflabs.conductor.v2.script.IRule;
@@ -21,10 +22,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.function.ThrowingRunnable;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.net.URL;
@@ -33,7 +31,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import static com.google.common.truth.Truth.assertThat;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
 
 public class ScriptTest {
     private Binding mBinding;
@@ -43,6 +41,7 @@ public class ScriptTest {
     public void setUp() throws Exception {
     }
 
+    @NonNull
     private void loadScriptFromFile(String scriptName) throws Exception {
         String scriptText = readScriptText(scriptName);
         loadScriptFromText(scriptText);
@@ -351,11 +350,12 @@ public class ScriptTest {
         assertThat(seqMan.getSequenceInfo()).isNotNull();
         SequenceInfo seqInfo = seqMan.getSequenceInfo();
 
-        assertThat(seqInfo.getThrottle()).isSameAs(train1);
+        assertThat(seqInfo.getThrottle().isPresent()).isTrue();
+        assertThat(seqInfo.getThrottle().get()).isSameAs(train1);
         assertThat(seqInfo.getNodes()).hasSize(2);
 
-        assertThat(seqInfo.getOnActivateRule()).isNotNull();
-        IRule onActivateRule = seqInfo.getOnActivateRule();
+        assertThat(seqInfo.getOnActivateRule().isPresent()).isTrue();
+        IRule onActivateRule = seqInfo.getOnActivateRule().get();
         assertThat(train1.isLight()).isEqualTo(false);
         onActivateRule.evaluateAction(mScript);
         assertThat(train1.isLight()).isEqualTo(true);
@@ -374,19 +374,24 @@ public class ScriptTest {
         assertThat(train1.getSpeed()).isEqualTo(0);
         assertThat(train1.isLight()).isEqualTo(false);
 
-        node.getEvents().getOnEnterRule().evaluateAction(mScript);
+        assertThat(node.getEvents().getOnEnterRule().isPresent()).isTrue();
+        assertThat(node.getEvents().getWhileOccupiedRule().isPresent()).isTrue();
+        assertThat(node.getEvents().getOnTrailingRule().isPresent()).isTrue();
+        assertThat(node.getEvents().getOnEmptyRule().isPresent()).isTrue();
+
+        node.getEvents().getOnEnterRule().get().evaluateAction(mScript);
         assertThat(train1.getSpeed()).isEqualTo(5);
         assertThat(train1.isLight()).isEqualTo(false);
 
-        node.getEvents().getWhileOccupiedRule().evaluateAction(mScript);
+        node.getEvents().getWhileOccupiedRule().get().evaluateAction(mScript);
         assertThat(train1.getSpeed()).isEqualTo(5);
         assertThat(train1.isLight()).isEqualTo(true);
 
-        node.getEvents().getOnTrailingRule().evaluateAction(mScript);
+        node.getEvents().getOnTrailingRule().get().evaluateAction(mScript);
         assertThat(train1.getSpeed()).isEqualTo(10);
         assertThat(train1.isLight()).isEqualTo(true);
 
-        node.getEvents().getOnEmptyRule().evaluateAction(mScript);
+        node.getEvents().getOnEmptyRule().get().evaluateAction(mScript);
         assertThat(train1.getSpeed()).isEqualTo(10);
         assertThat(train1.isLight()).isEqualTo(false);
     }

@@ -1,5 +1,7 @@
 package com.alflabs.conductor.v2.script
 
+import com.alflabs.annotations.NonNull
+
 class RootScript extends Script {
 
     private Map<String, Sensor> mSensors = new TreeMap<>()
@@ -56,9 +58,9 @@ class RootScript extends Script {
         }
 
         // TBD parse all active routes, and queue all onEnter / onActivate rules.
-        for (ActiveRoute activeRoute : mActiveRoutes) {
-            List<IRule> rules = activeRoute.evaluateRules()
-            if (rules != null && !rules.isEmpty()) {
+        for (Map.Entry<String, ActiveRoute> activeRoute : mActiveRoutes.entrySet()) {
+            List<IRule> rules = activeRoute.value.evaluateRules()
+            if (!rules.isEmpty()) {
                 activeRules.addAll(rules)
             }
         }
@@ -69,56 +71,68 @@ class RootScript extends Script {
         }
     }
 
+    @NonNull
     List<IRule> rules() {
         return mRules.asUnmodifiable()
     }
 
+    @NonNull
     Sensor sensor(String systemName) {
         return mSensors.computeIfAbsent(systemName) {
             name -> new Sensor(name)
         }
     }
 
+    @NonNull
     Map<String, Sensor> sensors() {
         return mSensors.asUnmodifiable()
     }
 
+    @NonNull
     Block block(String systemName) {
         return mBlocks.computeIfAbsent(systemName) {
             name -> new Block(name)
         }
     }
 
+    @NonNull
     Map<String, Block> blocks() {
         return mBlocks.asUnmodifiable()
     }
 
+    @NonNull
     Turnout turnout(String systemName) {
         return mTurnouts.computeIfAbsent(systemName) {
             name -> new Turnout(name)
         }
     }
 
+    @NonNull
     Map<String, Turnout> turnouts() {
         return mTurnouts.asUnmodifiable()
     }
 
+    @NonNull
     Timer timer(int delay) {
         return new Timer(delay)
     }
 
+    @NonNull
     Map<String, Timer> timers() {
         return mTimers.asUnmodifiable()
     }
 
+    @NonNull
     Throttle throttle(int dccAddress) {
         return new Throttle(dccAddress)
     }
 
+    @NonNull
     Map<String, Throttle> throttles() {
         return mThrottles.asUnmodifiable()
     }
 
+    @NonNull
     MapInfo map(@DelegatesTo(MapInfo) Closure cl) {
         def map = new MapInfo()
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
@@ -128,10 +142,12 @@ class RootScript extends Script {
         return map
     }
 
+    @NonNull
     Map<String, MapInfo> maps() {
         return mMaps.asUnmodifiable()
     }
 
+    @NonNull
     Rule on(@DelegatesTo(RootScript) Closure<Boolean> condition) {
         //println "condition.delegate = ${condition.delegate}"      // => is RootScript
         //println "condition.owner = ${condition.owner}"            // => is RootScript
@@ -141,15 +157,18 @@ class RootScript extends Script {
         return rule
     }
 
+    @NonNull
     Route route(IRouteManager manager) {
         return new Route(manager)
     }
 
+    @NonNull
     Map<String, Route> routes() {
         return mRoutes.asUnmodifiable()
     }
 
     // as a function: manager = idle()
+    @NonNull
     IRouteManager idle() {
         return new IdleManager()
     }
@@ -159,6 +178,7 @@ class RootScript extends Script {
     //    return idle()
     //}
 
+    @NonNull
     IRouteManager sequence(@DelegatesTo(SequenceInfo) Closure cl) {
         def info = new SequenceInfo()
         def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
@@ -167,10 +187,12 @@ class RootScript extends Script {
         return new SequenceManager(info)
     }
 
+    @NonNull
     SequenceNode node(Block block, @DelegatesTo(SequenceNodeEvents) Closure action) {
         return new SequenceNode(block, action)
     }
 
+    @NonNull
     ActiveRoute activeRoute(@DelegatesTo(ActiveRouteInfo) Closure cl) {
         def info = new ActiveRouteInfo()
         def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
@@ -179,6 +201,7 @@ class RootScript extends Script {
         return new ActiveRoute(info)
     }
 
+    @NonNull
     Map<String, ActiveRoute> activeRoutes() {
         return mActiveRoutes.asUnmodifiable()
     }

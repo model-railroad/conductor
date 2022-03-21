@@ -1,10 +1,14 @@
 package com.alflabs.conductor.v2.script
 
+import com.alflabs.annotations.NonNull
+
 class SequenceNode {
     private final Block mBlock
     private final SequenceNodeEvents mEvents
 
-    SequenceNode(Block block, @DelegatesTo(SequenceNodeEvents) Closure cl) {
+    SequenceNode(
+            @NonNull Block block,
+            @NonNull @DelegatesTo(SequenceNodeEvents) Closure cl) {
         this.mBlock = block
         this.mEvents = new SequenceNodeEvents()
         def code = cl.rehydrate(mEvents /*delegate*/, this /*owner*/, this /*this*/)
@@ -12,10 +16,12 @@ class SequenceNode {
         code.call()
     }
 
+    @NonNull
     Block getBlock() {
         return mBlock
     }
 
+    @NonNull
     SequenceNodeEvents getEvents() {
         return mEvents
     }

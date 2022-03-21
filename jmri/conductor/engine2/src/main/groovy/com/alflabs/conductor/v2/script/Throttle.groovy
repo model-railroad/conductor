@@ -8,7 +8,7 @@ class Throttle extends BaseVar {
     private boolean mF1
 
     Throttle(int dccAddress) {
-        this.mDccAddress = dccAddress
+        mDccAddress = dccAddress
     }
 
     int getDccAddress() {

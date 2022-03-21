@@ -5,7 +5,7 @@ class Timer extends BaseActive {
     private boolean mIsStarted
 
     Timer(int delay) {
-        this.mDelay = delay
+        mDelay = delay
     }
 
     int getDelay() {

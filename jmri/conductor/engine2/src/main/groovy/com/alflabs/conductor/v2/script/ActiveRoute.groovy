@@ -1,18 +1,22 @@
 package com.alflabs.conductor.v2.script
 
+import com.alflabs.annotations.NonNull
+
 class ActiveRoute extends BaseVar {
     private final ActiveRouteInfo mInfo
     private Route mActiveRoute
 
-    ActiveRoute(ActiveRouteInfo info) {
+    ActiveRoute(@NonNull ActiveRouteInfo info) {
         this.mInfo = info
         this.mActiveRoute = null
     }
 
+    @NonNull
     Route[] getRoutes() {
         return mInfo.mRoutes
     }
 
+    @NonNull
     List<IRule> evaluateRules() {
         if (mActiveRoute != null) {
             return mActiveRoute.evaluateRules()

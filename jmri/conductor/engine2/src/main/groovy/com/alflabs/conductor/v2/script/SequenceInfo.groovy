@@ -1,16 +1,19 @@
 package com.alflabs.conductor.v2.script
 
+import com.alflabs.annotations.NonNull
+
 class SequenceInfo {
-    private Throttle mThrottle
+    private Optional<Throttle> mThrottle = Optional.empty()
     private int mTimeout
     private final List<List<SequenceNode>> mNodes = new ArrayList<>()
-    private IRule mOnActivateRule
+    private Optional<IRule> mOnActivateRule = Optional.empty()
 
-    void setThrottle(Throttle throttle) {
-        mThrottle = throttle
+    void setThrottle(@NonNull Throttle throttle) {
+        mThrottle = Optional.of(throttle)
     }
 
-    Throttle getThrottle() {
+    @NonNull
+    Optional<Throttle> getThrottle() {
         return mThrottle
     }
 
@@ -27,7 +30,7 @@ class SequenceInfo {
      * or <br/>
      * Syntax 2: nodes = [ [ node1, node2, ..., nodeN ], [ array2 ], ...[ arrayN ] ] <br/>
      */
-    void setNodes(Object nodes) {
+    void setNodes(@NonNull Object nodes) {
         // Syntax 1: nodes is an array of SequenceNode (no sub-arrays).
         def nodeList = toNodeList(nodes)
         if (nodeList != null) {
@@ -69,15 +72,17 @@ class SequenceInfo {
         return nodeList
     }
 
+    @NonNull
     List<List<SequenceNode>> getNodes() {
         return mNodes.asUnmodifiable()
     }
 
     void onActivate(@DelegatesTo(RootScript) Closure action) {
-        mOnActivateRule = new RuleAlways(action)
+        mOnActivateRule = Optional.of(new RuleAlways(action))
     }
 
-    IRule getOnActivateRule() {
+    @NonNull
+    Optional<IRule> getOnActivateRule() {
         return mOnActivateRule
     }
 }

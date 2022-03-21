@@ -1,40 +1,46 @@
 package com.alflabs.conductor.v2.script
 
-class SequenceNodeEvents {
-    private IRule mOnEnterRule
-    private IRule mWhileOccupiedRule
-    private IRule mOnTrailingRule
-    private IRule mOnEmptyRule
+import com.alflabs.annotations.NonNull
 
-    void onEnter(@DelegatesTo(RootScript) Closure action) {
-        mOnEnterRule = new RuleAlways(action)
+class SequenceNodeEvents {
+    private Optional<IRule> mOnEnterRule = Optional.empty()
+    private Optional<IRule> mWhileOccupiedRule = Optional.empty()
+    private Optional<IRule> mOnTrailingRule = Optional.empty()
+    private Optional<IRule> mOnEmptyRule = Optional.empty()
+
+    void onEnter(@NonNull @DelegatesTo(RootScript) Closure action) {
+        mOnEnterRule = Optional.of(new RuleAlways(action))
     }
 
-    IRule getOnEnterRule() {
+    @NonNull
+    Optional<IRule> getOnEnterRule() {
         return mOnEnterRule
     }
 
-    void whileOccupied(@DelegatesTo(RootScript) Closure action) {
-        mWhileOccupiedRule = new RuleAlways(action)
+    void whileOccupied(@NonNull @DelegatesTo(RootScript) Closure action) {
+        mWhileOccupiedRule = Optional.of(new RuleAlways(action))
     }
 
-    IRule getWhileOccupiedRule() {
+    @NonNull
+    Optional<IRule> getWhileOccupiedRule() {
         return mWhileOccupiedRule
     }
 
-    void onTrailing(@DelegatesTo(RootScript) Closure action) {
-        mOnTrailingRule = new RuleAlways(action)
+    void onTrailing(@NonNull @DelegatesTo(RootScript) Closure action) {
+        mOnTrailingRule = Optional.of(new RuleAlways(action))
     }
 
-    IRule getOnTrailingRule() {
+    @NonNull
+    Optional<IRule> getOnTrailingRule() {
         return mOnTrailingRule
     }
 
-    void onEmpty(@DelegatesTo(RootScript) Closure action) {
-        mOnEmptyRule = new RuleAlways(action)
+    void onEmpty(@NonNull @DelegatesTo(RootScript) Closure action) {
+        mOnEmptyRule = Optional.of(new RuleAlways(action))
     }
 
-    IRule getOnEmptyRule() {
+    @NonNull
+    Optional<IRule> getOnEmptyRule() {
         return mOnEmptyRule
     }
 }
