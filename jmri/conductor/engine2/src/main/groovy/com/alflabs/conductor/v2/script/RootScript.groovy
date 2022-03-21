@@ -1,6 +1,7 @@
 package com.alflabs.conductor.v2.script
 
 import com.alflabs.annotations.NonNull
+import com.alflabs.annotations.Null
 
 class RootScript extends Script {
 
@@ -21,7 +22,7 @@ class RootScript extends Script {
     }
 
     /** Called after the first script runScript to collect all global variables' names. */
-    void resolvePendingVars(Binding scriptBinding) {
+    void resolvePendingVars(@NonNull Binding scriptBinding) {
         for (entry in scriptBinding.getVariables().entrySet()) {
             def k = entry.key
             def v = entry.value
@@ -88,7 +89,7 @@ class RootScript extends Script {
     }
 
     @NonNull
-    Sensor sensor(String systemName) {
+    Sensor sensor(@NonNull String systemName) {
         return mSensors.computeIfAbsent(systemName) {
             name -> new Sensor(name)
         }
@@ -100,7 +101,7 @@ class RootScript extends Script {
     }
 
     @NonNull
-    Block block(String systemName) {
+    Block block(@NonNull String systemName) {
         return mBlocks.computeIfAbsent(systemName) {
             name -> new Block(name)
         }
@@ -132,6 +133,17 @@ class RootScript extends Script {
     }
 
     @NonNull
+    private Timer chainTimers(@Null Timer previousTimer, @NonNull Timer supplementalTimer) {
+        Timer t = supplementalTimer
+        if (previousTimer != null) {
+            t = new Timer(previousTimer, supplementalTimer.delay)
+            t.setVarName(previousTimer.varName + "_" + supplementalTimer.varName)
+        }
+        mAnonymousTimers.add(t)
+        return t
+    }
+
+    @NonNull
     Map<String, Timer> timers() {
         return mTimers.asUnmodifiable()
     }
@@ -147,7 +159,7 @@ class RootScript extends Script {
     }
 
     @NonNull
-    MapInfo map(@DelegatesTo(MapInfo) Closure cl) {
+    MapInfo map(@NonNull @DelegatesTo(MapInfo) Closure cl) {
         def map = new MapInfo()
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_FIRST
@@ -162,7 +174,7 @@ class RootScript extends Script {
     }
 
     @NonNull
-    Rule on(@DelegatesTo(RootScript) Closure<Boolean> condition) {
+    Rule on(@NonNull @DelegatesTo(RootScript) Closure<Boolean> condition) {
         //println "condition.delegate = ${condition.delegate}"      // => is RootScript
         //println "condition.owner = ${condition.owner}"            // => is RootScript
         //println "condition.this = ${condition.thisObject}"        // => is RootScript
@@ -172,16 +184,29 @@ class RootScript extends Script {
     }
 
     @NonNull
-    Rule after(Timer timer) {
-        def cl_cond = {
-            //noinspection ChangeToOperator
-            timer.asBoolean()
+    RuleAfter after(@NonNull Timer afterTimer) {
+        def rule = new RuleAfter(afterTimer, __and_after_to_then(afterTimer, mRules))
+        mRules.add(rule)
+        return rule
+    }
+
+    private RuleAfter.AndAfterContinuation __and_after_to_then(
+            @NonNull Timer previousTimer,
+            @NonNull List<IRule> rules) {
+        return new RuleAfter.AndAfterContinuation() {
+            @Override
+            RuleAfter and_after(Timer newTimer) {
+                println "and_after previousTimer = ${previousTimer.varName} // newTimer = ${newTimer.varName}"
+                def chainedTimer = chainTimers(previousTimer, newTimer)
+                def rule = new RuleAfter(chainedTimer, __and_after_to_then(chainedTimer, rules))
+                rules.add(rule)
+                return rule
+            }
         }
-        return on(cl_cond)
     }
 
     @NonNull
-    Route route(IRouteManager manager) {
+    Route route(@NonNull IRouteManager manager) {
         return new Route(manager)
     }
 
@@ -202,7 +227,7 @@ class RootScript extends Script {
     //}
 
     @NonNull
-    IRouteManager sequence(@DelegatesTo(SequenceInfo) Closure cl) {
+    IRouteManager sequence(@NonNull @DelegatesTo(SequenceInfo) Closure cl) {
         def info = new SequenceInfo()
         def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_FIRST
@@ -211,12 +236,13 @@ class RootScript extends Script {
     }
 
     @NonNull
-    SequenceNode node(Block block, @DelegatesTo(SequenceNodeEvents) Closure action) {
+    SequenceNode node(@NonNull Block block,
+                      @NonNull @DelegatesTo(SequenceNodeEvents) Closure action) {
         return new SequenceNode(block, action)
     }
 
     @NonNull
-    ActiveRoute activeRoute(@DelegatesTo(ActiveRouteInfo) Closure cl) {
+    ActiveRoute activeRoute(@NonNull @DelegatesTo(ActiveRouteInfo) Closure cl) {
         def info = new ActiveRouteInfo()
         def code = cl.rehydrate(info /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_FIRST

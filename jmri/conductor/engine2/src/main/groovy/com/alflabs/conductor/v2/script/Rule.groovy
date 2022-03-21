@@ -1,17 +1,17 @@
 package com.alflabs.conductor.v2.script
 
 import com.alflabs.annotations.NonNull
-
+/** A condition...then rule. */
 class Rule implements IRule {
     private final Closure<Boolean> mCondition
     private Closure mAction
 
     Rule(@NonNull Closure<Boolean> condition) {
-        this.mCondition = condition
+        mCondition = condition
     }
 
     void then(@NonNull @DelegatesTo(RootScript) Closure action) {
-        this.mAction = action
+        mAction = action
     }
 
     @Override

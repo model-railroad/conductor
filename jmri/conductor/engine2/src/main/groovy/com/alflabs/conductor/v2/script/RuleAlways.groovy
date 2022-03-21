@@ -1,7 +1,6 @@
 package com.alflabs.conductor.v2.script
 
 import com.alflabs.annotations.NonNull
-
 /** A synthetic rule which condition is always true. */
 class RuleAlways implements IRule {
     private final Closure mAction

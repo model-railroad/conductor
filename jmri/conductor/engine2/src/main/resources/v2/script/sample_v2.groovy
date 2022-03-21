@@ -114,6 +114,12 @@ after(MyTimer2) then {
 
 after(timer(42)) then {
     Train1.light(true)
+} and_after(timer(5)) then {
+    Train1.light(false)
+} and_after(timer(7)) then {
+    Train1.light(true)
+} and_after(timer(9)) then {
+    Train1.light(true)
 }
 
 Route_Idle = route idle()

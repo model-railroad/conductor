@@ -37,6 +37,12 @@ public class ScriptTest {
     private Binding mBinding;
     private RootScript mScript;
 
+    private String mScriptPrefix = "package v2.script\n" +
+                "import com.alflabs.conductor.v2.script.RootScript\n" +
+                "import groovy.transform.BaseScript\n" +
+                "@BaseScript RootScript baseScript\n";
+
+
     @Before
     public void setUp() throws Exception {
     }
@@ -219,7 +225,7 @@ public class ScriptTest {
 
     @Test
     public void testRuleTurnout() throws Exception {
-        loadScriptFromText("" +
+        loadScriptFromText(mScriptPrefix +
                 "Turnout1 = turnout \"NT1\" \n" +
                 "Sensor1  = sensor  \"S01\" \n" +
                 "on {  Sensor1 } then { Turnout1.normal()  } \n" +
@@ -245,7 +251,7 @@ public class ScriptTest {
 
     @Test
     public void testRuleThrottle() throws Exception {
-        loadScriptFromText("" +
+        loadScriptFromText(mScriptPrefix +
                 "Train1  = throttle 1001 \n" +
                 "Train2  = throttle 1002 \n" +
                 "Sensor1 = sensor  \"S01\" \n" +
@@ -312,7 +318,7 @@ public class ScriptTest {
 
     @Test
     public void testRoute() throws Exception {
-        loadScriptFromText("" +
+        loadScriptFromText(mScriptPrefix +
                 "Train1  = throttle 1001 \n" +
                 "Block1 = block \"B01\" \n" +
                 "Route_Idle = route idle() \n" +
@@ -403,7 +409,7 @@ public class ScriptTest {
     public void testRouteSequence_Nodes_NoDirectCommands() {
         Exception thrown = Assert.assertThrows(Exception.class,
                 () -> {
-                    loadScriptFromText("" +
+                    loadScriptFromText(mScriptPrefix +
                             "Train1  = throttle 1001 \n" +
                             "Block1 = block \"B01\" \n" +
                             "Route_Seq = route sequence { \n" +
@@ -416,6 +422,41 @@ public class ScriptTest {
 
         assertThat(thrown.getMessage()).contains(
           "No such property: Train1 for class: com.alflabs.conductor.v2.script.SequenceNodeEvents");
+    }
+
+    @Test
+    public void testAfterThen() throws Exception {
+        loadScriptFromText(mScriptPrefix +
+                "Train1 = throttle 1001 \n" +
+                "after(timer(1)) then { Train1.forward(1) \n" +
+                "} and_after(timer(2)) then { Train1.forward(2) \n" +
+                "} and_after(timer(3)) then { Train1.forward(3) } \n"
+        );
+
+        assertThat(mScript.rules().size()).isEqualTo(3);
+        Throttle train1 = mScript.throttles().get("Train1");
+
+        assertThat(mScript.timers().keySet()).containsAllOf(
+                "@timer@1",
+                "@timer@1_@timer@2",
+                "@timer@1_@timer@2_@timer@3");
+
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(0);
+
+        mScript.timers().get("@timer@1").setActive(true);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(1);
+
+        mScript.timers().get("@timer@1").setActive(false);
+        mScript.timers().get("@timer@1_@timer@2").setActive(true);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(2);
+
+        mScript.timers().get("@timer@1_@timer@2").setActive(false);
+        mScript.timers().get("@timer@1_@timer@2_@timer@3").setActive(true);
+        mScript.executeRules();
+        assertThat(train1.getSpeed()).isEqualTo(3);
     }
 }
 
