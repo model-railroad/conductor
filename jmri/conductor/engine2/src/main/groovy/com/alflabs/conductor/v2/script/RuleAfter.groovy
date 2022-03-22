@@ -1,7 +1,6 @@
 package com.alflabs.conductor.v2.script
 
 import com.alflabs.annotations.NonNull
-import groovy.transform.PackageScope
 
 /** A after...then...then_after rule. */
 class RuleAfter implements IRule {

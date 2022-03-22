@@ -1,0 +1,37 @@
+package com.alfray.conductor.v2.script
+
+import kotlin.script.experimental.annotations.KotlinScript
+import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.jvm.dependenciesFromClassContext
+import kotlin.script.experimental.jvm.jvm
+
+/**
+ * References:
+ * https://www.youtube.com/watch?v=OEFwnWxoazI&t=1248s
+ * https://kotlinlang.org/docs/custom-script-deps-tutorial.html
+ */
+
+@KotlinScript(
+    fileExtension = "conductor.kts",
+    compilationConfiguration = ConductorScriptConfiguration::class
+)
+abstract class ConductorScript(conductor: IConductor) : IConductor by conductor {
+    fun block2(systemName: String) {
+        println("@@ block2 systemName = $systemName")
+    }
+
+}
+
+class ConductorScriptConfiguration : ScriptCompilationConfiguration({
+
+    jvm {
+        dependenciesFromClassContext(
+            ConductorScript::class,
+            // add libraries here
+            "kotlin-stdlib",
+        )
+    }
+
+    // defaultImports {}
+})
+
