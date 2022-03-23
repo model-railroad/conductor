@@ -5,6 +5,7 @@ import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.host.UrlScriptSource
 
 @Suppress("UnstableApiUsage")
@@ -16,6 +17,12 @@ class ScriptTest2k {
     }
 
     @Test
+    fun emptyTest() {
+        val a = 1
+        assertThat(a+1).isEqualTo(2)
+    }
+
+    @Test
     fun loadScriptAndEval() {
         val scriptPath = "v2/script/sample_v2.conductor.kts"
         val scriptUrl = Resources.getResource(scriptPath)!!
@@ -24,6 +31,6 @@ class ScriptTest2k {
         val conductorImpl = ConductorImpl()
         val host = ConductorScriptHost()
         val result = host.eval(source, conductorImpl)
-        assertThat(result).isNotNull()
+        assertThat(result.reports.filter { it.severity != ScriptDiagnostic.Severity.DEBUG }.joinToString("\n")).isEmpty()
     }
 }

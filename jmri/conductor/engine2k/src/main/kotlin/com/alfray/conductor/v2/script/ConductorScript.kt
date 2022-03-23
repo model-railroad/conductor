@@ -9,8 +9,9 @@ import kotlin.script.experimental.jvm.jvm
  * References:
  * https://www.youtube.com/watch?v=OEFwnWxoazI&t=1248s
  * https://kotlinlang.org/docs/custom-script-deps-tutorial.html
+ *
+ * For the IDE to take into account any changes here, a restart is needed.
  */
-
 @KotlinScript(
     fileExtension = "conductor.kts",
     compilationConfiguration = ConductorScriptConfiguration::class
@@ -22,13 +23,16 @@ abstract class ConductorScript(conductor: IConductor) : IConductor by conductor 
 
 }
 
-class ConductorScriptConfiguration : ScriptCompilationConfiguration({
+object ConductorScriptConfiguration : ScriptCompilationConfiguration({
 
     jvm {
         dependenciesFromClassContext(
             ConductorScript::class,
             // add libraries here
             "kotlin-stdlib",
+            "kotlin-scripting-dependencies",
+            "kotlin-reflect",
+            "engine2k",
         )
     }
 
