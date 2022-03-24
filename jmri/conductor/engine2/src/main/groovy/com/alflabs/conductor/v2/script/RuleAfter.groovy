@@ -18,7 +18,6 @@ class RuleAfter implements IRule {
     }
 
     AndAfterContinuation then(@NonNull @DelegatesTo(RootScript) Closure action) {
-        println "RuleAfter then this = $this"
         mAction = action
         return mAndAfterContinuation
     }
@@ -30,8 +29,6 @@ class RuleAfter implements IRule {
 
     @Override
     void evaluateAction(@NonNull RootScript rootScript) {
-        println "RuleAfter evaluateAction this = $this"
-
         def code = mAction.rehydrate(rootScript /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_FIRST
         code.call()

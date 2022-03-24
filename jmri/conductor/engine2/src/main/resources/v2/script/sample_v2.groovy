@@ -8,20 +8,24 @@ import groovy.transform.BaseScript
 @BaseScript RootScript baseScript
 
 
-// Variables
-// Variables that must be seen/exported by the ExecEngine cannot be declared with a def or
-// type keyword. They must be specified without "def", directly. Type is inferred.
-// Local variables can be used but they are "invisible" to the script engine.
+// Variables and declaration using "def".
+// - In Conductor 2, we are not going to _require_ block/sensor/turnouts objects to be
+//   declared with "def".
+// - Objects declared with "def" are local to the root script and not visible to the exec
+//   engine, nor exported (e.g. to the KV server). They are also not visible to inner local
+//   functions.
+// - Objects declared without "def" are global to the script binding and can be used in any
+//   scope. They are also visible to the exec engine and the KV server.
 
 def LocalVar1 = "This variable is never seen by the ExecEngine"
-String LocalVar2 = "Neither is this one"
+def String LocalVar2 = "Neither is this one"
 int LocalVar3 = 42 // we can't use this either
 
 MyStringVar = "This string is exported. Value is " + LocalVar3
 MyIntVar = 42 + LocalVar3
 MyLongVar = 43L
 MyLongVar++
-MyBooleanVar = false
+def MyBooleanVar = false
 
 def On = true
 def Off = false
@@ -122,7 +126,7 @@ after(timer(42)) then {
     Train1.light(true)
 }
 
-Route_Idle = route idle()
+def Route_Idle = route idle()
 
 def _leaving_speed = 5
 def _mainline_speed = 10
@@ -156,7 +160,7 @@ Route1 = route sequence {
         }
     }
 
-    B311_fwd = node(B311) {
+    def B311_fwd = node(B311) {
         onEnter {
             Train1.horn()
         }
@@ -172,6 +176,6 @@ Route1 = route sequence {
               [ B310_fwd, B310_rev ] ]
 }
 
-PA_Route = activeRoute {
+def PA_Route = activeRoute {
     routes = [ Route_Idle, Route1 ]
 }

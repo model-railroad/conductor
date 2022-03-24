@@ -189,9 +189,16 @@ public class ScriptTest {
                 .filter((Predicate<Map.Entry>) e -> e.getValue() == null)
                 .toArray()).isEmpty();
 
+        // Variables and declaration using "def".
+        // - In Conductor 2, we are not going to _require_ block/sensor/turnouts objects to be
+        //   declared with "def".
+        // - Objects declared with "def" are local to the root script and not visible to the exec
+        //   engine, nor exported (e.g. to the KV server). They are also not visible to inner local
+        //   functions.
+        // - Objects declared without "def" are global to the script binding and can be used in any
+        //   scope. They are also visible to the exec engine and the KV server.
         assertThat(mBinding.getVariables().keySet()).containsAllOf(
                 "B310", "B311",
-                "B311_fwd",
                 "T311",
                 "Toggle",
                 "Train1", "Train2",
@@ -227,15 +234,16 @@ public class ScriptTest {
     public void testRuleTurnout() throws Exception {
         loadScriptFromText(mScriptPrefix +
                 "Turnout1 = turnout \"NT1\" \n" +
-                "Sensor1  = sensor  \"S01\" \n" +
+                "def Sensor1  = sensor  \"S01\" \n" +
+                "def ResetTurnouts() { Turnout1.reverse() } \n" +
                 "on {  Sensor1 } then { Turnout1.normal()  } \n" +
-                "on { !Sensor1 } then { Turnout1.reverse() } \n"
+                "on { !Sensor1 } then { ResetTurnouts() } \n"
         );
 
         assertThat(mScript.rules().size()).isEqualTo(2);
 
-        Turnout turnout1 = mScript.turnouts().get("Turnout1");
-        Sensor sensor1 = mScript.sensors().get("Sensor1");
+        Turnout turnout1 = mScript.turnouts().get("NT1");
+        Sensor sensor1 = mScript.sensors().get("S01");
 
         assertThat(sensor1.isActive()).isFalse();
         assertThat(turnout1.isNormal()).isTrue();

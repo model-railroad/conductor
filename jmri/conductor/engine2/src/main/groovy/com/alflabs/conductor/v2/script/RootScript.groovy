@@ -196,7 +196,6 @@ class RootScript extends Script {
         return new RuleAfter.AndAfterContinuation() {
             @Override
             RuleAfter and_after(Timer newTimer) {
-                println "and_after previousTimer = ${previousTimer.varName} // newTimer = ${newTimer.varName}"
                 def chainedTimer = chainTimers(previousTimer, newTimer)
                 def rule = new RuleAfter(chainedTimer, __and_after_to_then(chainedTimer, rules))
                 rules.add(rule)
