@@ -16,15 +16,9 @@ import kotlin.script.experimental.jvm.jvm
     fileExtension = "conductor.kts",
     compilationConfiguration = ConductorScriptConfiguration::class
 )
-abstract class ConductorScript(conductor: IConductor) : IConductor by conductor {
-    fun block2(systemName: String) {
-        println("@@ block2 systemName = $systemName")
-    }
-
-}
+abstract class ConductorScript(conductor: IConductor) : IConductor by conductor
 
 object ConductorScriptConfiguration : ScriptCompilationConfiguration({
-
     jvm {
         dependenciesFromClassContext(
             ConductorScript::class,
@@ -35,7 +29,6 @@ object ConductorScriptConfiguration : ScriptCompilationConfiguration({
             "engine2k",
         )
     }
-
     // defaultImports {}
 })
 
