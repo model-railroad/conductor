@@ -1,11 +1,6 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.impl
 
-interface ITurnout : IActive {
-    val systemName: String
-    val normal: Boolean
-    fun normal()
-    fun reverse()
-}
+import com.alfray.conductor.v2.script.ITurnout
 
 class Turnout(override val systemName: String) : ITurnout {
     private var normalInternal = true

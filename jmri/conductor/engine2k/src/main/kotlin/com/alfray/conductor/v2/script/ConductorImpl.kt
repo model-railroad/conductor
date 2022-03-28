@@ -1,5 +1,7 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.impl.*
+
 class ConductorImpl : IConductor {
     val sensors = mutableMapOf<String, Sensor>()
     val blocks = mutableMapOf<String, Block>()

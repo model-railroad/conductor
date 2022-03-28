@@ -37,6 +37,7 @@ B311        = block  "NS769"      // 49:2
 
 Toggle      = sensor "NS829"      // 52:14
 
+println "Toggle varName is ${Toggle.varName}"
 
 // Turnouts
 
@@ -131,6 +132,8 @@ def Route_Idle = route idle()
 def _leaving_speed = 5
 def _mainline_speed = 10
 def _reverse_speed = 8
+
+println "{B310.varName} = ${B310.varName}"
 
 Route1 = route sequence {
     throttle = Train1

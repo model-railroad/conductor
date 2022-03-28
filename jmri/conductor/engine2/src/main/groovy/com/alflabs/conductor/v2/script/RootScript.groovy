@@ -2,11 +2,30 @@ package com.alflabs.conductor.v2.script
 
 import com.alflabs.annotations.NonNull
 import com.alflabs.annotations.Null
+import com.alflabs.conductor.v2.script.impl.ActiveRoute
+import com.alflabs.conductor.v2.script.impl.ActiveRouteInfo
+import com.alflabs.conductor.v2.script.impl.BaseVar
+import com.alflabs.conductor.v2.script.impl.Block
+import com.alflabs.conductor.v2.script.impl.IRouteManager
+import com.alflabs.conductor.v2.script.impl.IRule
+import com.alflabs.conductor.v2.script.impl.IdleManager
+import com.alflabs.conductor.v2.script.impl.MapInfo
+import com.alflabs.conductor.v2.script.impl.Route
+import com.alflabs.conductor.v2.script.impl.Rule
+import com.alflabs.conductor.v2.script.impl.RuleAfter
+import com.alflabs.conductor.v2.script.impl.Sensor
+import com.alflabs.conductor.v2.script.impl.SequenceInfo
+import com.alflabs.conductor.v2.script.impl.SequenceManager
+import com.alflabs.conductor.v2.script.impl.SequenceNode
+import com.alflabs.conductor.v2.script.impl.SequenceNodeEvents
+import com.alflabs.conductor.v2.script.impl.Throttle
+import com.alflabs.conductor.v2.script.impl.Timer
+import com.alflabs.conductor.v2.script.impl.Turnout
 
 class RootScript extends Script {
 
-    private Map<String, Sensor> mSensors = new TreeMap<>()
-    private Map<String, Block> mBlocks = new TreeMap<>()
+    private Map<String, ISensor> mSensors = new TreeMap<>()
+    private Map<String, IBlock> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
     private Map<String, Timer> mTimers = new TreeMap<>()
     private List<Timer> mAnonymousTimers = new ArrayList<>();
@@ -29,10 +48,10 @@ class RootScript extends Script {
             if (v instanceof BaseVar) {
                 ((BaseVar) v).setVarName((String) k)
                 // DEBUG // println "Var[$k] => $v"
-                if (v instanceof Sensor) {
-                    mSensors.put((String) k, (Sensor) v)
-                } else if (v instanceof Block) {
-                    mBlocks.put((String) k, (Block) v)
+                if (v instanceof ISensor) {
+                    mSensors.put((String) k, (ISensor) v)
+                } else if (v instanceof IBlock) {
+                    mBlocks.put((String) k, (IBlock) v)
                 } else if (v instanceof Turnout) {
                     mTurnouts.put((String) k, (Turnout) v)
                 } else if (v instanceof Timer) {
@@ -89,26 +108,26 @@ class RootScript extends Script {
     }
 
     @NonNull
-    Sensor sensor(@NonNull String systemName) {
+    ISensor sensor(@NonNull String systemName) {
         return mSensors.computeIfAbsent(systemName) {
             name -> new Sensor(name)
         }
     }
 
     @NonNull
-    Map<String, Sensor> sensors() {
+    Map<String, ISensor> sensors() {
         return mSensors.asUnmodifiable()
     }
 
     @NonNull
-    Block block(@NonNull String systemName) {
+    IBlock block(@NonNull String systemName) {
         return mBlocks.computeIfAbsent(systemName) {
             name -> new Block(name)
         }
     }
 
     @NonNull
-    Map<String, Block> blocks() {
+    Map<String, IBlock> blocks() {
         return mBlocks.asUnmodifiable()
     }
 

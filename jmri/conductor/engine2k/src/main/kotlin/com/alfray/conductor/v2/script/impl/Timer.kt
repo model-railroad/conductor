@@ -1,10 +1,6 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.impl
 
-interface ITimer: IActive {
-    val seconds: Int
-    fun start()
-    fun stop()
-}
+import com.alfray.conductor.v2.script.ITimer
 
 class Timer(override val seconds: Int) : ITimer {
     private var started = false

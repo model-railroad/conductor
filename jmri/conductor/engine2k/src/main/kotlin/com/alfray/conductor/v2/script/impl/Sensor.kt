@@ -1,10 +1,8 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.impl
 
-interface IBlock : IActive {
-    val systemName: String
-}
+import com.alfray.conductor.v2.script.ISensor
 
-class Block(override val systemName: String) : IBlock {
+class Sensor(override val systemName: String) : ISensor {
     private var activeInternal = false
 
     override val active: Boolean

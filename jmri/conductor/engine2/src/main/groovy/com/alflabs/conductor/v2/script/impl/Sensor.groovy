@@ -1,11 +1,12 @@
-package com.alflabs.conductor.v2.script
+package com.alflabs.conductor.v2.script.impl
 
 import com.alflabs.annotations.NonNull
+import com.alflabs.conductor.v2.script.ISensor
 
-class Block extends BaseActive {
+class Sensor extends BaseActive implements ISensor {
     private final String mSystemName
 
-    Block(@NonNull String systemName) {
+    Sensor(@NonNull String systemName) {
         mSystemName = systemName
     }
 

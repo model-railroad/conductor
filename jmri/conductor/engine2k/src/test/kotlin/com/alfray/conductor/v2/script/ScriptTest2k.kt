@@ -3,9 +3,15 @@ package com.alfray.conductor.v2.script
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.lang.Exception
+import kotlin.script.experimental.api.EvaluationResult
+import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
+import kotlin.script.experimental.api.SourceCode
+import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
 @Suppress("UnstableApiUsage")
@@ -24,27 +30,44 @@ class ScriptTest2k {
         assertThat(a+1).isEqualTo(2)
     }
 
-    private fun loadScriptAndEval(scriptName: String) {
+    private fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
         val scriptPath = "v2/script/$scriptName.conductor.kts"
         val scriptUrl = Resources.getResource(scriptPath)!!
         val source = UrlScriptSource(scriptUrl)
+        return loadScript(source)
+    }
 
+    private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
+        val source = StringScriptSource(scriptText, scriptName)
+        return loadScript(source)
+    }
+
+    private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
         conductorImpl = ConductorImpl()
         scriptHost = ConductorScriptHost()
-        val result = scriptHost.eval(source, conductorImpl)
-        assertThat(result.reports
+        return scriptHost.eval(source, conductorImpl)
+    }
+
+    private fun getResultErrors(result: ResultWithDiagnostics<EvaluationResult>) : List<String> =
+        result.reports
             .filter { it.severity != ScriptDiagnostic.Severity.DEBUG }
-            .joinToString("\n")).isEmpty()
+            .map { it.toString() }
+
+
+    private fun assertResultNoError(result: ResultWithDiagnostics<EvaluationResult>) {
+        assertThat(getResultErrors(result).joinToString("\n")).isEmpty()
     }
 
     @Test
     fun testLoadScriptAndEval() {
-        loadScriptAndEval("sample_v2")
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
     }
 
     @Test
     fun testVariables() {
-        loadScriptAndEval("sample_v2")
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
 
         assertThat(conductorImpl.blocks.keys).containsExactly("NS768", "NS769")
         assertThat(conductorImpl.sensors.keys).containsExactly("NS829")
@@ -52,4 +75,15 @@ class ScriptTest2k {
         assertThat(conductorImpl.throttles.keys).containsExactly(1001, 2001)
         assertThat(conductorImpl.timers.map { it.seconds }).containsExactly(5, 15)
     }
+
+
+    @Test
+    fun testDontLeakImplementationDetails_BaseVars() {
+        val result = loadScriptFromText( scriptText =
+            "val Sensor1 = sensor(\"S01\")\n" +
+            "println(\"varName is \${Sensor1.varName}\")\n")
+
+        assertThat(getResultErrors(result)).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
+    }
+
 }

@@ -1,16 +1,6 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.impl
 
-interface IThrottle {
-    val dccAddress: Int
-    val speed: Int
-    val light: Boolean
-
-    fun horn()
-    fun light(on: Boolean)
-    fun forward(speed: Int)
-    fun reverse(speed: Int)
-    fun stop()
-}
+import com.alfray.conductor.v2.script.IThrottle
 
 class Throttle(override val dccAddress: Int) : IThrottle {
     private var speedInternal = 0

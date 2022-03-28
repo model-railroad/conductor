@@ -1,23 +1,26 @@
 package com.alfray.conductor.v2.script;
 
 import com.alflabs.annotations.NonNull;
-import com.alflabs.conductor.v2.script.BaseVar;
-import com.alflabs.conductor.v2.script.Block;
-import com.alflabs.conductor.v2.script.IRule;
-import com.alflabs.conductor.v2.script.MapInfo;
+import com.alflabs.conductor.v2.script.IBlock;
+import com.alflabs.conductor.v2.script.ISensor;
+import com.alflabs.conductor.v2.script.impl.BaseVar;
+import com.alflabs.conductor.v2.script.impl.Block;
+import com.alflabs.conductor.v2.script.impl.IRule;
+import com.alflabs.conductor.v2.script.impl.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
-import com.alflabs.conductor.v2.script.Route;
-import com.alflabs.conductor.v2.script.Sensor;
-import com.alflabs.conductor.v2.script.SequenceInfo;
-import com.alflabs.conductor.v2.script.SequenceManager;
-import com.alflabs.conductor.v2.script.SequenceNode;
-import com.alflabs.conductor.v2.script.Throttle;
-import com.alflabs.conductor.v2.script.Timer;
-import com.alflabs.conductor.v2.script.Turnout;
+import com.alflabs.conductor.v2.script.impl.Route;
+import com.alflabs.conductor.v2.script.impl.Sensor;
+import com.alflabs.conductor.v2.script.impl.SequenceInfo;
+import com.alflabs.conductor.v2.script.impl.SequenceManager;
+import com.alflabs.conductor.v2.script.impl.SequenceNode;
+import com.alflabs.conductor.v2.script.impl.Throttle;
+import com.alflabs.conductor.v2.script.impl.Timer;
+import com.alflabs.conductor.v2.script.impl.Turnout;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.junit.Assert;
@@ -33,7 +36,7 @@ import java.util.function.Predicate;
 import static com.google.common.truth.Truth.assertThat;
 import static java.util.stream.Collectors.toList;
 
-public class ScriptTest {
+public class ScriptTest2 {
     private Binding mBinding;
     private RootScript mScript;
 
@@ -114,14 +117,14 @@ public class ScriptTest {
 
         assertThat(mBinding.getVariables()).containsKey("B310");
         assertThat(mBinding.getVariables()).containsKey("B311");
-        assertThat(mBinding.getVariable("B310")).isInstanceOf(Block.class);
-        assertThat(mBinding.getVariable("B311")).isInstanceOf(Block.class);
+        assertThat(mBinding.getVariable("B310")).isInstanceOf(IBlock.class);
+        assertThat(mBinding.getVariable("B311")).isInstanceOf(IBlock.class);
 
         assertThat(mScript.blocks()).containsKey("NS768");
 
-        assertThat(mBinding.getVariable("B310")).isSameAs(mScript.blocks().get("NS768"));
-        assertThat(mScript.blocks().get("NS768").getVarName()).isEqualTo("B310");
-        assertThat(mScript.blocks().get("B310").getVarName()).isEqualTo("B310");
+        assertThat(mBinding.getVariable("B310")).isSameInstanceAs(mScript.blocks().get("NS768"));
+        assertThat(((Block) mScript.blocks().get("NS768")).getVarName()).isEqualTo("B310");
+        assertThat(((Block) mScript.blocks().get("B310")).getVarName()).isEqualTo("B310");
     }
 
     @Test
@@ -132,9 +135,9 @@ public class ScriptTest {
         assertThat(mBinding.getVariable("Toggle")).isInstanceOf(Sensor.class);
 
         assertThat(mScript.sensors()).containsKey("NS829");
-        assertThat(mBinding.getVariable("Toggle")).isSameAs(mScript.sensors().get("NS829"));
-        assertThat(mScript.sensors().get("NS829").getVarName()).isEqualTo("Toggle");
-        assertThat(mScript.sensors().get("Toggle").getVarName()).isEqualTo("Toggle");
+        assertThat(mBinding.getVariable("Toggle")).isSameInstanceAs(mScript.sensors().get("NS829"));
+        assertThat(((Sensor) mScript.sensors().get("NS829")).getVarName()).isEqualTo("Toggle");
+        assertThat(((Sensor) mScript.sensors().get("Toggle")).getVarName()).isEqualTo("Toggle");
     }
 
     @Test
@@ -145,7 +148,7 @@ public class ScriptTest {
         assertThat(mBinding.getVariable("T311")).isInstanceOf(Turnout.class);
 
         assertThat(mScript.turnouts()).containsKey("NT311");
-        assertThat(mBinding.getVariable("T311")).isSameAs(mScript.turnouts().get("NT311"));
+        assertThat(mBinding.getVariable("T311")).isSameInstanceAs(mScript.turnouts().get("NT311"));
         assertThat(mScript.turnouts().get("NT311").getVarName()).isEqualTo("T311");
         assertThat(mScript.turnouts().get("T311").getVarName()).isEqualTo("T311");
     }
@@ -197,7 +200,7 @@ public class ScriptTest {
         //   functions.
         // - Objects declared without "def" are global to the script binding and can be used in any
         //   scope. They are also visible to the exec engine and the KV server.
-        assertThat(mBinding.getVariables().keySet()).containsAllOf(
+        assertThat(mBinding.getVariables().keySet()).containsAtLeast(
                 "B310", "B311",
                 "T311",
                 "Toggle",
@@ -231,6 +234,53 @@ public class ScriptTest {
     }
 
     @Test
+    public void testDontLeakImplementationDetails_BaseVars() throws Exception {
+        // This should fail: script should not have access to implementation
+        // details such as BaseVar getVarName..
+        MissingPropertyException thrown = Assert.assertThrows(MissingPropertyException.class,
+                () -> {
+                    loadScriptFromText(mScriptPrefix +
+                            "def Sensor1 = sensor  \"S01\" \n" +
+                            "println \"varName is ${Sensor1.varName}\"\n"
+                    );
+
+                    ISensor sensor1 = mScript.sensors().get("S01");
+                    assertThat(sensor1).isNotNull();
+                    mScript.executeRules();
+                });
+
+        assertThat(thrown.getMessage()).contains(
+                "No such property: varName for class: com.alflabs.conductor.v2.script.ISensor");
+    }
+
+    @Test
+    public void testDontLeakImplementationDetails_Rules() throws Exception {
+        // This should fail: script should not have access to implementation
+        // details such as evaluateCondition or evaluateAction.
+        Exception thrown = Assert.assertThrows(Exception.class,
+                () -> {
+                    loadScriptFromText(mScriptPrefix +
+                            "def Sensor1  = sensor  \"S01\" \n" +
+                            "on {  Sensor1 } then { this.evaluateCondition() } \n" +
+                            "on { !Sensor1 } then { this.evaluateAction(null) } \n"
+                    );
+
+                    assertThat(mScript.rules().size()).isEqualTo(2);
+                    Sensor sensor1 = (Sensor) mScript.sensors().get("S01");
+                    assertThat(sensor1).isNotNull();
+
+                    sensor1.setActive(false);
+                    mScript.executeRules();
+
+                    sensor1.setActive(true);
+                    mScript.executeRules();
+                });
+
+        assertThat(thrown.getMessage()).contains(
+                "No such property: evaluateCondition");
+    }
+
+    @Test
     public void testRuleTurnout() throws Exception {
         loadScriptFromText(mScriptPrefix +
                 "Turnout1 = turnout \"NT1\" \n" +
@@ -243,7 +293,7 @@ public class ScriptTest {
         assertThat(mScript.rules().size()).isEqualTo(2);
 
         Turnout turnout1 = mScript.turnouts().get("NT1");
-        Sensor sensor1 = mScript.sensors().get("S01");
+        Sensor sensor1 = (Sensor) mScript.sensors().get("S01");
 
         assertThat(sensor1.isActive()).isFalse();
         assertThat(turnout1.isNormal()).isTrue();
@@ -282,8 +332,8 @@ public class ScriptTest {
 
         Throttle train1 = mScript.throttles().get("Train1");
         Throttle train2 = mScript.throttles().get("Train2");
-        Sensor sensor1 = mScript.sensors().get("S01");
-        Sensor sensor2 = mScript.sensors().get("S02");
+        Sensor sensor1 = (Sensor) mScript.sensors().get("S01");
+        Sensor sensor2 = (Sensor) mScript.sensors().get("S02");
 
         assertThat(train1.getSpeed()).isEqualTo(0);
         assertThat(train2.getSpeed()).isEqualTo(0);
@@ -342,7 +392,7 @@ public class ScriptTest {
 
         assertThat(mScript.rules().size()).isEqualTo(0);
         Throttle train1 = mScript.throttles().get("Train1");
-        Block block1 = mScript.blocks().get("B01");
+        IBlock block1 = mScript.blocks().get("B01");
 
         assertThat(mScript.routes()).containsKey("Route_Idle");
         assertThat(mScript.routes()).containsKey("Route_Seq");
@@ -368,7 +418,7 @@ public class ScriptTest {
         SequenceInfo seqInfo = seqMan.getSequenceInfo();
 
         assertThat(seqInfo.getThrottle().isPresent()).isTrue();
-        assertThat(seqInfo.getThrottle().get()).isSameAs(train1);
+        assertThat(seqInfo.getThrottle().get()).isSameInstanceAs(train1);
         assertThat(seqInfo.getNodes()).hasSize(2);
 
         assertThat(seqInfo.getOnActivateRule().isPresent()).isTrue();
@@ -429,7 +479,7 @@ public class ScriptTest {
                 });
 
         assertThat(thrown.getMessage()).contains(
-          "No such property: Train1 for class: com.alflabs.conductor.v2.script.SequenceNodeEvents");
+          "No such property: Train1 for class: com.alflabs.conductor.v2.script.impl.SequenceNodeEvents");
     }
 
     @Test
@@ -444,7 +494,7 @@ public class ScriptTest {
         assertThat(mScript.rules().size()).isEqualTo(3);
         Throttle train1 = mScript.throttles().get("Train1");
 
-        assertThat(mScript.timers().keySet()).containsAllOf(
+        assertThat(mScript.timers().keySet()).containsAtLeast(
                 "@timer@1",
                 "@timer@1_@timer@2",
                 "@timer@1_@timer@2_@timer@3");

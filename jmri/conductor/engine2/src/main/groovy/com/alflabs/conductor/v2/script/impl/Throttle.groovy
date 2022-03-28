@@ -1,4 +1,6 @@
-package com.alflabs.conductor.v2.script
+package com.alflabs.conductor.v2.script.impl
+
+import com.alflabs.conductor.v2.script.impl.BaseVar
 
 class Throttle extends BaseVar {
     private final int mDccAddress

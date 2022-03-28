@@ -7,6 +7,8 @@ val B311 = block("NS769")      // 49:2
 
 val Toggle = sensor("NS829")   // 52:14
 
+println("Toggle active = ${Toggle.active}")
+
 // Turnouts
 
 val T311 = turnout("NT311")

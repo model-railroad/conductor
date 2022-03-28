@@ -1,4 +1,4 @@
-package com.alflabs.conductor.v2.script
+package com.alflabs.conductor.v2.script.impl
 
 import com.alflabs.annotations.NonNull
 

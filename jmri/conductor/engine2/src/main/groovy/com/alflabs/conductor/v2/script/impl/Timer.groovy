@@ -1,4 +1,4 @@
-package com.alflabs.conductor.v2.script
+package com.alflabs.conductor.v2.script.impl
 
 class Timer extends BaseActive {
     private final Optional<Timer> mBaseTimer
