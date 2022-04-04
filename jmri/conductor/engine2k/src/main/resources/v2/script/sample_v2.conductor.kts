@@ -1,5 +1,3 @@
-
-
 // Sensors
 
 val B310 = block("NS768")      // 49:1
