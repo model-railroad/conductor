@@ -22,3 +22,9 @@ val MyTimer2 = timer(15)
 val Train1 = throttle(1001)
 val Train2 = throttle(2001)
 
+// Maps
+
+map {
+    name = "Mainline"
+    svg  = "Map 1.svg"
+}
