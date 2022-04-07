@@ -8,6 +8,7 @@ class ConductorImpl : IConductor {
     val turnouts = mutableMapOf<String, Turnout>()
     val throttles = mutableMapOf<Int, Throttle>()
     val timers = mutableListOf<Timer>()
+    val svgMaps = mutableMapOf<String, ISvgMap>()
 
     override fun sensor(systemName: String): ISensor {
         println("@@ sensor systemName = $systemName")
@@ -40,6 +41,11 @@ class ConductorImpl : IConductor {
         println("@@ map = $init")
         val builder = SvgMapBuilder()
         builder.init()
-        return builder.create()
+        val m = builder.create()
+        if (svgMaps.contains(m.name)) {
+            throw IllegalArgumentException ("Map name ${m.name} is already defined.")
+        }
+        svgMaps[m.name] = m
+        return m
     }
 }

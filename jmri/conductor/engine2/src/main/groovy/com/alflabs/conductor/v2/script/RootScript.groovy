@@ -28,8 +28,8 @@ class RootScript extends Script {
     private Map<String, IBlock> mBlocks = new TreeMap<>()
     private Map<String, Turnout> mTurnouts = new TreeMap<>()
     private Map<String, Timer> mTimers = new TreeMap<>()
-    private List<Timer> mAnonymousTimers = new ArrayList<>();
-    private Map<String, Throttle> mThrottles = new TreeMap<>()
+    private List<Timer> mAnonymousTimers = new ArrayList<>()
+    private Map<Integer, Throttle> mThrottles = new TreeMap<>()
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private Map<String, Route> mRoutes = new TreeMap<>()
     private Map<String, ActiveRoute> mActiveRoutes = new TreeMap<>()
@@ -57,8 +57,6 @@ class RootScript extends Script {
                 } else if (v instanceof Timer) {
                     mTimers.put((String) k, (Timer) v)
                     mAnonymousTimers.remove(v)
-                } else if (v instanceof Throttle) {
-                    mThrottles.put((String) k, (Throttle) v)
                 } else if (v instanceof Route) {
                     mRoutes.put((String) k, (Route) v)
                 } else if (v instanceof ActiveRoute) {
@@ -169,12 +167,24 @@ class RootScript extends Script {
 
     @NonNull
     Throttle throttle(int dccAddress) {
-        return new Throttle(dccAddress)
+        return mThrottles.computeIfAbsent(dccAddress) {
+            address -> new Throttle(address)
+        }
     }
 
     @NonNull
-    Map<String, Throttle> throttles() {
+    Map<Integer, Throttle> throttles() {
         return mThrottles.asUnmodifiable()
+    }
+
+    @NonNull
+    Optional<Throttle> throttleByName(@NonNull String varName) {
+        for(value in mThrottles.values()) {
+            if (value.varName == varName) {
+                return Optional.of(value)
+            }
+        }
+        return Optional.empty()
     }
 
     @NonNull
@@ -183,6 +193,9 @@ class RootScript extends Script {
         def code = cl.rehydrate(map /*delegate*/, this /*owner*/, this /*this*/)
         code.resolveStrategy = Closure.DELEGATE_FIRST
         code.call()
+        if (mMaps.containsKey(map.name)) {
+            throw new IllegalArgumentException("Map name ${map.name} is already defined.")
+        }
         mMaps.put(map.name, map)
         return map
     }

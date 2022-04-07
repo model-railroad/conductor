@@ -1,12 +1,11 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.host.ConductorScriptHost
+import com.alfray.conductor.v2.script.impl.SvgMap
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.lang.Exception
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
@@ -84,6 +83,62 @@ class ScriptTest2k {
             "println(\"varName is \${Sensor1.varName}\")\n")
 
         assertThat(getResultErrors(result)).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
+    }
+
+    @Test
+    fun testVarBlock() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.blocks).containsKey("NS768")
+        assertThat(conductorImpl.blocks).containsKey("NS769")
+        assertThat(conductorImpl.blocks["NS768"]).isSameInstanceAs(conductorImpl.block("NS768"))
+    }
+
+    @Test
+    fun testVarSensor() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.sensors).containsKey("NS829")
+        assertThat(conductorImpl.sensors["NS829"]).isSameInstanceAs(conductorImpl.sensor("NS829"))
+    }
+
+    @Test
+    fun testVarTurnout() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.turnouts).containsKey("NT311")
+        assertThat(conductorImpl.turnouts["NT311"]).isSameInstanceAs(conductorImpl.turnout("NT311"))
+    }
+
+    @Test
+    fun testVarThrottle() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.throttles).containsKey(1001)
+        assertThat(conductorImpl.throttles[1001]).isSameInstanceAs(conductorImpl.throttle(1001))
+    }
+
+    @Test
+    fun testVarTimer() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.timers.map { it.name }).containsExactly("@timer@5", "@timer@15")
+    }
+
+    @Test
+    fun testMapInfo() {
+        val result = loadScriptFromFile("sample_v2")
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.svgMaps).containsExactly(
+            "Mainline",
+            SvgMap("Mainline", "Map 1.svg")
+        )
     }
 
 }
