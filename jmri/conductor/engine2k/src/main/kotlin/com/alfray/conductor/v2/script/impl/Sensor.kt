@@ -8,6 +8,8 @@ class Sensor(override val systemName: String) : ISensor {
     override val active: Boolean
         get() = activeInternal
 
+    override fun not(): Boolean = !active
+
     fun active(isActive: Boolean) {
         activeInternal = isActive
     }

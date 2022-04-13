@@ -8,6 +8,8 @@ class Block(override val systemName: String) : IBlock {
     override val active: Boolean
         get() = activeInternal
 
+    override fun not(): Boolean = !active
+
     fun active(isActive: Boolean) {
         activeInternal = isActive
     }

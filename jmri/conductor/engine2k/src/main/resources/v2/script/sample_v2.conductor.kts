@@ -1,3 +1,19 @@
+
+// Variables and local declaration.
+
+val LocalVar1 = "This variable is never seen by the ExecEngine"
+val LocalVar2 : String = "Neither is this one"
+val LocalVar3 = 42 // we can't use this either
+
+val MyStringVar = "This string is exported. Value is " + LocalVar3
+var MyIntVar = 42 + LocalVar3
+var MyLongVar = 43L
+MyLongVar++
+var MyBooleanVar = false
+
+val On = true
+val Off = false
+
 // Sensors
 
 val B310 = block("NS768")      // 49:1
@@ -27,4 +43,35 @@ val Train2 = throttle(2001)
 map {
     name = "Mainline"
     svg  = "Map 1.svg"
+}
+
+// Functions
+
+fun AlignTurnouts() {
+    T311.reverse()
+    T312.reverse()
+}
+
+fun ResetTurnouts() {
+    T311.normal()
+    T312.normal()
+}
+
+// Rules: Conditions -> Actions
+
+on { false } then { MyIntVar = 0 }
+on { true } then { MyIntVar = 1 }
+
+on { Toggle } then {
+    MyBooleanVar = true
+    MyLongVar += 1
+    MyTimer1.start()
+    AlignTurnouts()
+}
+
+on { !Toggle } then {
+    MyBooleanVar = true
+    MyLongVar += 1
+    MyTimer1.reset()
+    ResetTurnouts()
 }

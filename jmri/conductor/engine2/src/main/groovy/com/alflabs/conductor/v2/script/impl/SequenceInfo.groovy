@@ -7,7 +7,7 @@ class SequenceInfo {
     private Optional<Throttle> mThrottle = Optional.empty()
     private int mTimeout
     private final List<List<SequenceNode>> mNodes = new ArrayList<>()
-    private Optional<IRule> mOnActivateRule = Optional.empty()
+    private Optional<IEvalRule> mOnActivateRule = Optional.empty()
 
     void setThrottle(@NonNull Throttle throttle) {
         mThrottle = Optional.of(throttle)
@@ -83,7 +83,7 @@ class SequenceInfo {
     }
 
     @NonNull
-    Optional<IRule> getOnActivateRule() {
+    Optional<IEvalRule> getOnActivateRule() {
         return mOnActivateRule
     }
 }

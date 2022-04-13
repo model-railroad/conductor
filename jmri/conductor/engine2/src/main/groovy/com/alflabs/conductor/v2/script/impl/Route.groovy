@@ -15,7 +15,7 @@ class Route extends BaseVar {
     }
 
     @NonNull
-    List<IRule> evaluateRules() {
+    List<IEvalRule> evaluateRules() {
         return mManager.evaluateRules()
     }
 }

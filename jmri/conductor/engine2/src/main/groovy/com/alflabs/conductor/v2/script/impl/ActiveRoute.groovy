@@ -17,7 +17,7 @@ class ActiveRoute extends BaseVar {
     }
 
     @NonNull
-    List<IRule> evaluateRules() {
+    List<IEvalRule> evaluateRules() {
         if (mActiveRoute != null) {
             return mActiveRoute.evaluateRules()
         }

@@ -4,5 +4,5 @@ import com.alflabs.annotations.NonNull
 
 interface IRouteManager {
     @NonNull
-    List<IRule> evaluateRules()
+    List<IEvalRule> evaluateRules()
 }

@@ -4,7 +4,7 @@ import com.alflabs.annotations.NonNull
 import com.alflabs.conductor.v2.script.RootScript
 
 /** A condition...then rule. */
-class Rule implements IRule {
+class Rule implements IEvalRule {
     private final Closure<Boolean> mCondition
     private Closure mAction
 

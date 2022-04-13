@@ -4,4 +4,5 @@ interface ITimer: IActive {
     val seconds: Int
     fun start()
     fun stop()
+    fun reset()
 }

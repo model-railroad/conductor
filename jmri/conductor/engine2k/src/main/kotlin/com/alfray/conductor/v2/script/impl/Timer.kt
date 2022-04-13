@@ -11,11 +11,17 @@ class Timer(override val seconds: Int) : ITimer {
     override val active: Boolean
         get() = false
 
+    override fun not(): Boolean = !active
+
     override fun start() {
         started = true
     }
 
     override fun stop() {
+        started = false
+    }
+
+    override fun reset() {
         started = false
     }
 }

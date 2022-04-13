@@ -18,6 +18,7 @@ class ScriptTest2k {
 
     private lateinit var scriptHost: ConductorScriptHost
     private lateinit var conductorImpl: ConductorImpl
+    private lateinit var execEngine: ExecEngine
 
     @Before
     fun setUp() {
@@ -44,6 +45,7 @@ class ScriptTest2k {
     private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
         conductorImpl = ConductorImpl()
         scriptHost = ConductorScriptHost()
+        execEngine = ExecEngine(conductorImpl)
         return scriptHost.eval(source, conductorImpl)
     }
 
@@ -78,9 +80,12 @@ class ScriptTest2k {
 
     @Test
     fun testDontLeakImplementationDetails_BaseVars() {
-        val result = loadScriptFromText( scriptText =
-            "val Sensor1 = sensor(\"S01\")\n" +
-            "println(\"varName is \${Sensor1.varName}\")\n")
+        val result = loadScriptFromText(scriptText =
+        """
+        val Sensor1 = sensor("S01")
+        println("varName is ${"$"}{Sensor1.varName}")
+        """.trimIndent()
+        )
 
         assertThat(getResultErrors(result)).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
     }
@@ -139,6 +144,33 @@ class ScriptTest2k {
             "Mainline",
             SvgMap("Mainline", "Map 1.svg")
         )
+    }
+
+    @Test
+    fun testGlobalOnRules() {
+        val result = loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S1")
+        val T1 = turnout("T1")
+        on { !S1 } then { T1.reverse() }
+        on {  S1 } then { T1.normal() }
+        """.trimIndent()
+        )
+        assertResultNoError(result)
+
+        assertThat(conductorImpl.rules).hasSize(2)
+
+        val s1 = conductorImpl.sensors["S1"]!!
+        val t1 = conductorImpl.turnouts["T1"]!!
+        assertThat(t1.normal).isTrue()
+
+        s1.active(false)
+        execEngine.executeRules()
+        assertThat(t1.normal).isFalse()
+
+        s1.active(true)
+        execEngine.executeRules()
+        assertThat(t1.normal).isTrue()
     }
 
 }

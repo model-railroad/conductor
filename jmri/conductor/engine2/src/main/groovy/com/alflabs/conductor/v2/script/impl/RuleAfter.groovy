@@ -4,7 +4,7 @@ import com.alflabs.annotations.NonNull
 import com.alflabs.conductor.v2.script.RootScript
 
 /** A after...then...then_after rule. */
-class RuleAfter implements IRule {
+class RuleAfter implements IEvalRule {
     private final Timer mAfterTimer
     private final AndAfterContinuation mAndAfterContinuation
     private Closure mAction

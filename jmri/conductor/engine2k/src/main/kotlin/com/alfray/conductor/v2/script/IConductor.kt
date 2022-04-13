@@ -1,5 +1,7 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.impl.TRuleCondition
+
 interface IConductor {
 
     fun sensor(systemName: String): ISensor
@@ -13,4 +15,6 @@ interface IConductor {
     fun throttle(dccAddress: Int): IThrottle
 
     fun map(init: SvgMapBuilder.() -> Unit): ISvgMap
+
+    fun on(condition: TRuleCondition): IRule
 }

@@ -7,7 +7,7 @@ import com.alflabs.conductor.v2.script.impl.ActiveRouteInfo
 import com.alflabs.conductor.v2.script.impl.BaseVar
 import com.alflabs.conductor.v2.script.impl.Block
 import com.alflabs.conductor.v2.script.impl.IRouteManager
-import com.alflabs.conductor.v2.script.impl.IRule
+import com.alflabs.conductor.v2.script.impl.IEvalRule
 import com.alflabs.conductor.v2.script.impl.IdleManager
 import com.alflabs.conductor.v2.script.impl.MapInfo
 import com.alflabs.conductor.v2.script.impl.Route
@@ -33,7 +33,7 @@ class RootScript extends Script {
     private Map<String, MapInfo> mMaps = new TreeMap<>()
     private Map<String, Route> mRoutes = new TreeMap<>()
     private Map<String, ActiveRoute> mActiveRoutes = new TreeMap<>()
-    private List<IRule> mRules = new ArrayList<>()
+    private List<IEvalRule> mRules = new ArrayList<>()
 
     @Override
     Object run() {
@@ -77,10 +77,10 @@ class RootScript extends Script {
 
     /** Executes all Rules. */
     void executeRules() {
-        List<IRule> activeRules = new ArrayList<>()
+        List<IEvalRule> activeRules = new ArrayList<>()
 
-        // First collect all rules with an active condititon.
-        for (IRule rule : mRules) {
+        // First collect all rules with an active condition.
+        for (IEvalRule rule : mRules) {
             if (rule.evaluateCondition()) {
                 activeRules.add(rule)
             }
@@ -88,20 +88,20 @@ class RootScript extends Script {
 
         // TBD parse all active routes, and queue all onEnter / onActivate rules.
         for (Map.Entry<String, ActiveRoute> activeRoute : mActiveRoutes.entrySet()) {
-            List<IRule> rules = activeRoute.value.evaluateRules()
+            List<IEvalRule> rules = activeRoute.value.evaluateRules()
             if (!rules.isEmpty()) {
                 activeRules.addAll(rules)
             }
         }
 
         // Second execute all actions in the order they are defined.
-        for (IRule rule : activeRules) {
+        for (IEvalRule rule : activeRules) {
             rule.evaluateAction(this)
         }
     }
 
     @NonNull
-    List<IRule> rules() {
+    List<IEvalRule> rules() {
         return mRules.asUnmodifiable()
     }
 
@@ -224,7 +224,7 @@ class RootScript extends Script {
 
     private RuleAfter.AndAfterContinuation __and_after_to_then(
             @NonNull Timer previousTimer,
-            @NonNull List<IRule> rules) {
+            @NonNull List<IEvalRule> rules) {
         return new RuleAfter.AndAfterContinuation() {
             @Override
             RuleAfter and_after(Timer newTimer) {

@@ -16,7 +16,7 @@ class SequenceManager implements IRouteManager {
 
     @Override
     @NonNull
-    List<IRule> evaluateRules() {
+    List<IEvalRule> evaluateRules() {
         // TBD evaluate onActive, nodes onEnter, etc.
         return Collections.emptyList()
     }

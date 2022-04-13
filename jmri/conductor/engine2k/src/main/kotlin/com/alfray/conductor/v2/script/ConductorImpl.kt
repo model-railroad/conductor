@@ -7,8 +7,9 @@ class ConductorImpl : IConductor {
     val blocks = mutableMapOf<String, Block>()
     val turnouts = mutableMapOf<String, Turnout>()
     val throttles = mutableMapOf<Int, Throttle>()
-    val timers = mutableListOf<Timer>()
     val svgMaps = mutableMapOf<String, ISvgMap>()
+    val timers = mutableListOf<Timer>()
+    val rules = mutableListOf<Rule>()
 
     override fun sensor(systemName: String): ISensor {
         println("@@ sensor systemName = $systemName")
@@ -47,5 +48,12 @@ class ConductorImpl : IConductor {
         }
         svgMaps[m.name] = m
         return m
+    }
+
+    override fun on(condition: () -> Any): IRule {
+        println("@@ on = $condition")
+        val rule = Rule(condition)
+        rules.add(rule)
+        return rule
     }
 }

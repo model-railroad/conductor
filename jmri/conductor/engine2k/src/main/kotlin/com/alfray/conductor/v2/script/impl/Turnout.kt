@@ -11,6 +11,8 @@ class Turnout(override val systemName: String) : ITurnout {
     override val active: Boolean
         get() = normalInternal
 
+    override fun not(): Boolean = !active
+
     override fun normal() {
         normalInternal = true
     }

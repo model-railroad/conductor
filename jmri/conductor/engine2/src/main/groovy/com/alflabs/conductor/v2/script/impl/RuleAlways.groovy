@@ -4,7 +4,7 @@ import com.alflabs.annotations.NonNull
 import com.alflabs.conductor.v2.script.RootScript
 
 /** A synthetic rule which condition is always true. */
-class RuleAlways implements IRule {
+class RuleAlways implements IEvalRule {
     private final Closure mAction
 
     RuleAlways(@NonNull @DelegatesTo(RootScript) Closure action) {

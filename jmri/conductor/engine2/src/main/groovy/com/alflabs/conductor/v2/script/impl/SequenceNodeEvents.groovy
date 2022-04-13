@@ -4,17 +4,17 @@ import com.alflabs.annotations.NonNull
 import com.alflabs.conductor.v2.script.RootScript
 
 class SequenceNodeEvents {
-    private Optional<IRule> mOnEnterRule = Optional.empty()
-    private Optional<IRule> mWhileOccupiedRule = Optional.empty()
-    private Optional<IRule> mOnTrailingRule = Optional.empty()
-    private Optional<IRule> mOnEmptyRule = Optional.empty()
+    private Optional<IEvalRule> mOnEnterRule = Optional.empty()
+    private Optional<IEvalRule> mWhileOccupiedRule = Optional.empty()
+    private Optional<IEvalRule> mOnTrailingRule = Optional.empty()
+    private Optional<IEvalRule> mOnEmptyRule = Optional.empty()
 
     void onEnter(@NonNull @DelegatesTo(RootScript) Closure action) {
         mOnEnterRule = Optional.of(new RuleAlways(action))
     }
 
     @NonNull
-    Optional<IRule> getOnEnterRule() {
+    Optional<IEvalRule> getOnEnterRule() {
         return mOnEnterRule
     }
 
@@ -23,7 +23,7 @@ class SequenceNodeEvents {
     }
 
     @NonNull
-    Optional<IRule> getWhileOccupiedRule() {
+    Optional<IEvalRule> getWhileOccupiedRule() {
         return mWhileOccupiedRule
     }
 
@@ -32,7 +32,7 @@ class SequenceNodeEvents {
     }
 
     @NonNull
-    Optional<IRule> getOnTrailingRule() {
+    Optional<IEvalRule> getOnTrailingRule() {
         return mOnTrailingRule
     }
 
@@ -41,7 +41,7 @@ class SequenceNodeEvents {
     }
 
     @NonNull
-    Optional<IRule> getOnEmptyRule() {
+    Optional<IEvalRule> getOnEmptyRule() {
         return mOnEmptyRule
     }
 }

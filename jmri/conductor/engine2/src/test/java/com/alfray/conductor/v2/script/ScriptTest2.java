@@ -5,7 +5,7 @@ import com.alflabs.conductor.v2.script.IBlock;
 import com.alflabs.conductor.v2.script.ISensor;
 import com.alflabs.conductor.v2.script.impl.BaseVar;
 import com.alflabs.conductor.v2.script.impl.Block;
-import com.alflabs.conductor.v2.script.impl.IRule;
+import com.alflabs.conductor.v2.script.impl.IEvalRule;
 import com.alflabs.conductor.v2.script.impl.MapInfo;
 import com.alflabs.conductor.v2.script.RootScript;
 import com.alflabs.conductor.v2.script.impl.Route;
@@ -436,7 +436,7 @@ public class ScriptTest2 {
         assertThat(seqInfo.getNodes()).hasSize(2);
 
         assertThat(seqInfo.getOnActivateRule().isPresent()).isTrue();
-        IRule onActivateRule = seqInfo.getOnActivateRule().get();
+        IEvalRule onActivateRule = seqInfo.getOnActivateRule().get();
         assertThat(train1.isLight()).isEqualTo(false);
         onActivateRule.evaluateAction(mScript);
         assertThat(train1.isLight()).isEqualTo(true);
