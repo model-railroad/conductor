@@ -113,6 +113,11 @@ on { B311 } then {
     Train2.stop()
 }
 
+on { B310 && B311 } then {
+    Train1.stop()
+    Train2.forward(10)
+}
+
 after(MyTimer2) then {
     Train1.light(true)
 }

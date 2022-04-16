@@ -75,3 +75,20 @@ on { !Toggle } then {
     MyTimer1.reset()
     ResetTurnouts()
 }
+
+on { B310 } then {
+    Train1.stop()
+    Train1.horn()
+    Train1.light(Off)
+    Train2.reverse(10)
+}
+
+on { B311 } then {
+    Train1.stop()
+    Train2.stop()
+}
+
+on { B310 && B311 } then {
+    Train1.stop()
+    Train2.forward(10)
+}
