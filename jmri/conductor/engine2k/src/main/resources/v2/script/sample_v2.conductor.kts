@@ -88,7 +88,23 @@ on { B311 } then {
     Train2.stop()
 }
 
-on { B310 && B311 } then {
+// How to apply this syntax in kts:  " on { B310 && B311 } then { ... } " ?
+// Possibilities: object.active OR !!object OR !(...!object).
+// E.g:
+on { B310.active && B311.active } then {
     Train1.stop()
     Train2.forward(10)
 }
+
+on { !(!B310 || !B311) } then {
+    Train1.stop()
+    Train2.forward(10)
+}
+
+on { !!B310 && !!B311 } then {
+    Train1.stop()
+    Train2.forward(10)
+}
+
+// FIXME continue here: route handling
+// val Route_Idle = route idle()
