@@ -38,7 +38,7 @@ class ConductorImpl : IConductor {
         return throttles.computeIfAbsent(dccAddress) { Throttle(it) }
     }
 
-    override fun map(init: SvgMapBuilder.() -> Unit): ISvgMap {
+    override fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap {
         println("@@ map = $init")
         val builder = SvgMapBuilder()
         builder.init()

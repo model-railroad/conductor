@@ -1,8 +1,23 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.ISvgMap
+import com.alfray.conductor.v2.script.ISvgMapBuilder
 
-class SvgMap(override val name: String, override val svg: String) : ISvgMap {
+internal class SvgMapBuilder constructor() : ISvgMapBuilder {
+    override lateinit var name: String
+    override lateinit var svg: String
+
+    constructor(name: String, svg: String) : this() {
+        this.name = name
+        this.svg = svg
+    }
+
+    fun create() : ISvgMap = SvgMap(this)
+}
+
+class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
+    override val name = builder.name
+    override val svg = builder.svg
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

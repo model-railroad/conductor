@@ -2,6 +2,7 @@ package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.impl.SvgMap
+import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -142,7 +143,7 @@ class ScriptTest2k {
 
         assertThat(conductorImpl.svgMaps).containsExactly(
             "Mainline",
-            SvgMap("Mainline", "Map 1.svg")
+            SvgMapBuilder("Mainline", "Map 1.svg").create()
         )
     }
 

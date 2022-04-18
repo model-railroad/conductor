@@ -7,9 +7,7 @@ interface ISvgMap {
     val svg: String
 }
 
-class SvgMapBuilder {
-    lateinit var name: String
-    lateinit var svg: String
-
-    fun create() : ISvgMap = SvgMap(name, svg)
+interface ISvgMapBuilder {
+    var name: String
+    var svg: String
 }

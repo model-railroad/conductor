@@ -14,7 +14,7 @@ interface IConductor {
 
     fun throttle(dccAddress: Int): IThrottle
 
-    fun map(init: SvgMapBuilder.() -> Unit): ISvgMap
+    fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap
 
     fun on(condition: TRuleCondition): IRule
 
