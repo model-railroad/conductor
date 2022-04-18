@@ -56,4 +56,6 @@ class ConductorImpl : IConductor {
         rules.add(rule)
         return rule
     }
+
+    override val route = RouteBuilder()
 }

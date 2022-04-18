@@ -17,4 +17,6 @@ interface IConductor {
     fun map(init: SvgMapBuilder.() -> Unit): ISvgMap
 
     fun on(condition: TRuleCondition): IRule
+
+    val route: RouteBuilder
 }
