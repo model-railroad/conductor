@@ -10,6 +10,7 @@ class ConductorImpl : IConductor {
     val svgMaps = mutableMapOf<String, ISvgMap>()
     val timers = mutableListOf<Timer>()
     val rules = mutableListOf<Rule>()
+    val activeRoutes = mutableListOf<IActiveRoute>()
 
     override fun sensor(systemName: String): ISensor {
         println("@@ sensor systemName = $systemName")
@@ -58,4 +59,13 @@ class ConductorImpl : IConductor {
     }
 
     override val route = RouteBuilder()
+
+    override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
+        println("@@ activeRoute = $init")
+        val b = ActiveRouteBuilder()
+        b.init()
+        val a = ActiveRoute(b)
+        activeRoutes.add(a)
+        return a
+    }
 }

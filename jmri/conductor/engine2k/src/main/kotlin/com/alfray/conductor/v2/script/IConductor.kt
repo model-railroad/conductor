@@ -1,9 +1,6 @@
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.script.impl.TRuleCondition
-
 interface IConductor {
-
     fun sensor(systemName: String): ISensor
 
     fun block(systemName: String): IBlock
@@ -16,7 +13,9 @@ interface IConductor {
 
     fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap
 
-    fun on(condition: TRuleCondition): IRule
+    fun on(condition: TCondition): IRule
 
     val route: RouteBuilder
+
+    fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
 }

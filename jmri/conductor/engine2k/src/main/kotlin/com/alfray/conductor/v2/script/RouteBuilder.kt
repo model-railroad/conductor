@@ -12,5 +12,4 @@ class RouteBuilder {
         builder.init()
         return builder.create()
     }
-
 }

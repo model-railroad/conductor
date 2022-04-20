@@ -108,3 +108,59 @@ on { !!B310 && !!B311 } then {
 
 // FIXME continue here: route handling
 val Route_Idle = route.idle()
+
+val _leaving_speed = 5
+val _mainline_speed = 10
+val _reverse_speed = 8
+
+val Route1 = route.sequence {
+    throttle = Train1
+    timeout = 60
+
+    onActivate {
+        Train1.light(true)
+        Train1.horn()
+        Train1.forward(_leaving_speed)
+    }
+
+    // Nodes must be declared before the node graph.
+
+    val B310_fwd = node(B310) {
+        onEnter {
+            Train1.forward(_leaving_speed)
+        }
+        whileOccupied {
+            Train1.light(true)
+        }
+        onTrailing {
+            Train1.forward(_mainline_speed)
+        }
+        onEmpty {
+            Train1.light(false)
+        }
+    }
+
+    val B311_fwd = node(B311) {
+        onEnter {
+            Train1.horn()
+        }
+    }
+
+    val B310_rev = node(B310) {
+        onEnter {
+            Train1.horn()
+        }
+    }
+
+//    nodes = [ [ B310_fwd, B311_fwd, B310_rev ],
+//        [ B310_fwd, B310_rev ] ]
+
+    nodes = listOf(
+        listOf(B310_fwd, B311_fwd, B310_rev),
+        listOf(B310_fwd, B310_rev)
+    )
+}
+
+val PA_Route = activeRoute {
+    routes = listOf(Route_Idle, Route1)
+}

@@ -2,14 +2,13 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.IActive
 import com.alfray.conductor.v2.script.IRule
+import com.alfray.conductor.v2.script.TAction
+import com.alfray.conductor.v2.script.TCondition
 
-typealias TRuleCondition = () -> Any
-typealias TRuleAction = () -> Unit
+class Rule(private val condition: TCondition) : IRule {
+    private lateinit var action: TAction
 
-class Rule(private val condition: TRuleCondition) : IRule {
-    private lateinit var action: TRuleAction
-
-    override fun then(action: TRuleAction) {
+    override fun then(action: TAction) {
         this.action = action
     }
 
