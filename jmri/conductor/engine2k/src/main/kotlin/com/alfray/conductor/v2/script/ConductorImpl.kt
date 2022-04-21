@@ -58,6 +58,10 @@ class ConductorImpl : IConductor {
         return rule
     }
 
+    override fun after(timer: ITimer): IAfter {
+        return After(timer)
+    }
+
     override val route = RouteBuilder()
 
     override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {

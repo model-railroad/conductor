@@ -1,3 +1,4 @@
+@file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
 // Variables and local declaration.
 
@@ -106,6 +107,21 @@ on { !!B310 && !!B311 } then {
     Train2.forward(10)
 }
 
+after(MyTimer2) then {
+    Train1.light(true)
+}
+
+after(timer(42)) then {
+    Train1.light(true)
+} and_after(timer(5)) then {
+    Train1.light(false)
+} and_after(timer(7)) then {
+    Train1.light(true)
+} and_after(timer(9)) then {
+    Train1.light(true)
+}
+
+
 // FIXME continue here: route handling
 val Route_Idle = route.idle()
 
@@ -151,9 +167,6 @@ val Route1 = route.sequence {
             Train1.horn()
         }
     }
-
-//    nodes = [ [ B310_fwd, B311_fwd, B310_rev ],
-//        [ B310_fwd, B310_rev ] ]
 
     nodes = listOf(
         listOf(B310_fwd, B311_fwd, B310_rev),

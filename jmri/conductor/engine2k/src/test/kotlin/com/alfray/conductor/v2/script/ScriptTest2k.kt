@@ -1,7 +1,6 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.host.ConductorScriptHost
-import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
@@ -16,7 +15,6 @@ import kotlin.script.experimental.host.UrlScriptSource
 
 @Suppress("UnstableApiUsage")
 class ScriptTest2k {
-
     private lateinit var scriptHost: ConductorScriptHost
     private lateinit var conductorImpl: ConductorImpl
     private lateinit var execEngine: ExecEngine
@@ -75,7 +73,7 @@ class ScriptTest2k {
         assertThat(conductorImpl.sensors.keys).containsExactly("NS829")
         assertThat(conductorImpl.turnouts.keys).containsExactly("NT311", "NT312")
         assertThat(conductorImpl.throttles.keys).containsExactly(1001, 2001)
-        assertThat(conductorImpl.timers.map { it.seconds }).containsExactly(5, 15)
+        assertThat(conductorImpl.timers.map { it.seconds }).containsExactly(5, 15, 42, 5, 7, 9)
     }
 
 
@@ -133,7 +131,8 @@ class ScriptTest2k {
         val result = loadScriptFromFile("sample_v2")
         assertResultNoError(result)
 
-        assertThat(conductorImpl.timers.map { it.name }).containsExactly("@timer@5", "@timer@15")
+        assertThat(conductorImpl.timers.map { it.name }).containsExactly(
+            "@timer@5", "@timer@15", "@timer@42", "@timer@5", "@timer@7", "@timer@9")
     }
 
     @Test

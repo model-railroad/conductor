@@ -36,6 +36,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm:$kvers")
     implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host:$kvers")
     implementation("org.jetbrains.kotlin:kotlin-scripting-dependencies:$kvers")
+    implementation "org.jetbrains.kotlin:kotlin-script-runtime:$kvers"
     // For the Java Scripting version:
     runtimeOnly("org.jetbrains.kotlin:kotlin-scripting-jsr223:$kvers")
 

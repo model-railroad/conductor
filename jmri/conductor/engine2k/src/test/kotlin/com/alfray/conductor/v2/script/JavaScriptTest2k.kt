@@ -1,16 +1,11 @@
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.host.JavaScriptEval
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
-import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
-import java.lang.Exception
-import kotlin.script.experimental.api.EvaluationResult
-import kotlin.script.experimental.api.ResultWithDiagnostics
-import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
@@ -43,12 +38,14 @@ class JavaScriptTest2k {
         return impl
     }
 
+    @Ignore
     @Test
     fun testLoadScriptAndEval() {
         loadScriptFromFile("sample_v2")
         assertThat(conductorImpl).isNotNull()
     }
 
+    @Ignore
     @Test
     fun testEvalDirect() {
         loadScriptFromText(scriptText = """

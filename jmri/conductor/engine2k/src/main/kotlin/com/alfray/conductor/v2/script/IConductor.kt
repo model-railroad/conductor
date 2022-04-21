@@ -15,6 +15,8 @@ interface IConductor {
 
     fun on(condition: TCondition): IRule
 
+    fun after(timer: ITimer): IAfter
+
     val route: RouteBuilder
 
     fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
