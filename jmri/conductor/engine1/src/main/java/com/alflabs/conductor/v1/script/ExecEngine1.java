@@ -20,7 +20,7 @@ package com.alflabs.conductor.v1.script;
 
 import com.alflabs.conductor.util.FrequencyMeasurer;
 import com.alflabs.conductor.util.RateLimiter;
-import com.alflabs.conductor.v1.dagger.ScriptScope;
+import com.alflabs.conductor.v1.dagger.Script1Scope;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
@@ -35,11 +35,11 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
-@ScriptScope
-public class ExecEngine implements IExecEngine {
-    private static final String TAG = ExecEngine.class.getSimpleName();
+@Script1Scope
+public class ExecEngine1 implements IExecEngine {
+    private static final String TAG = ExecEngine1.class.getSimpleName();
 
-    private final Script mScript;
+    private final Script1 mScript;
     private final List<Event> mActivatedEvents = new LinkedList<>();
     private final CondCache mCondCache = new CondCache();
     private final FrequencyMeasurer mHandleFrequency;
@@ -50,7 +50,7 @@ public class ExecEngine implements IExecEngine {
     private Runnable mHandleListener;
 
     @Inject
-    public ExecEngine(IClock clock, Script script, IKeyValue keyValue, EStopHandler eStopHandler) {
+    public ExecEngine1(IClock clock, Script1 script, IKeyValue keyValue, EStopHandler eStopHandler) {
         mScript = script;
         mHandleFrequency = new FrequencyMeasurer(clock);
         mHandleRateLimiter = new RateLimiter(30.0f, clock);

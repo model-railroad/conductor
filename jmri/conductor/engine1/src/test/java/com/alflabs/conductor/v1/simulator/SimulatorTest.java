@@ -21,13 +21,13 @@ package com.alflabs.conductor.v1.simulator;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.jmri.IJmriThrottle;
-import com.alflabs.conductor.v1.ScriptContext;
+import com.alflabs.conductor.v1.Script1Context;
 import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.parser.TestReporter;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
@@ -59,10 +59,11 @@ public class SimulatorTest {
 
     @Inject ILogger mLogger;
     @Inject FakeClock mClock;
-    @Inject ScriptContext mScriptContext;
+    @Inject
+    Script1Context mScriptContext;
 
     private TestReporter mReporter;
-    private IScriptComponent mScriptComponent;
+    private IScript1Component mScriptComponent;
     private Simulator mSimulator;
 
     @Before
@@ -75,7 +76,7 @@ public class SimulatorTest {
                 .factory()
                 .createTestComponent(mJmriProvider);
         component.inject(this);
-        mScriptContext.setScriptFile(scriptFile);
+        mScriptContext.setScript1File(scriptFile);
 
         mClock.setNow(1000);
 
@@ -97,8 +98,8 @@ public class SimulatorTest {
         IJmriThrottle jmriThrottle = mock(IJmriThrottle.class);
         when(mJmriProvider.getThrottle(42)).thenReturn(jmriThrottle);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getExecEngine();
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
+        ExecEngine1 engine = mScriptComponent.getExecEngine1();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -127,8 +128,8 @@ public class SimulatorTest {
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
         when(mJmriProvider.getSensor("NS43")).thenReturn(jmriSensor2);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getExecEngine();
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
+        ExecEngine1 engine = mScriptComponent.getExecEngine1();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -153,8 +154,8 @@ public class SimulatorTest {
         IJmriSensor jmriSensor1 = mock(IJmriSensor.class);
         when(mJmriProvider.getSensor("NS42")).thenReturn(jmriSensor1);
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
-        ExecEngine engine = mScriptComponent.getExecEngine();
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
+        ExecEngine1 engine = mScriptComponent.getExecEngine1();
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -186,7 +187,7 @@ public class SimulatorTest {
         String source = "" +
                 "String simu = '''Wait 5.5s ; End'''";
 
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
@@ -204,7 +205,7 @@ public class SimulatorTest {
     public void testSimul1() throws Exception {
         String source = getFileSource("simul1.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
 

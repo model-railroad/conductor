@@ -21,7 +21,7 @@ package com.alflabs.conductor.v1.script;
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
-import com.alflabs.conductor.v1.dagger.ScriptScope;
+import com.alflabs.conductor.v1.dagger.Script1Scope;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.manifest.Prefix;
@@ -51,16 +51,16 @@ import java.util.TreeMap;
  * first becomes false.
  * <p/>
  * The script follows the setup/handle format of a JMRI Jython script.
- * There's an {@link ExecEngine} associated with this script.
+ * There's an {@link ExecEngine1} associated with this script.
  * A exec engine must be first setup by calling the adequately named
- * {@link ExecEngine#onExecStart()} method to link to the underlying JMRI throttles and sensors,
- * then {@link ExecEngine#onExecHandle()} is called repeatedly to evaluate all conditions and execute
+ * {@link ExecEngine1#onExecStart()} method to link to the underlying JMRI throttles and sensors,
+ * then {@link ExecEngine1#onExecHandle()} is called repeatedly to evaluate all conditions and execute
  * all fired events. The execution engine's instance keeps all the dynamic state due to the
  * evaluation whereas the script is "static" and does not change once parsed.
  */
-@ScriptScope
-public class Script {
-    private static final String TAG = Script.class.getSimpleName();
+@Script1Scope
+public class Script1 {
+    private static final String TAG = Script1.class.getSimpleName();
 
     private final ILogger mLogger;
     private final ILocalDateTimeNowProvider mLocalDateTimeNow;
@@ -78,7 +78,7 @@ public class Script {
     private final List<Event> mEvents = new ArrayList<>();
 
     @Inject
-    public Script(
+    public Script1(
             ILogger logger,
             ILocalDateTimeNowProvider localDateTimeNow,
             EStopHandler eStopHandler,

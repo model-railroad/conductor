@@ -17,7 +17,7 @@ import groovy.transform.BaseScript
 // - Objects declared without "def" are global to the script binding and can be used in any
 //   scope. They are also visible to the exec engine and the KV server.
 
-def LocalVar1 = "This variable is never seen by the ExecEngine"
+def LocalVar1 = "This variable is never seen by the ExecEngine1"
 def String LocalVar2 = "Neither is this one"
 int LocalVar3 = 42 // we can't use this either
 

@@ -20,7 +20,7 @@ package com.alflabs.conductor.v1.dagger;
 
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.v1.ScriptContext;
+import com.alflabs.conductor.v1.Script1Context;
 import com.alflabs.conductor.v1.parser.TestReporter;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FakeClock;
@@ -43,7 +43,8 @@ public class IEngine1TestComponentTest {
     @Inject IKeyValue mKeyValue2;
     @Inject IClock mClock;
     @Inject FakeClock mFakeClock;
-    @Inject ScriptContext mScriptContext;
+    @Inject
+    Script1Context mScriptContext;
 
     private TestReporter mReporter;
     private IJmriProvider mJmriProvider;
@@ -60,15 +61,15 @@ public class IEngine1TestComponentTest {
                 .factory()
                 .createTestComponent(mJmriProvider);
         mComponent.inject(this);
-        mScriptContext.setScriptFile(scriptFile);
+        mScriptContext.setScript1File(scriptFile);
     }
 
     @Test
     public void testCreateScriptComponent_IsNotSingleton() {
-        IScriptComponent scriptComponent1 = mComponent
+        IScript1Component scriptComponent1 = mComponent
                 .getScriptComponentFactory()
                 .createComponent(mReporter);
-        IScriptComponent scriptComponent2 = mComponent
+        IScript1Component scriptComponent2 = mComponent
                 .getScriptComponentFactory()
                 .createComponent(mReporter);
         assertThat(scriptComponent1).isNotNull();

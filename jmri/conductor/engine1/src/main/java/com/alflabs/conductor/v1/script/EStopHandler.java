@@ -19,7 +19,7 @@
 package com.alflabs.conductor.v1.script;
 
 
-import com.alflabs.conductor.v1.dagger.ScriptScope;
+import com.alflabs.conductor.v1.dagger.Script1Scope;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 
@@ -27,15 +27,15 @@ import javax.inject.Inject;
 
 /**
  * Handles the current EStop State shared with RTAC.
- * This is read by the {@link ExecEngine}.
- * It can be set via the {@link Script} "ESTOP" command.
+ * This is read by the {@link ExecEngine1}.
+ * It can be set via the {@link Script1} "ESTOP" command.
  * <p/>
  * When activated, nothing happens here except setting the proper KV value.
  * The engine will read the new state at the next runtime exec loop and actually send
  * an EStop via the JMRI interface to all defined throttles. RTAC provides a way to
- * reset the state, which is also handled by the {@link ExecEngine} runtime loop.
+ * reset the state, which is also handled by the {@link ExecEngine1} runtime loop.
  */
-@ScriptScope
+@Script1Scope
 public class EStopHandler {
     private final IKeyValue mKeyValue;
 

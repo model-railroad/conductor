@@ -24,7 +24,7 @@ package com.alflabs.conductor.v1.script;
 public interface IImportable {
     /**
      * True if this data type shoulbe be import from the KV server during
-     * each {@link ExecEngine#onExecHandle()} loop.
+     * each {@link ExecEngine1#onExecHandle()} loop.
      */
     void setImported(boolean imported);
 

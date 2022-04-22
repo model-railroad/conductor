@@ -28,13 +28,13 @@ import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
-import com.alflabs.conductor.v1.ScriptContext;
-import com.alflabs.conductor.v1.ScriptLoader;
+import com.alflabs.conductor.v1.Script1Context;
+import com.alflabs.conductor.v1.Script1Loader;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.script.Enum_;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.Timer;
 import com.alflabs.conductor.v1.script.Turnout;
@@ -64,7 +64,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private static final String TAG = EntryPoint2.class.getSimpleName();
 
     private boolean mIsSimulation;
-    private LocalComponent mComponent;
+    private LocalComponent1 mComponent;
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
@@ -79,8 +79,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
-    @Inject ScriptLoader mScriptLoader;
-    @Inject ScriptContext mScriptContext;
+    @Inject Script1Loader mScript1Loader;
+    @Inject Script1Context mScript1Context;
 
     /**
      * Entry point invoked from DevEntryPoint2.
@@ -97,13 +97,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
         File scriptFile = new File(scriptPath);
-        mComponent = DaggerEntryPoint2_LocalComponent
+        mComponent = DaggerEntryPoint2_LocalComponent1
                 .factory()
                 .createComponent(jmriProvider);
 
         // Do not use any injected field before this call
         mComponent.inject(this);
-        mScriptContext.setScriptFile(scriptFile);
+        mScript1Context.setScript1File(scriptFile);
 
         logln("Setup");
 
@@ -127,7 +127,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
 
-        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
+        Optional<ExecEngine1> engine = mScript1Context.getExecEngine1();
         // If we have no engine, or it is paused, just idle-wait.
         if (!engine.isPresent() || mPaused.get()) {
             // TODO poor man async handling.
@@ -204,7 +204,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             } else {
                 mWin = new StatusWindow2();
                 mWin.open(this);
-                mWin.updateScriptName("No Script Loaded");
+                mWin.updateScriptName("No Script1 Loaded");
 
                 if (mWinUpdateThread == null) {
                     mWinUpdateThread = new Thread(this::_windowUpdateThread, "EntryPoint2-WinUpdate");
@@ -259,7 +259,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowReload() {
         logln("onWindowReload");
 
-        boolean wasRunning = mScriptContext.getScriptComponent().isPresent();
+        boolean wasRunning = mScript1Context.getScript1Component().isPresent();
 //        mUiUpdaters.clear();
 
 
@@ -270,13 +270,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         try {
             // TBD Release any resources from current script component as needed.
-            mScriptContext.reset();
+            mScript1Context.reset();
 
-            File file = mScriptContext
-                    .getScriptFile()
-                    .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
-            logln("Script Path: " + file.getPath());
-            mScriptLoader.execByPath(mScriptContext);
+            File file = mScript1Context
+                    .getScript1File()
+                    .orElseThrow(() -> new IllegalArgumentException("Script1 File Not Defined"));
+            logln("Script1 Path: " + file.getPath());
+            mScript1Loader.execByPath(mScript1Context);
 
             if (mWin != null) {
                 mWin.updateScriptName(file.getName());
@@ -309,13 +309,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void loadMap() {
-        if (!mScriptContext.getScriptFile().isPresent()) {
+        if (!mScript1Context.getScript1File().isPresent()) {
             return;
         }
-        File scriptFile = mScriptContext.getScriptFile().get();
+        File scriptFile = mScript1Context.getScript1File().get();
         File scriptDir = scriptFile.getParentFile();
 
-        Optional<Script> script = mScriptContext.getScript();
+        Optional<Script1> script = mScript1Context.getScript1();
         if (script.isPresent()) {
             TreeMap<String, MapInfo> maps = script.get().getMaps();
             Optional<MapInfo> mapName = maps.values().stream().findFirst();
@@ -361,14 +361,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append(mLoadError);
         }
 
-        String lastError = mScriptContext.getError();
+        String lastError = mScript1Context.getError();
         if (lastError.length() > 0) {
             mStatus.append("\n--- [ LAST ERROR ] ---\n");
             mStatus.append(lastError);
         }
 
-        Optional<ExecEngine> engine = mScriptContext.getExecEngine();
-        Optional<Script> script = mScriptContext.getScript();
+        Optional<ExecEngine1> engine = mScript1Context.getExecEngine1();
+        Optional<Script1> script = mScript1Context.getScript1();
         if (engine.isPresent() && script.isPresent()) {
             try {
                 appendVarStatus(mStatus, script.get(), engine.get(), mKeyValueServer);
@@ -380,8 +380,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     private static void appendVarStatus(
             StringBuilder outStatus,
-            Script script,
-            ExecEngine engine,
+            Script1 script,
+            ExecEngine1 engine,
             KeyValueServer kvServer) {
 
         outStatus.append("Freq: ");
@@ -462,14 +462,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     @Singleton
     @Component(modules = { CommonModule.class })
-    public interface LocalComponent extends IEngine1Component {
-        IScriptComponent.Factory getScriptComponentFactory();
+    public interface LocalComponent1 extends IEngine1Component {
+        IScript1Component.Factory getScriptComponentFactory();
 
         void inject(EntryPoint2 entryPoint);
 
         @Component.Factory
         interface Factory {
-            LocalComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
+            LocalComponent1 createComponent(@BindsInstance IJmriProvider jmriProvider);
         }
     }
 }

@@ -23,7 +23,7 @@ package com.alflabs.conductor.v1.script;
  */
 public interface IResettable {
     /**
-     * Called by the {@link ExecEngine} to reset the data type to whatever
+     * Called by the {@link ExecEngine1} to reset the data type to whatever
      * is its initial value when the script first starts.
      */
     void reset();

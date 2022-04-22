@@ -144,6 +144,16 @@ val Route1 = route.sequence {
     val B310_fwd = node(B310) {
         onEnter {
             Train1.forward(_leaving_speed)
+
+            after(timer(6)) then {
+                Train1.light(true)
+            } and_after(timer(2)) then {
+                Train1.light(false)
+            }
+
+            on { B311 } then {
+                Train1.horn()
+            }
         }
         whileOccupied {
             Train1.light(true)

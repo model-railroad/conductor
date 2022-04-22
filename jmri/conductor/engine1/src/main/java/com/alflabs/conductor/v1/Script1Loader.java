@@ -19,9 +19,9 @@
 package com.alflabs.conductor.v1;
 
 import com.alflabs.annotations.NonNull;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
-import com.alflabs.conductor.v1.parser.ScriptParser2;
-import com.alflabs.conductor.v1.script.ExecEngine;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
+import com.alflabs.conductor.v1.parser.Script1Parser2;
+import com.alflabs.conductor.v1.script.ExecEngine1;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
@@ -32,35 +32,35 @@ import java.io.File;
  * A utility helper to load a script and start executing it.
  */
 @Singleton
-public class ScriptLoader {
+public class Script1Loader {
 
     private final ILogger mLogger;
 
     @Inject
-    public ScriptLoader(ILogger logger) {
+    public Script1Loader(ILogger logger) {
         mLogger = logger;
     }
 
-    public void execByPath(@NonNull ScriptContext scriptContext) throws Exception {
+    public void execByPath(@NonNull Script1Context scriptContext) throws Exception {
         // Sanitize the path
         File file = scriptContext
-                .getScriptFile()
-                .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
+                .getScript1File()
+                .orElseThrow(() -> new IllegalArgumentException("Script1 File Not Defined"));
         String path = file.getPath();
         if (!path.endsWith(".txt")) {
             path += ".txt";
             file = new File(path);
         }
 
-        IScriptComponent scriptComponent = scriptContext
-                .getScriptComponentFactory()
+        IScript1Component scriptComponent = scriptContext
+                .getScript1ComponentFactory()
                 .createComponent(scriptContext.createErrorReporter(mLogger));
-        scriptContext.setScriptComponent(scriptComponent);
+        scriptContext.setScript1Component(scriptComponent);
 
         try {
-            ScriptParser2 parser = scriptComponent.getScriptParser2();
+            Script1Parser2 parser = scriptComponent.getScript1Parser2();
             parser.parse(file);
-            ExecEngine engine = scriptComponent.getExecEngine();
+            ExecEngine1 engine = scriptComponent.getExecEngine1();
             engine.onExecStart();
         } catch (Throwable t) {
             // Throwable t2 = StackTraceUtils.sanitize(t); -- for Groovy scripting only

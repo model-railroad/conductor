@@ -46,5 +46,5 @@ import java.lang.annotation.RetentionPolicy;
 @Scope
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ScriptScope {
+public @interface Script1Scope {
 }

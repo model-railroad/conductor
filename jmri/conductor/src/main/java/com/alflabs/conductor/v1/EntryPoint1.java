@@ -26,11 +26,11 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.parser.Reporter;
-import com.alflabs.conductor.v1.parser.ScriptParser2;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.parser.Script1Parser2;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.conductor.v1.ui.StatusWnd;
 import com.alflabs.kv.KeyValueServer;
@@ -63,10 +63,10 @@ import java.util.concurrent.TimeUnit;
 public class EntryPoint1 implements IEntryPoint {
     private static final String TAG = EntryPoint1.class.getSimpleName();
 
-    private Script mScript;
-    private ExecEngine mEngine;
+    private Script1 mScript;
+    private ExecEngine1 mEngine;
     private boolean mStopRequested;
-    private LocalComponent mComponent;
+    private LocalComponent1 mComponent1;
     private CountDownLatch mJmDNSLatch;
     private final List<JmDNS> mJmDnsList = new ArrayList<>();
 
@@ -76,13 +76,14 @@ public class EntryPoint1 implements IEntryPoint {
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
-    @Inject ScriptContext mScriptContext;
+    @Inject
+    Script1Context mScriptContext;
 
-    public Script getScript() {
+    public Script1 getScript() {
         return mScript;
     }
 
-    public ExecEngine getEngine() {
+    public ExecEngine1 getEngine() {
         return mEngine;
     }
 
@@ -101,13 +102,13 @@ public class EntryPoint1 implements IEntryPoint {
         // For some reason, IJ extracts generated/source/apt/main as a gen folder from the
         // gradle API instead of the proper build/generated/...
         File scriptFile = new File(scriptPath);
-        mComponent = DaggerEntryPoint1_LocalComponent
+        mComponent1 = DaggerEntryPoint1_LocalComponent1
                 .factory()
                 .createComponent(jmriProvider);
 
         // Do not use any injected field before this call
-        mComponent.inject(this);
-        mScriptContext.setScriptFile(scriptFile);
+        mComponent1.inject(this);
+        mScriptContext.setScript1File(scriptFile);
 
         mLogger.d(TAG, "Setup");
 
@@ -127,7 +128,7 @@ public class EntryPoint1 implements IEntryPoint {
 
             StatusWnd wnd = StatusWnd.open();
             wnd.init(
-                    mComponent,
+                    mComponent1,
                     mScript,
                     mEngine,
                     this::onReloadAction,
@@ -270,26 +271,26 @@ public class EntryPoint1 implements IEntryPoint {
             }
         };
 
-        IScriptComponent scriptComponent = mComponent
+        IScript1Component scriptComponent = mComponent1
                 .getScriptComponentFactory()
                 .createComponent(reporter);
 
         File file = null;
         try {
             file = mScriptContext
-                    .getScriptFile()
-                    .orElseThrow(() -> new IllegalArgumentException("Script File Not Defined"));
+                    .getScript1File()
+                    .orElseThrow(() -> new IllegalArgumentException("Script1 File Not Defined"));
 
-            ScriptParser2 parser = scriptComponent.getScriptParser2();
+            Script1Parser2 parser = scriptComponent.getScript1Parser2();
             // Remove existing script and try to reload, which may fail with an error.
             mEngine = null;
             mScript = parser.parse(file);
-            mEngine = scriptComponent.getExecEngine();
+            mEngine = scriptComponent.getExecEngine1();
             mEngine.onExecStart();
             sendEvent("Start");
             mJsonSender.sendEvent("conductor", null, "on");
         } catch (IOException e) {
-            mLogger.d(TAG, "Script Path: " + (file == null ? "Not Defined" : file.getAbsolutePath()));
+            mLogger.d(TAG, "Script1 Path: " + (file == null ? "Not Defined" : file.getAbsolutePath()));
             mLogger.d(TAG, "Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
         }
@@ -324,15 +325,15 @@ public class EntryPoint1 implements IEntryPoint {
 
     @Singleton
     @Component(modules = { CommonModule.class })
-    public interface LocalComponent extends IEngine1Component {
-        IScriptComponent.Factory getScriptComponentFactory();
+    public interface LocalComponent1 extends IEngine1Component {
+        IScript1Component.Factory getScriptComponentFactory();
 
         void inject(EntryPoint1 entryPoint);
         void inject(StatusWnd statusWnd);
 
         @Component.Factory
         interface Factory {
-            LocalComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
+            LocalComponent1 createComponent(@BindsInstance IJmriProvider jmriProvider);
         }
     }
 }

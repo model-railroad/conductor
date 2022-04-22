@@ -34,7 +34,7 @@ import com.alflabs.conductor.v1.script.IStringFunction;
 import com.alflabs.conductor.v1.script.IStringValue;
 import com.alflabs.conductor.v1.script.IntAction;
 import com.alflabs.conductor.v1.script.JsonEventAction;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.SensorFactory;
 import com.alflabs.conductor.v1.script.StringAction;
@@ -74,9 +74,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Parses a script and fills a {@link Script}.
+ * Parses a script and fills a {@link Script1}.
  */
-public class ScriptParser2 {
+public class Script1Parser2 {
 
     private final ThrottleFactory mThrottleFactory;
     private final TurnoutFactory mTurnoutFactory;
@@ -87,14 +87,14 @@ public class ScriptParser2 {
     private final JsonSender mJsonSender;
     private final Analytics mAnalytics;
     private final FileOps mFileOps;
-    private final Script mScript;
+    private final Script1 mScript;
     private final Reporter mReporter;
     private File mScriptDir;
 
     @Inject
-    public ScriptParser2(
+    public Script1Parser2(
             Reporter reporter,
-            Script script,
+            Script1 script,
             ThrottleFactory throttleFactory,
             TurnoutFactory turnoutFactory,
             SensorFactory sensorFactory,
@@ -121,10 +121,10 @@ public class ScriptParser2 {
      * Parses a script file.
      *
      * @param filepath The path of the file to be parsed.
-     * @return A new {@link Script}.
+     * @return A new {@link Script1}.
      * @throws IOException if the file is not found or can't be read from.
      */
-    public Script parse(File filepath) throws IOException {
+    public Script1 parse(File filepath) throws IOException {
         mScriptDir = filepath.getParentFile();
         String source = Files.toString(filepath, Charsets.UTF_8);
         return parse(source);
@@ -134,10 +134,10 @@ public class ScriptParser2 {
      * Parses a script file.
      *
      * @param source   The content of the file to be parsed.
-     * @return A new {@link Script}.
+     * @return A new {@link Script1}.
      * @throws IOException if the file is not found or can't be read from.
      */
-    public Script parse(String source) throws IOException {
+    public Script1 parse(String source) throws IOException {
         LineCounter lineCounter = new LineCounter(source);
         CaseInsensitiveInputStream input = new CaseInsensitiveInputStream(source);
         ConductorLexer lexer = new ConductorLexer(input);

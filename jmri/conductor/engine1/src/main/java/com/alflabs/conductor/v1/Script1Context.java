@@ -20,10 +20,10 @@ package com.alflabs.conductor.v1;
 
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.parser.Reporter;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
@@ -36,66 +36,66 @@ import java.util.Optional;
  * It holds the current script filename, the script-scoped component, and the loading error.
  */
 @Singleton
-public class ScriptContext {
-    private final IScriptComponent.Factory mScriptComponentFactory;
+public class Script1Context {
+    private final IScript1Component.Factory mScript1ComponentFactory;
     private final StringBuilder mError = new StringBuilder();
-    private IScriptComponent mScriptComponent;
-    private File mScriptFile;
+    private IScript1Component mScript1Component;
+    private File mScript1File;
 
     @Inject
-    public ScriptContext(IScriptComponent.Factory scriptComponentFactory) {
-        mScriptComponentFactory = scriptComponentFactory;
+    public Script1Context(IScript1Component.Factory script1ComponentFactory) {
+        mScript1ComponentFactory = script1ComponentFactory;
     }
 
     public void reset() {
-        mScriptComponent = null;
+        mScript1Component = null;
         mError.setLength(0);
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public ScriptContext setScriptComponent(@Null IScriptComponent scriptComp) {
-        mScriptComponent = scriptComp;
+    public Script1Context setScript1Component(@Null IScript1Component script1Comp) {
+        mScript1Component = script1Comp;
         return this;
     }
 
     @SuppressWarnings("UnusedReturnValue")
-    public ScriptContext setScriptFile(@Null File scriptFile) {
-        mScriptFile = scriptFile;
+    public Script1Context setScript1File(@Null File script1File) {
+        mScript1File = script1File;
         return this;
     }
 
     @NonNull
-    public Optional<File> getScriptFile() {
-        return Optional.ofNullable(mScriptFile);
+    public Optional<File> getScript1File() {
+        return Optional.ofNullable(mScript1File);
     }
 
     @NonNull
-    public IScriptComponent.Factory getScriptComponentFactory() {
-        return mScriptComponentFactory;
+    public IScript1Component.Factory getScript1ComponentFactory() {
+        return mScript1ComponentFactory;
     }
 
     /** Returns the current ScriptComponent if set. */
     @NonNull
-    public Optional<IScriptComponent> getScriptComponent() {
-        return Optional.ofNullable(mScriptComponent);
+    public Optional<IScript1Component> getScript1Component() {
+        return Optional.ofNullable(mScript1Component);
     }
 
-    /** Convenience method to return the ScriptComponent.ExecEngine. Can be null. */
+    /** Convenience method to return the ScriptComponent.ExecEngine1. Can be null. */
     @NonNull
-    public Optional<ExecEngine> getExecEngine() {
-        if (mScriptComponent == null) {
+    public Optional<ExecEngine1> getExecEngine1() {
+        if (mScript1Component == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(mScriptComponent.getExecEngine());
+        return Optional.ofNullable(mScript1Component.getExecEngine1());
     }
 
-    /** Convenience method to return the current parsed Script. Can be null. */
+    /** Convenience method to return the current parsed Script1. Can be null. */
     @NonNull
-    public Optional<Script> getScript() {
-        if (mScriptComponent == null) {
+    public Optional<Script1> getScript1() {
+        if (mScript1Component == null) {
             return Optional.empty();
         }
-        return Optional.ofNullable(mScriptComponent.getScript());
+        return Optional.ofNullable(mScript1Component.getScript1());
     }
 
     /** Returns the errors accumulated by the error reporter, if any. */

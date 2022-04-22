@@ -18,7 +18,7 @@
 
 package com.alflabs.conductor.v1.simulator;
 
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.Throttle;
 import com.alflabs.conductor.v1.script.Var;
@@ -45,7 +45,7 @@ public class Simulator {
         mClock = clock;
     }
 
-    public void startAsync(Script script, String varName) {
+    public void startAsync(Script1 script, String varName) {
         final String tag = TAG + " " + varName.replace("simulation-", "");
         Thread thread = mThreads.get(varName);
         if (thread != null) {
@@ -94,7 +94,7 @@ public class Simulator {
         }
     }
 
-    private void asyncExec(String tag, Script script, String source) {
+    private void asyncExec(String tag, Script1 script, String source) {
         mLogger.d(tag, "Started");
 
         String[] instructions = source.split("[;\r\n]");
@@ -180,10 +180,10 @@ public class Simulator {
             }
         }
 
-        mLogger.d(tag, "Script end");
+        mLogger.d(tag, "Script1 end");
     }
 
-    private void setSensorState(String tag, Script script, String instruction, String[] words, boolean state) {
+    private void setSensorState(String tag, Script1 script, String instruction, String[] words, boolean state) {
         String name = words[2];
         Sensor sensor = script.getSensor(name);
         if (sensor == null) {
@@ -225,7 +225,7 @@ public class Simulator {
 
     private void waitOnSensorName(
             String tag,
-            Script script,
+            Script1 script,
             String instruction,
             String[] words) {
         boolean desiredState = words[1].equalsIgnoreCase("on");

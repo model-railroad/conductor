@@ -19,21 +19,21 @@
 package com.alflabs.conductor.v1.dagger;
 
 import com.alflabs.conductor.v1.parser.Reporter;
-import com.alflabs.conductor.v1.parser.ScriptParser2;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.parser.Script1Parser2;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import dagger.BindsInstance;
 import dagger.Subcomponent;
 
-@ScriptScope
+@Script1Scope
 @Subcomponent
-public interface IScriptComponent {
-    Script getScript();
-    ExecEngine getExecEngine();
-    ScriptParser2 getScriptParser2();
+public interface IScript1Component {
+    Script1 getScript1();
+    ExecEngine1 getExecEngine1();
+    Script1Parser2 getScript1Parser2();
 
     @Subcomponent.Factory
     interface Factory {
-        IScriptComponent createComponent(@BindsInstance Reporter reporter);
+        IScript1Component createComponent(@BindsInstance Reporter reporter);
     }
 }

@@ -96,7 +96,7 @@ class StatusWindow2 {
                         gridwidth: wx, gridheight: 1,
                         fill: HORIZONTAL, insets: inset)) {
                     gridBagLayout()
-                    mScriptNameField = textField(text: "Script Name", editable: false,
+                    mScriptNameField = textField(text: "Script1 Name", editable: false,
                             constraints: gbc(gridx: 0, gridy: 0,
                                     gridwidth: wx-3, fill: HORIZONTAL, insets: inset, weightx: 1))
                     button(text: "Reload", constraints: gbc(gridx: wx-3, gridy: 0, insets: inset, weightx: 0),

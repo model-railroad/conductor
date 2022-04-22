@@ -20,11 +20,11 @@ package com.alflabs.conductor.v1.parser;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriThrottle;
-import com.alflabs.conductor.v1.ScriptContext;
+import com.alflabs.conductor.v1.Script1Context;
 import com.alflabs.conductor.v1.dagger.DaggerIEngine1TestComponent;
 import com.alflabs.conductor.v1.dagger.IEngine1TestComponent;
-import com.alflabs.conductor.v1.dagger.IScriptComponent;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.dagger.IScript1Component;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
 import com.google.common.base.Charsets;
@@ -45,21 +45,22 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.mockito.Mockito.when;
 
 /**
- * Tests for both {@link ScriptParser2} *and* {@link Script} execution engine
+ * Tests for both {@link Script1Parser2} *and* {@link Script1} execution engine
  * using full script files.
  */
 public class ScriptParserFullTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
     private TestReporter mReporter;
-    private IScriptComponent mScriptComponent;
+    private IScript1Component mScriptComponent;
 
     @Mock IJmriProvider mJmriProvider;
     @Mock IJmriThrottle mJmriThrottle;
 
     @Inject FakeClock mClock;
     @Inject FakeFileOps mFileOps;
-    @Inject ScriptContext mScriptContext;
+    @Inject
+    Script1Context mScriptContext;
 
     @Before
     public void setUp() throws Exception {
@@ -76,7 +77,7 @@ public class ScriptParserFullTest {
                 .createComponent(mReporter);
 
         component.inject(this);
-        mScriptContext.setScriptFile(scriptFile);
+        mScriptContext.setScript1File(scriptFile);
         mClock.setNow(1000);
     }
 
@@ -84,7 +85,7 @@ public class ScriptParserFullTest {
     public void testScript1() throws Exception {
         String source = getFileSource("script1.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -93,7 +94,7 @@ public class ScriptParserFullTest {
     public void testScript2() throws Exception {
         String source = getFileSource("script2.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -102,7 +103,7 @@ public class ScriptParserFullTest {
     public void testScript4() throws Exception {
         String source = getFileSource("script4.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -114,7 +115,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script6.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -125,7 +126,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script7.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }
@@ -136,7 +137,7 @@ public class ScriptParserFullTest {
 
         String source = getFileSource("script8.txt");
         assertThat(source).isNotNull();
-        Script script = mScriptComponent.getScriptParser2().parse(source);
+        Script1 script = mScriptComponent.getScript1Parser2().parse(source);
         assertThat(mReporter.toString()).isEqualTo("");
         assertThat(script).isNotNull();
     }

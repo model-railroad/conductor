@@ -22,11 +22,11 @@ import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.v1.EntryPoint1;
-import com.alflabs.conductor.v1.ScriptContext;
+import com.alflabs.conductor.v1.Script1Context;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.script.Enum_;
-import com.alflabs.conductor.v1.script.ExecEngine;
-import com.alflabs.conductor.v1.script.Script;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.Throttle;
 import com.alflabs.conductor.v1.script.Timer;
@@ -97,7 +97,8 @@ public class StatusWnd {
 
     @Inject IJmriProvider mIJmriProvider;
     @Inject KeyValueServer mKeyValueServer;
-    @Inject ScriptContext mScriptContext;
+    @Inject
+    Script1Context mScriptContext;
 
     private StatusWnd(JFrame frame) {
         mFrame = frame;
@@ -118,14 +119,14 @@ public class StatusWnd {
     }
 
     public void init(
-            EntryPoint1.LocalComponent component,
-            Script script,
-            ExecEngine engine,
+            EntryPoint1.LocalComponent1 component,
+            Script1 script,
+            ExecEngine1 engine,
             Supplier<RPair<EntryPoint1, String>> onReloadAction,
             Runnable onStopAction,
             Simulator optionalSimulator) {
         component.inject(this);
-        File file = mScriptContext.getScriptFile().orElse(new File("Not_Defined"));
+        File file = mScriptContext.getScript1File().orElse(new File("Not_Defined"));
         mTextScriptName.setText(file.getPath());
         initScript(component, script, engine);
 
@@ -165,7 +166,7 @@ public class StatusWnd {
         mFrame.pack();
     }
 
-    private void createSensorPanel(Script script) {
+    private void createSensorPanel(Script1 script) {
         List<String> sensorNames = script.getSensorNames();
         final int numCol = 6;
         final int numRow = (int) Math.ceil(sensorNames.size() / (double) numCol);
@@ -207,7 +208,7 @@ public class StatusWnd {
         }
     }
 
-    private void createSimulationPanel(Simulator simulator, Script script) {
+    private void createSimulationPanel(Simulator simulator, Script1 script) {
         List<String> simuVars = new ArrayList<>();
         for (String varName : script.getVarNames()) {
             if (varName.toLowerCase(Locale.US).startsWith("simulation-")) {
@@ -264,8 +265,8 @@ public class StatusWnd {
 
     private void initScript(
             IEngine1Component component,
-            Script script,
-            ExecEngine engine) {
+            Script1 script,
+            ExecEngine1 engine) {
         final int numThrottles = 2; // TODO hack for quick test
         JLabel[] labelSpeed = new JLabel[]{mLabelSpeed1, mLabelSpeed2};
         JLabel[] labelDcc = new JLabel[]{mLabelDcc1, mLabelDcc2};
@@ -323,8 +324,8 @@ public class StatusWnd {
     private StringBuilder mStatus = new StringBuilder();
 
     public String generateVarStatus(
-            Script script,
-            ExecEngine engine,
+            Script1 script,
+            ExecEngine1 engine,
             KeyValueServer kvServer) {
         mStatus.setLength(0);
 
@@ -420,7 +421,7 @@ public class StatusWnd {
         mRootPanel = new JPanel();
         mRootPanel.setLayout(new GridLayoutManager(10, 7, new Insets(10, 10, 10, 10), -1, -1));
         final JLabel label1 = new JLabel();
-        label1.setText("Script");
+        label1.setText("Script1");
         mRootPanel.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mTextScriptName = new JTextField();
         mTextScriptName.setEditable(false);
@@ -429,7 +430,7 @@ public class StatusWnd {
         label2.setText("Throttles");
         mRootPanel.add(label2, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mButtonReload = new JButton();
-        mButtonReload.setText("Reload Script");
+        mButtonReload.setText("Reload Script1");
         mRootPanel.add(mButtonReload, new GridConstraints(1, 5, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JLabel label3 = new JLabel();
         label3.setText("Status");
@@ -457,7 +458,7 @@ public class StatusWnd {
         mButtonChangeDcc2.setText("Change");
         mRootPanel.add(mButtonChangeDcc2, new GridConstraints(4, 6, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mButtonStop = new JButton();
-        mButtonStop.setText("Stop Script");
+        mButtonStop.setText("Stop Script1");
         mRootPanel.add(mButtonStop, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         mSepThrottles = new JSeparator();
         mRootPanel.add(mSepThrottles, new GridConstraints(2, 0, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
