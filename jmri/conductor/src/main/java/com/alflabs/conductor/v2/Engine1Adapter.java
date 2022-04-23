@@ -10,7 +10,6 @@ import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine1;
-import com.alflabs.conductor.v1.script.IExecEngine;
 import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.Timer;
@@ -30,21 +29,24 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Engine1Adapter {
+public class Engine1Adapter implements IEngineAdapter {
     private static final String TAG = Engine1Adapter.class.getSimpleName();
 
     @Inject ILogger mLogger;
     @Inject Script1Loader mScript1Loader;
     @Inject Script1Context mScript1Context;
 
+    @Override
     public Optional<File> getScriptFile() {
         return mScript1Context.getScript1File();
     }
 
+    @Override
     public void setScriptFile(@Null File scriptFile) {
         mScript1Context.setScript1File(scriptFile);
     }
 
+    @Override
     public void onHandle(AtomicBoolean paused) {
         Optional<ExecEngine1> engine = mScript1Context.getExecEngine1();
 
@@ -63,6 +65,7 @@ public class Engine1Adapter {
         engine.get().onExecHandle();
     }
 
+    @Override
     public Pair<Boolean, File> onReload() throws Exception {
         boolean wasRunning = mScript1Context.getScript1Component().isPresent();
 
@@ -77,6 +80,7 @@ public class Engine1Adapter {
         return Pair.of(wasRunning, file);
     }
 
+    @Override
     public Optional<MapInfo> getLoadedMapName() {
         Optional<Script1> script = mScript1Context.getScript1();
         if (script.isPresent()) {
@@ -87,7 +91,8 @@ public class Engine1Adapter {
         return Optional.empty();
     }
 
-    public void appendToLog(StringBuilder status, KeyValueServer keyValueServer) {
+    @Override
+    public void appendToLog(StringBuilder status) {
         String lastError = mScript1Context.getError();
         if (lastError.length() > 0) {
             status.append("\n--- [ LAST ERROR ] ---\n");
@@ -98,7 +103,7 @@ public class Engine1Adapter {
         Optional<Script1> script = mScript1Context.getScript1();
         if (engine.isPresent() && script.isPresent()) {
             try {
-                appendVarStatus(status, script.get(), engine.get(), keyValueServer);
+                appendVarStatus(status, script.get(), engine.get());
             } catch (ConcurrentModificationException ignore) {}
         }
     }
@@ -106,8 +111,7 @@ public class Engine1Adapter {
     private static void appendVarStatus(
             StringBuilder outStatus,
             Script1 script,
-            ExecEngine1 engine,
-            KeyValueServer kvServer) {
+            ExecEngine1 engine) {
 
         outStatus.append("Freq: ");
         outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
@@ -158,12 +162,6 @@ public class Engine1Adapter {
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         appendNewLine(outStatus);
-
-        outStatus.append("--- [ KV Server ] ---\n");
-        outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
-        for (String key : kvServer.getKeys()) {
-            outStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
-        }
     }
 
     private static void appendNewLine(StringBuilder outStatus) {

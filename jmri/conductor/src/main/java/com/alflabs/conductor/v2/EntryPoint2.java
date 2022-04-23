@@ -28,17 +28,28 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Pair;
+import com.alflabs.conductor.v1.script.Enum_;
+import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.Script1;
+import com.alflabs.conductor.v1.script.Sensor;
+import com.alflabs.conductor.v1.script.Timer;
+import com.alflabs.conductor.v1.script.Turnout;
+import com.alflabs.conductor.v1.script.Var;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.NotImplementedException;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.Optional;
@@ -48,7 +59,6 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private static final String TAG = EntryPoint2.class.getSimpleName();
 
     private boolean mIsSimulation;
-    private Engine1Adapter.LocalComponent1 mComponent;
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
@@ -56,7 +66,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
-    private final Engine1Adapter mAdapter = new Engine1Adapter();
+    private final IEngineAdapter mAdapter = new Engine1Adapter();
 
     @Inject ILogger mLogger;
     @Inject IClock mClock;
@@ -79,17 +89,31 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
      */
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
-        File scriptFile = new File(scriptPath);
-        mComponent = DaggerEngine1Adapter_LocalComponent1
-                .factory()
-                .createComponent(jmriProvider);
-
-        // Do not use any injected field before this call
-        mComponent.inject(this);
-        mComponent.inject(mAdapter);
-        mAdapter.setScriptFile(scriptFile);
-
         log("Setup");
+
+        File scriptFile = new File(scriptPath);
+        String mode = guessEngineMode(scriptFile);
+
+        if ("legacy".equals(mode)) {
+            Engine1Adapter.LocalComponent1 component = DaggerEngine1Adapter_LocalComponent1
+                    .factory()
+                    .createComponent(jmriProvider);
+            // Do not use any injected field before this call
+            component.inject(this);
+            component.inject((Engine1Adapter) mAdapter);
+
+        } else if ("groovy".equals(mode)) {
+            throw new NotImplementedException(mode);
+
+        } else if ("kts".equals(mode)) {
+            throw new NotImplementedException(mode);
+
+        } else {
+            log("Unknown engine mode " + mode);
+            return false;
+        }
+
+        mAdapter.setScriptFile(scriptFile);
 
         String eventLogFilename = mEventLogger.start(null);
         log("Event log: " + eventLogFilename);
@@ -98,6 +122,31 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         onWindowReload();
 
         return true;
+    }
+
+    private String guessEngineMode(File scriptFile) {
+        String mode = "legacy";
+        try {
+            if (scriptFile.getName().endsWith(".groovy")) {
+                mode = "groovy";
+            } else if (scriptFile.getName().endsWith(".kts")) {
+                mode = "kts";
+            } else {
+                String source = Files.toString(scriptFile, Charsets.UTF_8);
+                if (source.contains("import groovy")
+                        || source.contains("import com.alflabs.conductor.v2.script.RootScript")
+                        || source.contains("\ndef ")) {
+                    mode = "groovy";
+                } else if (source.contains("\nval ") || source.contains("throttle(")) {
+                    mode = "kts";
+                }
+            }
+
+            return mode;
+        } catch (IOException e) {
+            log("Failed to read source from " + scriptFile);
+            return null;
+        }
     }
 
     /**
@@ -313,9 +362,21 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append(mLoadError);
         }
 
-        mAdapter.appendToLog(mStatus, mKeyValueServer);
+        mAdapter.appendToLog(mStatus);
+        appendVarStatus(mStatus, mKeyValueServer);
 
         mWin.updateLog(mStatus.toString());
+    }
+
+    private static void appendVarStatus(
+            StringBuilder outStatus,
+            KeyValueServer kvServer) {
+
+        outStatus.append("--- [ KV Server ] ---\n");
+        outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
+        for (String key : kvServer.getKeys()) {
+            outStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
+        }
     }
 
     private void log(String line) {
