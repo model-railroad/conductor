@@ -21,50 +21,34 @@ package com.alflabs.conductor.v2;
 import autovalue.shaded.org.apache.commons.lang.exception.ExceptionUtils;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
-import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
-import com.alflabs.conductor.v1.Script1Context;
-import com.alflabs.conductor.v1.Script1Loader;
-import com.alflabs.conductor.v1.dagger.IEngine1Component;
-import com.alflabs.conductor.v1.dagger.IScript1Component;
-import com.alflabs.conductor.v1.script.Enum_;
-import com.alflabs.conductor.v1.script.ExecEngine1;
-import com.alflabs.conductor.v1.script.Script1;
-import com.alflabs.conductor.v1.script.Sensor;
-import com.alflabs.conductor.v1.script.Timer;
-import com.alflabs.conductor.v1.script.Turnout;
-import com.alflabs.conductor.v1.script.Var;
+import com.alflabs.conductor.util.Pair;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import dagger.BindsInstance;
-import dagger.Component;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 import javax.swing.SwingUtilities;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.ConcurrentModificationException;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private static final String TAG = EntryPoint2.class.getSimpleName();
 
     private boolean mIsSimulation;
-    private LocalComponent1 mComponent;
+    private Engine1Adapter.LocalComponent1 mComponent;
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
@@ -72,6 +56,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
+    private final Engine1Adapter mAdapter = new Engine1Adapter();
 
     @Inject ILogger mLogger;
     @Inject IClock mClock;
@@ -79,8 +64,6 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
-    @Inject Script1Loader mScript1Loader;
-    @Inject Script1Context mScript1Context;
 
     /**
      * Entry point invoked from DevEntryPoint2.
@@ -97,18 +80,19 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
         File scriptFile = new File(scriptPath);
-        mComponent = DaggerEntryPoint2_LocalComponent1
+        mComponent = DaggerEngine1Adapter_LocalComponent1
                 .factory()
                 .createComponent(jmriProvider);
 
         // Do not use any injected field before this call
         mComponent.inject(this);
-        mScript1Context.setScript1File(scriptFile);
+        mComponent.inject(mAdapter);
+        mAdapter.setScriptFile(scriptFile);
 
-        logln("Setup");
+        log("Setup");
 
         String eventLogFilename = mEventLogger.start(null);
-        logln("Event log: " + eventLogFilename);
+        log("Event log: " + eventLogFilename);
 
         openWindow();
         onWindowReload();
@@ -123,24 +107,11 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Override
     public boolean handle() {
         if (!mKeepRunning.get()) {
-            logln("Stop Requested");
+            log("Stop Requested");
             return false;
         }
 
-        Optional<ExecEngine1> engine = mScript1Context.getExecEngine1();
-        // If we have no engine, or it is paused, just idle-wait.
-        if (!engine.isPresent() || mPaused.get()) {
-            // TODO poor man async handling.
-            // Consider some kind of CountDownLatch or a long monitor/notify or similar
-            // instead of an active wait.
-            try {
-                Thread.sleep(330 /*ms*/);
-            } catch (InterruptedException ignore) {
-            }
-            return true;
-        }
-
-        engine.get().onExecHandle();
+        mAdapter.onHandle(mPaused);
         return true;
     }
 
@@ -152,20 +123,20 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void _simulHandleThread() {
-        logln("Simul Handle Thread - Start");
+        log("Simul Handle Thread - Start");
         while (mKeepRunning.get()) {
             try {
                 handle();
             } catch (Exception e) {
-                logln("Simul Handle Thread - Exception (ignored): "
+                log("Simul Handle Thread - Exception (ignored): "
                         + ExceptionUtils.getStackTrace(e));
             }
         }
-        logln("Simul Handle Thread - End");
+        log("Simul Handle Thread - End");
     }
 
     private void _windowUpdateThread() {
-        logln("Window Update Thread - Start");
+        log("Window Update Thread - Start");
 
         while (mKeepRunning.get() && mWin != null) {
             try {
@@ -177,13 +148,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 //                            try {
 //                                r.run();
 //                            } catch (Exception e) {
-//                                logln("Window Update Thread - Exception (ignored): "
+//                                log("Window Update Thread - Exception (ignored): "
 //                                        + ExceptionUtils.getStackTrace(e));
 //                            }
 //                        });
 //                    } catch (ConcurrentModificationException ignore) {
 //                    } catch (Exception e2) {
-//                        logln("Window Update Thread - Exception (ignored): "
+//                        log("Window Update Thread - Exception (ignored): "
 //                                + ExceptionUtils.getStackTrace(e2));
 //                    }
                 });
@@ -193,14 +164,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             }
         }
 
-        logln("Window Update Thread - End");
+        log("Window Update Thread - End");
     }
 
     private void openWindow() {
         // Note: it's fine for opening the window to fail if this runs from a terminal or as a service.
         try {
             if (GraphicsEnvironment.isHeadless()) {
-                logln("StatusWindow2 skipped: headless graphics environment");
+                log("StatusWindow2 skipped: headless graphics environment");
             } else {
                 mWin = new StatusWindow2();
                 mWin.open(this);
@@ -212,14 +183,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 }
             }
         } catch (Exception e) {
-            logln("StatusWindow2 Failed: " + ExceptionUtils.getStackTrace(e));
+            log("StatusWindow2 Failed: " + ExceptionUtils.getStackTrace(e));
             mWin = null;
         }
     }
 
     @Override
     public void onQuit() {
-        logln("onQuit");
+        log("onQuit");
         mJsonSender.sendEvent("conductor", null, "off");
         sendEvent("Stop");
 
@@ -228,9 +199,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         if (mHandleThread != null) {
             try {
                 mHandleThread.join();
-                logln("Simul Handle Thread terminated");
+                log("Simul Handle Thread terminated");
             } catch (InterruptedException e) {
-                logln("Simul Handle Thread join: " + e);
+                log("Simul Handle Thread join: " + e);
             } finally {
                 mHandleThread = null;
             }
@@ -240,9 +211,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             // TODO sometimes the win update threads is still stuck on the Swing invokeAndWait.
             try {
                 mWinUpdateThread.join();
-                logln("Window Update Thread terminated");
+                log("Window Update Thread terminated");
             } catch (InterruptedException e) {
-                logln("Window Update Thread join: " + e);
+                log("Window Update Thread join: " + e);
             } finally {
                 mWinUpdateThread = null;
             }
@@ -250,33 +221,21 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         mWin = null;
         if (mIsSimulation) {
-            logln("Exit Simulation");
+            log("Exit Simulation");
             System.exit(0);
         }
     }
 
     @Override
     public void onWindowReload() {
-        logln("onWindowReload");
+        log("onWindowReload");
 
-        boolean wasRunning = mScript1Context.getScript1Component().isPresent();
-//        mUiUpdaters.clear();
-
-
-//        } catch (IOException e) {
-//        }
-//        return error.toString();
-
+        // TBD: mUiUpdaters.clear();
 
         try {
-            // TBD Release any resources from current script component as needed.
-            mScript1Context.reset();
-
-            File file = mScript1Context
-                    .getScript1File()
-                    .orElseThrow(() -> new IllegalArgumentException("Script1 File Not Defined"));
-            logln("Script1 Path: " + file.getPath());
-            mScript1Loader.execByPath(mScript1Context);
+            Pair<Boolean, File> reloaded = mAdapter.onReload();
+            boolean wasRunning = reloaded.mFirst;
+            File file = reloaded.mSecond;
 
             if (mWin != null) {
                 mWin.updateScriptName(file.getName());
@@ -290,53 +249,46 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 mJsonSender.sendEvent("conductor", null, "on");
             }
         } catch (Exception e) {
-            logln("Failed to load event script with the following exception:");
+            log("Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
 
             mLoadError.setLength(0);
             mLoadError.append(e).append('\n').append(ExceptionUtils.getStackTrace(e));
             if (mWin == null) {
-                logln("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
+                log("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
             }
         }
 
-
-        //
-//        registerUiThrottles();
-//        registerUiConditionals();
-//
-
+        // TBD: registerUiThrottles();
+        // TBD: registerUiConditionals();
     }
 
     private void loadMap() {
-        if (!mScript1Context.getScript1File().isPresent()) {
+        if (!mAdapter.getScriptFile().isPresent()) {
             return;
         }
-        File scriptFile = mScript1Context.getScript1File().get();
+        File scriptFile = mAdapter.getScriptFile().get();
         File scriptDir = scriptFile.getParentFile();
 
-        Optional<Script1> script = mScript1Context.getScript1();
-        if (script.isPresent()) {
-            TreeMap<String, MapInfo> maps = script.get().getMaps();
-            Optional<MapInfo> mapName = maps.values().stream().findFirst();
-            if (mapName.isPresent()) {
-                String svgName = mapName.get().getUri();
-                File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
-                URI svgUri = svgFile.toURI();
+        Optional<MapInfo> mapName = mAdapter.getLoadedMapName();
 
-                logln("Loading map: " + svgUri);
-                try {
-                    mWin.displaySvgMap(svgUri);
-                } catch (Exception e) {
-                    logln("Failed to load map '" + svgName + "' : " + e);
-                }
+        if (mapName.isPresent()) {
+            String svgName = mapName.get().getUri();
+            File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
+            URI svgUri = svgFile.toURI();
+
+            log("Loading map: " + svgUri);
+            try {
+                mWin.displaySvgMap(svgUri);
+            } catch (Exception e) {
+                log("Failed to load map '" + svgName + "' : " + e);
             }
         }
     }
 
     @Override
     public void onWindowPause() {
-        logln("onWindowPause");
+        log("onWindowPause");
         mPaused.set(!mPaused.get());
     }
 
@@ -361,93 +313,12 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append(mLoadError);
         }
 
-        String lastError = mScript1Context.getError();
-        if (lastError.length() > 0) {
-            mStatus.append("\n--- [ LAST ERROR ] ---\n");
-            mStatus.append(lastError);
-        }
-
-        Optional<ExecEngine1> engine = mScript1Context.getExecEngine1();
-        Optional<Script1> script = mScript1Context.getScript1();
-        if (engine.isPresent() && script.isPresent()) {
-            try {
-                appendVarStatus(mStatus, script.get(), engine.get(), mKeyValueServer);
-            } catch (ConcurrentModificationException ignore) {}
-        }
+        mAdapter.appendToLog(mStatus, mKeyValueServer);
 
         mWin.updateLog(mStatus.toString());
     }
 
-    private static void appendVarStatus(
-            StringBuilder outStatus,
-            Script1 script,
-            ExecEngine1 engine,
-            KeyValueServer kvServer) {
-
-        outStatus.append("Freq: ");
-        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
-                engine.getActualFrequency(),
-                engine.getMaxFrequency()));
-
-        outStatus.append("--- [ TURNOUTS ] ---\n");
-        int i = 0;
-        for (String name : script.getTurnoutNames()) {
-            Turnout turnout = script.getTurnout(name);
-            outStatus.append(name.toUpperCase()).append(": ").append(turnout.isActive() ? 'N' : 'R');
-            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-        }
-        appendNewLine(outStatus);
-
-        outStatus.append("--- [ SENSORS ] ---\n");
-        i = 0;
-        for (String name : script.getSensorNames()) {
-            Sensor sensor = script.getSensor(name);
-            outStatus.append(name.toUpperCase()).append(": ").append(sensor.isActive() ? '1' : '0');
-            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-        }
-        appendNewLine(outStatus);
-
-        outStatus.append("--- [ TIMERS ] ---\n");
-        i = 0;
-        for (String name : script.getTimerNames()) {
-            Timer timer = script.getTimer(name);
-            outStatus.append(name).append(':').append(timer.isActive() ? '1' : '0');
-            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-        }
-        appendNewLine(outStatus);
-
-        outStatus.append("--- [ ENUMS ] ---\n");
-        i = 0;
-        for (String name : script.getEnumNames()) {
-            Enum_ enum_ = script.getEnum(name);
-            outStatus.append(name).append(':').append(enum_.get());
-            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-        }
-        appendNewLine(outStatus);
-
-        outStatus.append("--- [ VARS ] ---\n");
-        i = 0;
-        for (String name : script.getVarNames()) {
-            Var var = script.getVar(name);
-            outStatus.append(name).append(':').append(var.getAsInt());
-            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-        }
-        appendNewLine(outStatus);
-
-        outStatus.append("--- [ KV Server ] ---\n");
-        outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
-        for (String key : kvServer.getKeys()) {
-            outStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
-        }
-    }
-
-    private static void appendNewLine(StringBuilder outStatus) {
-        if (outStatus.charAt(outStatus.length() - 1) != '\n') {
-            outStatus.append('\n');
-        }
-    }
-
-    private void logln(String line) {
+    private void log(String line) {
         if (mLogger == null) {
             System.out.println(TAG + " " + line);
         } else {
@@ -455,21 +326,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         }
     }
 
-
     private void sendEvent(String action) {
         mAnalytics.sendEvent("Conductor", action, "", "Conductor");
-    }
-
-    @Singleton
-    @Component(modules = { CommonModule.class })
-    public interface LocalComponent1 extends IEngine1Component {
-        IScript1Component.Factory getScriptComponentFactory();
-
-        void inject(EntryPoint2 entryPoint);
-
-        @Component.Factory
-        interface Factory {
-            LocalComponent1 createComponent(@BindsInstance IJmriProvider jmriProvider);
-        }
     }
 }
