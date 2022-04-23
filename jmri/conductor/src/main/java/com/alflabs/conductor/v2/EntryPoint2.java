@@ -28,13 +28,6 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Pair;
-import com.alflabs.conductor.v1.script.Enum_;
-import com.alflabs.conductor.v1.script.ExecEngine1;
-import com.alflabs.conductor.v1.script.Script1;
-import com.alflabs.conductor.v1.script.Sensor;
-import com.alflabs.conductor.v1.script.Timer;
-import com.alflabs.conductor.v1.script.Turnout;
-import com.alflabs.conductor.v1.script.Var;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
@@ -55,6 +48,7 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private static final String TAG = EntryPoint2.class.getSimpleName();
 
@@ -66,7 +60,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
-    private final IEngineAdapter mAdapter = new Engine1Adapter();
+    private Optional<IEngineAdapter> mAdapter = Optional.empty();
 
     @Inject ILogger mLogger;
     @Inject IClock mClock;
@@ -95,15 +89,24 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         String mode = guessEngineMode(scriptFile);
 
         if ("legacy".equals(mode)) {
+            Engine1Adapter adapter = new Engine1Adapter();
+            mAdapter = Optional.of(adapter);
             Engine1Adapter.LocalComponent1 component = DaggerEngine1Adapter_LocalComponent1
                     .factory()
                     .createComponent(jmriProvider);
             // Do not use any injected field before this call
             component.inject(this);
-            component.inject((Engine1Adapter) mAdapter);
+            component.inject(adapter);
 
         } else if ("groovy".equals(mode)) {
-            throw new NotImplementedException(mode);
+            Engine2GroovyAdapter adapter = new Engine2GroovyAdapter();
+            mAdapter = Optional.of(adapter);
+            Engine2GroovyAdapter.LocalComponent2 component = DaggerEngine2GroovyAdapter_LocalComponent2
+                    .factory()
+                    .createComponent(jmriProvider);
+            // Do not use any injected field before this call
+            component.inject(this);
+            component.inject(adapter);
 
         } else if ("kts".equals(mode)) {
             throw new NotImplementedException(mode);
@@ -113,7 +116,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
 
-        mAdapter.setScriptFile(scriptFile);
+        mAdapter.get().setScriptFile(scriptFile);
 
         String eventLogFilename = mEventLogger.start(null);
         log("Event log: " + eventLogFilename);
@@ -160,7 +163,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
 
-        mAdapter.onHandle(mPaused);
+        mAdapter.get().onHandle(mPaused);
         return true;
     }
 
@@ -282,7 +285,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         // TBD: mUiUpdaters.clear();
 
         try {
-            Pair<Boolean, File> reloaded = mAdapter.onReload();
+            Pair<Boolean, File> reloaded = mAdapter.get().onReload();
             boolean wasRunning = reloaded.mFirst;
             File file = reloaded.mSecond;
 
@@ -313,13 +316,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void loadMap() {
-        if (!mAdapter.getScriptFile().isPresent()) {
+        if (!mAdapter.get().getScriptFile().isPresent()) {
             return;
         }
-        File scriptFile = mAdapter.getScriptFile().get();
+        File scriptFile = mAdapter.get().getScriptFile().get();
         File scriptDir = scriptFile.getParentFile();
 
-        Optional<MapInfo> mapName = mAdapter.getLoadedMapName();
+        Optional<MapInfo> mapName = mAdapter.get().getLoadedMapName();
 
         if (mapName.isPresent()) {
             String svgName = mapName.get().getUri();
@@ -362,7 +365,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append(mLoadError);
         }
 
-        mAdapter.appendToLog(mStatus);
+        mAdapter.get().appendToLog(mStatus);
         appendVarStatus(mStatus, mKeyValueServer);
 
         mWin.updateLog(mStatus.toString());

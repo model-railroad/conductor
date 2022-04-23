@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/groovy" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/resources" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2/build/generated/sources/annotationProcessor/java/test" isTestSource="true" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2/build" />
     </content>
@@ -18,6 +19,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="conductor.common" />
     <orderEntry type="module" module-name="conductor.LibUtilsJava" />
+    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.dagger:dagger:2.22.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: com.google.guava:guava:19.0" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-ant:3.0.8" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-astbuilder:3.0.8" level="project" />
@@ -41,6 +44,8 @@
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy:3.0.8" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-docgenerator:3.0.8" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.groovy:groovy-groovysh:3.0.8" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
+    <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.ant:ant:1.10.9" level="project" />
     <orderEntry type="library" name="Gradle: com.github.javaparser:javaparser-core:3.18.0" level="project" />
     <orderEntry type="library" name="Gradle: junit:junit:4.13.2" level="project" />
@@ -55,15 +60,11 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.guava:guava:20.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.dagger:dagger:2.22.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: jdom:jdom:1.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.errorprone:error_prone_annotations:2.0.18" level="project" />
@@ -118,16 +119,12 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.dagger:dagger:2.22.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.objenesis:objenesis:3.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: jdom:jdom:1.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.apache.ant:ant-junit:1.10.9" level="project" />
