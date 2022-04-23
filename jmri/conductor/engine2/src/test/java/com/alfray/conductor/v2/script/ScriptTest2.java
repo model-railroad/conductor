@@ -1,6 +1,7 @@
 package com.alfray.conductor.v2.script;
 
 import com.alflabs.annotations.NonNull;
+import com.alflabs.conductor.v2.Script2Loader;
 import com.alflabs.conductor.v2.script.IBlock;
 import com.alflabs.conductor.v2.script.ISensor;
 import com.alflabs.conductor.v2.script.impl.BaseVar;
@@ -52,8 +53,10 @@ public class ScriptTest2 {
 
     @NonNull
     private void loadScriptFromFile(String scriptName) throws Exception {
-        String scriptText = readScriptText(scriptName);
-        loadScriptFromText(scriptText);
+        Script2Loader loader = new Script2Loader();
+        loader.loadScriptFromFile(scriptName);
+        mScript = loader.getScript().get();
+        mBinding = loader.getBinding().get();
     }
 
     private void loadScriptFromText(String scriptText) throws Exception {
@@ -61,54 +64,10 @@ public class ScriptTest2 {
     }
 
     private void loadScriptFromText(String scriptName, String scriptText) throws Exception {
-        // Important order: we need to load the script, and then _execute_ it in order
-        // for all variables to be created in the bindings. Only after can we find their
-        // names and resolve them. Local variables (defined with 'def' or a type) are not
-        // visible in the binding, and we cannot resolve these.
-        mScript = loadScript(scriptName, scriptText);
-        runScript();
-        mScript.resolvePendingVars(mBinding);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    private String readScriptText(String scriptName) throws IOException {
-        String path = "v2/script/" + scriptName + ".groovy";
-        URL url = Resources.getResource(path);
-        System.out.println(url.toString());
-        String scriptText = Resources.toString(url, Charsets.UTF_8);
-        assertThat(scriptText).isNotEmpty();
-
-        scriptText = scriptText.replaceAll("-->", "then");
-        return scriptText;
-    }
-
-    private RootScript loadScript(String scriptName, String scriptText) {
-        mBinding = new Binding();
-        CompilerConfiguration config = new CompilerConfiguration();
-        config.setScriptBaseClass(RootScript.class.getName());
-
-        GroovyShell shell = new GroovyShell(
-                this.getClass().getClassLoader(),
-                mBinding,
-                config);
-        groovy.lang.Script script = shell.parse(scriptText, scriptName);
-        assertThat(script).isInstanceOf(RootScript.class);
-        return (RootScript) script;
-    }
-
-    private void runScript() throws Exception {
-        try {
-            // This runs the script and actually creates the variables.
-            mScript.run();
-        } catch (Throwable t) {
-            Throwable t2 = StackTraceUtils.sanitize(t);
-            StackTraceElement[] stackTrace = t2.getStackTrace();
-            String msg = t2.getMessage();
-            if (stackTrace != null && stackTrace.length > 0) {
-                msg = stackTrace[0].toString() + " :\n" + msg;
-            }
-            throw new Exception(msg, t2);
-        }
+        Script2Loader loader = new Script2Loader();
+        loader.loadScriptFromText(scriptName, scriptText);
+        mScript = loader.getScript().get();
+        mBinding = loader.getBinding().get();
     }
 
     @Test
