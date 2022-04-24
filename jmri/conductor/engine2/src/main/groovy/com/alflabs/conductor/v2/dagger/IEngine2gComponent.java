@@ -9,11 +9,11 @@ import javax.inject.Singleton;
 
 @Singleton
 @Component(modules = { CommonModule.class })
-public interface IEngine2Component {
+public interface IEngine2gComponent {
     // IScript2Component.Factory getScriptComponentFactory();
 
     @Component.Factory
     interface Factory {
-        IEngine2Component createComponent(@BindsInstance IJmriProvider jmriProvider);
+        IEngine2gComponent createComponent(@BindsInstance IJmriProvider jmriProvider);
     }
 }

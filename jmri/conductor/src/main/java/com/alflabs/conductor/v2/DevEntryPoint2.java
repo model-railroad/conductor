@@ -27,7 +27,8 @@ public class DevEntryPoint2 {
         EntryPoint2 entry = new EntryPoint2();
 
         // entry.init("src/test/resources/v2/script_v45_8749+1072+BL191.txt");
-        entry.init("sample_v2.groovy");
+        // entry.init("sample_v2.groovy");
+        entry.init("sample_v2.conductor.kts");
         entry.runDevLoop();
         System.out.println(TAG + " - End");
     }

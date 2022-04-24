@@ -1,23 +1,20 @@
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.host.ConductorScriptHost
+import com.alfray.conductor.v2.Script2kLoader
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
-import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
-import kotlin.script.experimental.api.ScriptDiagnostic
-import kotlin.script.experimental.api.SourceCode
-import kotlin.script.experimental.host.StringScriptSource
-import kotlin.script.experimental.host.UrlScriptSource
 
 @Suppress("UnstableApiUsage")
 class ScriptTest2k {
-    private lateinit var scriptHost: ConductorScriptHost
-    private lateinit var conductorImpl: ConductorImpl
-    private lateinit var execEngine: ExecEngine
+    private lateinit var loader: Script2kLoader
+    private val conductorImpl: ConductorImpl
+        get() = loader.conductorImpl
+    private val execEngine: ExecEngine
+        get() = loader.execEngine
 
     @Before
     fun setUp() {
@@ -30,44 +27,31 @@ class ScriptTest2k {
     }
 
     private fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
-        val scriptPath = "v2/script/$scriptName.conductor.kts"
-        val scriptUrl = Resources.getResource(scriptPath)!!
-        val source = UrlScriptSource(scriptUrl)
-        return loadScript(source)
+        loader = Script2kLoader()
+        loader.loadScriptFromFile(scriptName)
+        return loader.result
     }
 
     private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
-        val source = StringScriptSource(scriptText, scriptName)
-        return loadScript(source)
+        loader = Script2kLoader()
+        loader.loadScriptFromText(scriptName, scriptText)
+        return loader.result
     }
 
-    private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
-        conductorImpl = ConductorImpl()
-        scriptHost = ConductorScriptHost()
-        execEngine = ExecEngine(conductorImpl)
-        return scriptHost.eval(source, conductorImpl)
-    }
-
-    private fun getResultErrors(result: ResultWithDiagnostics<EvaluationResult>) : List<String> =
-        result.reports
-            .filter { it.severity != ScriptDiagnostic.Severity.DEBUG }
-            .map { it.toString() }
-
-
-    private fun assertResultNoError(result: ResultWithDiagnostics<EvaluationResult>) {
-        assertThat(getResultErrors(result).joinToString("\n")).isEmpty()
+    private fun assertResultNoError() {
+        assertThat(loader.getResultErrors().joinToString("\n")).isEmpty()
     }
 
     @Test
     fun testLoadScriptAndEval() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
     }
 
     @Test
     fun testVariables() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.blocks.keys).containsExactly("NS768", "NS769")
         assertThat(conductorImpl.sensors.keys).containsExactly("NS829")
@@ -79,20 +63,20 @@ class ScriptTest2k {
 
     @Test
     fun testDontLeakImplementationDetails_BaseVars() {
-        val result = loadScriptFromText(scriptText =
+        loadScriptFromText(scriptText =
         """
         val Sensor1 = sensor("S01")
         println("varName is ${"$"}{Sensor1.varName}")
         """.trimIndent()
         )
 
-        assertThat(getResultErrors(result)).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
+        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
     }
 
     @Test
     fun testVarBlock() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.blocks).containsKey("NS768")
         assertThat(conductorImpl.blocks).containsKey("NS769")
@@ -101,8 +85,8 @@ class ScriptTest2k {
 
     @Test
     fun testVarSensor() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.sensors).containsKey("NS829")
         assertThat(conductorImpl.sensors["NS829"]).isSameInstanceAs(conductorImpl.sensor("NS829"))
@@ -110,8 +94,8 @@ class ScriptTest2k {
 
     @Test
     fun testVarTurnout() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.turnouts).containsKey("NT311")
         assertThat(conductorImpl.turnouts["NT311"]).isSameInstanceAs(conductorImpl.turnout("NT311"))
@@ -119,8 +103,8 @@ class ScriptTest2k {
 
     @Test
     fun testVarThrottle() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.throttles).containsKey(1001)
         assertThat(conductorImpl.throttles[1001]).isSameInstanceAs(conductorImpl.throttle(1001))
@@ -128,8 +112,8 @@ class ScriptTest2k {
 
     @Test
     fun testVarTimer() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
             "@timer@5", "@timer@15", "@timer@42", "@timer@5", "@timer@7", "@timer@9")
@@ -137,8 +121,8 @@ class ScriptTest2k {
 
     @Test
     fun testMapInfo() {
-        val result = loadScriptFromFile("sample_v2")
-        assertResultNoError(result)
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
 
         assertThat(conductorImpl.svgMaps).containsExactly(
             "Mainline",
@@ -148,7 +132,7 @@ class ScriptTest2k {
 
     @Test
     fun testGlobalOnRules() {
-        val result = loadScriptFromText(scriptText =
+        loadScriptFromText(scriptText =
         """
         val S1 = sensor("S1")
         val T1 = turnout("T1")
@@ -156,7 +140,7 @@ class ScriptTest2k {
         on {  S1 } then { T1.normal() }
         """.trimIndent()
         )
-        assertResultNoError(result)
+        assertResultNoError()
 
         assertThat(conductorImpl.rules).hasSize(2)
 

@@ -13,7 +13,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 
-public class Script2Loader {
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+public class Script2gLoader {
     private Optional<Binding> mBinding = Optional.empty();
     private Optional<RootScript> mScript = Optional.empty();
 

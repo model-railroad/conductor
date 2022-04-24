@@ -4,17 +4,19 @@ import com.alflabs.annotations.Null;
 import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Pair;
-import com.alflabs.conductor.v2.dagger.IEngine2gComponent;
-import com.alflabs.conductor.v2.script.IBlock;
-import com.alflabs.conductor.v2.script.ISensor;
-import com.alflabs.conductor.v2.script.RootScript;
-import com.alflabs.conductor.v2.script.impl.MapInfo;
-import com.alflabs.conductor.v2.script.impl.Timer;
-import com.alflabs.conductor.v2.script.impl.Turnout;
 import com.alflabs.utils.ILogger;
+import com.alfray.conductor.v2.Script2kLoader;
+import com.alfray.conductor.v2.dagger.IEngine2kComponent;
+import com.alfray.conductor.v2.script.ConductorImpl;
+import com.alfray.conductor.v2.script.ExecEngine;
+import com.alfray.conductor.v2.script.ISvgMap;
+import com.alfray.conductor.v2.script.impl.Block;
+import com.alfray.conductor.v2.script.impl.Sensor;
+import com.alfray.conductor.v2.script.impl.Timer;
+import com.alfray.conductor.v2.script.impl.Turnout;
+import com.google.common.base.Preconditions;
 import dagger.BindsInstance;
 import dagger.Component;
-import groovy.lang.Binding;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,11 +27,11 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class Engine2GroovyAdapter implements IEngineAdapter {
-    private static final String TAG = Engine2GroovyAdapter.class.getSimpleName();
+public class Engine2KotlinAdapter implements IEngineAdapter {
+    private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
     private Optional<File> mScriptFile = Optional.empty();
-    private Optional<Script2gLoader> mScript2gLoader = Optional.empty();
+    private Optional<Script2kLoader> mScript2kLoader = Optional.empty();
 
     @Inject ILogger mLogger;
 
@@ -45,10 +47,10 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 
     @Override
     public void onHandle(AtomicBoolean paused) {
-        Optional<RootScript> script = mScript2gLoader.flatMap(Script2gLoader::getScript);
+        Optional<ExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
 
         // If we have no engine, or it is paused, just idle-wait.
-        if (!script.isPresent() || paused.get()) {
+        if (!engine.isPresent() || paused.get()) {
             // TODO poor man async handling.
             // Consider some kind of CountDownLatch or a long monitor/notify or similar
             // instead of an active wait.
@@ -59,12 +61,12 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
             return;
         }
 
-        script.get().executeRules();
+        engine.get().executeRules();
     }
 
     @Override
     public Pair<Boolean, File> onReload() throws Exception {
-        boolean wasRunning = mScript2gLoader.isPresent();
+        boolean wasRunning = mScript2kLoader.isPresent();
 
         // TBD Release any resources from current script component as needed.
 
@@ -72,23 +74,24 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
         log("Script2 Path: " + file.getPath());
 
-        mScript2gLoader = Optional.of(new Script2gLoader());
-        mScript2gLoader.get().loadScriptFromFile(file.getPath());
+        mScript2kLoader = Optional.of(new Script2kLoader());
+        mScript2kLoader.get().loadScriptFromFile(file.getPath());
+        Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
 
         return Pair.of(wasRunning, file);
     }
 
     @Override
     public Optional<com.alflabs.manifest.MapInfo> getLoadedMapName() {
-        Optional<RootScript> script = mScript2gLoader.flatMap(Script2gLoader::getScript);
+        Optional<ConductorImpl> script = mScript2kLoader.flatMap(Script2kLoader::conductorOptional);
         if (script.isPresent()) {
-            Map<String, MapInfo> maps = script.get().maps();
-            Optional<MapInfo> info = maps.values().stream().findFirst();
-            if (info.isPresent()) {
+            Map<String, ISvgMap> svgMaps = script.get().getSvgMaps();
+            Optional<ISvgMap> svgMap = svgMaps.values().stream().findFirst();
+            if (svgMap.isPresent()) {
                 return Optional.of(new com.alflabs.manifest.MapInfo(
-                        info.get().getName(),
-                        info.get().getSvg(),
-                        /* uri= */ info.get().getName()
+                        svgMap.get().getName(),
+                        svgMap.get().getSvg(),
+                        /* uri= */ svgMap.get().getName()
                 ));
             }
         }
@@ -104,19 +107,17 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 //            status.append(lastError);
 //        }
 
-        Optional<Binding> binding = mScript2gLoader.flatMap(Script2gLoader::getBinding);
-        Optional<RootScript> script = mScript2gLoader.flatMap(Script2gLoader::getScript);
-        if (binding.isPresent() && script.isPresent()) {
+        Optional<ConductorImpl> script = mScript2kLoader.flatMap(Script2kLoader::conductorOptional);
+        if (script.isPresent()) {
             try {
-                appendVarStatus(status, script.get(), binding.get());
+                appendVarStatus(status, script.get());
             } catch (ConcurrentModificationException ignore) {}
         }
     }
 
     private static void appendVarStatus(
             StringBuilder outStatus,
-            RootScript script,
-            Binding binding) {
+            ConductorImpl script) {
 
 //        outStatus.append("Freq: ");
 //        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
@@ -125,40 +126,38 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 
         outStatus.append("--- [ TURNOUTS ] ---\n");
         int i = 0;
-        for (Map.Entry<String, Turnout> entry : script.turnouts().entrySet()) {
+        for (Map.Entry<String, Turnout> entry : script.getTurnouts().entrySet()) {
             String name = entry.getKey();
             Turnout turnout = entry.getValue();
-            outStatus.append(name.toUpperCase()).append(": ").append(turnout.isActive() ? 'N' : 'R');
+            outStatus.append(name.toUpperCase()).append(": ").append(turnout.getActive() ? 'N' : 'R');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         appendNewLine(outStatus);
 
         outStatus.append("--- [ BLOCKS ] ---\n");
         i = 0;
-        for (Map.Entry<String, IBlock> entry : script.blocks().entrySet()) {
+        for (Map.Entry<String, Block> entry : script.getBlocks().entrySet()) {
             String name = entry.getKey();
-            IBlock block = entry.getValue();
-            outStatus.append(name.toUpperCase()).append(": ").append(block.isActive() ? '1' : '0');
+            Block block = entry.getValue();
+            outStatus.append(name.toUpperCase()).append(": ").append(block.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         appendNewLine(outStatus);
 
         outStatus.append("--- [ SENSORS ] ---\n");
         i = 0;
-        for (Map.Entry<String, ISensor> entry : script.sensors().entrySet()) {
+        for (Map.Entry<String, Sensor> entry : script.getSensors().entrySet()) {
             String name = entry.getKey();
-            ISensor sensor = entry.getValue();
-            outStatus.append(name.toUpperCase()).append(": ").append(sensor.isActive() ? '1' : '0');
+            Sensor sensor = entry.getValue();
+            outStatus.append(name.toUpperCase()).append(": ").append(sensor.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         appendNewLine(outStatus);
 
         outStatus.append("--- [ TIMERS ] ---\n");
         i = 0;
-        for (Map.Entry<String, Timer> entry : script.timers().entrySet()) {
-            String name = entry.getKey();
-            Timer timer = entry.getValue();
-            outStatus.append(name).append(':').append(timer.isActive() ? '1' : '0');
+        for (Timer timer : script.getTimers()) {
+            outStatus.append(timer.getName()).append(':').append(timer.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
         appendNewLine(outStatus);
@@ -199,15 +198,15 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 
     @Singleton
     @Component(modules = { CommonModule.class })
-    public interface LocalComponent2g extends IEngine2gComponent {
-        // IScript2gComponent.Factory getScriptComponentFactory();
+    public interface LocalComponent2k extends IEngine2kComponent {
+        // IScript2Component.Factory getScriptComponentFactory();
 
         void inject(EntryPoint2 entryPoint);
-        void inject(Engine2GroovyAdapter adapter);
+        void inject(Engine2KotlinAdapter adapter);
 
         @Component.Factory
         interface Factory {
-            LocalComponent2g createComponent(@BindsInstance IJmriProvider jmriProvider);
+            LocalComponent2k createComponent(@BindsInstance IJmriProvider jmriProvider);
         }
     }
 }

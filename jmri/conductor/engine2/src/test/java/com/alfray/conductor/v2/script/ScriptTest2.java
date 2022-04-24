@@ -1,7 +1,7 @@
 package com.alfray.conductor.v2.script;
 
 import com.alflabs.annotations.NonNull;
-import com.alflabs.conductor.v2.Script2Loader;
+import com.alflabs.conductor.v2.Script2gLoader;
 import com.alflabs.conductor.v2.script.IBlock;
 import com.alflabs.conductor.v2.script.ISensor;
 import com.alflabs.conductor.v2.script.impl.BaseVar;
@@ -17,19 +17,12 @@ import com.alflabs.conductor.v2.script.impl.SequenceNode;
 import com.alflabs.conductor.v2.script.impl.Throttle;
 import com.alflabs.conductor.v2.script.impl.Timer;
 import com.alflabs.conductor.v2.script.impl.Turnout;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -53,7 +46,7 @@ public class ScriptTest2 {
 
     @NonNull
     private void loadScriptFromFile(String scriptName) throws Exception {
-        Script2Loader loader = new Script2Loader();
+        Script2gLoader loader = new Script2gLoader();
         loader.loadScriptFromFile(scriptName);
         mScript = loader.getScript().get();
         mBinding = loader.getBinding().get();
@@ -64,7 +57,7 @@ public class ScriptTest2 {
     }
 
     private void loadScriptFromText(String scriptName, String scriptText) throws Exception {
-        Script2Loader loader = new Script2Loader();
+        Script2gLoader loader = new Script2gLoader();
         loader.loadScriptFromText(scriptName, scriptText);
         mScript = loader.getScript().get();
         mBinding = loader.getBinding().get();

@@ -101,7 +101,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         } else if ("groovy".equals(mode)) {
             Engine2GroovyAdapter adapter = new Engine2GroovyAdapter();
             mAdapter = Optional.of(adapter);
-            Engine2GroovyAdapter.LocalComponent2 component = DaggerEngine2GroovyAdapter_LocalComponent2
+            Engine2GroovyAdapter.LocalComponent2g component = DaggerEngine2GroovyAdapter_LocalComponent2g
                     .factory()
                     .createComponent(jmriProvider);
             // Do not use any injected field before this call
@@ -109,12 +109,20 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             component.inject(adapter);
 
         } else if ("kts".equals(mode)) {
-            throw new NotImplementedException(mode);
+            Engine2KotlinAdapter adapter = new Engine2KotlinAdapter();
+            mAdapter = Optional.of(adapter);
+            Engine2KotlinAdapter.LocalComponent2k component = DaggerEngine2KotlinAdapter_LocalComponent2k
+                    .factory()
+                    .createComponent(jmriProvider);
+            // Do not use any injected field before this call
+            component.inject(this);
+            component.inject(adapter);
 
         } else {
             log("Unknown engine mode " + mode);
             return false;
         }
+        log("Engine mode: " + mode);
 
         mAdapter.get().setScriptFile(scriptFile);
 
