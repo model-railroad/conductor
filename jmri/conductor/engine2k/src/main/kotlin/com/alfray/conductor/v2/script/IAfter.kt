@@ -7,5 +7,5 @@ interface IAfter {
 }
 
 interface IThenAfter {
-    infix fun and_after(timer: ITimer) : IAfter
+    infix fun and_after(delay: Delay) : IAfter
 }

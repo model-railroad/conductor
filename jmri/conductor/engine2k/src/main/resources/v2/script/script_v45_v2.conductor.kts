@@ -1,5 +1,6 @@
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
+import com.alfray.conductor.v2.script.seconds
 import com.alfray.conductor.v2.script.speed
 
 
@@ -147,18 +148,18 @@ val Passenger_Route = route.sequence {
     val AM_Crossover_Speed  = 4.speed
     val AM_Full_Speed       = 12.speed
 
-    val AM_Delayed_Horn = 2
-    val AM_Leaving_To_Full_Speed = 15
-    val AM_Timer_B321_Up_Doppler = 27
-    val AM_Timer_B330_Up_Resume = 12
-    val AM_Timer_B340_Up_Horn = 5
-    val AM_Timer_B370_Forward_Stop = 17  // time running at AM_Summit_Speed before stopping
-    val AM_Timer_B370_Pause_Delay  = 16
-    val AM_Timer_B360_Full_Reverse = 12
-    val AM_Timer_B330_Down_Speed = 8
-    val AM_Timer_B321_Down_Crossover = 27
-    val AM_Timer_B503b_Down_Stop = 20
-    val AM_Timer_Down_Station_Lights_Off = 10
+    val AM_Delayed_Horn = 2.seconds
+    val AM_Leaving_To_Full_Speed = 15.seconds
+    val AM_Timer_B321_Up_Doppler = 27.seconds
+    val AM_Timer_B330_Up_Resume = 12.seconds
+    val AM_Timer_B340_Up_Horn = 5.seconds
+    val AM_Timer_B370_Forward_Stop = 17.seconds  // time running at AM_Summit_Speed before stopping
+    val AM_Timer_B370_Pause_Delay  = 16.seconds
+    val AM_Timer_B360_Full_Reverse = 12.seconds
+    val AM_Timer_B330_Down_Speed = 8.seconds
+    val AM_Timer_B321_Down_Crossover = 27.seconds
+    val AM_Timer_B503b_Down_Stop = 20.seconds
+    val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
     fun AM_Fn_Acquire_Route() {
         T311.reverse()
@@ -192,7 +193,7 @@ val Passenger_Route = route.sequence {
                 AM.horn()
                 AM_Fn_Acquire_Route()
                 AM.f1(On)
-                after(timer(AM_Delayed_Horn)) then {
+                after(AM_Delayed_Horn) then {
                     AM.horn()
                 }
             }
@@ -206,12 +207,12 @@ val Passenger_Route = route.sequence {
         onEnter {
             // Wait for train to have cleared up T320 before switching to full speed.
             // The problem is that B321 activates as train hits diverted leg of turnout.
-            after(timer(AM_Leaving_To_Full_Speed)) then {
+            after(AM_Leaving_To_Full_Speed) then {
                 AM.forward(AM_Full_Speed)
             }
 
             // Mid_Station doppler on the way up
-            after(timer(AM_Timer_B321_Up_Doppler)) then {
+            after(AM_Timer_B321_Up_Doppler) then {
                 AM.f9(On)
                 AM.f9(Off)
             }
@@ -230,7 +231,7 @@ val Passenger_Route = route.sequence {
         onEnter {
             // Sonora speed reduction
             AM.forward(AM_Sonora_Speed)
-            after(timer(AM_Timer_B330_Up_Resume)) then {
+            after(AM_Timer_B330_Up_Resume) then {
                 AM.forward(AM_Full_Speed)
                 AM.horn()
             }
@@ -248,7 +249,7 @@ val Passenger_Route = route.sequence {
     val B340_fwd = node(B340) {
         onEnter {
             // After tunnel on the way up
-            after(timer(AM_Timer_B340_Up_Horn)) then {
+            after(AM_Timer_B340_Up_Horn) then {
                 AM.horn()
             }
         }
@@ -269,14 +270,14 @@ val Passenger_Route = route.sequence {
 
     val B370_end = node(B370) {
         onEnter {
-            after(timer(4)) then {
+            after(4.seconds) then {
                 // Forward
                 AM.forward(AM_Summit_Speed)
                 AM.f1(On)
-            } and_after(timer(AM_Timer_B370_Forward_Stop)) then {
+            } and_after(AM_Timer_B370_Forward_Stop) then {
                 AM.stop()
                 AM.horn()
-            } and_after(timer(AM_Timer_B370_Pause_Delay)) then {
+            } and_after(AM_Timer_B370_Pause_Delay) then {
                 // Stopped
                 AM.f1(Off)
                 AM.horn()
@@ -287,7 +288,7 @@ val Passenger_Route = route.sequence {
 
     val B360_rev = node(B360) {
         onEnter {
-            after(timer(AM_Timer_B360_Full_Reverse)) then {
+            after(AM_Timer_B360_Full_Reverse) then {
                 AM.reverse(AM_Full_Speed)
             }
         }

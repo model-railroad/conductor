@@ -38,6 +38,7 @@ class ScriptTest2k {
     private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
         loader = Script2kLoader()
         val prefix = """
+            import com.alfray.conductor.v2.script.seconds
             import com.alfray.conductor.v2.script.speed
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
@@ -63,7 +64,7 @@ class ScriptTest2k {
         assertThat(conductorImpl.sensors.keys).containsExactly("NS829")
         assertThat(conductorImpl.turnouts.keys).containsExactly("NT311", "NT312")
         assertThat(conductorImpl.throttles.keys).containsExactly(1001, 2001)
-        assertThat(conductorImpl.timers.map { it.seconds }).containsExactly(5, 15, 42, 5, 7, 9)
+        assertThat(conductorImpl.timers.map { it.delay }).containsExactly(5.seconds, 15.seconds)
     }
 
 
@@ -76,7 +77,7 @@ class ScriptTest2k {
         """.trimIndent()
         )
 
-        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:")
+        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:4:31)")
     }
 
     @Test
@@ -199,11 +200,11 @@ class ScriptTest2k {
         assertResultNoError()
 
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
-            "@timer@5", "@timer@15", "@timer@42", "@timer@5", "@timer@7", "@timer@9")
+            "@timer@5", "@timer@15")
 
         val t = conductorImpl.timers[0]
         assertThat(t.name).isEqualTo("@timer@5")
-        assertThat(t.seconds).isEqualTo(5)
+        assertThat(t.delay).isEqualTo(5.seconds)
         assertThat(t.started).isFalse()
         assertThat(t.active).isFalse()
         assertThat(!t).isTrue()

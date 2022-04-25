@@ -1,5 +1,6 @@
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
+import com.alfray.conductor.v2.script.seconds
 import com.alfray.conductor.v2.script.speed
 
 // Variables and local declaration.
@@ -33,8 +34,8 @@ val T312 = turnout("NT312")
 
 // Timers
 
-val MyTimer1 = timer(5)
-val MyTimer2 = timer(15)
+val MyTimer1 = timer(5.seconds)
+val MyTimer2 = timer(15.seconds)
 
 // Throttles
 
@@ -109,17 +110,17 @@ on { !!B310 && !!B311 } then {
     Train2.forward(10.speed)
 }
 
-after(MyTimer2) then {
+after(MyTimer2.delay) then {
     Train1.light(true)
 }
 
-after(timer(42)) then {
+after(42.seconds) then {
     Train1.light(true)
-} and_after(timer(5)) then {
+} and_after(5.seconds) then {
     Train1.light(false)
-} and_after(timer(7)) then {
+} and_after(7.seconds) then {
     Train1.light(true)
-} and_after(timer(9)) then {
+} and_after(9.seconds) then {
     Train1.light(true)
 }
 
@@ -147,9 +148,9 @@ val Route1 = route.sequence {
         onEnter {
             Train1.forward(_leaving_speed)
 
-            after(timer(6)) then {
+            after(6.seconds) then {
                 Train1.light(true)
-            } and_after(timer(2)) then {
+            } and_after(2.seconds) then {
                 Train1.light(false)
             }
 

@@ -16,7 +16,7 @@ interface IConductor {
 
     fun turnout(systemName: String): ITurnout
 
-    fun timer(seconds: Int): ITimer
+    fun timer(delay: Delay): ITimer
 
     fun throttle(dccAddress: Int): IThrottle
 
@@ -24,7 +24,7 @@ interface IConductor {
 
     fun on(condition: TCondition): IRule
 
-    fun after(timer: ITimer): IAfter
+    fun after(delay: Delay): IAfter
 
     val route: RouteBuilder
 

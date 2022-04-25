@@ -45,9 +45,9 @@ class ConductorImpl : IConductor {
         return turnouts.computeIfAbsent(systemName) { Turnout(it) }
     }
 
-    override fun timer(seconds: Int): ITimer {
-        if (VERBOSE) println("@@ timer seconds = $seconds")
-        val t = Timer(seconds)
+    override fun timer(delay: Delay): ITimer {
+        if (VERBOSE) println("@@ timer seconds = $delay")
+        val t = Timer(delay)
         timers.add(t)
         return t
     }
@@ -76,8 +76,8 @@ class ConductorImpl : IConductor {
         return rule
     }
 
-    override fun after(timer: ITimer): IAfter {
-        return After(timer)
+    override fun after(delay: Delay): IAfter {
+        return After(delay)
     }
 
     override val route = RouteBuilder()
