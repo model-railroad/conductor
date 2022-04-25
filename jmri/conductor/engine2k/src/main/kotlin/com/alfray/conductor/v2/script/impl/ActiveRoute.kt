@@ -4,5 +4,5 @@ import com.alfray.conductor.v2.script.IActiveRoute
 import com.alfray.conductor.v2.script.IActiveRouteBuilder
 
 class ActiveRoute(activeRouteBuilder: IActiveRouteBuilder) : IActiveRoute {
-
+    val routes = activeRouteBuilder.routes
 }

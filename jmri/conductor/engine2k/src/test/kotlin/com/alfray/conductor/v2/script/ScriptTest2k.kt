@@ -1,6 +1,9 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.Script2kLoader
+import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.RouteIdle
+import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -361,6 +364,47 @@ class ScriptTest2k {
         assertThat(train1.speed).isEqualTo(0)
         execEngine.executeRules()
         assertThat(train2.speed).isEqualTo(0)
+    }
+
+    @Test
+    fun testRoute() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Route_Idle = route.idle()
+        val Route_Seq = route.sequence {
+            throttle = Train1
+            timeout = 42
+            val node1 = node(Block1) { }
+            val node2 = node(Block2) { }
+            nodes = listOf(
+                listOf(node1, node2),
+                listOf(node2, node1))
+        }
+        val Routes = activeRoute {
+            routes = listOf(Route_Idle, Route_Seq)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(0)
+
+        // val train1 = conductorImpl.throttles[1001]
+        // val block1 = conductorImpl.sensors["B01"]!!
+        // val block2 = conductorImpl.sensors["B02"]!!
+
+        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        val active = conductorImpl.activeRoutes[0] as ActiveRoute
+        assertThat(active.routes).hasSize(2)
+        assertThat(active.routes[0]).isInstanceOf(RouteIdle::class.java)
+        assertThat(active.routes[1]).isInstanceOf(RouteSequence::class.java)
+        val seq = active.routes[1] as RouteSequence
+        assertThat(seq.throttle.dccAddress).isEqualTo(1001)
+        assertThat(seq.timeout).isEqualTo(42)
+        assertThat(seq.nodes).isNotEmpty()
     }
 
 }
