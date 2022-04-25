@@ -3,14 +3,14 @@ package com.alfray.conductor.v2.script.impl
 import com.alfray.conductor.v2.script.IBlock
 
 class Block(override val systemName: String) : IBlock {
-    private var activeInternal = false
+    private var _active = false
 
     override val active: Boolean
-        get() = activeInternal
+        get() = _active
 
     override fun not(): Boolean = !active
 
     fun active(isActive: Boolean) {
-        activeInternal = isActive
+        _active = isActive
     }
 }

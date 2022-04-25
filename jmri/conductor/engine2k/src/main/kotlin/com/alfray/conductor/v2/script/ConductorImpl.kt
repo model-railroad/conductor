@@ -3,6 +3,9 @@ package com.alfray.conductor.v2.script
 import com.alfray.conductor.v2.script.impl.*
 
 class ConductorImpl : IConductor {
+    @Suppress("PrivatePropertyName")
+    private val VERBOSE = false
+
     val sensors = mutableMapOf<String, Sensor>()
     val blocks = mutableMapOf<String, Block>()
     val turnouts = mutableMapOf<String, Turnout>()
@@ -20,34 +23,34 @@ class ConductorImpl : IConductor {
     override var RTAC_PSA_Text: String = ""
 
     override fun sensor(systemName: String): ISensor {
-        println("@@ sensor systemName = $systemName")
+        if (VERBOSE) println("@@ sensor systemName = $systemName")
         return sensors.computeIfAbsent(systemName) { Sensor(it) }
     }
 
     override fun block(systemName: String): IBlock {
-        println("@@ block systemName = $systemName")
+        if (VERBOSE) println("@@ block systemName = $systemName")
         return blocks.computeIfAbsent(systemName) { Block(it) }
     }
 
     override fun turnout(systemName: String): ITurnout {
-        println("@@ turnout systemName = $systemName")
+        if (VERBOSE) println("@@ turnout systemName = $systemName")
         return turnouts.computeIfAbsent(systemName) { Turnout(it) }
     }
 
     override fun timer(seconds: Int): ITimer {
-        println("@@ timer seconds = $seconds")
+        if (VERBOSE) println("@@ timer seconds = $seconds")
         val t = Timer(seconds)
         timers.add(t)
         return t
     }
 
     override fun throttle(dccAddress: Int): IThrottle {
-        println("@@ throttle dccAddress = $dccAddress")
+        if (VERBOSE) println("@@ throttle dccAddress = $dccAddress")
         return throttles.computeIfAbsent(dccAddress) { Throttle(it) }
     }
 
     override fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap {
-        println("@@ map = $init")
+        if (VERBOSE) println("@@ map = $init")
         val builder = SvgMapBuilder()
         builder.init()
         val m = builder.create()
@@ -59,7 +62,7 @@ class ConductorImpl : IConductor {
     }
 
     override fun on(condition: () -> Any): IRule {
-        println("@@ on = $condition")
+        if (VERBOSE) println("@@ on = $condition")
         val rule = Rule(condition)
         rules.add(rule)
         return rule
@@ -72,7 +75,7 @@ class ConductorImpl : IConductor {
     override val route = RouteBuilder()
 
     override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
-        println("@@ activeRoute = $init")
+        if (VERBOSE) println("@@ activeRoute = $init")
         val b = ActiveRouteBuilder()
         b.init()
         val a = ActiveRoute(b)

@@ -1,60 +1,46 @@
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.FBits
 import com.alfray.conductor.v2.script.IThrottle
 
 class Throttle(override val dccAddress: Int) : IThrottle {
-    private var speedInternal = 0
-    private var lightInternal = false
+    private var _speed = 0
+    private var _light = false
+    private var _sound = false
+    private var _f = FBits()
 
     override val speed: Int
-        get() = speedInternal
+        get() = _speed
     override val light: Boolean
-        get() = lightInternal
+        get() = _light
     override val sound: Boolean
-        get() = TODO("Not yet implemented")
+        get() = _sound
     override val stopped: Boolean
-        get() = TODO("Not yet implemented")
-    override val f1: Boolean
-        get() = TODO("Not yet implemented")
-    override val f5: Boolean
-        get() = TODO("Not yet implemented")
-    override val f9: Boolean
-        get() = TODO("Not yet implemented")
-    
+        get() = _speed == 0
+    override val f: FBits
+        get() = _f
 
     override fun forward(speed: Int) {
-        speedInternal = speed
+        _speed = speed
     }
 
     override fun reverse(speed: Int) {
-        speedInternal = -speed
+        _speed = -speed
     }
 
     override fun stop() {
-        speedInternal = 0
+        _speed = 0
     }
 
     override fun horn() {
-        TODO("Not yet implemented")
+        println("@@ Horn $dccAddress")
     }
 
     override fun light(on: Boolean) {
-        lightInternal = on
+        _light = on
     }
 
     override fun sound(on: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun f1(on: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun f5(on: Boolean) {
-        TODO("Not yet implemented")
-    }
-
-    override fun f9(on: Boolean) {
-        TODO("Not yet implemented")
+        _sound = on
     }
 }

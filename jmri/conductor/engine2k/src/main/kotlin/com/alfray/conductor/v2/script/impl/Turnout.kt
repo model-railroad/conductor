@@ -3,21 +3,21 @@ package com.alfray.conductor.v2.script.impl
 import com.alfray.conductor.v2.script.ITurnout
 
 class Turnout(override val systemName: String) : ITurnout {
-    private var normalInternal = true
+    private var _normal = true
 
     override val normal: Boolean
-        get() = normalInternal
+        get() = _normal
 
     override val active: Boolean
-        get() = normalInternal
+        get() = !_normal
 
     override fun not(): Boolean = !active
 
     override fun normal() {
-        normalInternal = true
+        _normal = true
     }
 
     override fun reverse() {
-        normalInternal = false
+        _normal = false
     }
 }

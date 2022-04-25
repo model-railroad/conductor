@@ -9,9 +9,6 @@ interface IThrottle {
     val light: Boolean
     val sound: Boolean
     val stopped: Boolean
-    val f1: Boolean
-    val f5: Boolean
-    val f9: Boolean
 
     fun forward(speed: Int)
     fun reverse(speed: Int)
@@ -19,7 +16,46 @@ interface IThrottle {
     fun horn()
     fun light(on: Boolean)
     fun sound(on: Boolean)
-    fun f1(on: Boolean)
-    fun f5(on: Boolean)
-    fun f9(on: Boolean)
+
+    val f: FBits
+    val f0: Boolean
+        get() = f[0]
+    val f1: Boolean
+        get() = f[1]
+    val f2: Boolean
+        get() = f[2]
+    val f3: Boolean
+        get() = f[3]
+    val f4: Boolean
+        get() = f[4]
+    val f5: Boolean
+        get() = f[5]
+    val f6: Boolean
+        get() = f[6]
+    val f7: Boolean
+        get() = f[7]
+    val f8: Boolean
+        get() = f[8]
+    val f9: Boolean
+        get() = f[9]
+
+    fun f(index: Int, on: Boolean) : FBits = f.set(index, on)
+    fun f0(on: Boolean) : FBits = f(0, on)
+    fun f1(on: Boolean) : FBits = f(1, on)
+    fun f2(on: Boolean) : FBits = f(2, on)
+    fun f3(on: Boolean) : FBits = f(3, on)
+    fun f4(on: Boolean) : FBits = f(4, on)
+    fun f5(on: Boolean) : FBits = f(5, on)
+    fun f6(on: Boolean) : FBits = f(6, on)
+    fun f7(on: Boolean) : FBits = f(7, on)
+    fun f8(on: Boolean) : FBits = f(8, on)
+    fun f9(on: Boolean) : FBits = f(9, on)
+}
+
+data class FBits(var f: Int = 0) {
+    operator fun get(bit: Int) : Boolean = (f and (1 shl bit)) != 0
+    operator fun set(bit: Int, on: Boolean) : FBits {
+        f = (f and (1 shl bit).inv()) or ((if (on) 1 else 0) shl bit)
+        return this
+    }
 }

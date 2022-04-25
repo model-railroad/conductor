@@ -74,6 +74,22 @@ class ScriptTest2k {
     }
 
     @Test
+    fun testVarSensor() {
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
+
+        assertThat(conductorImpl.sensors).containsKey("NS829")
+        assertThat(conductorImpl.sensors["NS829"]).isSameInstanceAs(conductorImpl.sensor("NS829"))
+
+        val s = conductorImpl.sensors["NS829"]!!
+        assertThat(s.systemName).isEqualTo("NS829")
+        assertThat(s.active).isFalse()
+        s.active(true)
+        assertThat(s.active).isTrue()
+        assertThat(!s).isFalse()
+    }
+
+    @Test
     fun testVarBlock() {
         loadScriptFromFile("sample_v2")
         assertResultNoError()
@@ -81,15 +97,13 @@ class ScriptTest2k {
         assertThat(conductorImpl.blocks).containsKey("NS768")
         assertThat(conductorImpl.blocks).containsKey("NS769")
         assertThat(conductorImpl.blocks["NS768"]).isSameInstanceAs(conductorImpl.block("NS768"))
-    }
 
-    @Test
-    fun testVarSensor() {
-        loadScriptFromFile("sample_v2")
-        assertResultNoError()
-
-        assertThat(conductorImpl.sensors).containsKey("NS829")
-        assertThat(conductorImpl.sensors["NS829"]).isSameInstanceAs(conductorImpl.sensor("NS829"))
+        val b = conductorImpl.blocks["NS768"]!!
+        assertThat(b.systemName).isEqualTo("NS768")
+        assertThat(b.active).isFalse()
+        b.active(true)
+        assertThat(b.active).isTrue()
+        assertThat(!b).isFalse()
     }
 
     @Test
@@ -99,6 +113,22 @@ class ScriptTest2k {
 
         assertThat(conductorImpl.turnouts).containsKey("NT311")
         assertThat(conductorImpl.turnouts["NT311"]).isSameInstanceAs(conductorImpl.turnout("NT311"))
+
+        val t = conductorImpl.turnouts["NT311"]!!
+        assertThat(t.systemName).isEqualTo("NT311")
+        assertThat(t.normal).isTrue()
+        assertThat(t.active).isFalse()
+        assertThat(!t).isTrue()
+
+        t.reverse()
+        assertThat(t.normal).isFalse()
+        assertThat(t.active).isTrue()
+        assertThat(!t).isFalse()
+
+        t.normal()
+        assertThat(t.normal).isTrue()
+        assertThat(t.active).isFalse()
+        assertThat(!t).isTrue()
     }
 
     @Test
@@ -108,6 +138,53 @@ class ScriptTest2k {
 
         assertThat(conductorImpl.throttles).containsKey(1001)
         assertThat(conductorImpl.throttles[1001]).isSameInstanceAs(conductorImpl.throttle(1001))
+
+        val t = conductorImpl.throttles[1001]!!
+        assertThat(t.dccAddress).isEqualTo(1001)
+
+        assertThat(t.speed).isEqualTo(0)
+        assertThat(t.stopped).isTrue()
+        t.forward(5)
+        assertThat(t.speed).isEqualTo(5)
+        assertThat(t.stopped).isFalse()
+        t.reverse(15)
+        assertThat(t.speed).isEqualTo(-15)
+        assertThat(t.stopped).isFalse()
+
+        assertThat(t.light).isFalse()
+        t.light(true)
+        assertThat(t.light).isTrue()
+        t.light(false)
+        assertThat(t.light).isFalse()
+
+        assertThat(t.sound).isFalse()
+        t.sound(true)
+        assertThat(t.sound).isTrue()
+        t.sound(false)
+        assertThat(t.sound).isFalse()
+
+        assertThat(t.f.f).isEqualTo(0b00000000000)
+        assertThat(t.f0).isFalse()
+        assertThat(t.f1).isFalse()
+        assertThat(t.f2).isFalse()
+        assertThat(t.f3).isFalse()
+        assertThat(t.f4).isFalse()
+        assertThat(t.f5).isFalse()
+        assertThat(t.f6).isFalse()
+        assertThat(t.f7).isFalse()
+        assertThat(t.f8).isFalse()
+        assertThat(t.f9).isFalse()
+
+        t.f1(true)
+        assertThat(t.f1).isTrue()
+        assertThat(t.f.f).isEqualTo(0b00000000010)
+        t.f0(true)
+        t.f1(false)
+        t.f9(true)
+        assertThat(t.f0).isTrue()
+        assertThat(t.f1).isFalse()
+        assertThat(t.f9).isTrue()
+        assertThat(t.f.f).isEqualTo(0b01000000001)
     }
 
     @Test
