@@ -1,9 +1,9 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.Delay
-import com.alfray.conductor.v2.script.ITimer
+import com.alfray.conductor.v2.script.dsl.Delay
+import com.alfray.conductor.v2.script.dsl.ITimer
 
-class Timer(override val delay: Delay) : ITimer {
+internal class Timer(override val delay: Delay) : ITimer {
     val name = "@timer@${delay.seconds}"
     var started = false
         private set

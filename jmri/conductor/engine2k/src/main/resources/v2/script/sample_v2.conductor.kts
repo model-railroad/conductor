@@ -1,7 +1,6 @@
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
-import com.alfray.conductor.v2.script.seconds
-import com.alfray.conductor.v2.script.speed
+import com.alfray.conductor.v2.script.dsl.*
 
 // Variables and local declaration.
 

@@ -1,6 +1,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.host.JavaScriptEval
+import com.alfray.conductor.v2.script.dsl.IConductor
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before

@@ -1,8 +1,8 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.IBlock
+import com.alfray.conductor.v2.script.dsl.IBlock
 
-class Block(override val systemName: String) : IBlock {
+internal class Block(override val systemName: String) : IBlock {
     private var _active = false
 
     override val active: Boolean

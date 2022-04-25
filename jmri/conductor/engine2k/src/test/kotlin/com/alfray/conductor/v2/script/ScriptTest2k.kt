@@ -1,6 +1,8 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.Script2kLoader
+import com.alfray.conductor.v2.script.dsl.seconds
+import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.JsonEvent
@@ -40,8 +42,7 @@ class ScriptTest2k {
     private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
         loader = Script2kLoader()
         val prefix = """
-            import com.alfray.conductor.v2.script.seconds
-            import com.alfray.conductor.v2.script.speed
+            import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
         return loader.result
@@ -85,7 +86,7 @@ class ScriptTest2k {
         """.trimIndent()
         )
 
-        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:4:31)")
+        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:3:31)")
     }
 
     @Test

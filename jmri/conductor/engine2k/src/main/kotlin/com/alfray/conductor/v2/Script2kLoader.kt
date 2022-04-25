@@ -3,7 +3,7 @@ package com.alfray.conductor.v2
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine
-import com.alfray.conductor.v2.script.IExecEngine
+import com.alfray.conductor.v2.script.dsl.IExecEngine
 import com.google.common.io.Resources
 import java.util.*
 import kotlin.script.experimental.api.EvaluationResult

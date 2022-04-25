@@ -1,8 +1,8 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.ISensor
+import com.alfray.conductor.v2.script.dsl.ISensor
 
-class Sensor(override val systemName: String) : ISensor {
+internal class Sensor(override val systemName: String) : ISensor {
     private var _active = false
 
     override val active: Boolean

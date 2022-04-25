@@ -1,10 +1,10 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.INode
-import com.alfray.conductor.v2.script.IRoute
-import com.alfray.conductor.v2.script.RouteSequenceBuilder
+import com.alfray.conductor.v2.script.dsl.INode
+import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.script.dsl.RouteSequenceBuilder
 
-class RouteSequence(builder: RouteSequenceBuilder) : IRoute {
+internal class RouteSequence(builder: RouteSequenceBuilder) : IRoute {
     val throttle = builder.throttle
     val timeout = builder.timeout
     val nodes: List<List<INode>> = parse(builder.nodes)

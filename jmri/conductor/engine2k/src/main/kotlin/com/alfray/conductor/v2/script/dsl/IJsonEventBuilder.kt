@@ -1,4 +1,4 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.dsl
 
 interface IJsonEventBuilder {
     var key1: String

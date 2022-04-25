@@ -1,7 +1,6 @@
 package com.alfray.conductor.v2.host
 
-import com.alfray.conductor.v2.script.IConductor
-import java.util.*
+import com.alfray.conductor.v2.script.dsl.IConductor
 import javax.script.Bindings
 import javax.script.ScriptContext
 import javax.script.ScriptEngineManager

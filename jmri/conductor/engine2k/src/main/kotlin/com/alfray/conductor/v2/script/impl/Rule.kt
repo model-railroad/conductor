@@ -1,13 +1,13 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.IActive
-import com.alfray.conductor.v2.script.IRule
+import com.alfray.conductor.v2.script.dsl.IActive
+import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.TAction
 import com.alfray.conductor.v2.script.TCondition
 
 private const val VERBOSE = false
 
-class Rule(private val condition: TCondition) : IRule {
+internal class Rule(private val condition: TCondition) : IRule {
     private lateinit var action: TAction
 
     override fun then(action: TAction) {

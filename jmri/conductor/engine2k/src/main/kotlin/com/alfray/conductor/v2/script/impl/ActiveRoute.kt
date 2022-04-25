@@ -1,8 +1,8 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.IActiveRoute
-import com.alfray.conductor.v2.script.IActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
 
-class ActiveRoute(activeRouteBuilder: IActiveRouteBuilder) : IActiveRoute {
+internal class ActiveRoute(activeRouteBuilder: IActiveRouteBuilder) : IActiveRoute {
     val routes = activeRouteBuilder.routes
 }

@@ -1,6 +1,6 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.IJsonEventBuilder
+import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 
 internal data class JsonEvent(
     val key1: String,

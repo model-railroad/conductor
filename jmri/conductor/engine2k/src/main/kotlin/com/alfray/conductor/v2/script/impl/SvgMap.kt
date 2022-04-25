@@ -1,7 +1,7 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.ISvgMap
-import com.alfray.conductor.v2.script.ISvgMapBuilder
+import com.alfray.conductor.v2.script.dsl.ISvgMap
+import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 
 internal class SvgMapBuilder constructor() : ISvgMapBuilder {
     override lateinit var name: String
@@ -15,7 +15,7 @@ internal class SvgMapBuilder constructor() : ISvgMapBuilder {
     fun create() : ISvgMap = SvgMap(this)
 }
 
-class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
+internal class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
     override val name = builder.name
     override val svg = builder.svg
 

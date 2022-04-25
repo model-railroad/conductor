@@ -1,6 +1,9 @@
 @file:Suppress("FunctionName", "PropertyName")
 
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.dsl
+
+import com.alfray.conductor.v2.script.impl.RouteBuilder
+import com.alfray.conductor.v2.script.TCondition
 
 
 data class ExportedVars(
@@ -32,7 +35,7 @@ interface IConductor {
 
     fun after(delay: Delay): IAfter
 
-    val route: RouteBuilder
+    val route: IRouteBuilder
 
     fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
 

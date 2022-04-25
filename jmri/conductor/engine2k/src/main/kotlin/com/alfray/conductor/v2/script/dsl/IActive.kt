@@ -1,4 +1,4 @@
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.dsl
 
 interface IActive {
     val active: Boolean

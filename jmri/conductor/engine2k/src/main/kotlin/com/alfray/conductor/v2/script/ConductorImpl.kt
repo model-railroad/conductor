@@ -1,5 +1,22 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.dsl.ActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.Delay
+import com.alfray.conductor.v2.script.dsl.ExportedVars
+import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.IAfter
+import com.alfray.conductor.v2.script.dsl.IBlock
+import com.alfray.conductor.v2.script.dsl.IConductor
+import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
+import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
+import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.dsl.ISensor
+import com.alfray.conductor.v2.script.dsl.ISvgMap
+import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
+import com.alfray.conductor.v2.script.dsl.IThrottle
+import com.alfray.conductor.v2.script.dsl.ITimer
+import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
@@ -7,6 +24,7 @@ import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaEventBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
+import com.alfray.conductor.v2.script.impl.RouteBuilder
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder

@@ -1,7 +1,7 @@
 package com.alfray.conductor.v2.host
 
 import com.alfray.conductor.v2.script.ConductorScript
-import com.alfray.conductor.v2.script.IConductor
+import com.alfray.conductor.v2.script.dsl.IConductor
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.SourceCode

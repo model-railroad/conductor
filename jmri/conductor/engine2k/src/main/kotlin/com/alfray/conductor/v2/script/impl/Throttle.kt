@@ -1,10 +1,10 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.DccSpeed
-import com.alfray.conductor.v2.script.FBits
-import com.alfray.conductor.v2.script.IThrottle
+import com.alfray.conductor.v2.script.dsl.DccSpeed
+import com.alfray.conductor.v2.script.dsl.FBits
+import com.alfray.conductor.v2.script.dsl.IThrottle
 
-class Throttle(override val dccAddress: Int) : IThrottle {
+internal class Throttle(override val dccAddress: Int) : IThrottle {
     private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false

@@ -1,8 +1,8 @@
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.ITurnout
+import com.alfray.conductor.v2.script.dsl.ITurnout
 
-class Turnout(override val systemName: String) : ITurnout {
+internal class Turnout(override val systemName: String) : ITurnout {
     private var _normal = true
 
     override val normal: Boolean

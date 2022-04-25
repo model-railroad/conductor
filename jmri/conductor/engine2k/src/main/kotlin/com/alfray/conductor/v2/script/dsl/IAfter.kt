@@ -1,6 +1,8 @@
 @file:Suppress("FunctionName")
 
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.script.dsl
+
+import com.alfray.conductor.v2.script.TAction
 
 interface IAfter {
     infix fun then(action: TAction) : IThenAfter

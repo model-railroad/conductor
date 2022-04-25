@@ -1,5 +1,7 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.dsl.IExecEngine
+
 internal class ExecEngine(val conductor: ConductorImpl) : IExecEngine {
 
     override fun executeRules() {
