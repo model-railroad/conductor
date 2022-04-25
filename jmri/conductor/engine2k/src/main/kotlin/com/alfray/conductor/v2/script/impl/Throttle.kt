@@ -15,8 +15,6 @@ class Throttle(override val dccAddress: Int) : IThrottle {
         get() = _light
     override val sound: Boolean
         get() = _sound
-    override val stopped: Boolean
-        get() = _speed == 0
     override val f: FBits
         get() = _f
 

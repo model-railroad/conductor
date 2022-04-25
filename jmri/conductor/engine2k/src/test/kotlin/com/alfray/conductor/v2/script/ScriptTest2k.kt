@@ -194,6 +194,37 @@ class ScriptTest2k {
 
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
             "@timer@5", "@timer@15", "@timer@42", "@timer@5", "@timer@7", "@timer@9")
+
+        val t = conductorImpl.timers[0]
+        assertThat(t.name).isEqualTo("@timer@5")
+        assertThat(t.seconds).isEqualTo(5)
+        assertThat(t.started).isFalse()
+        assertThat(t.active).isFalse()
+        assertThat(!t).isTrue()
+
+        t.start()
+        assertThat(t.started).isTrue()
+        t.stop()
+        assertThat(t.started).isFalse()
+        t.start()
+        t.reset()
+        assertThat(t.started).isFalse()
+
+        t.reset()
+        t.start()
+        t.update(1.0)
+        assertThat(t.active).isFalse()
+        t.update(6.0)
+        assertThat(t.active).isTrue()
+
+        // A stopped timer does not update and does not become active
+        t.reset()
+        t.start()
+        t.update(1.0)
+        assertThat(t.active).isFalse()
+        t.stop()
+        t.update(6.0)
+        assertThat(t.active).isFalse()
     }
 
     @Test
@@ -232,6 +263,104 @@ class ScriptTest2k {
         s1.active(true)
         execEngine.executeRules()
         assertThat(t1.normal).isTrue()
+    }
+
+    @Test
+    fun testRuleTurnout() {
+        loadScriptFromText(scriptText =
+        """
+        val Turnout1 = turnout("NT1")
+        val Sensor1 = sensor("S01")
+        fun ResetTurnouts() { Turnout1.reverse() }
+        on {  Sensor1.active } then { Turnout1.normal()  }
+        on { !Sensor1        } then { ResetTurnouts()    }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(2)
+
+        val turnout1 = conductorImpl.turnouts["NT1"]!!
+        val sensor1  = conductorImpl.sensors["S01"]!!
+
+        assertThat(sensor1.active).isFalse()
+        assertThat(turnout1.normal).isTrue()
+
+        sensor1.active(true)
+        execEngine.executeRules()
+        assertThat(turnout1.normal).isTrue()
+
+        sensor1.active(false)
+        execEngine.executeRules()
+        assertThat(turnout1.normal).isFalse()
+    }
+
+    @Test
+    fun testRuleThrottle() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Train2  = throttle(1002)
+        val Sensor1 = sensor("S01")
+        val Sensor2 = sensor("S02")
+        // Syntax using an action as a function
+        on { !Sensor1 } then { Train1.stop()  }
+        on {  Sensor1.active &&  Sensor2.active } then { Train1.forward(5) }
+        on {  Sensor1.active && !Sensor2        } then { Train1.reverse(7) }
+        on { Train1.forward } then { Train1.light(true); Train1.horn(); Train1.f1(true) }
+        on { Train1.stopped } then { Train1.light(false); Train1.horn(); Train1.f1(false) }
+        // Properties are for conditions, and functions for actions.
+        on { Train1.forward } then { Train2.forward(42) }
+        on { Train1.reverse } then { Train2.reverse(43) }
+        // Stop must be a function as it has no value, it cannot be a property.
+        on { Train1.stopped } then { Train2.stop() }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(8)
+
+        val train1 = conductorImpl.throttles[1001]!!
+        val train2 = conductorImpl.throttles[1002]!!
+        val sensor1 = conductorImpl.sensors["S01"]!!
+        val sensor2 = conductorImpl.sensors["S02"]!!
+
+        assertThat(train1.speed).isEqualTo(0)
+        assertThat(train2.speed).isEqualTo(0)
+
+        sensor1.active(false)
+        execEngine.executeRules()
+        assertThat(train1.speed).isEqualTo(0)
+        assertThat(train1.light).isEqualTo(false)
+        assertThat(train1.f1).isEqualTo(false)
+        assertThat(train2.speed).isEqualTo(0)
+
+        // Note: actions are always executed after all conditions are checked. Thus
+        // changing the throttle speed does _not_ change conditions in same loop,
+        // it only changes conditions in the next loop. This ensures eval consistency.
+        sensor1.active(true)
+        sensor2.active(true)
+        execEngine.executeRules()
+        assertThat(train1.speed).isEqualTo(5)
+        assertThat(train2.speed).isEqualTo(0)
+        // train1.forward condition is not active yet until the next execution pass.
+        execEngine.executeRules()
+        assertThat(train1.light).isEqualTo(true)
+        assertThat(train1.f1).isEqualTo(true)
+        assertThat(train2.speed).isEqualTo(42)
+
+        sensor1.active(true)
+        sensor2.active(false)
+        execEngine.executeRules()
+        assertThat(train1.speed).isEqualTo(-7)
+        execEngine.executeRules()
+        assertThat(train2.speed).isEqualTo(-43)
+
+        sensor1.active(false)
+        execEngine.executeRules()
+        assertThat(train1.speed).isEqualTo(0)
+        execEngine.executeRules()
+        assertThat(train2.speed).isEqualTo(0)
     }
 
 }

@@ -1,10 +1,18 @@
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.script.impl.*
+import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.After
+import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.Rule
+import com.alfray.conductor.v2.script.impl.Sensor
+import com.alfray.conductor.v2.script.impl.SvgMapBuilder
+import com.alfray.conductor.v2.script.impl.Throttle
+import com.alfray.conductor.v2.script.impl.Timer
+import com.alfray.conductor.v2.script.impl.Turnout
+
+private const val VERBOSE = false
 
 class ConductorImpl : IConductor {
-    @Suppress("PrivatePropertyName")
-    private val VERBOSE = false
 
     val sensors = mutableMapOf<String, Sensor>()
     val blocks = mutableMapOf<String, Block>()

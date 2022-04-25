@@ -9,6 +9,11 @@ interface IThrottle {
     val light: Boolean
     val sound: Boolean
     val stopped: Boolean
+        get() = speed == 0
+    val forward: Boolean
+        get() = speed > 0
+    val reverse: Boolean
+        get() = speed < 0
 
     fun forward(speed: Int)
     fun reverse(speed: Int)

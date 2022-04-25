@@ -5,6 +5,8 @@ import com.alfray.conductor.v2.script.IRule
 import com.alfray.conductor.v2.script.TAction
 import com.alfray.conductor.v2.script.TCondition
 
+private const val VERBOSE = false
+
 class Rule(private val condition: TCondition) : IRule {
     private lateinit var action: TAction
 
@@ -14,19 +16,19 @@ class Rule(private val condition: TCondition) : IRule {
 
     fun evaluateCondition() : Boolean {
         val result = condition.invoke()
-        println("Rule eval condition: $result")
+        if (VERBOSE) println("Rule eval condition: $result")
         val cond : Boolean =
             when (result) {
                 is Boolean -> result
                 is IActive -> result.active
                 else -> throw IllegalArgumentException("Invalid Condition Return type")
             }
-        println("Rule eval condition: $result -> $cond")
+        if (VERBOSE) println("Rule eval condition: $result -> $cond")
         return cond
     }
 
     fun evaluateAction() {
-        println("Rule eval action: $action")
+        if (VERBOSE) println("Rule eval action: $action")
         action.invoke()
     }
 }
