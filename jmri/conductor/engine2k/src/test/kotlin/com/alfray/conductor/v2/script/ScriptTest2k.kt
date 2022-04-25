@@ -37,7 +37,10 @@ class ScriptTest2k {
 
     private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
         loader = Script2kLoader()
-        loader.loadScriptFromText(scriptName, scriptText)
+        val prefix = """
+            import com.alfray.conductor.v2.script.speed
+        """.trimIndent()
+        loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
         return loader.result
     }
 
@@ -73,7 +76,7 @@ class ScriptTest2k {
         """.trimIndent()
         )
 
-        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:2:31)")
+        assertThat(loader.getResultErrors()).contains("ERROR Unresolved reference: varName (local.conductor.kts:")
     }
 
     @Test
@@ -145,13 +148,13 @@ class ScriptTest2k {
         val t = conductorImpl.throttles[1001]!!
         assertThat(t.dccAddress).isEqualTo(1001)
 
-        assertThat(t.speed).isEqualTo(0)
+        assertThat(t.speed).isEqualTo(0.speed)
         assertThat(t.stopped).isTrue()
-        t.forward(5)
-        assertThat(t.speed).isEqualTo(5)
+        t.forward(5.speed)
+        assertThat(t.speed).isEqualTo(5.speed)
         assertThat(t.stopped).isFalse()
-        t.reverse(15)
-        assertThat(t.speed).isEqualTo(-15)
+        t.reverse(15.speed)
+        assertThat(t.speed).isEqualTo(15.speed.reverse())
         assertThat(t.stopped).isFalse()
 
         assertThat(t.light).isFalse()
@@ -308,13 +311,13 @@ class ScriptTest2k {
         val Sensor2 = sensor("S02")
         // Syntax using an action as a function
         on { !Sensor1 } then { Train1.stop()  }
-        on {  Sensor1.active &&  Sensor2.active } then { Train1.forward(5) }
-        on {  Sensor1.active && !Sensor2        } then { Train1.reverse(7) }
+        on {  Sensor1.active &&  Sensor2.active } then { Train1.forward(5.speed) }
+        on {  Sensor1.active && !Sensor2        } then { Train1.reverse(7.speed) }
         on { Train1.forward } then { Train1.light(true); Train1.horn(); Train1.f1(true) }
         on { Train1.stopped } then { Train1.light(false); Train1.horn(); Train1.f1(false) }
         // Properties are for conditions, and functions for actions.
-        on { Train1.forward } then { Train2.forward(42) }
-        on { Train1.reverse } then { Train2.reverse(43) }
+        on { Train1.forward } then { Train2.forward(42.speed) }
+        on { Train1.reverse } then { Train2.reverse(43.speed) }
         // Stop must be a function as it has no value, it cannot be a property.
         on { Train1.stopped } then { Train2.stop() }
         """.trimIndent()
@@ -328,15 +331,15 @@ class ScriptTest2k {
         val sensor1 = conductorImpl.sensors["S01"]!!
         val sensor2 = conductorImpl.sensors["S02"]!!
 
-        assertThat(train1.speed).isEqualTo(0)
-        assertThat(train2.speed).isEqualTo(0)
+        assertThat(train1.speed).isEqualTo(0.speed)
+        assertThat(train2.speed).isEqualTo(0.speed)
 
         sensor1.active(false)
         execEngine.executeRules()
-        assertThat(train1.speed).isEqualTo(0)
+        assertThat(train1.speed).isEqualTo(0.speed)
         assertThat(train1.light).isEqualTo(false)
         assertThat(train1.f1).isEqualTo(false)
-        assertThat(train2.speed).isEqualTo(0)
+        assertThat(train2.speed).isEqualTo(0.speed)
 
         // Note: actions are always executed after all conditions are checked. Thus
         // changing the throttle speed does _not_ change conditions in same loop,
@@ -344,26 +347,26 @@ class ScriptTest2k {
         sensor1.active(true)
         sensor2.active(true)
         execEngine.executeRules()
-        assertThat(train1.speed).isEqualTo(5)
-        assertThat(train2.speed).isEqualTo(0)
+        assertThat(train1.speed).isEqualTo(5.speed)
+        assertThat(train2.speed).isEqualTo(0.speed)
         // train1.forward condition is not active yet until the next execution pass.
         execEngine.executeRules()
         assertThat(train1.light).isEqualTo(true)
         assertThat(train1.f1).isEqualTo(true)
-        assertThat(train2.speed).isEqualTo(42)
+        assertThat(train2.speed).isEqualTo(42.speed)
 
         sensor1.active(true)
         sensor2.active(false)
         execEngine.executeRules()
-        assertThat(train1.speed).isEqualTo(-7)
+        assertThat(train1.speed).isEqualTo(7.speed.reverse())
         execEngine.executeRules()
-        assertThat(train2.speed).isEqualTo(-43)
+        assertThat(train2.speed).isEqualTo(43.speed.reverse())
 
         sensor1.active(false)
         execEngine.executeRules()
-        assertThat(train1.speed).isEqualTo(0)
+        assertThat(train1.speed).isEqualTo(0.speed)
         execEngine.executeRules()
-        assertThat(train2.speed).isEqualTo(0)
+        assertThat(train2.speed).isEqualTo(0.speed)
     }
 
     @Test

@@ -1,5 +1,7 @@
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
+import com.alfray.conductor.v2.script.speed
+
 // Variables and local declaration.
 
 val LocalVar1 = "This variable is never seen by the ExecEngine"
@@ -81,7 +83,7 @@ on { B310 } then {
     Train1.stop()
     Train1.horn()
     Train1.light(Off)
-    Train2.reverse(10)
+    Train2.reverse(10.speed)
 }
 
 on { B311 } then {
@@ -94,17 +96,17 @@ on { B311 } then {
 // E.g:
 on { B310.active && B311.active } then {
     Train1.stop()
-    Train2.forward(10)
+    Train2.forward(10.speed)
 }
 
 on { !(!B310 || !B311) } then {
     Train1.stop()
-    Train2.forward(10)
+    Train2.forward(10.speed)
 }
 
 on { !!B310 && !!B311 } then {
     Train1.stop()
-    Train2.forward(10)
+    Train2.forward(10.speed)
 }
 
 after(MyTimer2) then {
@@ -125,9 +127,9 @@ after(timer(42)) then {
 // FIXME continue here: route handling
 val Route_Idle = route.idle()
 
-val _leaving_speed = 5
-val _mainline_speed = 10
-val _reverse_speed = 8
+val _leaving_speed = 5.speed
+val _mainline_speed = 10.speed
+val _reverse_speed = 8.speed
 
 val Route1 = route.sequence {
     throttle = Train1

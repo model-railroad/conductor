@@ -1,22 +1,33 @@
 package com.alfray.conductor.v2.script
 
-//data class DccSpeed(val speed: Int)
-//fun Int.speed() : DccSpeed = DccSpeed(this)
-
-interface IThrottle {
-    val dccAddress: Int
-    val speed: Int
-    val light: Boolean
-    val sound: Boolean
+data class DccSpeed(val speed: Int) {
     val stopped: Boolean
         get() = speed == 0
     val forward: Boolean
         get() = speed > 0
     val reverse: Boolean
         get() = speed < 0
+    fun reverse() : DccSpeed =
+        DccSpeed(-1 * speed)
+}
 
-    fun forward(speed: Int)
-    fun reverse(speed: Int)
+val Int.speed: DccSpeed
+    get() = DccSpeed(this)
+
+interface IThrottle {
+    val dccAddress: Int
+    val speed: DccSpeed
+    val light: Boolean
+    val sound: Boolean
+    val stopped: Boolean
+        get() = speed.stopped
+    val forward: Boolean
+        get() = speed.forward
+    val reverse: Boolean
+        get() = speed.reverse
+
+    fun forward(speed: DccSpeed)
+    fun reverse(speed: DccSpeed)
     fun stop()
     fun horn()
     fun light(on: Boolean)

@@ -1,5 +1,7 @@
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
 
+import com.alfray.conductor.v2.script.speed
+
 
 // Variables and local declaration.
 
@@ -137,13 +139,13 @@ val Passenger_Route = route.sequence {
     throttle = AM
     timeout = 60 // 1 minute
 
-    val AM_Leaving_Speed    = 6
-    val AM_Station_Speed    = 12
-    val AM_Summit_Speed     = 6
-    val AM_Summit_Bridge_Speed = 4
-    val AM_Sonora_Speed     = 8
-    val AM_Crossover_Speed  = 4
-    val AM_Full_Speed       = 12
+    val AM_Leaving_Speed    = 6.speed
+    val AM_Station_Speed    = 12.speed
+    val AM_Summit_Speed     = 6.speed
+    val AM_Summit_Bridge_Speed = 4.speed
+    val AM_Sonora_Speed     = 8.speed
+    val AM_Crossover_Speed  = 4.speed
+    val AM_Full_Speed       = 12.speed
 
     val AM_Delayed_Horn = 2
     val AM_Leaving_To_Full_Speed = 15

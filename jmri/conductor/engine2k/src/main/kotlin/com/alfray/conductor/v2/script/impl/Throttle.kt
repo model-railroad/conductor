@@ -1,15 +1,16 @@
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.DccSpeed
 import com.alfray.conductor.v2.script.FBits
 import com.alfray.conductor.v2.script.IThrottle
 
 class Throttle(override val dccAddress: Int) : IThrottle {
-    private var _speed = 0
+    private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false
     private var _f = FBits()
 
-    override val speed: Int
+    override val speed: DccSpeed
         get() = _speed
     override val light: Boolean
         get() = _light
@@ -18,16 +19,16 @@ class Throttle(override val dccAddress: Int) : IThrottle {
     override val f: FBits
         get() = _f
 
-    override fun forward(speed: Int) {
+    override fun forward(speed: DccSpeed) {
         _speed = speed
     }
 
-    override fun reverse(speed: Int) {
-        _speed = -speed
+    override fun reverse(speed: DccSpeed) {
+        _speed = speed.reverse()
     }
 
     override fun stop() {
-        _speed = 0
+        _speed = DccSpeed(0)
     }
 
     override fun horn() {
