@@ -1,6 +1,15 @@
+@file:Suppress("FunctionName", "PropertyName")
+
 package com.alfray.conductor.v2.script
 
 interface IConductor {
+    var Conductor_Time: Int
+    var JSON_URL: String
+    var GA_Tracking_Id: String
+    var GA_URL: String
+    var RTAC_Motion: Boolean
+    var RTAC_PSA_Text: String
+
     fun sensor(systemName: String): ISensor
 
     fun block(systemName: String): IBlock
@@ -20,4 +29,7 @@ interface IConductor {
     val route: RouteBuilder
 
     fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
+
+    fun ga_event(init: IGaEventBuilder.() -> Unit)
+    fun json_event(init: IJsonEventBuilder.() -> Unit)
 }

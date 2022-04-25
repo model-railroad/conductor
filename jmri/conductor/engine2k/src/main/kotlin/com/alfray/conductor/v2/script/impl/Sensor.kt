@@ -10,7 +10,7 @@ class Sensor(override val systemName: String) : ISensor {
 
     override fun not(): Boolean = !active
 
-    fun active(isActive: Boolean) {
+    override fun active(isActive: Boolean) {
         activeInternal = isActive
     }
 }

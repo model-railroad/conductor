@@ -12,6 +12,13 @@ class ConductorImpl : IConductor {
     val rules = mutableListOf<Rule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
 
+    override var Conductor_Time: Int = 0
+    override var JSON_URL: String = ""
+    override var GA_Tracking_Id: String = ""
+    override var GA_URL: String = ""
+    override var RTAC_Motion: Boolean = false
+    override var RTAC_PSA_Text: String = ""
+
     override fun sensor(systemName: String): ISensor {
         println("@@ sensor systemName = $systemName")
         return sensors.computeIfAbsent(systemName) { Sensor(it) }
@@ -71,5 +78,13 @@ class ConductorImpl : IConductor {
         val a = ActiveRoute(b)
         activeRoutes.add(a)
         return a
+    }
+
+    override fun ga_event(init: IGaEventBuilder.() -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun json_event(init: IJsonEventBuilder.() -> Unit) {
+        TODO("Not yet implemented")
     }
 }
