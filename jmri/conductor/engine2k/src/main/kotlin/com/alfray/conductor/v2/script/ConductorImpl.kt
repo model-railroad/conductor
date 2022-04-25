@@ -23,12 +23,7 @@ class ConductorImpl : IConductor {
     val rules = mutableListOf<Rule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
 
-    override var Conductor_Time: Int = 0
-    override var JSON_URL: String = ""
-    override var GA_Tracking_Id: String = ""
-    override var GA_URL: String = ""
-    override var RTAC_Motion: Boolean = false
-    override var RTAC_PSA_Text: String = ""
+    override val exportedVars = ExportedVars()
 
     override fun sensor(systemName: String): ISensor {
         if (VERBOSE) println("@@ sensor systemName = $systemName")

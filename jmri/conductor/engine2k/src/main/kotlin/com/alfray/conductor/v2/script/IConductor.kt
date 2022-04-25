@@ -2,13 +2,19 @@
 
 package com.alfray.conductor.v2.script
 
+
+data class ExportedVars(
+    var Conductor_Time: Int = 0,
+    var JSON_URL: String = "",
+    var GA_Tracking_Id: String = "",
+    var GA_URL: String = "",
+    var RTAC_PSA_Text: String = "",
+    var RTAC_Motion: Boolean = false,
+)
+
 interface IConductor {
-    var Conductor_Time: Int
-    var JSON_URL: String
-    var GA_Tracking_Id: String
-    var GA_URL: String
-    var RTAC_Motion: Boolean
-    var RTAC_PSA_Text: String
+
+    val exportedVars: ExportedVars
 
     fun sensor(systemName: String): ISensor
 

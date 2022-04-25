@@ -55,12 +55,12 @@ map {
 
 // JSON tracking
 
-JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
+exportedVars.JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
 
 // GA Tracking
 
-GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
-GA_URL = "http://consist.alfray.com/train/"
+exportedVars.GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+exportedVars.GA_URL = "http://consist.alfray.com/train/"
 
 // -----------------
 // Motion
@@ -69,7 +69,7 @@ GA_URL = "http://consist.alfray.com/train/"
 var AIU_Motion_Counter = 0
 
 on { AIU_Motion } then {
-    RTAC_Motion = On
+    exportedVars.RTAC_Motion = On
     AIU_Motion_Counter += 1
     ga_event {
         category = "Motion"
@@ -80,7 +80,7 @@ on { AIU_Motion } then {
 }
 
 on { !AIU_Motion } then {
-    RTAC_Motion = Off
+    exportedVars.RTAC_Motion = Off
     ga_event {
         category = "Motion"
         action = "Stop"
@@ -95,24 +95,24 @@ on { !AIU_Motion } then {
 
 val End_Of_Day_HHMM = 1650
 
-on { PA_Toggle.active && Conductor_Time == End_Of_Day_HHMM } then {
+on { PA_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
     PA_Toggle.active(Off)
 }
 
-on { BL_Toggle.active && Conductor_Time == End_Of_Day_HHMM } then {
+on { BL_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
     BL_Toggle.active(Off)
 }
 
 on { PA_Toggle } then {
-    RTAC_PSA_Text = "Automation Started"
+    exportedVars.RTAC_PSA_Text = "Automation Started"
 }
 
-on { !PA_Toggle && Conductor_Time == End_Of_Day_HHMM } then {
-    RTAC_PSA_Text = "{c:red}Automation Turned Off\nat 4:50 PM"
+on { !PA_Toggle && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+    exportedVars.RTAC_PSA_Text = "{c:red}Automation Turned Off\nat 4:50 PM"
 }
 
-on { !PA_Toggle && Conductor_Time != End_Of_Day_HHMM } then {
-    RTAC_PSA_Text = "{c:red}Automation Stopped"
+on { !PA_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
+    exportedVars.RTAC_PSA_Text = "{c:red}Automation Stopped"
 }
 
 // ---------
@@ -173,7 +173,7 @@ val Passenger_Route = route.sequence {
     }
 
     fun onActivate() {
-        RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
+        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
         json_event {
             key1 = "Depart"
             key2 = "Passenger"

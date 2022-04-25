@@ -46,8 +46,13 @@ class Script2kLoader {
         return scriptHost.eval(source, conductorImpl)
     }
 
+    fun getResultOutputs() : String =
+        result.reports.joinToString("\n") { it.toString() }
+
     fun getResultErrors() : List<String> =
         result.reports
-            .filter { it.severity != ScriptDiagnostic.Severity.DEBUG }
-            .map { it.toString() }
+            .filter {
+                it.severity == ScriptDiagnostic.Severity.ERROR ||
+                it.severity == ScriptDiagnostic.Severity.FATAL
+            }.map { it.toString() }
 }

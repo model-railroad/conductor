@@ -50,8 +50,14 @@ class ScriptTest2k {
     }
 
     @Test
-    fun testLoadScriptAndEval() {
+    fun testSampleV2() {
         loadScriptFromFile("sample_v2")
+        assertResultNoError()
+    }
+
+    @Test
+    fun testScript45() {
+        loadScriptFromFile("script_v45_v2")
         assertResultNoError()
     }
 
@@ -410,5 +416,4 @@ class ScriptTest2k {
         assertThat(seq.timeout).isEqualTo(42)
         assertThat(seq.nodes).isNotEmpty()
     }
-
 }

@@ -77,7 +77,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         mScript2kLoader = Optional.of(new Script2kLoader());
         mScript2kLoader.get().loadScriptFromFile(file.getPath());
         Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
-
+        log(mScript2kLoader.get().getResultOutputs());
         return Pair.of(wasRunning, file);
     }
 
