@@ -34,7 +34,6 @@ import com.alflabs.kv.KeyValueServer;
 import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.alflabs.utils.NotImplementedException;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 

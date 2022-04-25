@@ -4,6 +4,7 @@ import com.alflabs.annotations.Null;
 import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Pair;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alfray.conductor.v2.Script2kLoader;
 import com.alfray.conductor.v2.dagger.IEngine2kComponent;
@@ -34,6 +35,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     private Optional<Script2kLoader> mScript2kLoader = Optional.empty();
 
     @Inject ILogger mLogger;
+    @Inject IClock mClock;
 
     @Override
     public Optional<File> getScriptFile() {
@@ -66,6 +68,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public Pair<Boolean, File> onReload() throws Exception {
+        long nowMs = mClock.elapsedRealtime();
         boolean wasRunning = mScript2kLoader.isPresent();
 
         // TBD Release any resources from current script component as needed.
@@ -76,8 +79,9 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         mScript2kLoader = Optional.of(new Script2kLoader());
         mScript2kLoader.get().loadScriptFromFile(file.getPath());
-        Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
+        log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
         log(mScript2kLoader.get().getResultOutputs());
+        Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
         return Pair.of(wasRunning, file);
     }
 

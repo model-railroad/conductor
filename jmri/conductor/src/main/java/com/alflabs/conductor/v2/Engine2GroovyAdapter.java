@@ -11,6 +11,7 @@ import com.alflabs.conductor.v2.script.RootScript;
 import com.alflabs.conductor.v2.script.impl.MapInfo;
 import com.alflabs.conductor.v2.script.impl.Timer;
 import com.alflabs.conductor.v2.script.impl.Turnout;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import dagger.BindsInstance;
 import dagger.Component;
@@ -32,6 +33,7 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
     private Optional<Script2gLoader> mScript2gLoader = Optional.empty();
 
     @Inject ILogger mLogger;
+    @Inject IClock mClock;
 
     @Override
     public Optional<File> getScriptFile() {
@@ -64,6 +66,7 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 
     @Override
     public Pair<Boolean, File> onReload() throws Exception {
+        long nowMs = mClock.elapsedRealtime();
         boolean wasRunning = mScript2gLoader.isPresent();
 
         // TBD Release any resources from current script component as needed.
@@ -74,6 +77,7 @@ public class Engine2GroovyAdapter implements IEngineAdapter {
 
         mScript2gLoader = Optional.of(new Script2gLoader());
         mScript2gLoader.get().loadScriptFromFile(file.getPath());
+        log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
 
         return Pair.of(wasRunning, file);
     }
