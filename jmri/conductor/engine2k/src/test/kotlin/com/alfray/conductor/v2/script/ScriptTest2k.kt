@@ -2,6 +2,8 @@ package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.Script2kLoader
 import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.GaEvent
+import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteIdle
 import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
@@ -248,6 +250,35 @@ class ScriptTest2k {
         assertThat(conductorImpl.svgMaps).containsExactly(
             "Mainline",
             SvgMapBuilder("Mainline", "Map 1.svg").create()
+        )
+    }
+
+    @Test
+    fun testGaEvent() {
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
+
+        assertThat(conductorImpl.lastGaEvent).isEqualTo(
+            GaEvent(
+                category = "Motion",
+                action = "Stop",
+                label = "AIU",
+                user = "AIU-Motion-Counter",
+            )
+        )
+    }
+
+    @Test
+    fun testJsonEvent() {
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
+
+        assertThat(conductorImpl.lastJsonEvent).isEqualTo(
+            JsonEvent(
+                key1 = "Depart",
+                key2 = "Passenger",
+                value = "value",
+            )
         )
     }
 

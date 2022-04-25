@@ -10,6 +10,7 @@ import com.alfray.conductor.v2.Script2kLoader;
 import com.alfray.conductor.v2.dagger.IEngine2kComponent;
 import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine;
+import com.alfray.conductor.v2.script.IExecEngine;
 import com.alfray.conductor.v2.script.ISvgMap;
 import com.alfray.conductor.v2.script.impl.Block;
 import com.alfray.conductor.v2.script.impl.Sensor;
@@ -49,7 +50,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public void onHandle(AtomicBoolean paused) {
-        Optional<ExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
+        Optional<IExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
 
         // If we have no engine, or it is paused, just idle-wait.
         if (!engine.isPresent() || paused.get()) {

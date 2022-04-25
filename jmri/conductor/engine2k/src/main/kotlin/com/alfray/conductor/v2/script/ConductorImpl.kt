@@ -3,6 +3,10 @@ package com.alfray.conductor.v2.script
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.GaEvent
+import com.alfray.conductor.v2.script.impl.GaEventBuilder
+import com.alfray.conductor.v2.script.impl.JsonEvent
+import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
@@ -12,7 +16,7 @@ import com.alfray.conductor.v2.script.impl.Turnout
 
 private const val VERBOSE = false
 
-class ConductorImpl : IConductor {
+internal class ConductorImpl : IConductor {
 
     val sensors = mutableMapOf<String, Sensor>()
     val blocks = mutableMapOf<String, Block>()
@@ -22,6 +26,10 @@ class ConductorImpl : IConductor {
     val timers = mutableListOf<Timer>()
     val rules = mutableListOf<Rule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
+    var lastGaEvent: GaEvent? = null
+        private set
+    var lastJsonEvent: JsonEvent? = null
+        private set
 
     override val exportedVars = ExportedVars()
 
@@ -87,10 +95,20 @@ class ConductorImpl : IConductor {
     }
 
     override fun ga_event(init: IGaEventBuilder.() -> Unit) {
-        TODO("Not yet implemented")
+        if (VERBOSE) println("@@ ga_event = $init")
+        val builder = GaEventBuilder()
+        builder.init()
+        val ev = builder.create()
+        // TODO send event
+        lastGaEvent = ev
     }
 
     override fun json_event(init: IJsonEventBuilder.() -> Unit) {
-        TODO("Not yet implemented")
+        if (VERBOSE) println("@@ json_event = $init")
+        val builder = JsonEventBuilder()
+        builder.init()
+        val ev = builder.create()
+        // TODO send event
+        lastJsonEvent = ev
     }
 }

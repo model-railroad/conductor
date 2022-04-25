@@ -1,8 +1,8 @@
 package com.alfray.conductor.v2.script
 
-class ExecEngine(val conductor: ConductorImpl) {
+internal class ExecEngine(val conductor: ConductorImpl) : IExecEngine {
 
-    fun executeRules() {
+    override fun executeRules() {
         // First collect all rules with an active condition.
         val activeRules = conductor.rules.filter { it.evaluateCondition() }
 

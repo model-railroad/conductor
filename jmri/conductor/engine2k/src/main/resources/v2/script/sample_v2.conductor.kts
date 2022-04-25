@@ -124,6 +124,22 @@ after(42.seconds) then {
     Train1.light(true)
 }
 
+// Events Logging
+
+ga_event {
+    category = "Motion"
+    action = "Stop"
+    label = "AIU"
+    user = "AIU-Motion-Counter"
+}
+
+json_event {
+    key1 = "Depart"
+    key2 = "Passenger"
+    value = "value"
+}
+
+
 
 // FIXME continue here: route handling
 val Route_Idle = route.idle()
