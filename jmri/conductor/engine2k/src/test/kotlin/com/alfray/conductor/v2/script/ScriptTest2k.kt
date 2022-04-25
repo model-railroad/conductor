@@ -130,18 +130,18 @@ class ScriptTest2k {
         val t = conductorImpl.turnouts["NT311"]!!
         assertThat(t.systemName).isEqualTo("NT311")
         assertThat(t.normal).isTrue()
-        assertThat(t.active).isFalse()
-        assertThat(!t).isTrue()
-
-        t.reverse()
-        assertThat(t.normal).isFalse()
         assertThat(t.active).isTrue()
         assertThat(!t).isFalse()
 
-        t.normal()
-        assertThat(t.normal).isTrue()
+        t.reverse()
+        assertThat(t.normal).isFalse()
         assertThat(t.active).isFalse()
         assertThat(!t).isTrue()
+
+        t.normal()
+        assertThat(t.normal).isTrue()
+        assertThat(t.active).isTrue()
+        assertThat(!t).isFalse()
     }
 
     @Test
