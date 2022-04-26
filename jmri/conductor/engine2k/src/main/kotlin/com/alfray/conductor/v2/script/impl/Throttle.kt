@@ -32,7 +32,7 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
     }
 
     override fun horn() {
-        println("@@ Horn $dccAddress")
+        // println("@@ Horn $dccAddress")
     }
 
     override fun light(on: Boolean) {

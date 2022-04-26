@@ -415,18 +415,20 @@ class ScriptTest2k {
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Block2  = block("B02")
-        val Route_Idle = route.idle()
-        val Route_Seq = route.sequence {
+        val Routes = activeRoute()
+        val Route_Idle = Routes.idle()
+        val Route_Seq = Routes.sequence {
             throttle = Train1
             timeout = 42
             val node1 = node(Block1) { }
-            val node2 = node(Block2) { }
+            val node2 = node(Block2) {
+                onEnter {
+                    route.activate(Route_Idle)
+                }
+            }
             nodes = listOf(
                 listOf(node1, node2),
                 listOf(node2, node1))
-        }
-        val Routes = activeRoute {
-            routes = listOf(Route_Idle, Route_Seq)
         }
         """.trimIndent()
         )
@@ -439,13 +441,17 @@ class ScriptTest2k {
         // val block2 = conductorImpl.sensors["B02"]!!
 
         assertThat(conductorImpl.activeRoutes).hasSize(1)
-        val active = conductorImpl.activeRoutes[0] as ActiveRoute
-        assertThat(active.routes).hasSize(2)
-        assertThat(active.routes[0]).isInstanceOf(RouteIdle::class.java)
-        assertThat(active.routes[1]).isInstanceOf(RouteSequence::class.java)
-        val seq = active.routes[1] as RouteSequence
+        val ar = conductorImpl.activeRoutes[0] as ActiveRoute
+        assertThat(ar.routes).hasSize(2)
+        assertThat(ar.routes[0]).isInstanceOf(RouteIdle::class.java)
+        assertThat(ar.routes[1]).isInstanceOf(RouteSequence::class.java)
+        val seq = ar.routes[1] as RouteSequence
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)
         assertThat(seq.timeout).isEqualTo(42)
         assertThat(seq.nodes).isNotEmpty()
+
+        assertThat(ar.active).isSameInstanceAs(ar.routes[0])
+        ar.activate(ar.routes[1])
+        assertThat(ar.active).isSameInstanceAs(ar.routes[1])
     }
 }

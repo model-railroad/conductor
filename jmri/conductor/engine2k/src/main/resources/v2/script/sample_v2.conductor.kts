@@ -140,14 +140,17 @@ json_event {
 
 
 
-// FIXME continue here: route handling
-val Route_Idle = route.idle()
+val PA_Route = activeRoute()
+
+val Route_Idle = PA_Route.idle()
 
 val _leaving_speed = 5.speed
 val _mainline_speed = 10.speed
 val _reverse_speed = 8.speed
 
-val Route1 = route.sequence {
+
+
+val Route1 = PA_Route.sequence {
     throttle = Train1
     timeout = 60
 
@@ -193,6 +196,7 @@ val Route1 = route.sequence {
     val B310_rev = node(B310) {
         onEnter {
             Train1.horn()
+            route.activate(Route_Idle)
         }
     }
 
@@ -202,6 +206,3 @@ val Route1 = route.sequence {
     )
 }
 
-val PA_Route = activeRoute {
-    routes = listOf(Route_Idle, Route1)
-}

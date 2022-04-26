@@ -136,13 +136,11 @@ fun PA_Fn_Release_Route() {
     T321.normal()
 }
 
-val PA_Route = activeRoute {
-    routes = listOf(PA_Idle_Route, Passenger_Route, Freight_Route)
-}
+val PA_Route = activeRoute()
 
-val PA_Idle_Route = route.idle()
+val PA_Idle_Route = PA_Route.idle()
 
-val Passenger_Route = route.sequence {
+val Passenger_Route = PA_Route.sequence {
     throttle = AM
     timeout = 60 // 1 minute
 
@@ -338,8 +336,7 @@ val Passenger_Route = route.sequence {
             }
             PA_Train = EPA_Train.Freight
             PA_State = EPA_State.Wait
-            // TODO change way routes are created/activated.
-            //-- activate(PA_Route, PA_Idle_Route)
+            route.activate(PA_Idle_Route)
         }
     }
 
@@ -350,7 +347,7 @@ val Passenger_Route = route.sequence {
 }
 
 
-val Freight_Route = route.sequence {
+val Freight_Route = PA_Route.sequence {
     throttle = SP
     timeout = 60
 
@@ -482,7 +479,7 @@ val Freight_Route = route.sequence {
                 }
                 PA_Train = EPA_Train.Passenger
                 PA_State = EPA_State.Wait
-                // TODO: PA_Route.activate(PA_Idle_Route)
+                route.activate(PA_Idle_Route)
             }
         }
     }
