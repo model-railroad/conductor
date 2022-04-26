@@ -200,9 +200,7 @@ val Route1 = PA_Route.sequence {
         }
     }
 
-    nodes = listOf(
-        listOf(B310_fwd, B311_fwd, B310_rev),
-        listOf(B310_fwd, B310_rev)
-    )
+    sequence = listOf(B310_fwd, B311_fwd, B310_rev)
+    branches += listOf(B310_fwd, B310_rev)
 }
 

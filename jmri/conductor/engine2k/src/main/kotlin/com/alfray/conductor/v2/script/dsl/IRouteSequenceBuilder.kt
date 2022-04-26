@@ -7,7 +7,8 @@ interface IRouteSequenceBuilder {
     val route: IActiveRoute
     var throttle: IThrottle
     var timeout: Int
-    var nodes: List<Any>
+    var sequence: List<INode>
+    val branches: MutableList<List<INode>>
     fun onActivate(action: TAction)
     fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
 }
@@ -17,7 +18,8 @@ class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSequenceBuil
         get() = owner
     override lateinit var throttle: IThrottle
     override var timeout = 60
-    override var nodes: List<Any> = emptyList()
+    override lateinit var sequence: List<INode>
+    override val branches = mutableListOf<List<INode>>()
     var actionOnActivate = RuleActionEmpty
 
     override fun onActivate(action: TAction) {

@@ -340,7 +340,7 @@ val Passenger_Route = PA_Route.sequence {
         }
     }
 
-    nodes = listOf(
+    sequence = listOf(
         B503b_start, B503a_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
         B370_end,
         B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
@@ -484,8 +484,6 @@ val Freight_Route = PA_Route.sequence {
         }
     }
 
-    nodes = listOf(
-        listOf(B311_start, B321_fwd, B311_rev),
-        listOf(B321_fwd, B330_fwd, B321_rev, B311_rev),
-    )
+    sequence = listOf(B311_start, B321_fwd, B311_rev)
+    branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
 }

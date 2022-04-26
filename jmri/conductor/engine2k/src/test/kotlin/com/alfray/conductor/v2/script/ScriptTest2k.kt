@@ -12,10 +12,13 @@ import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 
 @Suppress("UnstableApiUsage")
+@RunWith(JUnit4::class)
 class ScriptTest2k {
     private lateinit var loader: Script2kLoader
     private val conductorImpl: ConductorImpl
@@ -426,19 +429,14 @@ class ScriptTest2k {
                     route.activate(Route_Idle)
                 }
             }
-            nodes = listOf(
-                listOf(node1, node2),
-                listOf(node2, node1))
+            sequence = listOf(node1, node2)
+            branches += listOf(node2, node1)
         }
         """.trimIndent()
         )
         assertResultNoError()
 
         assertThat(conductorImpl.rules).hasSize(0)
-
-        // val train1 = conductorImpl.throttles[1001]
-        // val block1 = conductorImpl.sensors["B01"]!!
-        // val block2 = conductorImpl.sensors["B02"]!!
 
         assertThat(conductorImpl.activeRoutes).hasSize(1)
         val ar = conductorImpl.activeRoutes[0] as ActiveRoute
@@ -448,7 +446,7 @@ class ScriptTest2k {
         val seq = ar.routes[1] as RouteSequence
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)
         assertThat(seq.timeout).isEqualTo(42)
-        assertThat(seq.nodes).isNotEmpty()
+        assertThat(seq.startNode).isNotNull()
 
         assertThat(ar.active).isSameInstanceAs(ar.routes[0])
         ar.activate(ar.routes[1])
