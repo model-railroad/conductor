@@ -92,7 +92,7 @@ internal class RouteSequence(builder: RouteSequenceBuilder) : IRoute {
 
         fun addGraphBranch(start: GraphNode, branch: List<INode>) {
             val sz = branch.size
-            check(sz > 2) { "A branch must have at least 3 nodes (start -> branch -> end)" }
+            check(sz >= 2) { "A branch must have at least 2 nodes (start -> branch -> end)" }
 
             // Initial and end nodes must be in the graph already
             val flat = visitGraph(start)

@@ -47,4 +47,25 @@ class Node(builder: NodeBuilder) : INode {
     val actionWhileOccupied = builder.actionWhileOccupied
     val actionOnTrailing = builder.actionOnTrailing
     val actionOnEmpty = builder.actionOnEmpty
+
+    override fun toString(): String {
+        return "{${block.systemName}}"
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Node
+
+        if (block != other.block) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return block.hashCode()
+    }
+
+
 }

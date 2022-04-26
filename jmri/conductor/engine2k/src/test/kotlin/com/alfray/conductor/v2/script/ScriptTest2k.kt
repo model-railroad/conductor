@@ -451,5 +451,8 @@ class ScriptTest2k {
         assertThat(ar.active).isSameInstanceAs(ar.routes[0])
         ar.activate(ar.routes[1])
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
+
+        assertThat(RouteSequence.printGraph(seq.startNode)).isEqualTo(
+            "[{B01}>>{B02}] -> [{B01}>{B02}+{B01}]")
     }
 }
