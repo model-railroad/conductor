@@ -2,7 +2,6 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-import com.alfray.conductor.v2.script.impl.RouteBuilder
 import com.alfray.conductor.v2.script.TCondition
 
 
@@ -38,6 +37,8 @@ interface IConductor {
     val route: IRouteBuilder
 
     fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
+
+    fun activate(activeRoute: IActiveRoute, route: IRoute)
 
     fun ga_event(init: IGaEventBuilder.() -> Unit)
     fun json_event(init: IJsonEventBuilder.() -> Unit)

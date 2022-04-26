@@ -3,7 +3,7 @@ package com.alfray.conductor.v2.script.dsl
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 
 interface IActiveRoute {
-
+    fun activate(route: IRoute)
 }
 
 interface IActiveRouteBuilder {

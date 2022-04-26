@@ -10,6 +10,7 @@ import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
 import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
+import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.ISvgMap
@@ -110,6 +111,10 @@ internal class ConductorImpl : IConductor {
         val a = ActiveRoute(b)
         activeRoutes.add(a)
         return a
+    }
+
+    override fun activate(activeRoute: IActiveRoute, route: IRoute) {
+        TODO("Not yet implemented")
     }
 
     override fun ga_event(init: IGaEventBuilder.() -> Unit) {
