@@ -412,7 +412,7 @@ class ScriptTest2k {
     }
 
     @Test
-    fun testRoute() {
+    fun testRouteSequence() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -423,14 +423,14 @@ class ScriptTest2k {
         val Route_Seq = Routes.sequence {
             throttle = Train1
             timeout = 42
-            val node1 = node(Block1) { }
-            val node2 = node(Block2) {
+            val block1_fwd = node(Block1) { }
+            val block2_fwd = node(Block2) { }
+            val block1_rev = node(Block1) {
                 onEnter {
                     route.activate(Route_Idle)
                 }
             }
-            sequence = listOf(node1, node2)
-            branches += listOf(node2, node1)
+            sequence = listOf(block1_fwd, block2_fwd, block1_rev)
         }
         """.trimIndent()
         )
@@ -452,7 +452,64 @@ class ScriptTest2k {
         ar.activate(ar.routes[1])
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
 
-        assertThat(RouteSequence.printGraph(seq.startNode)).isEqualTo(
-            "[{B01}>>{B02}] -> [{B01}>{B02}+{B01}]")
+        assertThat(RouteSequence.visitGraph(seq.startNode).map { it.toString() })
+            .containsExactly(
+                "[{B01}->{B02}]",
+                "[{B02}->{B01}]",
+                "[{B01}<>]")
+            .inOrder()
+    }
+
+    @Test
+    fun testRouteBranches() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Block4  = block("B04")
+        val Routes = activeRoute()
+        val Route_Idle = Routes.idle()
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            timeout = 42
+            val block1_fwd = node(Block1) { }
+            val block2_fwd = node(Block2) { }
+            val block3_fwd = node(Block3) { }
+            val block4_fwd = node(Block4) { }
+            val block1_rev = node(Block1) {
+                onEnter {
+                    route.activate(Route_Idle)
+                }
+            }
+            sequence = listOf(block1_fwd, block2_fwd, block1_rev)
+            branches += listOf(block1_fwd, block3_fwd, block4_fwd, block1_rev)
+            branches += listOf(block2_fwd, block3_fwd, block1_rev)
+            branches += listOf(block1_fwd, block4_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(0)
+
+        val ar = conductorImpl.activeRoutes[0] as ActiveRoute
+        val seq = ar.routes[1] as RouteSequence
+
+        assertThat(RouteSequence.visitGraph(seq.startNode).map { it.toString() })
+            .containsExactly(
+                // main sequence
+                "[{B01}->{B02}+{B03}+{B04}]",
+                "[{B02}->{B01}+{B03}]",
+                "[{B01}<>]",
+                // branch 1
+                "[{B03}->{B04}]",
+                "[{B04}->{B01}]",
+                // branch 2
+                "[{B03}->{B01}]",
+                // branch 3 is a shortcut and adds no new graph node
+            )
+            .inOrder()
     }
 }

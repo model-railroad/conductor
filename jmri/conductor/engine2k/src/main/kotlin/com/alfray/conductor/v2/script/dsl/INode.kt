@@ -39,10 +39,11 @@ class NodeBuilder(val block: IBlock) : INodeBuilder {
 }
 
 interface INode {
+    val block : IBlock
 }
 
 class Node(builder: NodeBuilder) : INode {
-    val block = builder.block
+    override val block = builder.block
     val actionOnEnter = builder.actionOnEnter
     val actionWhileOccupied = builder.actionWhileOccupied
     val actionOnTrailing = builder.actionOnTrailing
@@ -51,21 +52,4 @@ class Node(builder: NodeBuilder) : INode {
     override fun toString(): String {
         return "{${block.systemName}}"
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Node
-
-        if (block != other.block) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return block.hashCode()
-    }
-
-
 }
