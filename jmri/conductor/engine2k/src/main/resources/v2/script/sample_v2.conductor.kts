@@ -138,9 +138,11 @@ json_event {
     value = "value"
 }
 
-
-
-val PA_Route = activeRoute()
+val PA_Route = activeRoute {
+    onError {
+        estop()
+    }
+}
 
 val Route_Idle = PA_Route.idle()
 

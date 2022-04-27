@@ -136,7 +136,27 @@ fun PA_Fn_Release_Route() {
     T321.normal()
 }
 
-val PA_Route = activeRoute()
+val PA_Route = activeRoute {
+    fun onError() {
+        // --- PA State: Error
+        // Note this state can only be cleared using an RTAC reset.
+        PA_State = EPA_State.Error
+        AM.repeat(Off)
+        SP.repeat(Off)
+        AM.stop()
+        SP.stop()
+        AM.sound(Off) ; AM.light(Off) ; AM.f1(Off)
+        SP.sound(Off) ; SP.light(Off) ; SP.f1(Off) ; SP.f5(Off)
+        ga_event {
+            category = "Automation"
+            action = "Error"
+            label = "Passenger"
+            user = "Staff"
+        }
+        exportedVars.RTAC_PSA_Text = "{b:red}{c:white}Automation ERROR" ;
+        estop()
+    }
+}
 
 val PA_Idle_Route = PA_Route.idle()
 

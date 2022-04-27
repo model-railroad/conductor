@@ -13,7 +13,7 @@ interface IRouteSequenceBuilder {
     fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
 }
 
-class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSequenceBuilder {
+internal class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSequenceBuilder {
     override val route: IActiveRoute
         get() = owner
     override lateinit var throttle: IThrottle

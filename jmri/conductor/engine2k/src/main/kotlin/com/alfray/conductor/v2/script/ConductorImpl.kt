@@ -3,6 +3,7 @@ package com.alfray.conductor.v2.script
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
@@ -17,6 +18,7 @@ import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.ActiveRouteBuilder
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.GaEvent
@@ -99,8 +101,10 @@ internal class ConductorImpl : IConductor {
         return After(delay)
     }
 
-    override fun activeRoute(): IActiveRoute {
-        val a = ActiveRoute()
+    override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
+        val b = ActiveRouteBuilder()
+        b.init()
+        val a = ActiveRoute(b)
         activeRoutes.add(a)
         return a
     }
@@ -125,5 +129,9 @@ internal class ConductorImpl : IConductor {
         val ev = builder.create()
         // TODO send event
         lastJsonEvent = ev
+    }
+
+    override fun estop() {
+        TODO("Not yet implemented")
     }
 }

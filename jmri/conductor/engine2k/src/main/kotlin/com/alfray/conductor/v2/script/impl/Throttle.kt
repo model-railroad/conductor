@@ -42,4 +42,8 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
     override fun sound(on: Boolean) {
         _sound = on
     }
+
+    override fun repeat(on: Boolean) {
+        TODO("Not yet implemented")
+    }
 }

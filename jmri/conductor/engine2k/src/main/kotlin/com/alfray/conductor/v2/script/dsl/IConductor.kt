@@ -34,11 +34,13 @@ interface IConductor {
 
     fun after(delay: Delay): IAfter
 
-    fun activeRoute(): IActiveRoute
+    fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
 
     fun activate(activeRoute: IActiveRoute, route: IRoute)
 
     fun ga_event(init: IGaEventBuilder.() -> Unit)
 
     fun json_event(init: IJsonEventBuilder.() -> Unit)
+
+    fun estop()
 }
