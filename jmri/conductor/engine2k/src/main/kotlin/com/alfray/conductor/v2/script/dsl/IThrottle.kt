@@ -32,7 +32,7 @@ interface IThrottle {
     fun horn()
     fun light(on: Boolean)
     fun sound(on: Boolean)
-    fun repeat(on: Boolean)
+    fun repeat(frequency: Delay)
 
     val f: FBits
     val f0: Boolean

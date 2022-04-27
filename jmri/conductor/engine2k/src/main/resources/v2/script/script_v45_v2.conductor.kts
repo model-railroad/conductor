@@ -74,7 +74,7 @@ on { AIU_Motion } then {
         category = "Motion"
         action = "Start"
         label = "AIU"
-        user = "AIU-Motion-Counter"
+        user = AIU_Motion_Counter.toString()
     }
 }
 
@@ -84,7 +84,7 @@ on { !AIU_Motion } then {
         category = "Motion"
         action = "Stop"
         label = "AIU"
-        user = "AIU-Motion-Counter"
+        user = AIU_Motion_Counter.toString()
     }
 }
 
@@ -141,8 +141,8 @@ val PA_Route = activeRoute {
         // --- PA State: Error
         // Note this state can only be cleared using an RTAC reset.
         PA_State = EPA_State.Error
-        AM.repeat(Off)
-        SP.repeat(Off)
+        AM.repeat(0.seconds)
+        SP.repeat(0.seconds)
         AM.stop()
         SP.stop()
         AM.sound(Off) ; AM.light(Off) ; AM.f1(Off)
@@ -495,7 +495,10 @@ val Freight_Route = PA_Route.sequence {
                 SP.sound(Off)
                 AM.sound(On)
                 ga_event {
-
+                    category = "Activation"
+                    action = "Stop"
+                    label = PA_Train.name
+                    user = PA_Start_Counter.toString()
                 }
                 PA_Train = EPA_Train.Passenger
                 PA_State = EPA_State.Wait
@@ -506,4 +509,67 @@ val Freight_Route = PA_Route.sequence {
 
     sequence = listOf(B311_start, B321_fwd, B311_rev)
     branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
+}
+
+// --- PA State: Idle
+
+val PA_Timer_Stop_Sound_Off = 10.seconds
+
+on { PA_State == EPA_State.Idle && PA_Toggle.active } then {
+    AM.sound(On);   AM.light(On)
+    SP.sound(On);   SP.light(On)
+    AM.stop();      SP.stop()
+    AM.repeat(2.seconds);
+    SP.repeat(2.seconds)
+    PA_Fn_Release_Route()
+    PA_State = EPA_State.Station
+}
+
+on { PA_State == EPA_State.Idle && !PA_Toggle } then {
+    AM.light(Off);  SP.light(Off)
+    AM.stop();      SP.stop()
+    after(PA_Timer_Stop_Sound_Off) then {
+        AM.sound(Off);
+        SP.sound(Off)
+    }
+    PA_Fn_Release_Route()
+}
+
+on { PA_Toggle } then {
+    AM.repeat(2.seconds);
+    SP.repeat(2.seconds)
+}
+
+on { !PA_Toggle } then {
+    AM.repeat(2.seconds);
+    SP.repeat(2.seconds)
+    AM.f1(Off);
+    SP.f1(Off)
+}
+
+on { PA_Toggle  } then {
+    ga_event {
+        category = "Automation"
+        action = "On"
+        label = "Passenger"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Passenger"
+        value = "On"
+    }
+}
+on { !PA_Toggle } then {
+    ga_event {
+        category = "Automation"
+        action = "Off"
+        label = "Passenger"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Passenger"
+        value = "Off"
+    }
 }

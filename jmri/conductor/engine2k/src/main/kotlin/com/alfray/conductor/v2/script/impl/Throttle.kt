@@ -1,6 +1,7 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.DccSpeed
+import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.FBits
 import com.alfray.conductor.v2.script.dsl.IThrottle
 
@@ -43,7 +44,7 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
         _sound = on
     }
 
-    override fun repeat(on: Boolean) {
+    override fun repeat(frequency: Delay) {
         TODO("Not yet implemented")
     }
 }
