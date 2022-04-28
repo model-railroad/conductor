@@ -47,7 +47,7 @@ internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
     }
 
     override fun idle(): IRoute {
-        return add(RouteIdle())
+        return add(RouteIdle(this))
     }
 
     override fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute {

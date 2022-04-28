@@ -1,4 +1,4 @@
-@file:Suppress("FunctionName", "LocalVariableName", "PropertyName")
+@file:Suppress("FunctionName", "LocalVariableName", "PropertyName", "ClassName")
 
 import com.alfray.conductor.v2.script.dsl.*
 
@@ -118,9 +118,7 @@ on { !PA_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
 // Events PA
 // ---------
 
-enum class EPA_State {
-    Idle, Station, Shuttle, Manual, Error, Wait,
-}
+enum class EPA_State { Idle, Station, Shuttle, Manual, Error, Wait }
 enum class EPA_Train { Passenger, Freight, }
 
 var PA_State = EPA_State.Idle
@@ -638,4 +636,227 @@ on { PA_State == EPA_State.Station && !PA_Toggle } then {
     reset_timers("PA", "AM", "SP")
     PA_State = EPA_State.Idle
     PA_Route.activate(PA_Idle_Route)
+}
+
+
+// ---------
+// Events BL
+// ---------
+
+
+val BL = throttle(191)
+
+val BL_Speed = 10.speed
+val BL_Speed_Station = 6.speed
+
+enum class EBL_State { Wait, Shuttle, Rev3 }
+
+var BL_State = EBL_State.Wait
+
+var BL_Start_Counter = 0
+
+on { BL_Toggle.active } then {
+    ga_event {
+        category = "Automation"
+        action = "On"
+        label = "Branchline"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Branchline"
+        value = "On"
+    }
+}
+on { !BL_Toggle } then {
+    ga_event {
+        category = "Automation"
+        action = "Off"
+        label = "Branchline"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Branchline"
+        value = "Off"
+    }
+}
+
+val BL_Route = activeRoute {
+    fun onError() {
+        // --- BL State: Error
+        BL.repeat(1.seconds)
+        BL.stop()
+        BL.sound(Off)
+        ga_event {
+            category = "Automation"
+            action = "Error"
+            label = "Branchline"
+            user = "Staff"
+        }
+    }
+}
+
+val BL_Idle_Route = BL_Route.idle()
+
+on { BL_Route.error } then {
+    // Tip: can't call this from BL_Route.onError{} as neither BL_Route
+    // nor BL_Idle_Route are defined inside the onError block yet.
+    BL_Route.activate(BL_Idle_Route)
+}
+
+val BL_Shuttle_Route = BL_Route.sequence {
+    throttle = BL
+    timeout = 60 // 1 minute
+
+//    Self.Throttle = BL
+//    Self.Manager = Sequence
+//    Self.Blocks = BLParked, BLStation, BLTunnel, BLReverse, BLTunnel, BLStation, BLParked
+//    Self.Timeout = 60 # 1 minute
+//
+//    Timer BL-Timer-RevStation-Stop = 4
+//    Timer BL-Timer-RevStation-Pause = 25
+//    Timer BL-Timer-Station-Stop = 6
+//    Timer BL-Timer-Station-Rev3 = 8
+//
+//    Function OnActivate -> {
+//        # It's ok to start either from BLParked or BLStation
+//        !BLParked & BLStation -> Self.Block = BLStation
+//    }
+//
+//    Function OnRecover -> {
+//        # Try to bring it backwards to the station
+//        BL Reverse = BL-Speed-Station ;
+//        BL F1 = 1 ;
+//    }
+//
+//    Function DoStart -> {
+//        BL Horn ;
+//        BL F1 = 1 ;
+//        After BL-Timer-Start-Delay -> {
+//            BL F1 = 0 ;
+//            BL Horn ;
+//            BL Forward = BL-Speed ;
+//        }
+//    }
+//
+//    Enter BLParked Stopped -> {
+//        # When starting from BLParked
+//        BL-State == Shuttle -> DoStart
+//    }
+//
+//    Enter BLStation Stopped -> {
+//        # When starting from BLStation
+//        BL-State == Shuttle -> DoStart
+//    }
+//
+//    Enter BLStation Forward -> {
+//        JSON-Event "Depart" "Branchline"
+//    }
+//
+//    Enter BLTunnel Forward -> {
+//        BL Horn ;
+//    }
+//
+//    Enter BLReverse Forward -> {
+//        BL Horn ;
+//        BL F1 = 1 ;
+//        After BL-Timer-RevStation-Stop -> {
+//            # Toggle Stop/Reverse/Stop to turn off the Reverse front light.
+//            # Next event should still be the BLReverse Stopped one.
+//            BL Stop ;
+//            BL Horn ;
+//            BL Reverse = 1 ;
+//            BL Stop
+//        }
+//        BL-Timer-Bell-Delay Start ;
+//    }
+//
+//    Enter BLReverse Stopped -> {
+//        After BL-Timer-RevStation-Pause -> {
+//            BL F1 = 1 ;
+//            BL Horn
+//        } Then After 5 {
+//            BL Reverse = BL-Speed ;
+//        }
+//    }
+//
+//    Enter BLReverse Reverse -> {
+//        BL Light = 1
+//        BL F1 = 0 ;
+//        BL F8 = 1 ;
+//        BL F9 = 1 ;
+//        BL F10 = 1 ;
+//        BL Horn ;
+//    }
+//
+//    Enter BLTunnel Reverse -> {
+//        BL Horn ;
+//    }
+//
+//    Enter BLStation Reverse -> {
+//        BL-State == Shuttle -> {
+//            BL F1 = 1 ;
+//            T324 Normal ;
+//            BL Reverse = BL-Speed-Station ;
+//            After BL-Timer-Station-Stop Start -> {
+//                BL Stop ;
+//                BL Horn ;
+//                # We have more to do here but we're in stopped state now, so let's continue below
+//                BL-State = Rev3
+//            }
+//        }
+//    }
+//
+//    Enter BLStation Stopped -> {
+//        BL-State == Rev3 -> {
+//            After BL-Timer-Station-Rev3 -> {
+//                BL Horn ;
+//                BL Reverse = BL-Speed-Station ;
+//            }
+//        }
+//    }
+//
+//    Enter BLParked Reverse -> {
+//        # We went too far, but it's not a problem / not an error.
+//        BL Stop
+//        After 3 -> {
+//            BL F1 = 0
+//        } Then After 2 -> {
+//            BL F8 = 0 ;
+//            BL F9 = 0 ;
+//            BL F10 = 0 ;
+//            BL-State = Wait ;
+//            BL-Route Activate = BL-Idle-Route ;
+//        }
+//    }
+}
+
+
+val BL_StationToParked_Route = BL_Route.sequence {
+    throttle = BL
+    timeout = 60 // 1 minute
+
+//    Function OnActivate -> {
+//        !BLParked -> BL Reverse = BL-Speed-Station ;
+//    }
+//
+//    Enter BLStation Reverse -> {
+//        BL F1 = 1
+//    }
+//
+//    Enter BLParked Reverse -> {
+//        BL Stop
+//    }
+//
+//    Enter BLParked Stopped -> {
+//        After 3 -> BL F1 = 0
+//        Then After 2 -> {
+//            BL F8 = 0 ;
+//            BL F9 = 0 ;
+//            BL F10 = 0 ;
+//            BL-State = Wait ;
+//            BL-Route Activate = BL-Idle-Route ;
+//        }
+//    }
 }

@@ -1,5 +1,6 @@
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.RouteSequenceBuilder
@@ -40,11 +41,17 @@ internal data class GraphNode(
     }
 }
 
-internal class RouteSequence(builder: RouteSequenceBuilder) : IRoute {
+internal class RouteSequence(
+    override val owner: IActiveRoute,
+    builder: RouteSequenceBuilder) : IRoute {
     val throttle = builder.throttle
     val timeout = builder.timeout
     val startNode = parse(builder.sequence, builder.branches)
     val actionOnActivate = builder.actionOnActivate
+
+    override fun activate() {
+        owner.activate(this)
+    }
 
     private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): GraphNode {
         val start = sequenceToLinearGraph(sequence)

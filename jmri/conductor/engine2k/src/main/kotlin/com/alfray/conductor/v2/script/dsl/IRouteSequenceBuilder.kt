@@ -33,5 +33,5 @@ internal class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSeq
         return Node(b)
     }
 
-    fun create() : IRoute = RouteSequence(this)
+    fun create() : IRoute = RouteSequence(owner, this)
 }
