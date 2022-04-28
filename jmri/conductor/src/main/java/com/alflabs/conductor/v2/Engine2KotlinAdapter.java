@@ -9,7 +9,7 @@ import com.alflabs.utils.ILogger;
 import com.alfray.conductor.v2.Script2kLoader;
 import com.alfray.conductor.v2.dagger.IEngine2kComponent;
 import com.alfray.conductor.v2.script.ConductorImpl;
-import com.alfray.conductor.v2.script.dsl.IExecEngine;
+import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
 import com.alfray.conductor.v2.script.impl.Block;
 import com.alfray.conductor.v2.script.impl.Sensor;
@@ -63,7 +63,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             return;
         }
 
-        engine.get().executeRules();
+        engine.get().onExecHandle();
     }
 
     @Override
@@ -82,6 +82,10 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
         log(mScript2kLoader.get().getResultOutputs());
         Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
+
+        Optional<IExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
+        engine.get().onExecStart();
+
         return Pair.of(wasRunning, file);
     }
 

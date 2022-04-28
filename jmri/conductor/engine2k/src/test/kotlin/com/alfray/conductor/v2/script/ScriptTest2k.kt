@@ -320,11 +320,11 @@ class ScriptTest2k {
         assertThat(t1.normal).isTrue()
 
         s1.active(false)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(t1.normal).isFalse()
 
         s1.active(true)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(t1.normal).isTrue()
     }
 
@@ -350,11 +350,11 @@ class ScriptTest2k {
         assertThat(turnout1.normal).isTrue()
 
         sensor1.active(true)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(turnout1.normal).isTrue()
 
         sensor1.active(false)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(turnout1.normal).isFalse()
     }
 
@@ -392,7 +392,7 @@ class ScriptTest2k {
         assertThat(train2.speed).isEqualTo(0.speed)
 
         sensor1.active(false)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(0.speed)
         assertThat(train1.light).isEqualTo(false)
         assertThat(train1.f1).isEqualTo(false)
@@ -403,26 +403,26 @@ class ScriptTest2k {
         // it only changes conditions in the next loop. This ensures eval consistency.
         sensor1.active(true)
         sensor2.active(true)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(5.speed)
         assertThat(train2.speed).isEqualTo(0.speed)
         // train1.forward condition is not active yet until the next execution pass.
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train1.light).isEqualTo(true)
         assertThat(train1.f1).isEqualTo(true)
         assertThat(train2.speed).isEqualTo(42.speed)
 
         sensor1.active(true)
         sensor2.active(false)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(7.speed.reverse())
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train2.speed).isEqualTo(43.speed.reverse())
 
         sensor1.active(false)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(0.speed)
-        execEngine.executeRules()
+        execEngine.onExecHandle()
         assertThat(train2.speed).isEqualTo(0.speed)
     }
 

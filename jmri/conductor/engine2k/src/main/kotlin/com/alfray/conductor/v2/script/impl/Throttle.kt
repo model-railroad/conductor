@@ -9,6 +9,7 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
     private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false
+    private var _repeat = Delay(0)
     private var _f = FBits()
 
     override val speed: DccSpeed
@@ -44,7 +45,7 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
         _sound = on
     }
 
-    override fun repeat(frequency: Delay) {
-        TODO("Not yet implemented")
+    override fun repeat(repeat: Delay) {
+        _repeat = repeat
     }
 }
