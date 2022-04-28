@@ -114,10 +114,6 @@ internal class ConductorImpl : IConductor {
         return a
     }
 
-    override fun activate(activeRoute: IActiveRoute, route: IRoute) {
-        TODO("Not yet implemented")
-    }
-
     override fun ga_page(init: IGaPageBuilder.() -> Unit) {
         if (VERBOSE) println("@@ ga_page = $init")
         val builder = GaPageBuilder()
