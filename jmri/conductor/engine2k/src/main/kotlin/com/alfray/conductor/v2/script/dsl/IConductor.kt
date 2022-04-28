@@ -38,9 +38,12 @@ interface IConductor {
 
     fun activate(activeRoute: IActiveRoute, route: IRoute)
 
+    fun ga_page(init: IGaPageBuilder.() -> Unit)
     fun ga_event(init: IGaEventBuilder.() -> Unit)
 
     fun json_event(init: IJsonEventBuilder.() -> Unit)
 
     fun estop()
+
+    fun reset_timers(vararg prefix: String)
 }

@@ -125,6 +125,12 @@ after(42.seconds) then {
 
 // Events Logging
 
+ga_page {
+    url = "TheUrl"
+    path = "SomePath"
+    user = "SomeValue"
+}
+
 ga_event {
     category = "Motion"
     action = "Stop"

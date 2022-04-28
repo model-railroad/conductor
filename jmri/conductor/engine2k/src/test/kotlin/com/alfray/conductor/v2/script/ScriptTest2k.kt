@@ -5,6 +5,7 @@ import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.GaEvent
+import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteIdle
 import com.alfray.conductor.v2.script.impl.RouteSequence
@@ -254,6 +255,20 @@ class ScriptTest2k {
         assertThat(conductorImpl.svgMaps).containsExactly(
             "Mainline",
             SvgMapBuilder("Mainline", "Map 1.svg").create()
+        )
+    }
+
+    @Test
+    fun testGaPage() {
+        loadScriptFromFile("sample_v2")
+        assertResultNoError()
+
+        assertThat(conductorImpl.lastGaPage).isEqualTo(
+            GaPage(
+                url = "TheUrl",
+                path = "SomePath",
+                user = "SomeValue",
+            )
         )
     }
 

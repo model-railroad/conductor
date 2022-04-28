@@ -8,6 +8,7 @@ import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
 import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
+import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRule
@@ -23,6 +24,8 @@ import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaEventBuilder
+import com.alfray.conductor.v2.script.impl.GaPage
+import com.alfray.conductor.v2.script.impl.GaPageBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
@@ -44,6 +47,8 @@ internal class ConductorImpl : IConductor {
     val timers = mutableListOf<Timer>()
     val rules = mutableListOf<Rule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
+    var lastGaPage: GaPage? = null
+        private set
     var lastGaEvent: GaEvent? = null
         private set
     var lastJsonEvent: JsonEvent? = null
@@ -113,6 +118,15 @@ internal class ConductorImpl : IConductor {
         TODO("Not yet implemented")
     }
 
+    override fun ga_page(init: IGaPageBuilder.() -> Unit) {
+        if (VERBOSE) println("@@ ga_page = $init")
+        val builder = GaPageBuilder()
+        builder.init()
+        val pg = builder.create()
+        // TODO send page
+        lastGaPage = pg
+    }
+
     override fun ga_event(init: IGaEventBuilder.() -> Unit) {
         if (VERBOSE) println("@@ ga_event = $init")
         val builder = GaEventBuilder()
@@ -132,6 +146,10 @@ internal class ConductorImpl : IConductor {
     }
 
     override fun estop() {
+        TODO("Not yet implemented")
+    }
+
+    override fun reset_timers(vararg prefix: String) {
         TODO("Not yet implemented")
     }
 }

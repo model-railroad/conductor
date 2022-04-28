@@ -125,7 +125,7 @@ enum class EPA_Train { Passenger, Freight, }
 
 var PA_State = EPA_State.Idle
 var PA_Train = EPA_Train.Passenger
-val PA_Start_Counter = 0
+var PA_Start_Counter = 0
 
 val AM = throttle(8749)     // Full Amtrak route
 val SP = throttle(1072)     // "Short Passenger" (now Freight) on limited Amtrak route
@@ -572,4 +572,70 @@ on { !PA_Toggle } then {
         key2 = "Passenger"
         value = "Off"
     }
+}
+
+
+// --- PA State: Wait (to station)
+
+// RM DEBUG: Use 5 here instead of 60
+val PA_Timer_Wait = 60.seconds  // 1 minute
+on { PA_State == EPA_State.Wait } then {
+    after(PA_Timer_Wait) then {
+        PA_State = EPA_State.Station
+    }
+}
+
+
+// --- PA State: Station
+
+// Departure from Station (going up)
+// REQUIRES both trains stopped.
+on { PA_Train == EPA_Train.Passenger && PA_State == EPA_State.Station && AM.stopped && SP.stopped && AIU_Motion.active } then {
+    PA_State = EPA_State.Shuttle
+}
+on { PA_Train == EPA_Train.Freight && PA_State == EPA_State.Station && AM.stopped && SP.stopped && AIU_Motion.active } then {
+    PA_State = EPA_State.Shuttle
+}
+
+on { PA_State == EPA_State.Shuttle } then {
+    PA_Start_Counter += 1
+    ga_page {
+        url = exportedVars.GA_URL
+        path = PA_Train.name
+        user = PA_Start_Counter.toString()
+    }
+    ga_event {
+        category = "Automation"
+        action = "Start"
+        label = PA_Train.name
+        user = PA_Start_Counter.toString()
+    }
+    reset_timers("PA", "AM", "SP")
+}
+
+on { PA_State == EPA_State.Station && PA_Toggle.active && PA_Train == EPA_Train.Passenger } then {
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger"
+}
+on { PA_State == EPA_State.Wait    && PA_Toggle.active && PA_Train == EPA_Train.Passenger } then {
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+}
+on { PA_State == EPA_State.Station && PA_Toggle.active && PA_Train == EPA_Train.Freight  } then {
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight"
+}
+on { PA_State == EPA_State.Wait    && PA_Toggle.active && PA_Train == EPA_Train.Freight  } then {
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+}
+
+// DEBUG place to force AM_up vs SP_up
+on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Passenger } then {
+    PA_Route.activate(Passenger_Route)
+}
+on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Freight   } then {
+    PA_Route.activate(Freight_Route)
+}
+
+on { PA_State == EPA_State.Station && !PA_Toggle } then {
+    reset_timers("PA", "AM", "SP")
+    PA_State = EPA_State.Idle
+    PA_Route.activate(PA_Idle_Route)
 }
