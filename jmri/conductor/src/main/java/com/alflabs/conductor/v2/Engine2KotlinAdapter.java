@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "KotlinInternalInJava"})
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
@@ -95,7 +95,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 return Optional.of(new com.alflabs.manifest.MapInfo(
                         svgMap.get().getName(),
                         svgMap.get().getSvg(),
-                        /* uri= */ svgMap.get().getName()
+                        /* uri= */ svgMap.get().getSvg()
                 ));
             }
         }
