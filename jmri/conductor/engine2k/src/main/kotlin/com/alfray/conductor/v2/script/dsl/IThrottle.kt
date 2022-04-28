@@ -55,6 +55,8 @@ interface IThrottle {
         get() = f[8]
     val f9: Boolean
         get() = f[9]
+    val f10: Boolean
+        get() = f[10]
 
     fun f(index: Int, on: Boolean) : FBits = f.set(index, on)
     fun f0(on: Boolean) : FBits = f(0, on)
@@ -67,6 +69,7 @@ interface IThrottle {
     fun f7(on: Boolean) : FBits = f(7, on)
     fun f8(on: Boolean) : FBits = f(8, on)
     fun f9(on: Boolean) : FBits = f(9, on)
+    fun f10(on: Boolean) : FBits = f(10, on)
 }
 
 data class FBits(var f: Int = 0) {

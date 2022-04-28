@@ -10,6 +10,7 @@ interface IRouteSequenceBuilder {
     var sequence: List<INode>
     val branches: MutableList<List<INode>>
     fun onActivate(action: TAction)
+    fun onRecover(action: TAction)
     fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
 }
 
@@ -21,10 +22,16 @@ internal class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSeq
     override lateinit var sequence: List<INode>
     override val branches = mutableListOf<List<INode>>()
     var actionOnActivate = RuleActionEmpty
+    var actionOnRecover = RuleActionEmpty
 
     override fun onActivate(action: TAction) {
         check(actionOnActivate == RuleActionEmpty)
         actionOnActivate = action
+    }
+
+    override fun onRecover(action: TAction) {
+        check(actionOnRecover == RuleActionEmpty)
+        actionOnRecover = action
     }
 
     override fun node(block: IBlock, init: INodeBuilder.() -> Unit): INode {

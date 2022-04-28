@@ -194,7 +194,7 @@ val Passenger_Route = PA_Route.sequence {
         T504.normal()
     }
 
-    fun onActivate() {
+    onActivate {
         exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
         json_event {
             key1 = "Depart"
@@ -394,7 +394,7 @@ val Freight_Route = PA_Route.sequence {
         T504.normal()
     }
 
-    fun onActivate() {
+    onActivate {
         exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\n\nFreight"
         json_event {
             key1 = "Depart"
@@ -649,7 +649,7 @@ val BL = throttle(191)
 val BL_Speed = 10.speed
 val BL_Speed_Station = 6.speed
 
-enum class EBL_State { Wait, Shuttle, Rev3 }
+enum class EBL_State { Wait, Ready, Shuttle }
 
 var BL_State = EBL_State.Wait
 
@@ -709,127 +709,138 @@ val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
     timeout = 60 // 1 minute
 
-//    Self.Throttle = BL
-//    Self.Manager = Sequence
-//    Self.Blocks = BLParked, BLStation, BLTunnel, BLReverse, BLTunnel, BLStation, BLParked
-//    Self.Timeout = 60 # 1 minute
-//
-//    Timer BL-Timer-RevStation-Stop = 4
-//    Timer BL-Timer-RevStation-Pause = 25
-//    Timer BL-Timer-Station-Stop = 6
-//    Timer BL-Timer-Station-Rev3 = 8
-//
-//    Function OnActivate -> {
-//        # It's ok to start either from BLParked or BLStation
-//        !BLParked & BLStation -> Self.Block = BLStation
-//    }
-//
-//    Function OnRecover -> {
-//        # Try to bring it backwards to the station
-//        BL Reverse = BL-Speed-Station ;
-//        BL F1 = 1 ;
-//    }
-//
-//    Function DoStart -> {
-//        BL Horn ;
-//        BL F1 = 1 ;
-//        After BL-Timer-Start-Delay -> {
-//            BL F1 = 0 ;
-//            BL Horn ;
-//            BL Forward = BL-Speed ;
-//        }
-//    }
-//
-//    Enter BLParked Stopped -> {
-//        # When starting from BLParked
-//        BL-State == Shuttle -> DoStart
-//    }
-//
-//    Enter BLStation Stopped -> {
-//        # When starting from BLStation
-//        BL-State == Shuttle -> DoStart
-//    }
-//
-//    Enter BLStation Forward -> {
-//        JSON-Event "Depart" "Branchline"
-//    }
-//
-//    Enter BLTunnel Forward -> {
-//        BL Horn ;
-//    }
-//
-//    Enter BLReverse Forward -> {
-//        BL Horn ;
-//        BL F1 = 1 ;
-//        After BL-Timer-RevStation-Stop -> {
-//            # Toggle Stop/Reverse/Stop to turn off the Reverse front light.
-//            # Next event should still be the BLReverse Stopped one.
-//            BL Stop ;
-//            BL Horn ;
-//            BL Reverse = 1 ;
-//            BL Stop
-//        }
-//        BL-Timer-Bell-Delay Start ;
-//    }
-//
-//    Enter BLReverse Stopped -> {
-//        After BL-Timer-RevStation-Pause -> {
-//            BL F1 = 1 ;
-//            BL Horn
-//        } Then After 5 {
-//            BL Reverse = BL-Speed ;
-//        }
-//    }
-//
-//    Enter BLReverse Reverse -> {
-//        BL Light = 1
-//        BL F1 = 0 ;
-//        BL F8 = 1 ;
-//        BL F9 = 1 ;
-//        BL F10 = 1 ;
-//        BL Horn ;
-//    }
-//
-//    Enter BLTunnel Reverse -> {
-//        BL Horn ;
-//    }
-//
-//    Enter BLStation Reverse -> {
-//        BL-State == Shuttle -> {
-//            BL F1 = 1 ;
-//            T324 Normal ;
-//            BL Reverse = BL-Speed-Station ;
-//            After BL-Timer-Station-Stop Start -> {
-//                BL Stop ;
-//                BL Horn ;
-//                # We have more to do here but we're in stopped state now, so let's continue below
-//                BL-State = Rev3
-//            }
-//        }
-//    }
-//
-//    Enter BLStation Stopped -> {
-//        BL-State == Rev3 -> {
-//            After BL-Timer-Station-Rev3 -> {
-//                BL Horn ;
-//                BL Reverse = BL-Speed-Station ;
-//            }
-//        }
-//    }
-//
-//    Enter BLParked Reverse -> {
-//        # We went too far, but it's not a problem / not an error.
-//        BL Stop
-//        After 3 -> {
-//            BL F1 = 0
-//        } Then After 2 -> {
-//            BL F8 = 0 ;
-//            BL F9 = 0 ;
-//            BL F10 = 0 ;
-//            BL-State = Wait ;
-//            BL-Route Activate = BL-Idle-Route ;
-//        }
-//    }
+    val BL_Timer_Start_Delay = 5.seconds
+    val BL_Timer_Bell_Delay = 2.seconds
+    val BL_Timer_RevStation_Stop = 4.seconds
+    val BL_Timer_RevStation_Pause = 25.seconds
+    val BL_Timer_Station_Stop = 6.seconds
+    val BL_Timer_Station_Rev3 = 8.seconds
+
+    onActivate {
+        // It's ok to start either from BLParked or BLStation
+        on { !BLParked && BLStation.active } then {
+            // TODO define alternate starting block
+            // block = BLStation
+        }
+    }
+
+    onRecover {
+        // Try to bring it backwards to the station
+        BL.reverse(BL_Speed_Station)
+        BL.f1(On)
+    }
+
+    fun doStart() {
+        BL_State = EBL_State.Shuttle
+        BL.horn()
+        BL.f1(On)
+        after(BL_Timer_Start_Delay) then {
+            BL.f1(Off)
+            BL.horn()
+            BL.forward(BL_Speed)
+        }
+        json_event {
+            key1 = "Depart"
+            key2 = "Branchline"
+        }
+    }
+
+    val BLParked_fwd = node(BLParked) {
+        whileOccupied {
+            // When starting from BLParked
+            on { BL.stopped && BL_State == EBL_State.Ready } then {
+                doStart()
+            }
+        }
+    }
+
+    val BLStation_fwd = node(BLParked) {
+        whileOccupied {
+            // When starting from BLStation
+            on { BL.stopped && BL_State == EBL_State.Ready } then {
+                doStart()
+            }
+        }
+    }
+
+    val BLTunnel_fwd = node(BLTunnel) {
+        onEnter {
+            BL.horn()
+        }
+    }
+
+    val BLReverse_fwd = node(BLReverse) {
+        onEnter {
+            BL.horn()
+            BL.f1(On)
+            after(BL_Timer_RevStation_Stop) then {
+                // Toggle Stop/Reverse/Stop to turn off the Reverse front light.
+                // Next event should still be the BLReverse Stopped one.
+                BL.stop()
+                BL.horn()
+                BL.reverse(1.speed)
+                BL.stop()
+            } and_after(BL_Timer_Bell_Delay) then {
+                BL.f1(Off)
+            } and_after(BL_Timer_RevStation_Pause) then {
+                BL.f1(On)
+                BL.horn()
+            } and_after(5.seconds) then {
+                BL.reverse(BL_Speed)
+            } and_after(BL_Timer_Bell_Delay) then {
+                BL.light(Off)
+                BL.f1(Off)
+                BL.f8(On)
+                BL.f9(On)
+                BL.f10(On)
+                BL.horn()
+            }
+        }
+    }
+
+    val BLTunnel_rev = node(BLTunnel) {
+        onEnter {
+            BL.horn()
+        }
+    }
+
+    val BLStation_rev = node(BLStation) {
+        onEnter {
+            if (BL_State == EBL_State.Shuttle) {
+                BL.f1(On)
+                T324.normal()
+                BL.reverse(BL_Speed_Station)
+                after(BL_Timer_Station_Stop) then {
+                    BL.stop()
+                    BL.horn()
+                } and_after(BL_Timer_Station_Rev3) then {
+                    BL.horn()
+                    BL.reverse(BL_Speed_Station)
+                }
+            }
+        }
+    }
+
+    val BLParked_rev = node(BLParked) {
+        onEnter {
+            // We went too far, but it's not a problem / not an error.
+            BL.stop()
+            after(3.seconds) then {
+                BL.f1(Off)
+            } and_after(2.seconds) then {
+                BL.f8(Off)
+                BL.f9(Off)
+                BL.f10(Off)
+                BL_State = EBL_State.Wait
+                BL_Route.activate(BL_Idle_Route)
+            }
+        }
+    }
+
+    sequence = listOf(BLParked_fwd, BLStation_fwd, BLTunnel_fwd,
+        BLReverse_fwd,
+        BLTunnel_rev, BLStation_rev, BLParked_rev)
+
 }
 
 
