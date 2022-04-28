@@ -135,7 +135,7 @@ fun PA_Fn_Release_Route() {
 }
 
 val PA_Route = activeRoute {
-    fun onError() {
+    onError {
         // --- PA State: Error
         // Note this state can only be cleared using an RTAC reset.
         PA_State = EPA_State.Error
@@ -649,7 +649,7 @@ val BL = throttle(191)
 val BL_Speed = 10.speed
 val BL_Speed_Station = 6.speed
 
-enum class EBL_State { Wait, Ready, Shuttle }
+enum class EBL_State { Wait, Ready, Shuttle, ToParked }
 
 var BL_State = EBL_State.Wait
 
@@ -683,7 +683,7 @@ on { !BL_Toggle } then {
 }
 
 val BL_Route = activeRoute {
-    fun onError() {
+    onError {
         // --- BL State: Error
         BL.repeat(1.seconds)
         BL.stop()
@@ -715,20 +715,6 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_RevStation_Pause = 25.seconds
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
-
-    onActivate {
-        // It's ok to start either from BLParked or BLStation
-        on { !BLParked && BLStation.active } then {
-            // TODO define alternate starting block
-            // block = BLStation
-        }
-    }
-
-    onRecover {
-        // Try to bring it backwards to the station
-        BL.reverse(BL_Speed_Station)
-        BL.f1(On)
-    }
 
     fun doStart() {
         BL_State = EBL_State.Shuttle
@@ -837,6 +823,19 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
+    onActivate {
+        // It's ok to start either from BLParked or BLStation
+        on { !BLParked && BLStation.active } then {
+            BL_Route.active.start_node(BLStation_fwd)
+        }
+    }
+
+    onRecover {
+        // Try to bring it backwards to the station
+        BL.reverse(BL_Speed_Station)
+        BL.f1(On)
+    }
+
     sequence = listOf(BLParked_fwd, BLStation_fwd, BLTunnel_fwd,
         BLReverse_fwd,
         BLTunnel_rev, BLStation_rev, BLParked_rev)
@@ -848,26 +847,80 @@ val BL_StationToParked_Route = BL_Route.sequence {
     throttle = BL
     timeout = 60 // 1 minute
 
-//    Function OnActivate -> {
-//        !BLParked -> BL Reverse = BL-Speed-Station ;
-//    }
-//
-//    Enter BLStation Reverse -> {
-//        BL F1 = 1
-//    }
-//
-//    Enter BLParked Reverse -> {
-//        BL Stop
-//    }
-//
-//    Enter BLParked Stopped -> {
-//        After 3 -> BL F1 = 0
-//        Then After 2 -> {
-//            BL F8 = 0 ;
-//            BL F9 = 0 ;
-//            BL F10 = 0 ;
-//            BL-State = Wait ;
-//            BL-Route Activate = BL-Idle-Route ;
-//        }
-//    }
+    onActivate {
+        on { !BLParked } then {
+            BL.reverse(BL_Speed_Station)
+        }
+    }
+
+    val BLStation_rev = node(BLStation) {
+        onEnter {
+            BL.f1(On)
+        }
+    }
+
+    val BLParked_rev = node(BLParked) {
+        onEnter {
+            BL.stop()
+            after(3.seconds) then {
+                BL.f1(Off)
+            } and_after(2.seconds) then {
+                BL.f8(Off)
+                BL.f9(Off)
+                BL.f10(Off)
+                BL_State = EBL_State.Wait
+                BL_Route.activate(BL_Idle_Route)
+            }
+        }
+    }
+
+    sequence = listOf(BLStation_rev, BLParked_rev)
 }
+
+// --- BL State: Wait
+
+val BL_Timer_Wait = timer(120.seconds)  // 300=5 minutes -- changed to 2 minutes
+
+on { BL_Route.active == BL_Idle_Route && !BL_Toggle } then {
+    BL_State = EBL_State.ToParked
+    BL_Route.activate(BL_StationToParked_Route)
+}
+
+on { BL_State == EBL_State.Wait } then {
+    reset_timers("BL") // TODO obsolete
+    BL_Timer_Wait.start()
+    BL.stop()
+}
+
+on { BL_Timer_Wait.active && BL_Toggle.active } then {
+    BL_State = EBL_State.Ready
+    BL_Route.activate(BL_Shuttle_Route)
+}
+
+on { BL_Toggle } then {
+    BL.repeat(2.seconds)
+    BL.light(Off)
+}
+
+on { !BL_Toggle } then {
+    BL.repeat(0.seconds)
+    BL.light(Off)
+    BL.f1(Off)
+    BL.f8(Off)
+    BL.f9(Off)
+    BL.f10(Off)
+}
+
+// ------------------
+// Automatic Turnouts
+// ------------------
+
+// If automation is off, T330 is automatically selected:
+// B320 -> B330 via T330 Normal
+// B321 -> B330 via T330 Reverse
+
+on { !PA_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
+on { !PA_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
+
+
+// ---------

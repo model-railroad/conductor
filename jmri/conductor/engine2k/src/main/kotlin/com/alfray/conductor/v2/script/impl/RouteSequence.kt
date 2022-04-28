@@ -44,13 +44,18 @@ internal data class GraphNode(
 internal class RouteSequence(
     override val owner: IActiveRoute,
     builder: RouteSequenceBuilder) : IRoute {
+    private var startNode: INode? = null
     val throttle = builder.throttle
     val timeout = builder.timeout
-    val startNode = parse(builder.sequence, builder.branches)
+    val graph = parse(builder.sequence, builder.branches)
     val actionOnActivate = builder.actionOnActivate
 
     override fun activate() {
         owner.activate(this)
+    }
+
+    override fun start_node(node: INode) {
+        startNode = node
     }
 
     private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): GraphNode {

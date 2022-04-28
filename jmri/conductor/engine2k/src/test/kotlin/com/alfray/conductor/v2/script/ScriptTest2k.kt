@@ -461,13 +461,13 @@ class ScriptTest2k {
         val seq = ar.routes[1] as RouteSequence
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)
         assertThat(seq.timeout).isEqualTo(42)
-        assertThat(seq.startNode).isNotNull()
+        assertThat(seq.graph).isNotNull()
 
         assertThat(ar.active).isSameInstanceAs(ar.routes[0])
         ar.activate(ar.routes[1])
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
 
-        assertThat(RouteSequence.visitGraph(seq.startNode).map { it.toString() })
+        assertThat(RouteSequence.visitGraph(seq.graph).map { it.toString() })
             .containsExactly(
                 "[{B01}->{B02}]",
                 "[{B02}->{B01}]",
@@ -512,7 +512,7 @@ class ScriptTest2k {
         val ar = conductorImpl.activeRoutes[0] as ActiveRoute
         val seq = ar.routes[1] as RouteSequence
 
-        assertThat(RouteSequence.visitGraph(seq.startNode).map { it.toString() })
+        assertThat(RouteSequence.visitGraph(seq.graph).map { it.toString() })
             .containsExactly(
                 // main sequence
                 "[{B01}->{B02}+{B03}+{B04}]",
