@@ -11,7 +11,6 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/groovy" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2/src/test/resources" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/../../../engine2/build/generated/sources/annotationProcessor/java/test" isTestSource="true" generated="true" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2/build" />
     </content>

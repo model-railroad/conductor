@@ -33,50 +33,72 @@
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2k/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/../../../engine2k/build" />
     </content>
+    <content url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/main" isTestSource="false" generated="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/test" isTestSource="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/main">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/main" isTestSource="false" generated="true" />
+    </content>
+    <content url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/test">
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/test" isTestSource="true" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="conductor.common" />
+    <orderEntry type="module-library">
+      <library name="Gradle: kaptGeneratedClasses">
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../../engine2k/build/tmp/kapt3/classes/main" />
+          <root url="file://$MODULE_DIR$/../../../engine2k/build/tmp/kapt3/classes/test" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="conductor.LibManifest" />
+    <orderEntry type="module" module-name="conductor.LibUtilsJava" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:23.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jvm:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-dependencies:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-common:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jvm-host:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-script-runtime:1.6.10" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:guava:23.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.dagger:dagger:2.22.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
     <orderEntry type="library" name="Gradle: com.google.code.findbugs:jsr305:1.3.9" level="project" />
     <orderEntry type="library" name="Gradle: com.google.errorprone:error_prone_annotations:2.0.18" level="project" />
     <orderEntry type="library" name="Gradle: com.google.j2objc:j2objc-annotations:1.1" level="project" />
     <orderEntry type="library" name="Gradle: org.codehaus.mojo:animal-sniffer-annotations:1.14" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
+    <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1" level="project" />
-    <orderEntry type="module" module-name="conductor.LibManifest" scope="RUNTIME" />
-    <orderEntry type="module" module-name="conductor.LibUtilsJava" scope="RUNTIME" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.truth:truth:0.34" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jsr223:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-reflect:1.6.10" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.truth:truth:0.34" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: jdom:jdom:1.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-daemon-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.intellij.deps:trove4j:1.0.20181211" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: net.java.dev.jna:jna:5.6.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: asm:asm-tree:3.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.jdt:org.eclipse.jdt.core:3.10.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
@@ -94,8 +116,6 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.common:3.6.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.app:1.3.100" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.commands:3.6.0" level="project" />
-    <orderEntry type="module" module-name="conductor.LibManifest" scope="TEST" />
-    <orderEntry type="module" module-name="conductor.LibUtilsJava" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.truth:truth:1.1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.guava:guava:30.1.1-android" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.13.2" level="project" />
@@ -112,24 +132,19 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.guava:failureaccess:1.0.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.checkerframework:checker-compat-qual:2.5.5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jsr223:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-reflect:1.6.10" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup.okhttp3:okhttp:3.10.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.objenesis:objenesis:3.2" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: jdom:jdom:1.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.6.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.6.7" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup.okio:okio:1.14.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-daemon-embeddable:1.6.10" level="project" />

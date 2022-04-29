@@ -9,8 +9,8 @@ import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [CommonModule::class])
-interface IEngine2kComponent {
-    // IScript2kComponent.Factory getScriptComponentFactory();
+internal interface IEngine2kComponent {
+    //--fun getScriptComponentFactory(): IScript2kComponent.Factory
 
     @Component.Factory
     interface Factory {
