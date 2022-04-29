@@ -1,8 +1,11 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.impl.IExecEngine
+import javax.inject.Inject
 
-internal class ExecEngine(val conductor: ConductorImpl) : IExecEngine {
+@Script2kScope
+internal class ExecEngine @Inject constructor(val conductor: ConductorImpl) : IExecEngine {
 
     override fun onExecStart() {
     }

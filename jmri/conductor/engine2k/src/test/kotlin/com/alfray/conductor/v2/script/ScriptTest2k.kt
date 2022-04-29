@@ -1,6 +1,13 @@
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.dagger.CommonTestModule
+import com.alflabs.conductor.jmri.FakeJmriProvider
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alfray.conductor.v2.DaggerScript2kLoaderTest_LocalComponent2k
 import com.alfray.conductor.v2.Script2kLoader
+import com.alfray.conductor.v2.Script2kLoaderTest
+import com.alfray.conductor.v2.dagger.IEngine2kComponent
+import com.alfray.conductor.v2.dagger.Script2kContext
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
@@ -11,16 +18,22 @@ import com.alfray.conductor.v2.script.impl.RouteIdle
 import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.google.common.truth.Truth.assertThat
+import dagger.BindsInstance
+import dagger.Component
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 
 @Suppress("UnstableApiUsage")
 @RunWith(JUnit4::class)
 class ScriptTest2k {
+    private val jmriProvider = FakeJmriProvider()
+
     private lateinit var loader: Script2kLoader
     private val conductorImpl: ConductorImpl
         get() = loader.conductorImpl
@@ -29,6 +42,11 @@ class ScriptTest2k {
 
     @Before
     fun setUp() {
+        val component = DaggerScriptTest2k_LocalComponent2k
+            .factory()
+            .createComponent(jmriProvider)
+        component.inject(this)
+        loader = component.script2kLoader
     }
 
     @Test
@@ -526,5 +544,16 @@ class ScriptTest2k {
                 // branch 3 is a shortcut and adds no new graph node
             )
             .inOrder()
+    }
+
+    @Singleton
+    @Component(modules = [CommonTestModule::class])
+    internal interface LocalComponent2k : IEngine2kComponent {
+        fun inject(test: ScriptTest2k)
+
+        @Component.Factory
+        interface Factory {
+            fun createComponent(@BindsInstance jmriProvider: IJmriProvider): LocalComponent2k
+        }
     }
 }

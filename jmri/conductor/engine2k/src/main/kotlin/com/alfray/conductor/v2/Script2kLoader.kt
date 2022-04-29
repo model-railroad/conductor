@@ -17,16 +17,12 @@ import kotlin.script.experimental.host.UrlScriptSource
 
 @Script2kScope
 internal class Script2kLoader @Inject constructor() {
-    private lateinit var scriptHost: ConductorScriptHost
-    private lateinit var result: ResultWithDiagnostics<EvaluationResult>
-    lateinit var conductorImpl: ConductorImpl
-    lateinit var execEngine: ExecEngine
-
-    fun execEngineOptional() : Optional<IExecEngine> =
-        if (::execEngine.isInitialized) Optional.of(execEngine) else Optional.empty()
-
-    fun conductorOptional() : Optional<ConductorImpl> =
-        if (::conductorImpl.isInitialized) Optional.of(conductorImpl) else Optional.empty()
+    internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
+    @Inject internal lateinit var scriptHost: ConductorScriptHost
+    @Inject lateinit var conductorImpl: ConductorImpl
+        internal set
+    @Inject lateinit var execEngine: ExecEngine
+        internal set
 
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
@@ -43,9 +39,6 @@ internal class Script2kLoader @Inject constructor() {
     }
 
     private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
-        conductorImpl = ConductorImpl()
-        scriptHost = ConductorScriptHost()
-        execEngine = ExecEngine(conductorImpl)
         return scriptHost.eval(source, conductorImpl)
     }
 

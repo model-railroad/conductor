@@ -23,13 +23,12 @@ import dagger.Subcomponent
 
 @Script2kScope
 @Subcomponent
-internal interface IScript2kComponent {
+interface IScript2kComponent {
     //--val script1: Script1?
     val script2kLoader: Script2kLoader
-//    val execEngine: ExecEngine
 
     @Subcomponent.Factory
     interface Factory {
-        fun createComponent( /* @BindsInstance x: X */): IScript2kComponent
+        fun createComponent(): IScript2kComponent
     }
 }

@@ -49,8 +49,8 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public void onHandle(AtomicBoolean paused) {
-        Optional<IExecEngine> engine = mScript2kContext.getScript2kComponent().flatMap(
-                it -> it.getScript2kLoader().execEngineOptional());
+        Optional<IExecEngine> engine = mScript2kContext.getScript2kComponent().map(
+                c -> c.getScript2kLoader().getExecEngine());
 
         // If we have no engine, or it is paused, just idle-wait.
         if (!engine.isPresent() || paused.get()) {
@@ -68,7 +68,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     }
 
     @Override
-    public Pair<Boolean, File> onReload() throws Exception {
+    public Pair<Boolean, File> onReload() {
         long nowMs = mClock.elapsedRealtime();
         boolean wasRunning = mScript2kContext.getScript2kComponent().isPresent();
 
@@ -79,9 +79,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
         log("Script2 Path: " + file.getPath());
 
-        IScript2kComponent script2kComponent =
-                mScript2kContext.getScript2kCompFactory().createComponent();
-        mScript2kContext.setScript2kComponent(Optional.of(script2kComponent));
+        IScript2kComponent script2kComponent = mScript2kContext.createComponent();
         Script2kLoader loader = script2kComponent.getScript2kLoader();
 
         loader.loadScriptFromFile(file.getPath());
@@ -89,17 +87,15 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         log(loader.getResultOutputs());
         Preconditions.checkState(loader.getResultErrors().isEmpty());
 
-        Optional<IExecEngine> engine = mScript2kContext.getScript2kComponent().flatMap(
-                it -> it.getScript2kLoader().execEngineOptional());
-        engine.get().onExecStart();
+        loader.getExecEngine().onExecStart();
 
         return Pair.of(wasRunning, file);
     }
 
     @Override
     public Optional<com.alflabs.manifest.MapInfo> getLoadedMapName() {
-        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().flatMap(
-                it -> it.getScript2kLoader().conductorOptional());
+        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().map(
+                c -> c.getScript2kLoader().getConductorImpl());
         if (script.isPresent()) {
             Map<String, ISvgMap> svgMaps = script.get().getSvgMaps();
             Optional<ISvgMap> svgMap = svgMaps.values().stream().findFirst();
@@ -123,8 +119,8 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 //            status.append(lastError);
 //        }
 
-        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().flatMap(
-                it -> it.getScript2kLoader().conductorOptional());
+        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().map(
+                c -> c.getScript2kLoader().getConductorImpl());
         if (script.isPresent()) {
             try {
                 appendVarStatus(status, script.get());
@@ -216,8 +212,6 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     @Singleton
     @Component(modules = { CommonModule.class })
     public interface LocalComponent2k extends IEngine2kComponent {
-        IScript2kComponent.Factory getScriptComponentFactory();
-
         void inject(EntryPoint2 entryPoint);
         void inject(Engine2KotlinAdapter adapter);
 

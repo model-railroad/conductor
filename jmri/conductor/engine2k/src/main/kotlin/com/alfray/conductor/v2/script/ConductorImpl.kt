@@ -1,5 +1,6 @@
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
@@ -34,10 +35,12 @@ import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.script.impl.Timer
 import com.alfray.conductor.v2.script.impl.Turnout
+import javax.inject.Inject
 
 private const val VERBOSE = false
 
-internal class ConductorImpl : IConductor {
+@Script2kScope
+internal class ConductorImpl @Inject constructor() : IConductor {
 
     val sensors = mutableMapOf<String, Sensor>()
     val blocks = mutableMapOf<String, Block>()
