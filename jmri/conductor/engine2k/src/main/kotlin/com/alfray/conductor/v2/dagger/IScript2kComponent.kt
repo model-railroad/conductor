@@ -23,9 +23,9 @@ import dagger.Subcomponent
 
 @Script2kScope
 @Subcomponent
-interface IScript2kComponent {
+internal interface IScript2kComponent {
     //--val script1: Script1?
-//    val script2kLoader: Script2kLoader
+    val script2kLoader: Script2kLoader
 //    val execEngine: ExecEngine
 
     @Subcomponent.Factory

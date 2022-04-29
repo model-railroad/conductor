@@ -6,6 +6,7 @@ import com.alfray.conductor.v2.script.ExecEngine
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.google.common.io.Resources
 import java.util.*
+import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
@@ -13,7 +14,7 @@ import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
-internal class Script2kLoader {
+internal class Script2kLoader @Inject constructor() {
     private lateinit var scriptHost: ConductorScriptHost
     lateinit var conductorImpl: ConductorImpl
     lateinit var execEngine: ExecEngine

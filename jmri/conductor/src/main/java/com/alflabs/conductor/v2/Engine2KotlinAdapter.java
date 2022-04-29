@@ -8,6 +8,8 @@ import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alfray.conductor.v2.Script2kLoader;
 import com.alfray.conductor.v2.dagger.IEngine2kComponent;
+import com.alfray.conductor.v2.dagger.IScript2kComponent;
+import com.alfray.conductor.v2.dagger.Script2kContext;
 import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
@@ -31,25 +33,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
-    private Optional<File> mScriptFile = Optional.empty();
-    private Optional<Script2kLoader> mScript2kLoader = Optional.empty();
-
     @Inject ILogger mLogger;
     @Inject IClock mClock;
+    @Inject Script2kContext mScript2kContext;
 
     @Override
     public Optional<File> getScriptFile() {
-        return mScriptFile;
+        return mScript2kContext.getScriptFile();
     }
 
     @Override
     public void setScriptFile(@Null File scriptFile) {
-        mScriptFile = Optional.ofNullable(scriptFile);
+        mScript2kContext.setScriptFile(Optional.ofNullable(scriptFile));
     }
 
     @Override
     public void onHandle(AtomicBoolean paused) {
-        Optional<IExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
+        Optional<IExecEngine> engine = mScript2kContext.getScript2kComponent().flatMap(
+                it -> it.getScript2kLoader().execEngineOptional());
 
         // If we have no engine, or it is paused, just idle-wait.
         if (!engine.isPresent() || paused.get()) {
@@ -69,21 +70,27 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     @Override
     public Pair<Boolean, File> onReload() throws Exception {
         long nowMs = mClock.elapsedRealtime();
-        boolean wasRunning = mScript2kLoader.isPresent();
+        boolean wasRunning = mScript2kContext.getScript2kComponent().isPresent();
 
         // TBD Release any resources from current script component as needed.
+        mScript2kContext.reset();
 
         File file = getScriptFile()
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
         log("Script2 Path: " + file.getPath());
 
-        mScript2kLoader = Optional.of(new Script2kLoader());
-        mScript2kLoader.get().loadScriptFromFile(file.getPath());
-        log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
-        log(mScript2kLoader.get().getResultOutputs());
-        Preconditions.checkState(mScript2kLoader.get().getResultErrors().isEmpty());
+        IScript2kComponent script2kComponent =
+                mScript2kContext.getScript2kCompFactory().createComponent();
+        mScript2kContext.setScript2kComponent(Optional.of(script2kComponent));
+        Script2kLoader loader = script2kComponent.getScript2kLoader();
 
-        Optional<IExecEngine> engine = mScript2kLoader.flatMap(Script2kLoader::execEngineOptional);
+        loader.loadScriptFromFile(file.getPath());
+        log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
+        log(loader.getResultOutputs());
+        Preconditions.checkState(loader.getResultErrors().isEmpty());
+
+        Optional<IExecEngine> engine = mScript2kContext.getScript2kComponent().flatMap(
+                it -> it.getScript2kLoader().execEngineOptional());
         engine.get().onExecStart();
 
         return Pair.of(wasRunning, file);
@@ -91,7 +98,8 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public Optional<com.alflabs.manifest.MapInfo> getLoadedMapName() {
-        Optional<ConductorImpl> script = mScript2kLoader.flatMap(Script2kLoader::conductorOptional);
+        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().flatMap(
+                it -> it.getScript2kLoader().conductorOptional());
         if (script.isPresent()) {
             Map<String, ISvgMap> svgMaps = script.get().getSvgMaps();
             Optional<ISvgMap> svgMap = svgMaps.values().stream().findFirst();
@@ -115,7 +123,8 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 //            status.append(lastError);
 //        }
 
-        Optional<ConductorImpl> script = mScript2kLoader.flatMap(Script2kLoader::conductorOptional);
+        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().flatMap(
+                it -> it.getScript2kLoader().conductorOptional());
         if (script.isPresent()) {
             try {
                 appendVarStatus(status, script.get());

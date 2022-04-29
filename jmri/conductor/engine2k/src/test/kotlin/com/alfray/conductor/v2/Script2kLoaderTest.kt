@@ -11,6 +11,7 @@ import com.google.common.truth.Truth.assertThat
 import dagger.BindsInstance
 import dagger.Component
 import junit.framework.TestCase
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,7 +19,6 @@ class Script2kLoaderTest : TestCase() {
 
     private val jmriProvider = FakeJmriProvider()
     private lateinit var component: LocalComponent2k
-    private lateinit var script2kLoader: Script2kLoader
     @Inject internal lateinit var context: Script2kContext
 
     public override fun setUp() {
@@ -27,11 +27,20 @@ class Script2kLoaderTest : TestCase() {
             .createComponent(jmriProvider)
         component.inject(this)
         assertThat(context).isNotNull()
-        script2kLoader = Script2kLoader() // TBD via dagger
     }
 
+    override fun tearDown() {
+        context.reset()
+    }
 
     fun testLoadEmptyScript() {
+        val scriptComponent = context.script2kCompFactory.createComponent()
+        assertThat(scriptComponent).isNotNull()
+        context.script2kComponent = Optional.of(scriptComponent)
+
+        val script2kLoader = scriptComponent.script2kLoader
+        assertThat(script2kLoader).isNotNull()
+
         script2kLoader.loadScriptFromText(scriptText = "")
         assertThat(script2kLoader.conductorImpl).isNotNull()
         assertThat(script2kLoader.execEngine).isNotNull()
