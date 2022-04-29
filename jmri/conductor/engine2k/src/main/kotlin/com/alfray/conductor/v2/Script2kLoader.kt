@@ -1,5 +1,6 @@
 package com.alfray.conductor.v2
 
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine
@@ -14,11 +15,12 @@ import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
+@Script2kScope
 internal class Script2kLoader @Inject constructor() {
     private lateinit var scriptHost: ConductorScriptHost
+    private lateinit var result: ResultWithDiagnostics<EvaluationResult>
     lateinit var conductorImpl: ConductorImpl
     lateinit var execEngine: ExecEngine
-    lateinit var result: ResultWithDiagnostics<EvaluationResult>
 
     fun execEngineOptional() : Optional<IExecEngine> =
         if (::execEngine.isInitialized) Optional.of(execEngine) else Optional.empty()

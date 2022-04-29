@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "KotlinInternalInJava"})
+@SuppressWarnings({"KotlinInternalInJava"})
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
@@ -216,7 +216,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     @Singleton
     @Component(modules = { CommonModule.class })
     public interface LocalComponent2k extends IEngine2kComponent {
-        // IScript2Component.Factory getScriptComponentFactory();
+        IScript2kComponent.Factory getScriptComponentFactory();
 
         void inject(EntryPoint2 entryPoint);
         void inject(Engine2KotlinAdapter adapter);
