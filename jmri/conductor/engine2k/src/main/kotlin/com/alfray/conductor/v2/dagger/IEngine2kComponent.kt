@@ -9,11 +9,11 @@ import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [CommonModule::class])
-internal interface IEngine2kComponent {
-    //--fun getScriptComponentFactory(): IScript2kComponent.Factory
+interface IEngine2kComponent {
+    fun getScriptComponentFactory(): IScript2kComponent.Factory
 
     @Component.Factory
     interface Factory {
-        fun createComponent(@BindsInstance jmriProvider: IJmriProvider?): IEngine2kComponent?
+        fun createComponent(@BindsInstance jmriProvider: IJmriProvider): IEngine2kComponent
     }
 }

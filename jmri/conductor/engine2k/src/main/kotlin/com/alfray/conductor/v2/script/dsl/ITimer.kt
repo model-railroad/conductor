@@ -6,6 +6,7 @@ val Int.seconds: Delay
     get() = Delay(this)
 
 interface ITimer: IActive {
+    val name: String
     val delay: Delay
     fun start()
     fun stop()

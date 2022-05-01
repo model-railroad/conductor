@@ -4,7 +4,8 @@ import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ITimer
 
 internal class Timer(override val delay: Delay) : ITimer {
-    val name = "@timer@${delay.seconds}"
+    override val name = "@timer@${delay.seconds}"
+
     var started = false
         private set
     var elapsed : Double = 0.0

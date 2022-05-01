@@ -18,7 +18,6 @@
 package com.alfray.conductor.v2.dagger
 
 import com.alfray.conductor.v2.Script2kLoader
-import com.alfray.conductor.v2.script.ExecEngine
 import dagger.Subcomponent
 
 @Script2kScope

@@ -11,12 +11,12 @@ import com.alfray.conductor.v2.dagger.IEngine2kComponent;
 import com.alfray.conductor.v2.dagger.IScript2kComponent;
 import com.alfray.conductor.v2.dagger.Script2kContext;
 import com.alfray.conductor.v2.script.ConductorImpl;
+import com.alfray.conductor.v2.script.dsl.IBlock;
+import com.alfray.conductor.v2.script.dsl.ISensor;
+import com.alfray.conductor.v2.script.dsl.ITimer;
+import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
-import com.alfray.conductor.v2.script.impl.Block;
-import com.alfray.conductor.v2.script.impl.Sensor;
-import com.alfray.conductor.v2.script.impl.Timer;
-import com.alfray.conductor.v2.script.impl.Turnout;
 import com.google.common.base.Preconditions;
 import dagger.BindsInstance;
 import dagger.Component;
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"KotlinInternalInJava"})
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
@@ -119,11 +118,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 //            status.append(lastError);
 //        }
 
-        Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().map(
-                c -> c.getScript2kLoader().getConductorImpl());
-        if (script.isPresent()) {
+        Optional<Script2kLoader> loader = mScript2kContext.getScript2kComponent()
+                .map(IScript2kComponent::getScript2kLoader);
+        if (loader.isPresent()) {
             try {
-                appendVarStatus(status, script.get());
+                appendVarStatus(status, loader.get().getConductorImpl());
             } catch (ConcurrentModificationException ignore) {}
         }
     }
@@ -139,9 +138,9 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         outStatus.append("--- [ TURNOUTS ] ---\n");
         int i = 0;
-        for (Map.Entry<String, Turnout> entry : script.getTurnouts().entrySet()) {
+        for (Map.Entry<String, ITurnout> entry : script.getTurnouts().entrySet()) {
             String name = entry.getKey();
-            Turnout turnout = entry.getValue();
+            ITurnout turnout = entry.getValue();
             outStatus.append(name.toUpperCase()).append(": ").append(turnout.getActive() ? 'N' : 'R');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
@@ -149,9 +148,9 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         outStatus.append("--- [ BLOCKS ] ---\n");
         i = 0;
-        for (Map.Entry<String, Block> entry : script.getBlocks().entrySet()) {
+        for (Map.Entry<String, IBlock> entry : script.getBlocks().entrySet()) {
             String name = entry.getKey();
-            Block block = entry.getValue();
+            IBlock block = entry.getValue();
             outStatus.append(name.toUpperCase()).append(": ").append(block.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
@@ -159,9 +158,9 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         outStatus.append("--- [ SENSORS ] ---\n");
         i = 0;
-        for (Map.Entry<String, Sensor> entry : script.getSensors().entrySet()) {
+        for (Map.Entry<String, ISensor> entry : script.getSensors().entrySet()) {
             String name = entry.getKey();
-            Sensor sensor = entry.getValue();
+            ISensor sensor = entry.getValue();
             outStatus.append(name.toUpperCase()).append(": ").append(sensor.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
@@ -169,7 +168,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         outStatus.append("--- [ TIMERS ] ---\n");
         i = 0;
-        for (Timer timer : script.getTimers()) {
+        for (ITimer timer : script.getTimers()) {
             outStatus.append(timer.getName()).append(':').append(timer.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }

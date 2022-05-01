@@ -4,9 +4,7 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine
-import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.google.common.io.Resources
-import java.util.*
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
@@ -16,9 +14,10 @@ import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
 @Script2kScope
-internal class Script2kLoader @Inject constructor() {
+class Script2kLoader @Inject constructor() {
     internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
     @Inject internal lateinit var scriptHost: ConductorScriptHost
+        internal set
     @Inject lateinit var conductorImpl: ConductorImpl
         internal set
     @Inject lateinit var execEngine: ExecEngine

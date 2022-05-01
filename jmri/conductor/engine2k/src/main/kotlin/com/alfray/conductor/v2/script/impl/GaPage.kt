@@ -2,7 +2,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
 
-internal data class GaPage(
+data class GaPage(
     val url: String,
     val path: String,
     val user: String,

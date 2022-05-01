@@ -2,7 +2,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
 
-internal data class GaEvent(
+data class GaEvent(
     val category: String,
     val action: String,
     val label: String,

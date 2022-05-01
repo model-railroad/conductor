@@ -40,15 +40,15 @@ import javax.inject.Inject
 private const val VERBOSE = false
 
 @Script2kScope
-internal class ConductorImpl @Inject constructor() : IConductor {
+class ConductorImpl @Inject constructor() : IConductor {
 
-    val sensors = mutableMapOf<String, Sensor>()
-    val blocks = mutableMapOf<String, Block>()
-    val turnouts = mutableMapOf<String, Turnout>()
-    val throttles = mutableMapOf<Int, Throttle>()
+    val sensors = mutableMapOf<String, ISensor>()
+    val blocks = mutableMapOf<String, IBlock>()
+    val turnouts = mutableMapOf<String, ITurnout>()
+    val throttles = mutableMapOf<Int, IThrottle>()
     val svgMaps = mutableMapOf<String, ISvgMap>()
-    val timers = mutableListOf<Timer>()
-    val rules = mutableListOf<Rule>()
+    val timers = mutableListOf<ITimer>()
+    val rules = mutableListOf<IRule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
     var lastGaPage: GaPage? = null
         private set

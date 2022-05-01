@@ -3,20 +3,20 @@ package com.alfray.conductor.v2.script
 import com.alflabs.conductor.dagger.CommonTestModule
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.conductor.jmri.IJmriProvider
-import com.alfray.conductor.v2.DaggerScript2kLoaderTest_LocalComponent2k
 import com.alfray.conductor.v2.Script2kLoader
-import com.alfray.conductor.v2.Script2kLoaderTest
 import com.alfray.conductor.v2.dagger.IEngine2kComponent
 import com.alfray.conductor.v2.dagger.Script2kContext
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteIdle
 import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
+import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
 import dagger.BindsInstance
 import dagger.Component
@@ -34,6 +34,8 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 class ScriptTest2k {
     private val jmriProvider = FakeJmriProvider()
 
+    @Inject internal lateinit var context: Script2kContext
+
     private lateinit var loader: Script2kLoader
     private val conductorImpl: ConductorImpl
         get() = loader.conductorImpl
@@ -42,11 +44,15 @@ class ScriptTest2k {
 
     @Before
     fun setUp() {
-        val component = DaggerScriptTest2k_LocalComponent2k
+        val mainComponent = DaggerScriptTest2k_LocalComponent2k
             .factory()
             .createComponent(jmriProvider)
-        component.inject(this)
-        loader = component.script2kLoader
+        mainComponent.inject(this)
+        val scriptComponent = context.createComponent()
+        loader = scriptComponent.script2kLoader
+        assertThat(loader.execEngine).isNotNull()
+        assertThat(loader.conductorImpl).isNotNull()
+        assertThat(loader.scriptHost).isNotNull()
     }
 
     @Test
@@ -136,7 +142,7 @@ class ScriptTest2k {
         assertThat(conductorImpl.blocks).containsKey("NS769")
         assertThat(conductorImpl.blocks["NS768"]).isSameInstanceAs(conductorImpl.block("NS768"))
 
-        val b = conductorImpl.blocks["NS768"]!!
+        val b = conductorImpl.blocks["NS768"]!! as Block
         assertThat(b.systemName).isEqualTo("NS768")
         assertThat(b.active).isFalse()
         b.active(true)
@@ -233,7 +239,7 @@ class ScriptTest2k {
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
             "@timer@5", "@timer@15")
 
-        val t = conductorImpl.timers[0]
+        val t = conductorImpl.timers[0] as Timer
         assertThat(t.name).isEqualTo("@timer@5")
         assertThat(t.delay).isEqualTo(5.seconds)
         assertThat(t.started).isFalse()
