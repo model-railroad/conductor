@@ -11,6 +11,7 @@ import com.alfray.conductor.v2.dagger.IEngine2kComponent;
 import com.alfray.conductor.v2.dagger.IScript2kComponent;
 import com.alfray.conductor.v2.dagger.Script2kContext;
 import com.alfray.conductor.v2.script.ConductorImpl;
+import com.alfray.conductor.v2.script.ExecEngine2k;
 import com.alfray.conductor.v2.script.dsl.IBlock;
 import com.alfray.conductor.v2.script.dsl.ISensor;
 import com.alfray.conductor.v2.script.dsl.ITimer;
@@ -150,7 +151,9 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             }
 
             try {
-                appendVarStatus(status, loader.get().getConductorImpl());
+                appendVarStatus(status,
+                        loader.get().getConductorImpl(),
+                        loader.get().getExecEngine());
             } catch (ConcurrentModificationException ignore) {
             }
         }
@@ -158,12 +161,13 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     private static void appendVarStatus(
             StringBuilder outStatus,
-            ConductorImpl script) {
+            ConductorImpl script,
+            ExecEngine2k engine) {
 
-//        outStatus.append("Freq: ");
-//        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
-//                engine.getActualFrequency(),
-//                engine.getMaxFrequency()));
+        outStatus.append("Freq: ");
+        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
+                engine.getActualFrequency(),
+                engine.getMaxFrequency()));
 
         outStatus.append("\n--- [ TURNOUTS ] ---\n");
         int i = 0;

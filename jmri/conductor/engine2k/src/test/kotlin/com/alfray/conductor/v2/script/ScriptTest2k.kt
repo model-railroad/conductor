@@ -39,7 +39,7 @@ class ScriptTest2k {
     private lateinit var loader: Script2kLoader
     private val conductorImpl: ConductorImpl
         get() = loader.conductorImpl
-    private val execEngine: ExecEngine
+    private val execEngine: ExecEngine2k
         get() = loader.execEngine
 
     @Before

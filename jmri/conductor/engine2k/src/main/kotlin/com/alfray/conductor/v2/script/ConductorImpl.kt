@@ -145,10 +145,10 @@ class ConductorImpl @Inject constructor() : IConductor {
     }
 
     override fun estop() {
-        TODO("Not yet implemented")
+        TODO("ConductionImpl: estop() is not yet implemented")
     }
 
     override fun reset_timers(vararg prefix: String) {
-        TODO("Not yet implemented")
+        TODO("ConductionImpl: reset_timers() is not yet implemented")
     }
 }
