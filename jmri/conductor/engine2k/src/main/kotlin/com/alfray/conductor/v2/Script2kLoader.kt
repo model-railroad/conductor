@@ -5,6 +5,7 @@ import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine
 import com.google.common.io.Resources
+import java.util.*
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
@@ -22,19 +23,28 @@ class Script2kLoader @Inject constructor() {
         internal set
     @Inject lateinit var execEngine: ExecEngine
         internal set
+    private var errors: List<String> = emptyList()
+    var status = Status.NotLoaded
+        internal set
 
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
+        status = Status.Loading
         val extension = if (!scriptName.endsWith(".conductor.kts")) ".conductor.kts" else ""
         val scriptPath = "v2/script/$scriptName$extension"
         val scriptUrl = Resources.getResource(scriptPath)!!
         val source = UrlScriptSource(scriptUrl)
         result = loadScript(source)
+        errors = parseErrors(result)
+        status = Status.Loaded
     }
 
     fun loadScriptFromText(scriptName: String = "local", scriptText: String) {
+        status = Status.Loading
         val source = StringScriptSource(scriptText, scriptName)
         result = loadScript(source)
+        errors = parseErrors(result)
+        status = Status.Loaded
     }
 
     private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
@@ -44,10 +54,19 @@ class Script2kLoader @Inject constructor() {
     fun getResultOutputs() : String =
         result.reports.joinToString("\n") { it.toString() }
 
-    fun getResultErrors() : List<String> =
-        result.reports
+    fun getResultErrors() = errors
+
+    private fun parseErrors(results: ResultWithDiagnostics<EvaluationResult>) : List<String> {
+        return results.reports
             .filter {
                 it.severity == ScriptDiagnostic.Severity.ERROR ||
                 it.severity == ScriptDiagnostic.Severity.FATAL
             }.map { it.toString() }
+    }
+
+    enum class Status {
+        NotLoaded,
+        Loading,
+        Loaded
+    }
 }

@@ -17,6 +17,7 @@ import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import dagger.BindsInstance;
 import dagger.Component;
@@ -25,6 +26,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -112,18 +114,45 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public void appendToLog(StringBuilder status) {
-//        String lastError = mScript1Context.getError();
-//        if (lastError.length() > 0) {
-//            status.append("\n--- [ LAST ERROR ] ---\n");
-//            status.append(lastError);
-//        }
-
         Optional<Script2kLoader> loader = mScript2kContext.getScript2kComponent()
                 .map(IScript2kComponent::getScript2kLoader);
-        if (loader.isPresent()) {
+        if (!loader.isPresent()) {
+            return;
+        }
+
+        String scriptName = mScript2kContext
+                .getScriptFile()
+                .map(File::getPath)
+                .orElse("<Undefined>");
+
+        switch (loader.get().getStatus()) {
+        case NotLoaded:
+            status.append("--- [ NO SCRIPT LOADED ] ---\n");
+            break;
+        case Loading:
+            status.append("--- [ LOADING ] ---\n");
+            status.append("Script: ")
+                    .append(scriptName)
+                    .append('\n')
+                    .append('\n');
+            break;
+        case Loaded:
+            status.append("--- [ SCRIPT ] ---\n");
+            List<String> errors = loader.get().getResultErrors();
+            status.append("Loaded ")
+                    .append(scriptName)
+                    .append(errors.isEmpty() ? " without" : " with")
+                    .append(" errors\n");
+
+            if (!errors.isEmpty()) {
+                status.append("\n--- [ LAST ERROR ] ---\n");
+                status.append(Joiner.on("\n").join(errors));
+            }
+
             try {
                 appendVarStatus(status, loader.get().getConductorImpl());
-            } catch (ConcurrentModificationException ignore) {}
+            } catch (ConcurrentModificationException ignore) {
+            }
         }
     }
 
@@ -136,7 +165,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 //                engine.getActualFrequency(),
 //                engine.getMaxFrequency()));
 
-        outStatus.append("--- [ TURNOUTS ] ---\n");
+        outStatus.append("\n--- [ TURNOUTS ] ---\n");
         int i = 0;
         for (Map.Entry<String, ITurnout> entry : script.getTurnouts().entrySet()) {
             String name = entry.getKey();
@@ -146,7 +175,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         }
         appendNewLine(outStatus);
 
-        outStatus.append("--- [ BLOCKS ] ---\n");
+        outStatus.append("\n--- [ BLOCKS ] ---\n");
         i = 0;
         for (Map.Entry<String, IBlock> entry : script.getBlocks().entrySet()) {
             String name = entry.getKey();
@@ -156,7 +185,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         }
         appendNewLine(outStatus);
 
-        outStatus.append("--- [ SENSORS ] ---\n");
+        outStatus.append("\n--- [ SENSORS ] ---\n");
         i = 0;
         for (Map.Entry<String, ISensor> entry : script.getSensors().entrySet()) {
             String name = entry.getKey();
@@ -166,7 +195,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         }
         appendNewLine(outStatus);
 
-        outStatus.append("--- [ TIMERS ] ---\n");
+        outStatus.append("\n--- [ TIMERS ] ---\n");
         i = 0;
         for (ITimer timer : script.getTimers()) {
             outStatus.append(timer.getName()).append(':').append(timer.getActive() ? '1' : '0');
@@ -174,7 +203,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         }
         appendNewLine(outStatus);
 
-        outStatus.append("--- [ ROUTES ] ---\n");
+        outStatus.append("\n--- [ ROUTES ] ---\n");
 //        i = 0;
 //        for (Map.Entry<String, ActiveRoute> entry : script.activeRoutes().entrySet()) {
 //            String name = entry.getKey();
@@ -184,7 +213,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 //        }
         appendNewLine(outStatus);
 
-        outStatus.append("--- [ VARS ] ---\n");
+        outStatus.append("\n--- [ VARS ] ---\n");
 //        i = 0;
 //        for (String name : script.getVarNames()) {
 //            Var var = script.getVar(name);
