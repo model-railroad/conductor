@@ -50,6 +50,7 @@ class ScriptTest2k {
         mainComponent.inject(this)
         val scriptComponent = context.createComponent()
         loader = scriptComponent.script2kLoader
+        assertThat(loader).isNotNull()
         assertThat(loader.execEngine).isNotNull()
         assertThat(loader.conductorImpl).isNotNull()
         assertThat(loader.scriptHost).isNotNull()
@@ -62,13 +63,13 @@ class ScriptTest2k {
     }
 
     private fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
-        loader = Script2kLoader()
+        assertThat(loader).isNotNull()
         loader.loadScriptFromFile(scriptName)
         return loader.result
     }
 
     private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
-        loader = Script2kLoader()
+        assertThat(loader).isNotNull()
         val prefix = """
             import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
