@@ -61,11 +61,11 @@ public class CommonTestComponentTest {
 
         assertThat(mFileOps).isNotNull();
         assertThat(mFakeFileOps).isNotNull();
-        assertThat(mFileOps).isSameAs(mFakeFileOps);
+        assertThat(mFileOps).isSameInstanceAs(mFakeFileOps);
 
         assertThat(mClock).isNotNull();
         assertThat(mFakeClock).isNotNull();
-        assertThat(mClock).isSameAs(mFakeClock);
+        assertThat(mClock).isSameInstanceAs(mFakeClock);
     }
 
     @Singleton

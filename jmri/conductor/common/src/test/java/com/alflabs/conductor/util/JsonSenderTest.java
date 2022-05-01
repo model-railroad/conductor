@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -226,13 +227,13 @@ public class JsonSenderTest {
         int index = 0;
         for (Request req : requestCaptor.getAllValues()) {
             index++;
-            assertThat(req).named("req", index).isNotNull();
-            assertThat(req.url().toString()).named("req", index).isEqualTo(url);
-            assertThat(req.method()).named("req", index).isEqualTo("POST");
+            assertWithMessage("req %d", index).that(req).isNotNull();
+            assertWithMessage("req %d", index).that(req.url().toString()).isEqualTo(url);
+            assertWithMessage("req %d", index).that(req.method()).isEqualTo("POST");
             Buffer bodyBuffer = new Buffer();
             //noinspection ConstantConditions
             req.body().writeTo(bodyBuffer);
-            assertThat(bodyBuffer.readUtf8()).named("req", index).contains("key1");
+            assertWithMessage("req %d", index).that(bodyBuffer.readUtf8()).contains("key1");
         }
     }
 }

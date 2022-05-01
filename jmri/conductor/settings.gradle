@@ -16,6 +16,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// Note: all plugin/deps versions are defined in gradle.properties.
+pluginManagement {
+    plugins {
+        id "org.jetbrains.kotlin.jvm" version "$vers_kotlin"
+        id "org.jetbrains.kotlin.kapt" version "$vers_kotlin"
+        // see https://kotlinlang.org/docs/kapt.html
+    }
+}
+
 rootProject.name = "conductor"
 
 include "LibUtilsJava"
