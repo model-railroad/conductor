@@ -17,39 +17,59 @@ class ExecEngine2k @Inject constructor(
     private val clock: IClock,
     private val logger: ILogger,
 ) : IExecEngine {
-    private val mHandleFrequency = FrequencyMeasurer(clock)
-    private val mHandleRateLimiter = RateLimiter(30.0f, clock)
+    private val handleFrequency = FrequencyMeasurer(clock)
+    private val handleRateLimiter = RateLimiter(30.0f, clock)
+    private val activatedRules = mutableListOf<Rule>()
+    private val ruleCondCache = BooleanCache<Rule>()
+    private val ruleExecCache = BooleanCache<Rule>()
 
     override fun onExecStart() {
     }
 
     override fun onExecHandle() {
-        mHandleFrequency.startWork()
+        handleFrequency.startWork()
 
         evalScript()
 
-        mHandleFrequency.endWork()
-        mHandleRateLimiter.limit()
+        handleFrequency.endWork()
+        handleRateLimiter.limit()
     }
 
     private fun evalScript() {
-        // First collect all rules with an active condition.
-        val activeRules = conductor.rules.filter {
-            var result = false
-            try {
-                result = (it as Rule).evaluateCondition()
-            } catch (t: Throwable) {
-                logger.d(TAG, "Eval Condition Failed", t)
+        ruleCondCache.clear()
+        activatedRules.clear()
+
+        // First collect all rules with an active condition that have not been
+        // executed yet
+        for (r in conductor.rules) {
+            val rule = r as Rule
+            val active = ruleCondCache.getOrEval(rule) {
+                var result = false
+                try {
+                    result = rule.evaluateCondition()
+                } catch (t: Throwable) {
+                    logger.d(TAG, "Eval Condition Failed", t)
+                }
+                result
             }
-            return@filter result
+
+            // Rules only get executed once when activated and until
+            // the condition is cleared and activated again.
+            if (active) {
+                if (!ruleExecCache.get(rule)) {
+                    activatedRules.add(rule)
+                }
+            } else {
+                ruleExecCache.remove(rule)
+            }
         }
 
         // TBD also add rules from any currently active route, in order.
 
-        // Second execute all actions in the order they are defined.
-        activeRules.forEach {
+        // Second execute all actions in the order they are queued.
+        for (rule in activatedRules) {
             try {
-                (it as Rule).evaluateAction()
+                rule.evaluateAction()
             } catch (t: Throwable) {
                 logger.d(TAG, "Eval Action Failed", t)
             }
@@ -57,11 +77,11 @@ class ExecEngine2k @Inject constructor(
     }
 
     fun getActualFrequency(): Float {
-        return mHandleFrequency.actualFrequency
+        return handleFrequency.actualFrequency
     }
 
     fun getMaxFrequency(): Float {
-        return mHandleFrequency.maxFrequency
+        return handleFrequency.maxFrequency
     }
 
 }
