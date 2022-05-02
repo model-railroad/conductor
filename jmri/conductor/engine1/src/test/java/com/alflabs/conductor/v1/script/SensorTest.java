@@ -68,7 +68,7 @@ public class SensorTest {
         mSensor.onExecStart();
         verify(mJmriProvider).getSensor("jmriName");
         verify(mKeyValue).putValue("S/scriptName", "OFF", true);
-        assertThat(mSensor.getJmriSensor()).isSameAs(mJmriSensor);
+        assertThat(mSensor.getJmriSensor()).isSameInstanceAs(mJmriSensor);
     }
 
     @After

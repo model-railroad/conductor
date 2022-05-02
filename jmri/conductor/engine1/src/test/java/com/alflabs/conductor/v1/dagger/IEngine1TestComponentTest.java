@@ -74,18 +74,18 @@ public class IEngine1TestComponentTest {
                 .createComponent(mReporter);
         assertThat(scriptComponent1).isNotNull();
         assertThat(scriptComponent2).isNotNull();
-        assertThat(scriptComponent1).isNotSameAs(scriptComponent2);
+        assertThat(scriptComponent1).isNotSameInstanceAs(scriptComponent2);
     }
 
     @Test
     public void testKeyValueServer_IsSingleton() {
         assertThat(mKeyValue1).isNotNull();
-        assertThat(mKeyValue1).isSameAs(mKeyValue2);
+        assertThat(mKeyValue1).isSameInstanceAs(mKeyValue2);
     }
 
     @Test
     public void testClockProvider_IsSingleton() {
         assertThat(mClock).isNotNull();
-        assertThat(mClock).isSameAs(mFakeClock);
+        assertThat(mClock).isSameInstanceAs(mFakeClock);
     }
 }

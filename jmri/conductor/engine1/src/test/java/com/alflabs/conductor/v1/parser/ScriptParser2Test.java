@@ -506,8 +506,11 @@ public class ScriptParser2Test {
         assertThat(script).isNotNull();
 
         TreeMap<String, MapInfo> maps = script.getMaps();
-        assertThat(maps).hasFirstEntry("map-1", new MapInfo("Map-1", "<svg1/>", "map1.svg"));
-        assertThat(maps).hasLastEntry ("map-2", new MapInfo("Map-2", "<svg2/>", "map2.svg"));
+        assertThat(maps)
+                .containsExactly(
+                    "map-1", new MapInfo("Map-1", "<svg1/>", "map1.svg"),
+                    "map-2", new MapInfo("Map-2", "<svg2/>", "map2.svg"))
+                .inOrder();
         assertThat(maps.get("map-1").toString()).isEqualTo("MapInfo{name='Map-1', uri='map1.svg', svg='<svg1/>'}");
         assertThat(maps.get("map-2").toString()).isEqualTo("MapInfo{name='Map-2', uri='map2.svg', svg='<svg2/>'}");
         assertThat(maps).hasSize(2);
@@ -550,10 +553,13 @@ public class ScriptParser2Test {
         assertThat(script).isNotNull();
 
         TreeMap<String, RouteInfo> routes = script.getRoutes();
-        assertThat(routes).hasFirstEntry("branchline",
-                new RouteInfo("Branchline", "S/bl-toggle", "V/bl-status", "V/bl-counter", "D/200"));
-        assertThat(routes).hasLastEntry("passenger"  ,
-                new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "V/pa-counter", "D/100"));
+        assertThat(routes)
+                .containsExactly(
+                        "branchline",
+                        new RouteInfo("Branchline", "S/bl-toggle", "V/bl-status", "V/bl-counter", "D/200"),
+                        "passenger",
+                        new RouteInfo("Passenger" , "S/pa-toggle", "V/pa-status", "V/pa-counter", "D/100"))
+                .inOrder();
         assertThat(routes).hasSize(2);
 
         ExecEngine1 engine = mScriptComponent.getExecEngine1();

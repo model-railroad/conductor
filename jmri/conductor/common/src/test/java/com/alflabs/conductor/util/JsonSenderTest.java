@@ -227,13 +227,13 @@ public class JsonSenderTest {
         int index = 0;
         for (Request req : requestCaptor.getAllValues()) {
             index++;
-            assertWithMessage("req %d", index).that(req).isNotNull();
-            assertWithMessage("req %d", index).that(req.url().toString()).isEqualTo(url);
-            assertWithMessage("req %d", index).that(req.method()).isEqualTo("POST");
+            assertWithMessage("req %s", index).that(req).isNotNull();
+            assertWithMessage("req %s", index).that(req.url().toString()).isEqualTo(url);
+            assertWithMessage("req %s", index).that(req.method()).isEqualTo("POST");
             Buffer bodyBuffer = new Buffer();
             //noinspection ConstantConditions
             req.body().writeTo(bodyBuffer);
-            assertWithMessage("req %d", index).that(bodyBuffer.readUtf8()).contains("key1");
+            assertWithMessage("req %s", index).that(bodyBuffer.readUtf8()).contains("key1");
         }
     }
 }

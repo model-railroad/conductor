@@ -26,6 +26,8 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/test" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/test" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/kotlin" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/kotlin" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/resources" type="java-test-resource" />
