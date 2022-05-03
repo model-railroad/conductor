@@ -29,9 +29,7 @@ import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
-//@Suppress("UnstableApiUsage")
 class JavaScriptTest2k {
-
     private val scriptEval = JavaScriptEval()
     private lateinit var conductorImpl: ConductorImpl
 
