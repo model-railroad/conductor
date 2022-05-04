@@ -642,7 +642,7 @@ SP-Sound-Stopped ->
 
 Throttle BL = 153
 
-Int BL-Speed = 4
+Int BL-Speed = 3
 Int BL-Speed-Station = 2
 
 Enum BL-Train = RDC
@@ -813,7 +813,7 @@ BL-State == Station & BL-Timer-Bell-Delay ->
 
 # --- BL State: Fwd
 
-Timer BL-Timer-RevStation-Stop = 1
+Timer BL-Timer-RevStation-Stop = 3
 Timer BL-Timer-RevStation-Pause = 25
 
 BL-State == Fwd ->
@@ -823,7 +823,7 @@ BL-State == Fwd + 38 & BL Forward ->
     BL Horn ;
     BL Forward = BL-Speed
 
-BL-State == Fwd + 60 ->
+BL-State == Fwd + 66 ->
     BL Horn
 
 BL-State == Fwd & BLReverse ->
@@ -884,9 +884,9 @@ BL-State == Rev & !BLStation & !BLParked ->
     BL-Timer-Error Start
 
 BL-State == Rev & !BLTunnel      -> BL Horn
-BL-State == Rev & !BLTunnel + 23 -> BL Horn
+BL-State == Rev & !BLTunnel + 31 -> BL Horn
 
-Timer BL-Timer-Station-Stop = 1
+Timer BL-Timer-Station-Stop = 3
 Timer BL-Timer-Station-Rev3 = 8
 
 BL-State == Rev & BLStation ->
