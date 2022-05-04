@@ -819,7 +819,7 @@ Timer BL-Timer-RevStation-Pause = 25
 BL-State == Fwd ->
     BL-Timer-Error Start
 
-BL-State == Fwd + 38 ->
+BL-State == Fwd + 38 & BL Forward ->
     BL Horn ;
     BL Forward = BL-Speed
 
