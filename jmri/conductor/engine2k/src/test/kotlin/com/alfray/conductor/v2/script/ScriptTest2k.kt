@@ -18,10 +18,6 @@
 
 package com.alfray.conductor.v2.script
 
-import com.alflabs.conductor.jmri.FakeJmriProvider
-import com.alfray.conductor.v2.DaggerITestComponent2k
-import com.alfray.conductor.v2.Script2kLoader
-import com.alfray.conductor.v2.dagger.Script2kContext
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
@@ -36,62 +32,11 @@ import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
-import javax.inject.Inject
-import kotlin.script.experimental.api.EvaluationResult
-import kotlin.script.experimental.api.ResultWithDiagnostics
 
-@Suppress("UnstableApiUsage")
-@RunWith(JUnit4::class)
-class ScriptTest2k {
-    private val jmriProvider = FakeJmriProvider()
-
-    @Inject internal lateinit var context: Script2kContext
-
-    private lateinit var loader: Script2kLoader
-    private val conductorImpl: ConductorImpl
-        get() = loader.conductorImpl
-    private val execEngine: ExecEngine2k
-        get() = loader.execEngine
-
+class ScriptTest2k : ScriptTest2kBase() {
     @Before
     fun setUp() {
-        val mainComponent = DaggerITestComponent2k
-            .factory()
-            .createComponent(jmriProvider)
-        mainComponent.inject(this)
-        val scriptComponent = context.createComponent()
-        loader = scriptComponent.script2kLoader
-        assertThat(loader).isNotNull()
-        assertThat(loader.execEngine).isNotNull()
-        assertThat(loader.conductorImpl).isNotNull()
-        assertThat(loader.scriptHost).isNotNull()
-    }
-
-    @Test
-    fun emptyTest() {
-        val a = 1
-        assertThat(a+1).isEqualTo(2)
-    }
-
-    private fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
-        assertThat(loader).isNotNull()
-        loader.loadScriptFromFile(scriptName)
-        return loader.result
-    }
-
-    private fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
-        assertThat(loader).isNotNull()
-        val prefix = """
-            import com.alfray.conductor.v2.script.dsl.*
-        """.trimIndent()
-        loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
-        return loader.result
-    }
-
-    private fun assertResultNoError() {
-        assertThat(loader.getResultErrors().joinToString("\n")).isEmpty()
+        createComponent().inject(this)
     }
 
     @Test

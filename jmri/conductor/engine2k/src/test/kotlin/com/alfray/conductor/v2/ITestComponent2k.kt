@@ -21,16 +21,20 @@ package com.alfray.conductor.v2
 import com.alflabs.conductor.dagger.CommonTestModule
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alfray.conductor.v2.dagger.IEngine2kComponent
+import com.alfray.conductor.v2.script.ExecEngine2kTest
 import com.alfray.conductor.v2.script.ScriptTest2k
+import com.alfray.conductor.v2.script.ScriptTest2kBase
 import dagger.BindsInstance
 import dagger.Component
 import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [CommonTestModule::class])
-internal interface ITestComponent2k : IEngine2kComponent {
+interface ITestComponent2k : IEngine2kComponent {
+    fun inject(test: ScriptTest2kBase)
     fun inject(test: ScriptTest2k)
     fun inject(test: Script2kLoaderTest)
+    fun inject(test: ExecEngine2kTest)
 
     @Component.Factory
     interface Factory {

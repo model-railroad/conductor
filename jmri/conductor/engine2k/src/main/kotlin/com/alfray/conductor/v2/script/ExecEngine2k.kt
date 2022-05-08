@@ -58,7 +58,7 @@ class ExecEngine2k @Inject constructor(
         activatedRules.clear()
 
         // First collect all rules with an active condition that have not been
-        // executed yet
+        // executed yet.
         for (r in conductor.rules) {
             val rule = r as Rule
             val active = ruleCondCache.getOrEval(rule) {
@@ -87,6 +87,7 @@ class ExecEngine2k @Inject constructor(
         // Second execute all actions in the order they are queued.
         for (rule in activatedRules) {
             try {
+                ruleExecCache.put(rule, true)
                 rule.evaluateAction()
             } catch (t: Throwable) {
                 logger.d(TAG, "Eval Action Failed", t)
