@@ -29,7 +29,6 @@ repositories {
 dependencies {
     implementation project(":common")
     implementation project(":engine1")
-    implementation project(":engine2")
     implementation project(":engine2k")
     implementation project(":ui2")
     implementation project(":LibManifest")

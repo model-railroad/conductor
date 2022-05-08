@@ -35,6 +35,5 @@ project(":LibManifest").projectDir = new File(rootProject.projectDir, "../../and
 
 include "common"
 include "engine1"
-include "engine2"
 include "engine2k"
 include "ui2"

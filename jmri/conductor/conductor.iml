@@ -25,7 +25,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="conductor.common" />
     <orderEntry type="module" module-name="conductor.engine1" />
-    <orderEntry type="module" module-name="conductor.engine2" />
     <orderEntry type="module" module-name="conductor.engine2k" />
     <orderEntry type="module" module-name="conductor.ui2" />
     <orderEntry type="module" module-name="conductor.LibManifest" />

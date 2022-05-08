@@ -98,14 +98,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             component.inject(adapter);
 
         } else if ("groovy".equals(mode)) {
-            Engine2GroovyAdapter adapter = new Engine2GroovyAdapter();
-            mAdapter = Optional.of(adapter);
-            Engine2GroovyAdapter.LocalComponent2g component = DaggerEngine2GroovyAdapter_LocalComponent2g
-                    .factory()
-                    .createComponent(jmriProvider);
-            // Do not use any injected field before this call
-            component.inject(this);
-            component.inject(adapter);
+            throw new IllegalArgumentException("Groovy Conductor2 script is not supported.");
 
         } else if ("kts".equals(mode)) {
             Engine2KotlinAdapter adapter = new Engine2KotlinAdapter();
