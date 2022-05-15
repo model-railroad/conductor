@@ -634,6 +634,7 @@ SP-Sound-Stopped ->
 # F7 for dim lights for stations
 # F8 1/0 for Sound (use BL Sound)
 # F9 for red markers on the "end" side
+#
 # On the Mopac 153:
 # F8 is a mute (1 for silence, 0 for sound)
 # F9 is a crossing horn.
@@ -812,7 +813,7 @@ BL-State == Station & BL-Timer-Bell-Delay ->
 
 # --- BL State: Fwd
 
-Timer BL-Timer-RevStation-Stop = 3
+Timer BL-Timer-RevStation-Stop = 6
 Timer BL-Timer-RevStation-Pause = 25
 
 BL-State == Fwd ->
@@ -885,7 +886,7 @@ BL-State == Rev & !BLStation & !BLParked ->
 BL-State == Rev & !BLTunnel      -> BL Horn
 BL-State == Rev & !BLTunnel + 36 -> BL Horn
 
-Timer BL-Timer-Station-Stop = 3
+Timer BL-Timer-Station-Stop = 5
 Timer BL-Timer-Station-Rev3 = 8
 
 BL-State == Rev & BLStation ->
@@ -921,6 +922,35 @@ BL-State == Rev3 & BLParked + 5 ->
     BL Sound = 1 ;
     BL-Timer-Error End ;
     BL-State = Wait
+
+
+# -----
+# Caboose UP 25520 --> DCC 2552
+# Lights on for lights
+# Chimney denotes front
+# FWD for red rear marker, REV for red front marker.
+# F3 on for green rear marker, F4 on for green front marker.
+
+Throttle CAB = 2552
+
+BL Stopped ->
+    CAB Light = 0 ;
+    CAB F3 = 0 ;
+    CAB F4 = 0
+
+BL Forward ->
+    CAB Light = 1 ;
+    CAB Forward = 1 ;
+    CAB F3 = 0 ;
+    CAB F4 = 1
+
+BL Reverse ->
+    CAB Light = 1 ;
+    CAB Reverse = 1 ;
+    CAB F3 = 1 ;
+    CAB F4 = 0
+    
+
 
 
 # ------------------
