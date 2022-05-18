@@ -676,7 +676,7 @@ BL-State == Error ->
 
 # --- BL State: Wait
 
-Timer BL-Timer-Wait = 600  # 300=5 minutes -- changed to 120=2 minutes -- using 600=10 minutes
+Timer BL-Timer-Wait = 300  # 300=5 minutes -- or 120=2 minutes
 Timer BL-Timer-WaitSoundOff = 5
 
 BL-State == Wait ->
