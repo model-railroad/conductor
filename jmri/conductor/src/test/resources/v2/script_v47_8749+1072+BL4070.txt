@@ -659,6 +659,14 @@ BL-Toggle  -> GA-Event Category: Automation, Action: On,  Label: Branchline, Use
 BL-Toggle  -> JSON-Event "Toggle" "Branchline" = "On"
 !BL-Toggle -> JSON-Event "Toggle" "Branchline" = "Off"
 
+# --- BL Static State
+
+# Gyro light on when moving.
+BL Stopped -> BL F5 = 0
+BL Forward -> BL F5 = 1
+BL Reverse -> BL F5 = 1
+
+
 # --- BL State: Error
 
 # No ESTOP on the Branchline, it does not affect PA route.
