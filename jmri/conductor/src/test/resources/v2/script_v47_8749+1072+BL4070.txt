@@ -639,6 +639,9 @@ SP-Sound-Stopped ->
 # F8 is a mute (1 for silence, 0 for sound)
 # F9 is a crossing horn.
 #
+# On RS3 4070:
+# F8 is mute (1 for silence, 0 for sound)
+#
 # Route order: BLParked BLStation BLTunnel BLReverse
 
 Throttle BL = 4070
@@ -671,7 +674,7 @@ BL Reverse -> BL F5 = 1
 
 # No ESTOP on the Branchline, it does not affect PA route.
 
-Timer BL-Timer-Error = 300  # 5 minutes
+Timer BL-Timer-Error = 420  # 300=5 minutes 420=7 minutes
 
 BL-Timer-Error -> BL-State = Error
 
@@ -684,7 +687,7 @@ BL-State == Error ->
 
 # --- BL State: Wait
 
-Timer BL-Timer-Wait = 300  # 300=5 minutes -- or 120=2 minutes
+Timer BL-Timer-Wait = 420  # 300=5 minutes -- 420=7 minutes -- 120=2 minutes
 Timer BL-Timer-WaitSoundOff = 5
 
 BL-State == Wait ->
@@ -724,9 +727,9 @@ BL-State == Parked & BL-Toggle ->
     T324 Normal ;
     BL F1 = 0;
     BL Stop ;
+    BL-Timer-WaitSoundOff Start ;
     BL-State = Restart
 
-BL-State == Parked + 5 -> BL Sound = 1
 
 Timer BL-Timer-ToParking = 1
 BL-State == Station & !BL-Toggle -> BL-Timer-ToParking Start
@@ -738,6 +741,7 @@ BL-Timer-ToParking ->
     BL-State = Parking ;
     BL Repeat = 2 ;
     BL Light = 1;
+    BL-Timer-WaitSoundOff End ;
     BL Sound = 0;
     BL F1 = 1;
     BL-Timer-Error Start ;
@@ -748,7 +752,7 @@ BL-State == Parking & !BLStation & BLParked ->
     BL Stop;
     BL F1 = 0;
     BL Light = 0;
-    BL Sound = 1;
+    BL-Timer-WaitSoundOff Start ;
     BL Repeat = 0 ;
     BL-Timer-Error End ;
     BL-State = Parked
@@ -799,6 +803,7 @@ Timer BL-Timer-Bell-Delay = 5
 
 BL-State == Station & AIU-Motion & BL-Toggle ->
     BL Stop ;
+    BL-Timer-WaitSoundOff End ;
     BL Sound = 0 ;
     BL Light = 1 ;
     BL-Timer-Start-Delay Start ;
