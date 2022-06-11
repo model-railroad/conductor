@@ -53,7 +53,13 @@ Turnout T324        = NT324
 Turnout T326        = NT326
 Turnout T330        = NT330
 Turnout T370        = NT370
+Turnout T450        = NT450     # SW8 - Bridgeport
 Turnout T504        = NT504
+Turnout T140        = NT140     # DS64 - Sultan
+Turnout T150        = NT150     # DS64 - Mainline to Sultan
+Turnout T151        = NT151     # DS64 - Mainline to Napa Yard
+Turnout T160        = NT160     # DS64 - to Richmond Yard
+
 
 # Maps
 
@@ -80,6 +86,32 @@ Enum Limitation = Full Limited
 # The "Reset Timer" action (typically on PA-Toggle off) will clear this.
 
 Timer PA-Error-Timer = 600   # 10 minutes
+
+
+# -----------------
+# DS64 Turnouts
+# -----------------
+#
+# These turnouts need to be reset to mainline when the layout starts.
+
+Enum Mainline-Turnout-State = ToReverse ToNormal Done
+
+Mainline-Turnout-State == ToReverse + 5 ->
+    T450 Reverse ;
+    T140 Reverse ;
+    T150 Reverse ;
+    T151 Reverse ;
+    T160 Reverse ;
+    Mainline-Turnout-State = ToNormal
+
+Mainline-Turnout-State == ToNormal + 5 ->
+    T450 Normal ;
+    T140 Normal ;
+    T150 Normal ;
+    T151 Normal ;
+    T160 Normal ;
+    Mainline-Turnout-State = Done
+
 
 
 # -----------------
