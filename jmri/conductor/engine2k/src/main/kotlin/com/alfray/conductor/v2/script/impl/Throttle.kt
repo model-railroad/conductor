@@ -23,7 +23,7 @@ import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.FBits
 import com.alfray.conductor.v2.script.dsl.IThrottle
 
-internal class Throttle(override val dccAddress: Int) : IThrottle {
+internal class Throttle(override val dccAddress: Int) : VarName(), IThrottle {
     private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false
@@ -38,6 +38,13 @@ internal class Throttle(override val dccAddress: Int) : IThrottle {
         get() = _sound
     override val f: FBits
         get() = _f
+
+    override fun named(name: String): IThrottle {
+        setNamed(name)
+        return this
+    }
+
+    override fun defaultName(): String = "Throttle-$dccAddress"
 
     override fun forward(speed: DccSpeed) {
         _speed = speed

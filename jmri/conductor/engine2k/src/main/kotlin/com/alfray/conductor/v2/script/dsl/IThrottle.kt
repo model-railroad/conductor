@@ -32,7 +32,7 @@ data class DccSpeed(val speed: Int) {
 val Int.speed: DccSpeed
     get() = DccSpeed(this)
 
-interface IThrottle {
+interface IThrottle : IVarName {
     val dccAddress: Int
     val speed: DccSpeed
     val light: Boolean
@@ -43,6 +43,8 @@ interface IThrottle {
         get() = speed.forward
     val reverse: Boolean
         get() = speed.reverse
+
+    infix fun named(name: String) : IThrottle
 
     fun forward(speed: DccSpeed)
     fun reverse(speed: DccSpeed)

@@ -191,6 +191,28 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
+    fun testVarThrottle_Named() {
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        check(T1 is IThrottle)
+        val T2 = throttle(1002) named "Engine#2"
+        check(T2 is IVarName)
+        check(T2 is IThrottle)
+        val T3 = throttle(1003) named "My Throttle 3!"
+        check(T3 is IThrottle)        
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.throttles).hasSize(3)
+
+        assertThat(conductorImpl.throttles[1001]!!.name).isEqualTo("Throttle-1001")
+        assertThat(conductorImpl.throttles[1002]!!.name).isEqualTo("Engine#2")
+        assertThat(conductorImpl.throttles[1003]!!.name).isEqualTo("My Throttle 3!")
+    }
+
+    @Test
     fun testVarTimer() {
         loadScriptFromFile("sample_v2")
         assertResultNoError()

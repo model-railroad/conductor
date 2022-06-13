@@ -143,8 +143,8 @@ var PA_State = EPA_State.Idle
 var PA_Train = EPA_Train.Passenger
 var PA_Start_Counter = 0
 
-val AM = throttle(8749)     // Full Amtrak route
-val SP = throttle(1072)     // "Short Passenger" (now Freight) on limited Amtrak route
+val AM = throttle(8749) named "AM"     // Full Amtrak route
+val SP = throttle(1072) named "SP"     // "Short Passenger" (now Freight) on limited Amtrak route
 
 fun PA_Fn_Release_Route() {
     T311.normal()
