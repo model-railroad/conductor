@@ -23,7 +23,6 @@ import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.jmri.IJmriThrottle;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
@@ -414,15 +413,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         mWin.removeThrottles();
 
         mAdapter.ifPresent(adapter -> {
-            adapter.getThrottles().forEach(nameAddress -> {
-                JTextComponent ui = mWin.addThrottle(nameAddress.mFirst);
+            adapter.getThrottles().forEach(throttleAdapter -> {
+                JTextComponent ui = mWin.addThrottle(throttleAdapter.getName());
                 setupThrottlePane(ui);
 
-                registerUiUpdate(nameAddress,
-                        () -> updateThrottlePane(ui, nameAddress));
-//                new ThrottleUpdater(
-//                                throttle,
-//                                () -> updateThrottlePane(ui, nameAddress)));
+                registerUiUpdate(throttleAdapter,
+                new ThrottleUpdater(
+                        throttleAdapter,
+                        () -> updateThrottlePane(ui, throttleAdapter)));
 
             });
         });
@@ -441,19 +439,18 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         textPane.setDocument(doc);
     }
 
-    private void updateThrottlePane(JTextComponent textPane, Pair<String, Integer> throttle) {
-//        IJmriThrottle jt = throttle.getJmriThrottle();
-        int speed = 0; // TBD throttle.getSpeed();
+    private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
+        int speed = throttleAdapter.getSpeed();
 
         String line1 = String.format("%s [%d] %s %d\n",
-                throttle.mFirst, // TBD throttle.getVarName(),
-                throttle.mSecond, // TBD throttle.getDccAddress(),
+                throttleAdapter.getName(),
+                throttleAdapter.getDccAddress(),
                 speed < 0 ? " <= " : (speed == 0 ? " == " : " => "),
                 speed);
 
-        String line2 = "" ; /* TBD String.format("L%s S%s",
-                jt.isLight() ? "+" : "-",
-                jt.isSound() ? "+" : "-"); */
+        String line2 = String.format("L%s S%s",
+                throttleAdapter.isLight() ? "+" : "-",
+                throttleAdapter.isSound() ? "+" : "-");
 
         try {
             StyledDocument doc = (StyledDocument) textPane.getDocument();
@@ -510,5 +507,47 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private void registerUiUpdate(Object ref, Runnable updater) {
         mUiUpdaters.put(ref, updater);
     }
+
+    private static class ThrottleUpdater implements Runnable {
+        private final IThrottleDisplayAdapter mThrottleAdapter;
+        private final Runnable mUpdate;
+        private int mLastSpeed = Integer.MAX_VALUE;
+
+        public ThrottleUpdater(IThrottleDisplayAdapter throttleAdapter, Runnable update) {
+            mThrottleAdapter = throttleAdapter;
+            mUpdate = update;
+            mUpdate.run();
+        }
+
+        @Override
+        public void run() {
+            int newSpeed = mThrottleAdapter.getSpeed();
+            if (newSpeed != mLastSpeed) {
+                mLastSpeed = newSpeed;
+                mUpdate.run();
+            }
+        }
+    }
+
+//    private static class ConditionalUpdater implements Runnable {
+//        private final IConditional mConditional;
+//        private final Runnable mUpdate;
+//        private boolean mLastActive;
+//
+//        public ConditionalUpdater(IConditional conditional, Runnable update) {
+//            mConditional = conditional;
+//            mUpdate = update;
+//            mUpdate.run();
+//        }
+//
+//        @Override
+//        public void run() {
+//            boolean newState = mConditional.isActive();
+//            if (newState != mLastActive) {
+//                mLastActive = newState;
+//                mUpdate.run();
+//            }
+//        }
+//    }
 
 }

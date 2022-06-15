@@ -42,6 +42,7 @@ import dagger.Component;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -110,12 +111,39 @@ public class Engine1Adapter implements IEngineAdapter {
 
         return Optional.empty();
     }
-
     @NonNull
     @Override
-    public List<Pair<String, Integer>> getThrottles() {
-        // TBD implement for new UI
-        return Collections.emptyList();
+    public List<IThrottleDisplayAdapter> getThrottles() {
+        List<IThrottleDisplayAdapter> list = new ArrayList<>();
+        mScript1Context.getScript1().ifPresent(script1 ->
+            script1.getThrottles().forEach(
+                throttle -> list.add(new IThrottleDisplayAdapter() {
+                    @Override
+                    public String getName() {
+                        return throttle.getDccAddressesAsString();
+                    }
+
+                    @Override
+                    public int getDccAddress() {
+                        return throttle.getDccAddresses().get(0);
+                    }
+
+                    @Override
+                    public int getSpeed() {
+                        return throttle.getSpeed();
+                    }
+
+                    @Override
+                    public boolean isLight() {
+                        return throttle.isLight();
+                    }
+
+                    @Override
+                    public boolean isSound() {
+                        return throttle.isSound();
+                    }
+                })));
+        return list;
     }
 
     @Override

@@ -137,6 +137,14 @@ public class Throttle implements IExecEngine {
         return sb.toString().trim();
     }
 
+    public boolean isSound() {
+        return mSound;
+    }
+
+    public boolean isLight() {
+        return mLight;
+    }
+
     /** The last speed set for this engine. */
     public int getSpeed() {
         return mSpeed;

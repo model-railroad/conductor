@@ -124,7 +124,7 @@ public class Script1 {
     }
 
     @NonNull
-    Collection<Throttle> getThrottles() {
+    public Collection<Throttle> getThrottles() {
         return mThrottles.values();
     }
 
