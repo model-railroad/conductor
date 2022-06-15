@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.v2;
 
+import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -32,6 +33,7 @@ import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine2k;
 import com.alfray.conductor.v2.script.dsl.IBlock;
 import com.alfray.conductor.v2.script.dsl.ISensor;
+import com.alfray.conductor.v2.script.dsl.IThrottle;
 import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
@@ -44,6 +46,8 @@ import dagger.Component;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +114,17 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         loader.getExecEngine().onExecStart();
 
         return Pair.of(wasRunning, file);
+    }
+
+    @NonNull
+    @Override
+    public List<Pair<String, Integer>> getThrottles() {
+        List<Pair<String, Integer>> list = new ArrayList<>();
+        mScript2kContext.getScript2kComponent().ifPresent(component -> {
+            component.getScript2kLoader().conductorImpl.getThrottles().forEach(
+                    (address, throttle) -> list.add(Pair.of(throttle.getName(), address)));
+        });
+        return list;
     }
 
     @Override

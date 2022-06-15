@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.v2;
 
+import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -41,7 +42,9 @@ import dagger.Component;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -106,6 +109,13 @@ public class Engine1Adapter implements IEngineAdapter {
         }
 
         return Optional.empty();
+    }
+
+    @NonNull
+    @Override
+    public List<Pair<String, Integer>> getThrottles() {
+        // TBD implement for new UI
+        return Collections.emptyList();
     }
 
     @Override

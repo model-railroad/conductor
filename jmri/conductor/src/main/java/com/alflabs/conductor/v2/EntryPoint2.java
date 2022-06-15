@@ -23,6 +23,7 @@ import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriThrottle;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
@@ -31,7 +32,6 @@ import com.alflabs.conductor.util.Pair;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
-import com.alflabs.manifest.MapInfo;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
@@ -39,11 +39,21 @@ import com.google.common.io.Files;
 
 import javax.inject.Inject;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,6 +69,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
+    private final Map<Object, Runnable> mUiUpdaters = new HashMap<>();
     private Optional<IEngineAdapter> mAdapter = Optional.empty();
 
     @Inject ILogger mLogger;
@@ -163,7 +174,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
 
-        mAdapter.get().onHandle(mPaused);
+        mAdapter.ifPresent(adapter -> adapter.onHandle(mPaused));
         return true;
     }
 
@@ -195,20 +206,20 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 SwingUtilities.invokeAndWait(() -> {
                     updateWindowLog();
 
-//                    try {
-//                        mUiUpdaters.values().forEach(r -> {
-//                            try {
-//                                r.run();
-//                            } catch (Exception e) {
-//                                log("Window Update Thread - Exception (ignored): "
-//                                        + ExceptionUtils.getStackTrace(e));
-//                            }
-//                        });
-//                    } catch (ConcurrentModificationException ignore) {
-//                    } catch (Exception e2) {
-//                        log("Window Update Thread - Exception (ignored): "
-//                                + ExceptionUtils.getStackTrace(e2));
-//                    }
+                    try {
+                        mUiUpdaters.values().forEach(r -> {
+                            try {
+                                r.run();
+                            } catch (Exception e) {
+                                log("Window Update Thread - Exception (ignored): "
+                                        + ExceptionUtils.getStackTrace(e));
+                            }
+                        });
+                    } catch (ConcurrentModificationException ignore) {
+                    } catch (Exception e2) {
+                        log("Window Update Thread - Exception (ignored): "
+                                + ExceptionUtils.getStackTrace(e2));
+                    }
                 });
 
                 Thread.sleep(330 /*ms*/);
@@ -282,9 +293,15 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowReload() {
         log("onWindowReload");
 
-        // TBD: mUiUpdaters.clear();
+        mUiUpdaters.clear();
+
+        if (!mAdapter.isPresent()) {
+            log("onWindowReload: no engine adapter.");
+            return;
+        }
 
         try {
+            // Creates the daggers script component, loads the script, executes onExecStart.
             Pair<Boolean, File> reloaded = mAdapter.get().onReload();
             boolean wasRunning = reloaded.mFirst;
             File file = reloaded.mSecond;
@@ -311,31 +328,29 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             }
         }
 
-        // TBD: registerUiThrottles();
-        // TBD: registerUiConditionals();
+        registerUiThrottles();
+        registerUiConditionals();
     }
 
     private void loadMap() {
-        if (!mAdapter.get().getScriptFile().isPresent()) {
-            return;
-        }
-        File scriptFile = mAdapter.get().getScriptFile().get();
-        File scriptDir = scriptFile.getParentFile();
+        mAdapter.ifPresent(adapter ->
+            adapter.getScriptFile().ifPresent(scriptFile -> {
+                File scriptDir = scriptFile.getParentFile();
 
-        Optional<MapInfo> mapName = mAdapter.get().getLoadedMapName();
+                adapter.getLoadedMapName().ifPresent(mapInfo -> {
+                    String svgName = mapInfo.getUri();
+                    File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
+                    URI svgUri = svgFile.toURI();
 
-        if (mapName.isPresent()) {
-            String svgName = mapName.get().getUri();
-            File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
-            URI svgUri = svgFile.toURI();
-
-            log("Loading map: " + svgUri);
-            try {
-                mWin.displaySvgMap(svgUri);
-            } catch (Exception e) {
-                log("Failed to load map '" + svgName + "' : " + e);
-            }
-        }
+                    log("Loading map: " + svgUri);
+                    try {
+                        mWin.displaySvgMap(svgUri);
+                    } catch (Exception e) {
+                        log("Failed to load map '" + svgName + "' : " + e);
+                    }
+                });
+            })
+        );
     }
 
     @Override
@@ -365,7 +380,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mStatus.append(mLoadError);
         }
 
-        mAdapter.get().appendToLog(mStatus);
+        mAdapter.ifPresent(adapter -> adapter.appendToLog(mStatus));
         appendVarStatus(mStatus, mKeyValueServer);
 
         mWin.updateLog(mStatus.toString());
@@ -393,4 +408,107 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private void sendEvent(String action) {
         mAnalytics.sendEvent("Conductor", action, "", "Conductor");
     }
+
+    private void registerUiThrottles() {
+        if (mWin == null) { return; }
+        mWin.removeThrottles();
+
+        mAdapter.ifPresent(adapter -> {
+            adapter.getThrottles().forEach(nameAddress -> {
+                JTextComponent ui = mWin.addThrottle(nameAddress.mFirst);
+                setupThrottlePane(ui);
+
+                registerUiUpdate(nameAddress,
+                        () -> updateThrottlePane(ui, nameAddress));
+//                new ThrottleUpdater(
+//                                throttle,
+//                                () -> updateThrottlePane(ui, nameAddress)));
+
+            });
+        });
+    }
+
+    private void setupThrottlePane(JTextComponent textPane) {
+        StyleContext context = new StyleContext();
+        StyledDocument doc = new DefaultStyledDocument(context);
+
+        Style d = context.getStyle(StyleContext.DEFAULT_STYLE);
+        Style c = context.addStyle("c", d);
+        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER);
+        Style b = context.addStyle("b", c);
+        b.addAttribute(StyleConstants.Bold, true);
+
+        textPane.setDocument(doc);
+    }
+
+    private void updateThrottlePane(JTextComponent textPane, Pair<String, Integer> throttle) {
+//        IJmriThrottle jt = throttle.getJmriThrottle();
+        int speed = 0; // TBD throttle.getSpeed();
+
+        String line1 = String.format("%s [%d] %s %d\n",
+                throttle.mFirst, // TBD throttle.getVarName(),
+                throttle.mSecond, // TBD throttle.getDccAddress(),
+                speed < 0 ? " <= " : (speed == 0 ? " == " : " => "),
+                speed);
+
+        String line2 = "" ; /* TBD String.format("L%s S%s",
+                jt.isLight() ? "+" : "-",
+                jt.isSound() ? "+" : "-"); */
+
+        try {
+            StyledDocument doc = (StyledDocument) textPane.getDocument();
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, line1, null);
+            doc.insertString(doc.getLength(), line2, doc.getStyle("b"));
+            // everything is centered
+            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void registerUiConditionals() {
+        if (mWin == null) { return; }
+        mWin.removeSensors();
+//        if (mScriptAccess.mRootScript == null) { return;}
+//
+//        mScriptAccess.mRootScript.getSensors().forEach((k, sensor) -> {
+//            JCheckBox ui = mWin.addSensor(sensor.getVarName());
+//
+//            registerUiUpdate(sensor,
+//                    new ConditionalUpdater(
+//                            sensor,
+//                            () -> ui.setSelected(sensor.isActive())
+//                    ));
+//            ui.addActionListener(actionEvent -> sensor.setActive(ui.isSelected()));
+//        });
+//
+//        mScriptAccess.mRootScript.getBlocks().forEach((k, block) -> registerUiUpdate(block,
+//                new ConditionalUpdater(
+//                        block,
+//                        () -> {
+//                            String name = "S-" + block.getVarName().toLowerCase(Locale.US);
+//                            mWin.setBlockColor(name, block.isActive());
+//                        }
+//                )));
+//
+//        mScriptAccess.mRootScript.getTurnouts().forEach((k, turnout) -> registerUiUpdate(turnout,
+//                new ConditionalUpdater(
+//                        turnout,
+//                        () -> {
+//                            boolean normal = turnout.isActive();
+//                            String name = "T-" + turnout.getVarName().toLowerCase(Locale.US);
+//                            String N = name + "N";
+//                            String R = name + "R";
+//
+//                            mWin.setTurnoutVisible(N,  normal);
+//                            mWin.setTurnoutVisible(R, !normal);
+//                        }
+//                )));
+    }
+
+    private void registerUiUpdate(Object ref, Runnable updater) {
+        mUiUpdaters.put(ref, updater);
+    }
+
 }

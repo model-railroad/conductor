@@ -18,11 +18,13 @@
 
 package com.alflabs.conductor.v2;
 
+import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.util.Pair;
 import com.alflabs.manifest.MapInfo;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,4 +40,8 @@ public interface IEngineAdapter {
     Optional<MapInfo> getLoadedMapName();
 
     void appendToLog(StringBuilder status);
+
+    /** A list of pair(Throttle Name, Dcc Address). */
+    @NonNull
+    List<Pair<String, Integer>> getThrottles();
 }
