@@ -18,17 +18,33 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.conductor.jmri.IJmriThrottle
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.FBits
 import com.alfray.conductor.v2.script.dsl.IThrottle
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-internal class Throttle(override val dccAddress: Int) : VarName(), IThrottle {
+@Script2kScope
+@AssistedFactory
+internal interface IThrottleFactory {
+    fun create(dccAddress: Int) : Throttle
+}
+
+internal class Throttle @AssistedInject constructor(
+    private val jmriProvider: IJmriProvider,
+    @Assisted override val dccAddress: Int
+) : VarName(), IThrottle, IExecEngine {
     private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false
     private var _repeat = Delay(0)
     private var _f = FBits()
+    private lateinit var jmriThrottle: IJmriThrottle
 
     override val speed: DccSpeed
         get() = _speed
@@ -72,5 +88,13 @@ internal class Throttle(override val dccAddress: Int) : VarName(), IThrottle {
 
     override fun repeat(repeat: Delay) {
         _repeat = repeat
+    }
+
+    override fun onExecStart() {
+        jmriThrottle = checkNotNull(jmriProvider.getThrottle(dccAddress))
+    }
+
+    override fun onExecHandle() {
+        TODO("Not yet implemented")
     }
 }

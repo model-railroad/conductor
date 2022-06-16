@@ -16,6 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// ----------
+// IMPORTANT: all plugin/deps VERSIONS are defined in gradle.properties.
+// ----------
+
 apply plugin: "java"
 apply plugin: "idea"
 
