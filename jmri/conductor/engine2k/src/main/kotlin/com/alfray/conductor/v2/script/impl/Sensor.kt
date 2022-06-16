@@ -18,9 +18,25 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.conductor.jmri.IJmriSensor
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.ISensor
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-internal class Sensor(override val systemName: String) : ISensor {
+@Script2kScope
+@AssistedFactory
+internal interface ISensorFactory {
+    fun create(systemName: String) : Sensor
+}
+
+internal class Sensor @AssistedInject constructor(
+    private val jmriProvider: IJmriProvider,
+    @Assisted override val systemName: String
+) : ISensor, IExecEngine {
+    private lateinit var jmriSensor: IJmriSensor
     private var _active = false
 
     override val active: Boolean
@@ -30,5 +46,13 @@ internal class Sensor(override val systemName: String) : ISensor {
 
     override fun active(isActive: Boolean) {
         _active = isActive
+    }
+
+    override fun onExecStart() {
+        jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
+    }
+
+    override fun onExecHandle() {
+        TODO("Not yet implemented")
     }
 }

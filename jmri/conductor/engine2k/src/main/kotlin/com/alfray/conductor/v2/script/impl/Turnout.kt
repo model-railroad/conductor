@@ -18,9 +18,25 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.conductor.jmri.IJmriTurnout
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.ITurnout
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-internal class Turnout(override val systemName: String) : ITurnout {
+@Script2kScope
+@AssistedFactory
+internal interface ITurnoutFactory {
+    fun create(systemName: String) : Turnout
+}
+
+internal class Turnout @AssistedInject constructor(
+    private val jmriProvider: IJmriProvider,
+    @Assisted override val systemName: String
+) : ITurnout, IExecEngine {
+    private lateinit var jmriTurnout: IJmriTurnout
     private var _normal = true
 
     override val normal: Boolean
@@ -37,5 +53,13 @@ internal class Turnout(override val systemName: String) : ITurnout {
 
     override fun reverse() {
         _normal = false
+    }
+
+    override fun onExecStart() {
+        jmriTurnout = checkNotNull(jmriProvider.getTurnout(systemName))
+    }
+
+    override fun onExecHandle() {
+        TODO("Not yet implemented")
     }
 }

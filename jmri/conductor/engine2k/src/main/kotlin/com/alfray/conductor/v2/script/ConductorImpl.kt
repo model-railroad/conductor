@@ -44,21 +44,23 @@ import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaEventBuilder
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.GaPageBuilder
+import com.alfray.conductor.v2.script.impl.ISensorFactory
 import com.alfray.conductor.v2.script.impl.IThrottleFactory
+import com.alfray.conductor.v2.script.impl.ITurnoutFactory
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
-import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
-import com.alfray.conductor.v2.script.impl.Turnout
 import javax.inject.Inject
 
 private const val VERBOSE = false
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
-    private val throttleFactory: IThrottleFactory
+    private val sensorFactory: ISensorFactory,
+    private val turnoutFactory: ITurnoutFactory,
+    private val throttleFactory: IThrottleFactory,
 ) : IConductor {
 
     val sensors = mutableMapOf<String, ISensor>()
@@ -80,7 +82,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun sensor(systemName: String): ISensor {
         if (VERBOSE) println("@@ sensor systemName = $systemName")
-        return sensors.computeIfAbsent(systemName) { Sensor(it) }
+        return sensors.computeIfAbsent(systemName) { sensorFactory.create(it) }
     }
 
     override fun block(systemName: String): IBlock {
@@ -90,7 +92,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun turnout(systemName: String): ITurnout {
         if (VERBOSE) println("@@ turnout systemName = $systemName")
-        return turnouts.computeIfAbsent(systemName) { Turnout(it) }
+        return turnouts.computeIfAbsent(systemName) { turnoutFactory.create(it) }
     }
 
     override fun timer(delay: Delay): ITimer {

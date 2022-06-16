@@ -25,7 +25,9 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
+import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.Throttle
+import com.alfray.conductor.v2.script.impl.Turnout
 import javax.inject.Inject
 
 const val TAG = "ExecEngine2k"
@@ -43,6 +45,8 @@ class ExecEngine2k @Inject constructor(
     private val ruleExecCache = BooleanCache<Rule>()
 
     override fun onExecStart() {
+        conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
+        conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
     }
 
