@@ -29,7 +29,7 @@ import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 
 open class ScriptTest2kBase {
-    internal val jmriProvider = FakeJmriProvider()
+    private val jmriProvider = FakeJmriProvider()
     @Inject internal lateinit var context: Script2kContext
 
     internal lateinit var loader: Script2kLoader

@@ -18,9 +18,25 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.conductor.jmri.IJmriSensor
+import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IBlock
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-internal class Block(override val systemName: String) : IBlock {
+@Script2kScope
+@AssistedFactory
+internal interface IBlockFactory {
+    fun create(systemName: String) : Block
+}
+
+internal class Block @AssistedInject constructor(
+    private val jmriProvider: IJmriProvider,
+    @Assisted override val systemName: String
+) : IBlock, IExecEngine {
+    private lateinit var jmriSensor: IJmriSensor
     private var _active = false
 
     override val active: Boolean
@@ -30,5 +46,13 @@ internal class Block(override val systemName: String) : IBlock {
 
     fun active(isActive: Boolean) {
         _active = isActive
+    }
+
+    override fun onExecStart() {
+        jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
+    }
+
+    override fun onExecHandle() {
+        TODO("Not yet implemented")
     }
 }

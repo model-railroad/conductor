@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alfray.conductor.v2.script.dsl.NodeBuilder
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -27,6 +28,8 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class RouteSequenceTest {
+    private val jmriProvider = FakeJmriProvider()
+
     @Before
     fun setUp() {
     }
@@ -102,5 +105,5 @@ class RouteSequenceTest {
     }
 
     private fun node(index: Int) =
-        NodeBuilder(Block(index.toString())).create()
+        NodeBuilder(Block(jmriProvider, index.toString())).create()
 }

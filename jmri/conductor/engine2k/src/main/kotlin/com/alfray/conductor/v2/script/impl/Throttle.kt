@@ -95,6 +95,6 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun onExecHandle() {
-        TODO("Not yet implemented")
+        // no-op
     }
 }

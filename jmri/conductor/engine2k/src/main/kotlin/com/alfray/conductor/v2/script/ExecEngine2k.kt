@@ -23,6 +23,7 @@ import com.alflabs.conductor.util.RateLimiter
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
+import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
@@ -45,6 +46,7 @@ class ExecEngine2k @Inject constructor(
     private val ruleExecCache = BooleanCache<Rule>()
 
     override fun onExecStart() {
+        conductor.blocks.forEach { (_, block) -> (block as Block).onExecStart() }
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
@@ -53,10 +55,18 @@ class ExecEngine2k @Inject constructor(
     override fun onExecHandle() {
         handleFrequency.startWork()
 
+        propagateExecHandle()
         evalScript()
 
         handleFrequency.endWork()
         handleRateLimiter.limit()
+    }
+
+    private fun propagateExecHandle() {
+        conductor.blocks.forEach { (_, block) -> (block as Block).onExecHandle() }
+        conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecHandle() }
+        conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecHandle() }
+        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecHandle() }
     }
 
     private fun evalScript() {

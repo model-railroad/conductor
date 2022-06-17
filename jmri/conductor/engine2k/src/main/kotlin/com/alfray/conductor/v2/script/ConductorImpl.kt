@@ -44,6 +44,7 @@ import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaEventBuilder
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.GaPageBuilder
+import com.alfray.conductor.v2.script.impl.IBlockFactory
 import com.alfray.conductor.v2.script.impl.ISensorFactory
 import com.alfray.conductor.v2.script.impl.IThrottleFactory
 import com.alfray.conductor.v2.script.impl.ITurnoutFactory
@@ -58,6 +59,7 @@ private const val VERBOSE = false
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
+    private val blockFactory: IBlockFactory,
     private val sensorFactory: ISensorFactory,
     private val turnoutFactory: ITurnoutFactory,
     private val throttleFactory: IThrottleFactory,
@@ -87,7 +89,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun block(systemName: String): IBlock {
         if (VERBOSE) println("@@ block systemName = $systemName")
-        return blocks.computeIfAbsent(systemName) { Block(it) }
+        return blocks.computeIfAbsent(systemName) { blockFactory.create(it) }
     }
 
     override fun turnout(systemName: String): ITurnout {
