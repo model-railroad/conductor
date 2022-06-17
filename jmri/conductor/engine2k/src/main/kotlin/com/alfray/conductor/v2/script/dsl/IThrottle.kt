@@ -78,7 +78,7 @@ interface IThrottle : IVarName {
     val f10: Boolean
         get() = f[10]
 
-    fun f(index: Int, on: Boolean) : FBits = f.set(index, on)
+    fun f(index: Int, on: Boolean) : FBits
     fun f0(on: Boolean) : FBits = f(0, on)
     fun f1(on: Boolean) : FBits = f(1, on)
     fun f2(on: Boolean) : FBits = f(2, on)
