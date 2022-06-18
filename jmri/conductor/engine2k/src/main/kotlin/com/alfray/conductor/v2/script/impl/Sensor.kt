@@ -20,6 +20,10 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriSensor
+import com.alflabs.conductor.util.EventLogger
+import com.alflabs.kv.IKeyValue
+import com.alflabs.manifest.Constants
+import com.alflabs.manifest.Prefix
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.ISensor
 import dagger.assisted.Assisted
@@ -33,26 +37,41 @@ internal interface ISensorFactory {
 }
 
 internal class Sensor @AssistedInject constructor(
+    private val keyValue: IKeyValue,
+    private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
 ) : ISensor, IExecEngine {
-    private lateinit var jmriSensor: IJmriSensor
+    private var jmriSensor: IJmriSensor? = null
     private var _active = false
+    private var lastActive = false
+    private val keyName = "${Prefix.Sensor}$systemName"
 
     override val active: Boolean
-        get() = _active
+        get() {
+            jmriSensor?.let { _active = it.isActive }
+            return _active
+        }
 
     override fun not(): Boolean = !active
 
     override fun active(isActive: Boolean) {
         _active = isActive
+        jmriSensor?.isActive = isActive
     }
 
     override fun onExecStart() {
         jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
+        onExecHandle()
     }
 
     override fun onExecHandle() {
-        TODO("Not yet implemented")
+        val a = active
+        val value = if (a) Constants.On else Constants.Off
+        keyValue.putValue(keyName, value, true /*broadcast*/)
+        if (a != lastActive) {
+            lastActive = a
+            eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
+        }
     }
 }

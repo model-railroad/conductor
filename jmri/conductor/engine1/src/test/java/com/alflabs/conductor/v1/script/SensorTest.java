@@ -72,13 +72,13 @@ public class SensorTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         verifyNoMoreInteractions(mJmriProvider);
         verifyNoMoreInteractions(mKeyValue);
     }
 
     @Test
-    public void testIsActive() throws Exception {
+    public void testIsActive() {
         reset(mKeyValue);
         when(mJmriSensor.isActive()).thenReturn(true);
         assertThat(mSensor.isActive()).isTrue();

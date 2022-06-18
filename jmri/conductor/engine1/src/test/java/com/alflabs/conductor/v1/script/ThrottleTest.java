@@ -103,20 +103,20 @@ public class ThrottleTest {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         verifyNoMoreInteractions(mJmriThrottle);
         verifyNoMoreInteractions(mKeyValue);
     }
 
     @Test
-    public void testInit() throws Exception {
+    public void testInit() {
         assertThat(isFwd.isActive()).isFalse();
         assertThat(isRev.isActive()).isFalse();
         assertThat(isStop.isActive()).isTrue();
     }
 
     @Test
-    public void testForward() throws Exception {
+    public void testForward() {
         fwd.accept(41);
         verify(mJmriThrottle).setSpeed(41);
         verify(mKeyValue).putValue("D/42", "41", true);
@@ -137,7 +137,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testReverse() throws Exception {
+    public void testReverse() {
         rev.accept(41);
         verify(mJmriThrottle).setSpeed(-41);
         verify(mKeyValue).putValue("D/42", "-41", true);
@@ -158,7 +158,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testStop() throws Exception {
+    public void testStop() {
         fwd.accept(41);
         verify(mJmriThrottle).setSpeed(41);
         verify(mKeyValue).putValue("D/42", "41", true);
@@ -174,7 +174,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testSound() throws Exception {
+    public void testSound() {
         assertThat(isSound.isActive()).isFalse();
 
         sound.accept(0);
@@ -192,7 +192,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testLight() throws Exception {
+    public void testLight() {
         assertThat(isLight.isActive()).isFalse();
 
         light.accept(0);
@@ -210,7 +210,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testFnFunction() throws Exception {
+    public void testFnFunction() {
         mThrottle.createFnFunction(3).accept(1);
         verify(mJmriThrottle).triggerFunction(3, true);
 
@@ -225,7 +225,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testRepeatFunction() throws Exception {
+    public void testRepeatFunction() {
         assertThat(mThrottle.getRepeatSpeedSeconds()).isEqualTo(0);
 
         repeat.accept(0);
@@ -239,7 +239,7 @@ public class ThrottleTest {
     }
 
     @Test
-    public void testRepeatSpeed() throws Exception {
+    public void testRepeatSpeed() {
         repeat.accept(1);
         fwd.accept(41);
         mThrottle.repeatSpeed();

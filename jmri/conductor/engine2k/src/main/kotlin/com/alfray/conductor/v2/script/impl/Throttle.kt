@@ -52,7 +52,7 @@ internal class Throttle @AssistedInject constructor(
     private var _light = false
     private var _sound = false
     /** Delay in seconds after the last command sent to JMRI before repeating the current speed. */
-    internal var _repeatSpeedSeconds = Delay(0)
+    internal var repeatSpeedSeconds = Delay(0)
         private set // visible for testing
     private var _f = FBits()
     private var lastJmriTS: Long = 0L
@@ -129,7 +129,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun repeat(repeat: Delay) {
-        _repeatSpeedSeconds = repeat
+        repeatSpeedSeconds = repeat
     }
 
     override fun onExecStart() {
@@ -148,11 +148,11 @@ internal class Throttle @AssistedInject constructor(
      * The call does nothing if [.getRepeatSpeedSeconds] <= 0.
      */
     fun repeatSpeed() {
-        if (_repeatSpeedSeconds.seconds < 1) {
+        if (repeatSpeedSeconds.seconds < 1) {
             return
         }
         val elapsedMs: Long = clock.elapsedRealtime() - lastJmriTS
-        if (elapsedMs >= 1000 * _repeatSpeedSeconds.seconds) {
+        if (elapsedMs >= 1000 * repeatSpeedSeconds.seconds) {
             setSpeed(_speed)
         }
     }

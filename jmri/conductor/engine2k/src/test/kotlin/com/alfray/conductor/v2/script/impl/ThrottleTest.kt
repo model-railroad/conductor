@@ -36,14 +36,13 @@ import com.nhaarman.mockitokotlin2.verify
 import dagger.internal.InstanceFactory
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito
 
 class ThrottleTest {
-    private val jmriThrottle: IJmriThrottle = mock { on { dccAddress } doReturn 42 }
-    private val jmriProvider: IJmriProvider = mock { on { getThrottle(42) } doReturn jmriThrottle }
-    private val eventLogger: EventLogger = mock()
-    private val keyValue: IKeyValue = mock()
-    private val logger: ILogger = mock()
+    private val jmriThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
+    private val jmriProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn jmriThrottle }
+    private val eventLogger = mock<EventLogger>()
+    private val keyValue = mock<IKeyValue>()
+    private val logger = mock<ILogger>()
     private val clock = MockClock()
     private lateinit var throttle: Throttle
 
@@ -166,13 +165,13 @@ class ThrottleTest {
 
     @Test
     fun testRepeatFunction() {
-        assertThat(throttle._repeatSpeedSeconds).isEqualTo(Delay(0))
+        assertThat(throttle.repeatSpeedSeconds).isEqualTo(Delay(0))
         throttle.repeat(Delay(0))
-        assertThat(throttle._repeatSpeedSeconds).isEqualTo(Delay(0))
+        assertThat(throttle.repeatSpeedSeconds).isEqualTo(Delay(0))
         throttle.repeat(Delay(2))
-        assertThat(throttle._repeatSpeedSeconds).isEqualTo(Delay(2))
+        assertThat(throttle.repeatSpeedSeconds).isEqualTo(Delay(2))
         throttle.repeat(Delay(0))
-        assertThat(throttle._repeatSpeedSeconds).isEqualTo(Delay(0))
+        assertThat(throttle.repeatSpeedSeconds).isEqualTo(Delay(0))
     }
 
     @Test
