@@ -39,7 +39,7 @@ class SensorTest {
     private val jmriSensor = mock<IJmriSensor> { on { isActive } doReturn  false }
     private val jmriProvider = mock<IJmriProvider> { on { getSensor("jmriName") } doReturn jmriSensor }
     private val eventLogger = mock<EventLogger>()
-    private val keyValue: IKeyValue = mock()
+    private val keyValue = mock<IKeyValue>()
     private lateinit var sensor: Sensor
 
     @Before

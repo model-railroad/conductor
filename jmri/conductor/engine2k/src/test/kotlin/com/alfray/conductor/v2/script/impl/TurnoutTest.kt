@@ -38,7 +38,7 @@ class TurnoutTest {
     private val jmriTurnout = mock<IJmriTurnout> { on { isNormal } doReturn IJmriTurnout.NORMAL }
     private val jmriProvider =
         mock<IJmriProvider> { on { getTurnout("jmriName") } doReturn jmriTurnout }
-    private val keyValue: IKeyValue = mock()
+    private val keyValue = mock<IKeyValue>()
     private lateinit var turnout: Turnout
 
     @Before

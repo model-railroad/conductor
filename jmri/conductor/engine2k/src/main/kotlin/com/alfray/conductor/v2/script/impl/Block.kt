@@ -20,39 +20,71 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriSensor
+import com.alflabs.conductor.util.EventLogger
+import com.alflabs.kv.IKeyValue
+import com.alflabs.manifest.Constants
+import com.alflabs.manifest.Prefix
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IBlock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+/** Creates a new block for the given JMRI system name. */
 @Script2kScope
 @AssistedFactory
 internal interface IBlockFactory {
     fun create(systemName: String) : Block
 }
 
+/**
+ * A block matching an underlying JMRI sensor, as defined by a script.
+ * <p/>
+ * The actual JMRI sensor is only assigned via the [onExecStart] method.
+ * <p/>
+ * Querying the active state returns the internal state and does NOT read from JMRI;
+ * reading from JMRI is only done in [onExecHandle] to guarantee to be in sync with the exec loop.
+ * <p/>
+ * The main difference between a Block and a Sensor resides in the concept of an active block:
+ * a block is active when its underlying physical sensor is active OR when a route manager
+ * determines that a train must logically/virtually be occupying that block.
+ */
 internal class Block @AssistedInject constructor(
+    private val keyValue: IKeyValue,
+    private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
 ) : IBlock, IExecEngine {
-    private lateinit var jmriSensor: IJmriSensor
+    private var jmriSensor: IJmriSensor? = null
     private var _active = false
+    private var lastActive = false
+    private val keyName = "${Prefix.Block}$systemName"
 
     override val active: Boolean
-        get() = _active
+        get() = _active // uses internal state, does NOT update from JMRI.
 
     override fun not(): Boolean = !active
 
-    fun active(isActive: Boolean) {
+    /** Internally set the active block state. Useful for testing purposes. */
+    internal fun active(isActive: Boolean) {
+        // Updates the internal state only.
         _active = isActive
     }
 
+    /** Initializes the underlying JMRI sensor. */
     override fun onExecStart() {
         jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
+        onExecHandle()
     }
 
     override fun onExecHandle() {
-        // TODO("Not yet implemented")
+        // Update the state from JMRI
+        jmriSensor?.let { _active = it.isActive }
+        val value = if (_active) Constants.On else Constants.Off
+        keyValue.putValue(keyName, value, true /*broadcast*/)
+        if (_active != lastActive) {
+            lastActive = _active
+            eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
+        }
     }
 }

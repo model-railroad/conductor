@@ -19,19 +19,27 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
+import com.alflabs.conductor.util.EventLogger
+import com.alflabs.kv.IKeyValue
 import com.alfray.conductor.v2.script.dsl.NodeBuilder
 import com.google.common.truth.Truth.assertThat
+import com.nhaarman.mockitokotlin2.mock
+import dagger.internal.InstanceFactory
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
-@RunWith(JUnit4::class)
 class RouteSequenceTest {
+    private lateinit var blockFactory: Block_Factory
     private val jmriProvider = FakeJmriProvider()
+    private val eventLogger = mock<EventLogger>()
+    private val keyValue = mock<IKeyValue>()
 
     @Before
     fun setUp() {
+        blockFactory = Block_Factory(
+            InstanceFactory.create(keyValue),
+            InstanceFactory.create(eventLogger),
+            InstanceFactory.create(jmriProvider))
     }
 
     @Test
@@ -105,5 +113,5 @@ class RouteSequenceTest {
     }
 
     private fun node(index: Int) =
-        NodeBuilder(Block(jmriProvider, index.toString())).create()
+        NodeBuilder(blockFactory.get(index.toString())).create()
 }
