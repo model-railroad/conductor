@@ -23,6 +23,7 @@ import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine2k
 import com.google.common.io.Resources
+import java.io.File
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
@@ -35,11 +36,9 @@ import kotlin.script.experimental.host.UrlScriptSource
 class Script2kLoader @Inject constructor() {
     internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
     @Inject internal lateinit var scriptHost: ConductorScriptHost
-        internal set
     @Inject lateinit var conductorImpl: ConductorImpl
-        internal set
     @Inject lateinit var execEngine: ExecEngine2k
-        internal set
+    @Inject lateinit var scriptSource: Script2kSource
     private var errors: List<String> = emptyList()
     var status = Status.NotLoaded
         internal set
@@ -51,6 +50,7 @@ class Script2kLoader @Inject constructor() {
         val scriptPath = "v2/script/$scriptName$extension"
         val scriptUrl = Resources.getResource(scriptPath)!!
         val source = UrlScriptSource(scriptUrl)
+        scriptSource.scriptInfo = Script2kSourceInfo(scriptName, File(scriptPath), source)
         result = loadScript(source)
         errors = parseErrors(result)
         status = Status.Loaded
@@ -59,6 +59,7 @@ class Script2kLoader @Inject constructor() {
     fun loadScriptFromText(scriptName: String = "local", scriptText: String) {
         status = Status.Loading
         val source = StringScriptSource(scriptText, scriptName)
+        scriptSource.scriptInfo = Script2kSourceInfo(scriptName, null, source)
         result = loadScript(source)
         errors = parseErrors(result)
         status = Status.Loaded
