@@ -24,6 +24,7 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
+import com.alfray.conductor.v2.Script2kErrors
 import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.impl.Block
@@ -41,7 +42,8 @@ class ExecEngine2k @Inject constructor(
     private val logger: ILogger,
     private val keyValue: IKeyValue,
     private val eStopHandler: EStopHandler,
-    private val script2kSource: Script2kSource,
+    private val scriptSource: Script2kSource,
+    private val scriptErrors: Script2kErrors,
 ) : IExecEngine {
     private companion object {
         val TAG = ExecEngine2k::class.simpleName
@@ -64,7 +66,7 @@ class ExecEngine2k @Inject constructor(
     }
 
     private fun exportMaps() {
-        val scriptDir = script2kSource.scriptDir()
+        val scriptDir = scriptSource.scriptDir()
         println("@@ scriptDir = $scriptDir")
         // TODO("Not yet implemented")
     }

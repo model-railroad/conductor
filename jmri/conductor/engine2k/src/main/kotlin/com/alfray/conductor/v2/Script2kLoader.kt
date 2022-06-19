@@ -33,13 +33,14 @@ import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
 @Script2kScope
-class Script2kLoader @Inject constructor() {
-    internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
+class Script2kLoader @Inject constructor(
+    val conductorImpl: ConductorImpl,
+    val execEngine: ExecEngine2k,
+    val scriptErrors: Script2kErrors,
+    val scriptSource: Script2kSource,
+) {
     @Inject internal lateinit var scriptHost: ConductorScriptHost
-    @Inject lateinit var conductorImpl: ConductorImpl
-    @Inject lateinit var execEngine: ExecEngine2k
-    @Inject lateinit var scriptSource: Script2kSource
-    private var errors: List<String> = emptyList()
+    internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
     var status = Status.NotLoaded
         internal set
 
@@ -52,7 +53,7 @@ class Script2kLoader @Inject constructor() {
         val source = UrlScriptSource(scriptUrl)
         scriptSource.scriptInfo = Script2kSourceInfo(scriptName, File(scriptPath), source)
         result = loadScript(source)
-        errors = parseErrors(result)
+        scriptErrors.errors.addAll(parseErrors(result))
         status = Status.Loaded
     }
 
@@ -61,7 +62,7 @@ class Script2kLoader @Inject constructor() {
         val source = StringScriptSource(scriptText, scriptName)
         scriptSource.scriptInfo = Script2kSourceInfo(scriptName, null, source)
         result = loadScript(source)
-        errors = parseErrors(result)
+        scriptErrors.errors.addAll(parseErrors(result))
         status = Status.Loaded
     }
 
@@ -72,7 +73,7 @@ class Script2kLoader @Inject constructor() {
     fun getResultOutputs() : String =
         result.reports.joinToString("\n") { it.toString() }
 
-    fun getResultErrors() = errors
+    fun getResultErrors() = scriptErrors.errors.toList()
 
     private fun parseErrors(results: ResultWithDiagnostics<EvaluationResult>) : List<String> {
         return results.reports

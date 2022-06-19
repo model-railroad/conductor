@@ -19,21 +19,12 @@
 package com.alfray.conductor.v2
 
 import com.alfray.conductor.v2.dagger.Script2kScope
-import java.io.File
 import javax.inject.Inject
-import kotlin.script.experimental.api.SourceCode
 
-/** Information on the last script loaded by [Script2kLoader], if any. */
+/** Errors collected while loading or executing the current script. */
 @Script2kScope
-class Script2kSource @Inject constructor() {
-    internal var scriptInfo: Script2kSourceInfo? = null
-
-    /** Returns the scriptPath parent or null. */
-    fun scriptDir(): File? = scriptInfo?.let { it.scriptPath?.parentFile }
+class Script2kErrors @Inject constructor() {
+    /** Errors collected. */
+    val errors = mutableListOf<String>()
 }
 
-internal data class Script2kSourceInfo(
-    val scriptName: String,
-    val scriptPath: File?,       // null for a text-based junit test
-    val scriptSource: SourceCode,
-)
