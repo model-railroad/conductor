@@ -23,7 +23,7 @@ import com.alflabs.conductor.util.RateLimiter
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.MapInfos
-import com.alflabs.utils.FakeFileOps
+import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.Script2kErrors
@@ -45,6 +45,7 @@ class ExecEngine2k @Inject constructor(
     val conductor: ConductorImpl,
     private val clock: IClock,
     private val logger: ILogger,
+    private val fileOps: FileOps,
     private val keyValue: IKeyValue,
     private val eStopHandler: EStopHandler,
     private val scriptSource: Script2kSource,
@@ -72,7 +73,6 @@ class ExecEngine2k @Inject constructor(
 
     private fun exportMaps() {
         val scriptDir = scriptSource.scriptDir()
-        val fileOps = FakeFileOps() // TBD change for a real dagger injected FileOps
         val infos =
             conductor.svgMaps
                 .map { (_, svgMap) ->

@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
+import com.alflabs.utils.FakeFileOps
 import com.alfray.conductor.v2.DaggerITestComponent2k
 import com.alfray.conductor.v2.ITestComponent2k
 import com.alfray.conductor.v2.Script2kLoader
@@ -31,6 +32,7 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 open class ScriptTest2kBase {
     private val jmriProvider = FakeJmriProvider()
     @Inject internal lateinit var context: Script2kContext
+    @Inject internal lateinit var fileOps: FakeFileOps
 
     internal lateinit var loader: Script2kLoader
     internal lateinit var conductorImpl: ConductorImpl

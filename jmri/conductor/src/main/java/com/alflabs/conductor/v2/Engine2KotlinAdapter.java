@@ -119,7 +119,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     public List<IThrottleDisplayAdapter> getThrottles() {
         List<IThrottleDisplayAdapter> list = new ArrayList<>();
         mScript2kContext.getScript2kComponent().ifPresent(component ->
-            component.getScript2kLoader().conductorImpl.getThrottles().forEach(
+            component.getScript2kLoader().getConductorImpl().getThrottles().forEach(
                 (address, throttle) -> list.add(new IThrottleDisplayAdapter() {
                     @Override
                     public String getName() {
