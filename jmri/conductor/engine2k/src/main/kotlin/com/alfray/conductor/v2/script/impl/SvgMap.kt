@@ -18,8 +18,13 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.manifest.MapInfo
+import com.alflabs.utils.FileOps
 import com.alfray.conductor.v2.script.dsl.ISvgMap
 import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
+import com.google.common.base.Charsets
+import java.io.File
+import java.io.IOException
 
 internal class SvgMapBuilder constructor() : ISvgMapBuilder {
     override lateinit var name: String
@@ -54,4 +59,16 @@ internal class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
         result = 31 * result + svg.hashCode()
         return result
     }
+}
+
+/**
+ * Reads the SVG Map and returns a [MapInfo] with both the filename and the SVG data.
+ *
+ * @throws IOException if can't read the map.
+ */
+@Throws(IOException::class)
+internal fun ISvgMap.toMapInfo(fileOps: FileOps, scriptDir: File?): MapInfo {
+    val svgFile = if (scriptDir == null) File(this.svg) else File(scriptDir, this.svg)
+    val svgData = fileOps.toString(svgFile, Charsets.UTF_8) // can throw IOException
+    return MapInfo(this.name, svgData, this.svg)
 }

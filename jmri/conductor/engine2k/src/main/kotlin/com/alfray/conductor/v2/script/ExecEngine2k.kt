@@ -22,6 +22,8 @@ import com.alflabs.conductor.util.FrequencyMeasurer
 import com.alflabs.conductor.util.RateLimiter
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
+import com.alflabs.manifest.MapInfos
+import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.Script2kErrors
@@ -33,6 +35,9 @@ import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.script.impl.Turnout
+import com.alfray.conductor.v2.script.impl.toMapInfo
+import com.fasterxml.jackson.core.JsonProcessingException
+import java.io.IOException
 import javax.inject.Inject
 
 @Script2kScope
@@ -67,8 +72,26 @@ class ExecEngine2k @Inject constructor(
 
     private fun exportMaps() {
         val scriptDir = scriptSource.scriptDir()
-        println("@@ scriptDir = $scriptDir")
-        // TODO("Not yet implemented")
+        val fileOps = FakeFileOps() // TBD change for a real dagger injected FileOps
+        val infos =
+            conductor.svgMaps
+                .map { (_, svgMap) ->
+                try {
+                    svgMap.toMapInfo(fileOps, scriptDir)
+                } catch (e: IOException) {
+                    val error = "SvgMap[${svgMap.name}]: Failed to read file '${svgMap.svg}'."
+                    logger.d(TAG, error, e)
+                    scriptErrors.append(error)
+                    return@map null
+                }
+            }
+        val maps = MapInfos(infos.filterNotNull().toTypedArray())
+
+        try {
+            keyValue.putValue(Constants.MapsKey, maps.toJsonString(), true)
+        } catch (e: JsonProcessingException) {
+            logger.d(TAG, "Export KV Maps failed: $e")
+        }
     }
 
     private fun exportRoutes() {
