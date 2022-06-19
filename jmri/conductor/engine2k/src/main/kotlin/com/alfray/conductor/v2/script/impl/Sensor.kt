@@ -30,12 +30,21 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+/** Creates a new sensor for the given JMRI system name. */
 @Script2kScope
 @AssistedFactory
 internal interface ISensorFactory {
     fun create(systemName: String) : Sensor
 }
 
+/**
+ * A sensor defined by a script.
+ * <p/>
+ * The actual JMRI sensor is only assigned via the [onExecStart] method.
+ * <p/>
+ * Querying the active state returns the internal state and does NOT read from JMRI;
+ * reading from JMRI is only done in [onExecHandle] to guarantee to be in sync with the exec loop.
+ */
 internal class Sensor @AssistedInject constructor(
     private val keyValue: IKeyValue,
     private val eventLogger: EventLogger,
@@ -48,29 +57,29 @@ internal class Sensor @AssistedInject constructor(
     private val keyName = "${Prefix.Sensor}$systemName"
 
     override val active: Boolean
-        get() {
-            jmriSensor?.let { _active = it.isActive }
-            return _active
-        }
+        get() = _active // uses internal state, does NOT update from JMRI.
 
     override fun not(): Boolean = !active
 
     override fun active(isActive: Boolean) {
+        // Updates the internal state and the JMRI state.
         _active = isActive
         jmriSensor?.isActive = isActive
     }
 
+    /** Initializes the underlying JMRI sensor. */
     override fun onExecStart() {
         jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
         onExecHandle()
     }
 
     override fun onExecHandle() {
-        val a = active
-        val value = if (a) Constants.On else Constants.Off
+        // Update the state from JMRI
+        jmriSensor?.let { _active = it.isActive }
+        val value = if (_active) Constants.On else Constants.Off
         keyValue.putValue(keyName, value, true /*broadcast*/)
-        if (a != lastActive) {
-            lastActive = a
+        if (_active != lastActive) {
+            lastActive = _active
             eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
         }
     }

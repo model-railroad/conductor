@@ -23,20 +23,16 @@ import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockitokotlin2.KStubbing
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.stub
 import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import dagger.internal.InstanceFactory
 import org.junit.Before
 import org.junit.Test
-import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
 import org.mockito.Mockito.never
 
 class SensorTest {
@@ -64,19 +60,20 @@ class SensorTest {
     @Test
     fun testIsActive() {
         jmriSensor.stub { on { isActive } doReturn true }
-
-        assertThat(sensor.active).isTrue()
-        verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
-
-        sensor.onExecHandle()
-        verify(keyValue).putValue("S/jmriName", "ON", true)
-        reset(keyValue)
-
-        jmriSensor.stub { on { isActive } doReturn false }
-
+        // the JMRI state is not reflected in the internal state until after onExecHandle
         assertThat(sensor.active).isFalse()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
 
         sensor.onExecHandle()
+        assertThat(sensor.active).isTrue()
+        verify(keyValue).putValue("S/jmriName", "ON", true)
+        reset(keyValue)
+
+        jmriSensor.stub { on { isActive } doReturn false }
+        assertThat(sensor.active).isTrue()
+        verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
+        sensor.onExecHandle()
+        assertThat(sensor.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
-    }}
+    }
+}

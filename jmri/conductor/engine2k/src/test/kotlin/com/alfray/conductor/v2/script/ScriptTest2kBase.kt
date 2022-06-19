@@ -54,6 +54,7 @@ open class ScriptTest2kBase {
     fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
         assertThat(loader).isNotNull()
         loader.loadScriptFromFile(scriptName)
+        execEngine.onExecStart()
         return loader.result
     }
 
@@ -63,6 +64,7 @@ open class ScriptTest2kBase {
             import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
+        execEngine.onExecStart()
         return loader.result
     }
 

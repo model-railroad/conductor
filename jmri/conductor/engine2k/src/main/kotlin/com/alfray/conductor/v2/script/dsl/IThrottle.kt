@@ -34,6 +34,7 @@ val Int.speed: DccSpeed
 
 interface IThrottle : IVarName {
     val dccAddress: Int
+    /** The last speed set for this engine. */
     val speed: DccSpeed
     val light: Boolean
     val sound: Boolean
@@ -52,6 +53,7 @@ interface IThrottle : IVarName {
     fun horn()
     fun light(on: Boolean)
     fun sound(on: Boolean)
+    /** Sets the repeat speed interval. Does nothing if <= 0. */
     fun repeat(repeat: Delay)
 
     val f: FBits

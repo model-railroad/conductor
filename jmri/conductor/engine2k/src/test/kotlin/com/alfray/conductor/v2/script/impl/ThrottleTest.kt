@@ -86,7 +86,6 @@ class ThrottleTest {
         assertThat(throttle.forward).isFalse()
         assertThat(throttle.reverse).isTrue()
         assertThat(throttle.stopped).isFalse()
-        verify(jmriThrottle, atLeastOnce()).dccAddress
     }
 
     @Test
@@ -104,7 +103,6 @@ class ThrottleTest {
         assertThat(throttle.forward).isTrue()
         assertThat(throttle.reverse).isFalse()
         assertThat(throttle.stopped).isFalse()
-        verify(jmriThrottle, atLeastOnce()).dccAddress
     }
 
     @Test
@@ -118,7 +116,6 @@ class ThrottleTest {
         assertThat(throttle.forward).isFalse()
         assertThat(throttle.reverse).isFalse()
         assertThat(throttle.stopped).isTrue()
-        verify(jmriThrottle, atLeastOnce()).dccAddress
     }
 
     @Test

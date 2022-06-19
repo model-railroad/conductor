@@ -34,12 +34,21 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
+/** Creates a new throttle for the given DCC addresses. */
 @Script2kScope
 @AssistedFactory
 internal interface IThrottleFactory {
     fun create(dccAddress: Int) : Throttle
 }
 
+/**
+ * A throttle defined by a script.
+ * <p/>
+ * The actual JMRI throttle is only assigned via the {@link #onExecStart()} method.
+ * <p/>
+ * This throttle object keeps track of its state (speed, light/sound state) and only
+ * uses its internal state when providing values. JMRI is only used as a setter.
+ */
 internal class Throttle @AssistedInject constructor(
     private val clock: IClock,
     private val logger: ILogger,
@@ -56,12 +65,13 @@ internal class Throttle @AssistedInject constructor(
         private set // visible for testing
     private var _f = FBits()
     private var lastJmriTS: Long = 0L
-    private lateinit var jmriThrottle: IJmriThrottle
+    private var jmriThrottle: IJmriThrottle? = null
 
     private companion object {
         val TAG: String = Throttle::class.java.simpleName
     }
 
+    /** The last speed set for this engine. */
     override val speed: DccSpeed
         get() = _speed
     override val light: Boolean
@@ -92,7 +102,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun f(index: Int, on: Boolean) : FBits {
         try {
-            jmriThrottle.triggerFunction(index, on)
+            jmriThrottle?.triggerFunction(index, on)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] triggerFunction exception: $e")
         }
@@ -101,7 +111,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun horn() {
         try {
-            jmriThrottle.horn()
+            jmriThrottle?.horn()
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] horn exception: $e")
         }
@@ -111,7 +121,7 @@ internal class Throttle @AssistedInject constructor(
     override fun light(on: Boolean) {
         _light = on
         try {
-            jmriThrottle.setLight(_light)
+            jmriThrottle?.setLight(_light)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setLight exception: $e")
         }
@@ -121,13 +131,14 @@ internal class Throttle @AssistedInject constructor(
     override fun sound(on: Boolean) {
         _sound = on
         try {
-            jmriThrottle.setSound(_sound)
+            jmriThrottle?.setSound(_sound)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setSound exception: $e")
         }
         lastJmriTS = clock.elapsedRealtime()
     }
 
+    /** Sets the repeat speed interval. Does nothing if <= 0. */
     override fun repeat(repeat: Delay) {
         repeatSpeedSeconds = repeat
     }
@@ -165,7 +176,6 @@ internal class Throttle @AssistedInject constructor(
         val speedChange = speed != _speed
         _speed = speed
 
-        val dccAddress = jmriThrottle.dccAddress
         try {
             if (speedChange) {
                 eventLogger.logAsync(
@@ -174,7 +184,7 @@ internal class Throttle @AssistedInject constructor(
                     speed.speed.toString()
                 )
             }
-            jmriThrottle.setSpeed(speed.speed)
+            jmriThrottle?.setSpeed(speed.speed)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setSpeed exception: $e")
         }
@@ -193,7 +203,7 @@ internal class Throttle @AssistedInject constructor(
 
         // Ask JMRI to send an e-stop command to all throttles
         try {
-            jmriThrottle.eStop()
+            jmriThrottle?.eStop()
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] eStop exception: $e")
         }
