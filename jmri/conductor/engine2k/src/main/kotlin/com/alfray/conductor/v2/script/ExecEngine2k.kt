@@ -20,6 +20,8 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.FrequencyMeasurer
 import com.alflabs.conductor.util.RateLimiter
+import com.alflabs.kv.IKeyValue
+import com.alflabs.manifest.Constants
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
@@ -31,14 +33,18 @@ import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.script.impl.Turnout
 import javax.inject.Inject
 
-const val TAG = "ExecEngine2k"
-
 @Script2kScope
 class ExecEngine2k @Inject constructor(
     val conductor: ConductorImpl,
     private val clock: IClock,
     private val logger: ILogger,
+    private val keyValue: IKeyValue,
+    private val eStopHandler: EStopHandler,
 ) : IExecEngine {
+    private companion object {
+        val TAG = ExecEngine2k::class.simpleName
+    }
+
     private val handleFrequency = FrequencyMeasurer(clock)
     private val handleRateLimiter = RateLimiter(30.0f, clock)
     private val activatedRules = mutableListOf<Rule>()
@@ -50,13 +56,41 @@ class ExecEngine2k @Inject constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
+        reset()
+        exportMaps()
+        exportRoutes()
+    }
+
+    private fun exportMaps() {
+        // TODO("Not yet implemented")
+    }
+
+    private fun exportRoutes() {
+        // TODO("Not yet implemented")
     }
 
     override fun onExecHandle() {
         handleFrequency.startWork()
 
         propagateExecHandle()
-        evalScript()
+
+        val eStopState: Constants.EStopState = eStopHandler.eStopState
+        when (eStopState) {
+            Constants.EStopState.NORMAL -> {
+                evalScript()
+                repeatSpeed()
+            }
+            Constants.EStopState.ACTIVE -> {
+                if (eStopHandler.lastEStopState == Constants.EStopState.NORMAL) {
+                    // First time going from NORMAL to ACTIVE E-Stop.
+                    eStopAllThrottles()
+                }
+            }
+            Constants.EStopState.RESET -> {
+                reset()
+            }
+        }
+        eStopHandler.lastEStopState = eStopState
 
         handleFrequency.endWork()
         handleRateLimiter.limit()
@@ -67,6 +101,25 @@ class ExecEngine2k @Inject constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecHandle() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecHandle() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecHandle() }
+    }
+
+    private fun repeatSpeed() {
+        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).repeatSpeed() }
+    }
+
+    private fun eStopAllThrottles() {
+        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).eStop() }
+    }
+
+    private fun reset() {
+        // Make these objects resettable on a per-need basis.
+        // conductor.blocks.forEach { (_, block) -> (block as Block).reset() }
+        // conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).reset() }
+        // conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).reset() }
+        // conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).reset() }
+        ruleCondCache.clear()
+        activatedRules.clear()
+        eStopHandler.reset()
     }
 
     private fun evalScript() {
