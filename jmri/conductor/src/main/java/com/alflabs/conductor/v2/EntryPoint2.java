@@ -33,10 +33,12 @@ import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alfray.conductor.v2.script.dsl.IActive;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 import javax.inject.Inject;
+import javax.swing.JCheckBox;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
@@ -472,41 +474,47 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private void registerUiConditionals() {
         if (mWin == null) { return; }
         mWin.removeSensors();
-//        if (mScriptAccess.mRootScript == null) { return;}
-//
-//        mScriptAccess.mRootScript.getSensors().forEach((k, sensor) -> {
-//            JCheckBox ui = mWin.addSensor(sensor.getVarName());
-//
-//            registerUiUpdate(sensor,
-//                    new ConditionalUpdater(
-//                            sensor,
-//                            () -> ui.setSelected(sensor.isActive())
-//                    ));
-//            ui.addActionListener(actionEvent -> sensor.setActive(ui.isSelected()));
-//        });
-//
-//        mScriptAccess.mRootScript.getBlocks().forEach((k, block) -> registerUiUpdate(block,
-//                new ConditionalUpdater(
-//                        block,
-//                        () -> {
-//                            String name = "S-" + block.getVarName().toLowerCase(Locale.US);
-//                            mWin.setBlockColor(name, block.isActive());
-//                        }
-//                )));
-//
-//        mScriptAccess.mRootScript.getTurnouts().forEach((k, turnout) -> registerUiUpdate(turnout,
-//                new ConditionalUpdater(
-//                        turnout,
-//                        () -> {
-//                            boolean normal = turnout.isActive();
-//                            String name = "T-" + turnout.getVarName().toLowerCase(Locale.US);
-//                            String N = name + "N";
-//                            String R = name + "R";
-//
-//                            mWin.setTurnoutVisible(N,  normal);
-//                            mWin.setTurnoutVisible(R, !normal);
-//                        }
-//                )));
+
+        mAdapter.ifPresent(adapter -> {
+            adapter.getSensors().forEach(sensorAdapter -> {
+                JCheckBox ui = mWin.addSensor(sensorAdapter.getName());
+
+                registerUiUpdate(sensorAdapter,
+                        new ActivableUpdater(
+                                sensorAdapter,
+                                () -> ui.setSelected(sensorAdapter.isActive())
+                        ));
+                ui.addActionListener(actionEvent -> sensorAdapter.setActive(ui.isSelected()));
+            });
+
+            adapter.getBlocks().forEach(blockAdapter -> {
+                registerUiUpdate(blockAdapter,
+                        new ActivableUpdater(
+                                blockAdapter,
+                                () -> {
+                                    String name = "S-" + blockAdapter.getName();
+                                    mWin.setBlockColor(name, blockAdapter.isActive());
+                                }
+                        ));
+            });
+
+            adapter.getTurnouts().forEach(turnoutAdapter -> {
+                registerUiUpdate(turnoutAdapter,
+                        new ActivableUpdater(
+                                turnoutAdapter,
+                                () -> {
+                                    boolean normal = turnoutAdapter.isActive();
+                                    String name = "T-" + turnoutAdapter.getName();
+                                    String N = name + "N";
+                                    String R = name + "R";
+
+                                    mWin.setTurnoutVisible(N,  normal);
+                                    mWin.setTurnoutVisible(R, !normal);
+                                }
+                        ));
+            });
+
+        });
     }
 
     private void registerUiUpdate(Object ref, Runnable updater) {
@@ -534,25 +542,25 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         }
     }
 
-//    private static class ConditionalUpdater implements Runnable {
-//        private final IConditional mConditional;
-//        private final Runnable mUpdate;
-//        private boolean mLastActive;
-//
-//        public ConditionalUpdater(IConditional conditional, Runnable update) {
-//            mConditional = conditional;
-//            mUpdate = update;
-//            mUpdate.run();
-//        }
-//
-//        @Override
-//        public void run() {
-//            boolean newState = mConditional.isActive();
-//            if (newState != mLastActive) {
-//                mLastActive = newState;
-//                mUpdate.run();
-//            }
-//        }
-//    }
+    private static class ActivableUpdater implements Runnable {
+        private final IActivableDisplayAdapter mActivable;
+        private final Runnable mUpdate;
+        private boolean mLastActive;
+
+        public ActivableUpdater(IActivableDisplayAdapter activable, Runnable update) {
+            mActivable = activable;
+            mUpdate = update;
+            mUpdate.run();
+        }
+
+        @Override
+        public void run() {
+            boolean newState = mActivable.isActive();
+            if (newState != mLastActive) {
+                mLastActive = newState;
+                mUpdate.run();
+            }
+        }
+    }
 
 }

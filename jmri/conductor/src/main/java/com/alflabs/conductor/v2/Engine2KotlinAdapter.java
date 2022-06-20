@@ -39,6 +39,7 @@ import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
+import com.alfray.conductor.v2.script.impl.Sensor;
 import com.alfray.conductor.v2.script.impl.SvgMap;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
@@ -167,6 +169,68 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                         return throttle.getSound();
                     }
                 })));
+        return list;
+    }
+
+    @Override
+    public List<ISensorDisplayAdapter> getSensors() {
+        List<ISensorDisplayAdapter> list = new ArrayList<>();
+        mScript2kContext.getScript2kComponent().ifPresent(component ->
+                component.getScript2kLoader().getConductorImpl().getSensors().forEach(
+                        (name, sensor) -> list.add(new ISensorDisplayAdapter() {
+                            @Override
+                            public String getName() {
+                                return name;
+                            }
+
+                            @Override
+                            public boolean isActive() {
+                                return sensor.getActive();
+                            }
+
+                            @Override
+                            public void setActive(boolean isActive) {
+                                sensor.active(isActive);
+                            }
+                        })));
+        return list;
+    }
+
+    @Override
+    public List<IActivableDisplayAdapter> getBlocks() {
+        List<IActivableDisplayAdapter> list = new ArrayList<>();
+        mScript2kContext.getScript2kComponent().ifPresent(component ->
+                component.getScript2kLoader().getConductorImpl().getBlocks().forEach(
+                        (name, block) -> list.add(new IActivableDisplayAdapter() {
+                            @Override
+                            public String getName() {
+                                return name;
+                            }
+
+                            @Override
+                            public boolean isActive() {
+                                return block.getActive();
+                            }
+                        })));
+        return list;
+    }
+
+    @Override
+    public List<IActivableDisplayAdapter> getTurnouts() {
+        List<IActivableDisplayAdapter> list = new ArrayList<>();
+        mScript2kContext.getScript2kComponent().ifPresent(component ->
+                component.getScript2kLoader().getConductorImpl().getTurnouts().forEach(
+                        (name, turnout) -> list.add(new IActivableDisplayAdapter() {
+                            @Override
+                            public String getName() {
+                                return name;
+                            }
+
+                            @Override
+                            public boolean isActive() {
+                                return turnout.getActive();
+                            }
+                        })));
         return list;
     }
 

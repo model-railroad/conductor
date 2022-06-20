@@ -35,7 +35,7 @@ val BLReverse    = block ("NS755")     // 48:4
 val BLRun        = block ("NS765")     // 48:14, Disconnected BL activation button
 
 val B310         = block ("NS768")     // 49:1
-val B311         = block ("NS769")     // 49:2
+val B311         = block ("NS771")     // 49:2
 val B320         = block ("NS770")     // 49:3
 val B321         = block ("NS771")     // 49:4
 val B330         = block ("NS773")     // 49:6

@@ -29,6 +29,7 @@ import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.script.Enum_;
 import com.alflabs.conductor.v1.script.ExecEngine1;
+import com.alflabs.conductor.v1.script.IConditional;
 import com.alflabs.conductor.v1.script.Script1;
 import com.alflabs.conductor.v1.script.Sensor;
 import com.alflabs.conductor.v1.script.Timer;
@@ -43,6 +44,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
@@ -142,6 +144,73 @@ public class Engine1Adapter implements IEngineAdapter {
                         return throttle.isSound();
                     }
                 })));
+        return list;
+    }
+
+    @Override
+    public List<ISensorDisplayAdapter> getSensors() {
+        List<ISensorDisplayAdapter> list = new ArrayList<>();
+        mScript1Context.getScript1().ifPresent(script1 ->
+                script1.getSensorNames().forEach(name -> {
+                    IConditional cond = script1.getConditional(name);
+                    list.add(new ISensorDisplayAdapter() {
+                        @Override
+                        public String getName() {
+                            return name;
+                        }
+
+                        @Override
+                        public boolean isActive() {
+                            return cond.isActive();
+                        }
+
+                        @Override
+                        public void setActive(boolean isActive) {
+                            // TBD no-op
+                        }
+                    });
+                }));
+        return list;
+    }
+
+    @Override
+    public List<IActivableDisplayAdapter> getBlocks() {
+        List<IActivableDisplayAdapter> list = new ArrayList<>();
+        mScript1Context.getScript1().ifPresent(script1 ->
+            script1.getSensorNames().forEach(name -> {
+                        IConditional cond = script1.getConditional(name);
+                        list.add(new IActivableDisplayAdapter() {
+                            @Override
+                            public String getName() {
+                                return name;
+                            }
+
+                            @Override
+                            public boolean isActive() {
+                                return cond.isActive();
+                            }
+                        });
+                    }));
+        return list;
+    }
+
+    @Override
+    public List<IActivableDisplayAdapter> getTurnouts() {
+        List<IActivableDisplayAdapter> list = new ArrayList<>();
+        mScript1Context.getScript1().ifPresent(script1 ->
+                script1.getTurnoutNames().forEach(name -> {
+                    IConditional cond = script1.getConditional(name);
+                    list.add(new IActivableDisplayAdapter() {
+                        @Override
+                        public String getName() {
+                            return name;
+                        }
+
+                        @Override
+                        public boolean isActive() {
+                            return cond.isActive();
+                        }});
+                }));
         return list;
     }
 

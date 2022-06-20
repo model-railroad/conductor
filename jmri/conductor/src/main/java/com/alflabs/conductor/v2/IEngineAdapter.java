@@ -44,9 +44,15 @@ public interface IEngineAdapter {
 
     void appendToLog(StringBuilder status);
 
-    /**
-     * A list of pair(Throttle Name, Dcc Address).
-     */
     @NonNull
     List<IThrottleDisplayAdapter> getThrottles();
+
+    @NonNull
+    List<ISensorDisplayAdapter> getSensors();
+
+    @NonNull
+    List<IActivableDisplayAdapter> getBlocks();
+
+    @NonNull
+    List<IActivableDisplayAdapter> getTurnouts();
 }
