@@ -39,7 +39,6 @@ import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
-import com.alfray.conductor.v2.script.impl.Sensor;
 import com.alfray.conductor.v2.script.impl.SvgMap;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -180,7 +179,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                         (name, sensor) -> list.add(new ISensorDisplayAdapter() {
                             @Override
                             public String getName() {
-                                return name;
+                                return sensor.getName();
                             }
 
                             @Override

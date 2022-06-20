@@ -26,6 +26,7 @@ import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.ISensor
+import com.alfray.conductor.v2.script.dsl.IThrottle
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -50,7 +51,7 @@ internal class Sensor @AssistedInject constructor(
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
-) : ISensor, IExecEngine {
+) : VarName(), ISensor, IExecEngine {
     private var jmriSensor: IJmriSensor? = null
     private var _active = false
     private var lastActive = false
@@ -66,6 +67,13 @@ internal class Sensor @AssistedInject constructor(
         _active = isActive
         jmriSensor?.isActive = isActive
     }
+
+    override fun named(name: String): ISensor {
+        setNamed(name)
+        return this
+    }
+
+    override fun defaultName(): String = systemName
 
     /** Initializes the underlying JMRI sensor. */
     override fun onExecStart() {

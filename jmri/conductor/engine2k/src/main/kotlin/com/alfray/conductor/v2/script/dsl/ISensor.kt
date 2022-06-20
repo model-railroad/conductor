@@ -18,7 +18,9 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-interface ISensor : IActive {
+interface ISensor : IActive, IVarName {
     fun active(isActive: Boolean)
     val systemName: String
+
+    infix fun named(name: String) : ISensor
 }

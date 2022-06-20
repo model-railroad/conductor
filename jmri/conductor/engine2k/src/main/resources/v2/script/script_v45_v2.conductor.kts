@@ -45,10 +45,10 @@ val B370         = block ("NS776")     // 49:9
 
 val B503a        = block ("NS786")     // 50:3
 val B503b        = block ("NS787")     // 50:4
-val AIU_Motion   = sensor("NS797")     // 50:14
+val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 
-val BL_Toggle    = sensor("NS828")     // 52:13
-val PA_Toggle    = sensor("NS829")     // 52:14
+val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
+val PA_Toggle    = sensor("NS829") named "PA-Toggle"    // 52:14
 
 
 // turnouts
