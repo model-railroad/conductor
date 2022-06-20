@@ -26,14 +26,19 @@ import kotlin.script.experimental.api.SourceCode
 /** Information on the last script loaded by [Script2kLoader], if any. */
 @Script2kScope
 class Script2kSource @Inject constructor() {
-    internal var scriptInfo: Script2kSourceInfo? = null
+    var scriptInfo: Script2kSourceInfo? = null
 
-    /** Returns the scriptPath parent or null. */
+    /** Accessor method that returns the scriptPath parent or null.
+     * The script path is null for a string-based junit test script. */
+    fun scriptPath(): File? = scriptInfo?.scriptPath
+
+    /** Accessor method that returns the scriptPath parent or null.
+     * The script parent dir is null for a string-based junit test script. */
     fun scriptDir(): File? = scriptInfo?.let { it.scriptPath?.parentFile }
 }
 
-internal data class Script2kSourceInfo(
+data class Script2kSourceInfo(
     val scriptName: String,
-    val scriptPath: File?,       // null for a text-based junit test
+    val scriptPath: File?,       // null for a string-based junit test script
     val scriptSource: SourceCode,
 )

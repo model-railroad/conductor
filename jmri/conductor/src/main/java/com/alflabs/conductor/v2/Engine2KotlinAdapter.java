@@ -23,6 +23,8 @@ import com.alflabs.annotations.Null;
 import com.alflabs.conductor.dagger.CommonModule;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Pair;
+import com.alflabs.manifest.MapInfo;
+import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alfray.conductor.v2.Script2kLoader;
@@ -37,6 +39,7 @@ import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
+import com.alfray.conductor.v2.script.impl.SvgMap;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import dagger.BindsInstance;
@@ -45,6 +48,7 @@ import dagger.Component;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
@@ -55,18 +59,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Engine2KotlinAdapter implements IEngineAdapter {
     private static final String TAG = Engine2KotlinAdapter.class.getSimpleName();
 
-    @Inject ILogger mLogger;
     @Inject IClock mClock;
+    @Inject ILogger mLogger;
+    @Inject FileOps mFileOps;
     @Inject Script2kContext mScript2kContext;
+    private Optional<File> mScriptToLoad = Optional.empty();
 
+    /**
+     * Gets the script file to load or reload.
+     * <br/>
+     * At startup, this is the file path that we will load later, before the Script scope is
+     * even created. Once the script scope has been created, there is an equivalence with
+     * <pre>
+     *   mScript2kContext.getScript2kComponent().map(
+     *     c -> c.getScript2kLoader().getScriptSource().scriptPath()
+     *   );
+     * </pre>
+     * but before that, it represents the initial argument given before the component creation.
+     */
     @Override
     public Optional<File> getScriptFile() {
-        return mScript2kContext.getScriptFile();
+        Optional<File> file = mScript2kContext.getScript2kComponent().map(
+                c -> c.getScript2kLoader().getScriptSource().scriptPath()
+        );
+        return file.isPresent() ? file : mScriptToLoad;
     }
 
     @Override
     public void setScriptFile(@Null File scriptFile) {
-        mScript2kContext.setScriptFile(Optional.ofNullable(scriptFile));
+        mScriptToLoad = Optional.of(scriptFile);
     }
 
     @Override
@@ -150,18 +171,22 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     }
 
     @Override
-    public Optional<com.alflabs.manifest.MapInfo> getLoadedMapName() {
+    public Optional<MapInfo> getLoadedMapName() {
         Optional<ConductorImpl> script = mScript2kContext.getScript2kComponent().map(
                 c -> c.getScript2kLoader().getConductorImpl());
+        File scriptDir = mScript2kContext.getScript2kComponent().map(
+                c -> c.getScript2kLoader().getScriptSource().scriptDir()).orElse(null);
+
         if (script.isPresent()) {
             Map<String, ISvgMap> svgMaps = script.get().getSvgMaps();
             Optional<ISvgMap> svgMap = svgMaps.values().stream().findFirst();
             if (svgMap.isPresent()) {
-                return Optional.of(new com.alflabs.manifest.MapInfo(
-                        svgMap.get().getName(),
-                        svgMap.get().getSvg(),
-                        /* uri= */ svgMap.get().getSvg()
-                ));
+                try {
+                    return Optional.of(((SvgMap) (svgMap.get())).toMapInfo(mFileOps, scriptDir));
+                } catch (IOException e) {
+                    String error = "SvgMap[" + svgMap.get().getName() + "]: Failed to read file '" + svgMap.get().getSvg() + "'.";
+                    mLogger.d(TAG, error, e);
+                }
             }
         }
 
@@ -176,8 +201,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             return;
         }
 
-        String scriptName = mScript2kContext
-                .getScriptFile()
+        String scriptName = getScriptFile()
                 .map(File::getPath)
                 .orElse("<Undefined>");
 

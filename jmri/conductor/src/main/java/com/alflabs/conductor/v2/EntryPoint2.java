@@ -334,16 +334,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private void loadMap() {
         mAdapter.ifPresent(adapter ->
             adapter.getScriptFile().ifPresent(scriptFile -> {
-                File scriptDir = scriptFile.getParentFile();
-
                 adapter.getLoadedMapName().ifPresent(mapInfo -> {
-                    String svgName = mapInfo.getUri();
-                    File svgFile = scriptDir == null ? new File(svgName) : new File(scriptDir, svgName);
-                    URI svgUri = svgFile.toURI();
+                    String svgName = mapInfo.getName();
+                    URI svgUri = URI.create(mapInfo.getUri());
 
-                    log("Loading map: " + svgUri);
+                    log("Loading map '" + svgName + "' from : " + svgUri);
                     try {
-                        mWin.displaySvgMap(svgUri);
+                        mWin.displaySvgMap(mapInfo.getSvg(), svgUri);
                     } catch (Exception e) {
                         log("Failed to load map '" + svgName + "' : " + e);
                     }
@@ -392,7 +389,15 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         outStatus.append("--- [ KV Server ] ---\n");
         outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
         for (String key : kvServer.getKeys()) {
-            outStatus.append('[').append(key).append("] = ").append(kvServer.getValue(key)).append('\n');
+            String value = kvServer.getValue(key);
+            if (value.startsWith("{") && value.length() > 50) {
+                // Shorten long JSON data
+                value = value.substring(0, 50) + "...}";
+            }
+            outStatus
+                    .append('[').append(key).append("] = ")
+                    .append(value)
+                    .append('\n');
         }
     }
 

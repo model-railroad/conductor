@@ -33,9 +33,9 @@ import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
+import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.script.impl.Turnout
-import com.alfray.conductor.v2.script.impl.toMapInfo
 import com.fasterxml.jackson.core.JsonProcessingException
 import java.io.IOException
 import javax.inject.Inject
@@ -77,7 +77,7 @@ class ExecEngine2k @Inject constructor(
             conductor.svgMaps
                 .map { (_, svgMap) ->
                 try {
-                    svgMap.toMapInfo(fileOps, scriptDir)
+                    (svgMap as SvgMap).toMapInfo(fileOps, scriptDir)
                 } catch (e: IOException) {
                     val error = "SvgMap[${svgMap.name}]: Failed to read file '${svgMap.svg}'."
                     logger.d(TAG, error, e)

@@ -29,9 +29,12 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public interface IEngineAdapter {
-    Optional<File> getScriptFile();
 
+    /** Sets the script file to load or reload. */
     void setScriptFile(@Null File scriptFile);
+
+    /** Get the script file to load or reload. */
+    Optional<File> getScriptFile();
 
     void onHandle(AtomicBoolean paused);
 

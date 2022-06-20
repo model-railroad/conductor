@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
@@ -34,6 +35,7 @@ import kotlin.script.experimental.host.UrlScriptSource
 
 @Script2kScope
 class Script2kLoader @Inject constructor(
+    val logger: ILogger,
     val conductorImpl: ConductorImpl,
     val execEngine: ExecEngine2k,
     val scriptErrors: Script2kErrors,
@@ -44,12 +46,18 @@ class Script2kLoader @Inject constructor(
     var status = Status.NotLoaded
         internal set
 
+    private companion object {
+        val TAG = Script2kLoader::class.simpleName
+    }
+
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
         status = Status.Loading
         val extension = if (!scriptName.endsWith(".conductor.kts")) ".conductor.kts" else ""
+        // Note: JAR resource paths always use /, not File.separator.
         val scriptPath = "v2/script/$scriptName$extension"
         val scriptUrl = Resources.getResource(scriptPath)!!
+        logger.d(TAG, "Loading script from ${scriptUrl.path}")
         val source = UrlScriptSource(scriptUrl)
         scriptSource.scriptInfo = Script2kSourceInfo(scriptName, File(scriptPath), source)
         result = loadScript(source)

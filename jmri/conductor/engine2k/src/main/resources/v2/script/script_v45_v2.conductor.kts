@@ -67,7 +67,7 @@ val T504        = turnout("NT504")
 
 map {
     name = "Mainline"
-    svg  = "src/test/resources/v2/Conductor Map Mainline 1.svg"
+    svg  = "Map Mainline 1.svg"   // relative to script
 }
 
 // JSON tracking

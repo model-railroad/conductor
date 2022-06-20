@@ -23,6 +23,7 @@ import com.alflabs.utils.FileOps
 import com.alfray.conductor.v2.script.dsl.ISvgMap
 import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.google.common.base.Charsets
+import com.google.common.io.Resources
 import java.io.File
 import java.io.IOException
 
@@ -38,7 +39,7 @@ internal class SvgMapBuilder constructor() : ISvgMapBuilder {
     fun create() : ISvgMap = SvgMap(this)
 }
 
-internal class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
+class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
     override val name = builder.name
     override val svg = builder.svg
 
@@ -59,16 +60,38 @@ internal class SvgMap(builder: ISvgMapBuilder) : ISvgMap {
         result = 31 * result + svg.hashCode()
         return result
     }
-}
 
-/**
- * Reads the SVG Map and returns a [MapInfo] with both the filename and the SVG data.
- *
- * @throws IOException if can't read the map.
- */
-@Throws(IOException::class)
-internal fun ISvgMap.toMapInfo(fileOps: FileOps, scriptDir: File?): MapInfo {
-    val svgFile = if (scriptDir == null) File(this.svg) else File(scriptDir, this.svg)
-    val svgData = fileOps.toString(svgFile, Charsets.UTF_8) // can throw IOException
-    return MapInfo(this.name, svgData, this.svg)
+    /**
+     * Reads the SVG Map and returns a [MapInfo] with both the filename and the SVG data.
+     * <p/>
+     * The "svg path" can either be a file (relative to the optional script directory)
+     * or a JAR resource path.
+     *
+     * @throws IOException if can't read the map.
+     */
+    @Suppress("UnstableApiUsage")
+    @Throws(IOException::class)
+    fun toMapInfo(fileOps: FileOps, scriptDir: File?): MapInfo {
+        var svgPath = svg
+        val svgFile = if (scriptDir == null) File(svgPath) else File(scriptDir, svgPath)
+        var svgData: String
+
+        try {
+            // Try loading from the file path
+            svgData = fileOps.toString(svgFile, Charsets.UTF_8)
+            svgPath = svgFile.path
+        } catch (e1: IOException) {
+            try {
+                // Otherwise, try loading it as a resource path.
+                // Note: JAR resource paths always use /, not File.separator.
+                val url = Resources.getResource(svgFile.path.replace(File.separatorChar, '/'))
+                svgData = Resources.toString(url, Charsets.UTF_8)
+                svgPath = url.path
+            } catch (e2: Exception) {
+                throw e1
+            }
+        }
+
+        return MapInfo(name, svgData, svgPath)
+    }
 }

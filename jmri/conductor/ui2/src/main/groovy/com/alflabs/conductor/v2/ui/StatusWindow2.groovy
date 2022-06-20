@@ -18,6 +18,7 @@
 package com.alflabs.conductor.v2.ui
 
 import groovy.swing.SwingBuilder
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.swing.JSVGCanvas
 import org.apache.batik.swing.gvt.GVTTreeRendererAdapter
 import org.apache.batik.swing.gvt.GVTTreeRendererEvent
@@ -219,7 +220,9 @@ class StatusWindow2 {
         return wx.get()
     }
 
-    void displaySvgMap(URI mapUrl) {
+    // Fill SVG using svgDocument (as text).
+    // If svgDocument is null or empty, rely only on mapUrl.
+    void displaySvgMap(String svgDocument, URI mapUrl) {
         mSwingBuilder.edt {
             mModifSvgQueue.clear()
             mBlockColorMap.clear()
@@ -256,7 +259,20 @@ class StatusWindow2 {
 
             XMLResourceDescriptor.setCSSParserClassName(InkscapeCssParser.class.getName());
             mSvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC)
-            mSvgCanvas.setURI(mapUrl.toString())
+
+            if (svgDocument != null && !svgDocument.isEmpty()) {
+                // Parse given document and load it. The URL is only informational
+                // and it could be "" or "file:///" for path-less documents.
+                String parser = XMLResourceDescriptor.getXMLParserClassName()
+                SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser)
+                SVGDocument document = factory.createSVGDocument(
+                        mapUrl.toString(), // informational only
+                        new ByteArrayInputStream(svgDocument.getBytes("UTF-8")))
+                mSvgCanvas.setSVGDocument(document)
+            } else {
+                // Otherwise let the SVG load the given URL (which much be valid)
+                mSvgCanvas.setURI(mapUrl.toString())
+            }
         }
     }
 
