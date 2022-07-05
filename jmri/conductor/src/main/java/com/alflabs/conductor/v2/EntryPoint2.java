@@ -33,7 +33,7 @@ import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.alfray.conductor.v2.script.dsl.IActive;
+import com.alfray.conductor.v2.simulator.Simul2kEntryPoint;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
@@ -85,8 +85,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
      */
     public void init(@Null String simulationScript) {
         mIsSimulation = true;
-        FakeJmriProvider jmriProvider = new FakeJmriProvider();
-        setup(jmriProvider, simulationScript);
+        Simul2kEntryPoint simu = new Simul2kEntryPoint();
+        setup(simu.getJmriProvider(), simulationScript);
     }
 
     /**

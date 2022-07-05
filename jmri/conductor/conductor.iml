@@ -27,6 +27,7 @@
     <orderEntry type="module" module-name="conductor.engine1" />
     <orderEntry type="module" module-name="conductor.engine2k" />
     <orderEntry type="module" module-name="conductor.ui2" />
+    <orderEntry type="module" module-name="conductor.simul2k" />
     <orderEntry type="module" module-name="conductor.LibManifest" />
     <orderEntry type="module" module-name="conductor.LibUtilsJava" />
     <orderEntry type="library" name="Gradle: com.google.truth:truth:1.1.3" level="project" />

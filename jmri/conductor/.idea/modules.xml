@@ -9,6 +9,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/engine1/conductor.engine1.iml" filepath="$PROJECT_DIR$/.idea/modules/engine1/conductor.engine1.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/engine2/conductor.engine2.iml" filepath="$PROJECT_DIR$/.idea/modules/engine2/conductor.engine2.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/engine2k/conductor.engine2k.iml" filepath="$PROJECT_DIR$/.idea/modules/engine2k/conductor.engine2k.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/simul2k/conductor.simul2k.iml" filepath="$PROJECT_DIR$/.idea/modules/simul2k/conductor.simul2k.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/ui2/conductor.ui2.iml" filepath="$PROJECT_DIR$/.idea/modules/ui2/conductor.ui2.iml" />
     </modules>
   </component>
