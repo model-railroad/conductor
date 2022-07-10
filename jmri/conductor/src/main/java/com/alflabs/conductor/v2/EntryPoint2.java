@@ -21,7 +21,6 @@ package com.alflabs.conductor.v2;
 import autovalue.shaded.org.apache.commons.lang.exception.ExceptionUtils;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
-import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
@@ -33,7 +32,8 @@ import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.alfray.conductor.v2.simulator.Simul2kEntryPoint;
+import com.alfray.conductor.v2.simulator.dagger.DaggerISimul2kComponent;
+import com.alfray.conductor.v2.simulator.dagger.ISimul2kComponent;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
@@ -85,8 +85,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
      */
     public void init(@Null String simulationScript) {
         mIsSimulation = true;
-        Simul2kEntryPoint simu = new Simul2kEntryPoint();
-        setup(simu.getJmriProvider(), simulationScript);
+
+        ISimul2kComponent simul2kComponent = DaggerISimul2kComponent.factory().createComponent();
+
+        setup(simul2kComponent.getJmriProvider(), simulationScript);
     }
 
     /**

@@ -36,6 +36,7 @@ dependencies {
     implementation project(":common")
     implementation project(":LibUtilsJava")
     implementation "com.google.guava:guava:$vers_guava"
+    implementation "com.squareup.okhttp3:okhttp:$vers_okhttp"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$vers_kotlin"
 

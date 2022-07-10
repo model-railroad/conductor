@@ -4,7 +4,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class Simul2kEntryPointTest {
+class Simul2kJmriProviderTest {
 
     @Before
     fun setUp() {
