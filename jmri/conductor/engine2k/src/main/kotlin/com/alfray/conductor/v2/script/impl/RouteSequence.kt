@@ -23,41 +23,6 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.RouteSequenceBuilder
 
-internal data class GraphNode(
-    val node: INode,
-    var to: GraphNode?,
-    var extraTo: MutableList<GraphNode>? = null
-) {
-    fun addTo(to: GraphNode) {
-        if (this.to == null) {
-            this.to = to
-            return
-        }
-        if (extraTo == null) {
-            extraTo = mutableListOf()
-        }
-        extraTo!!.add(to)
-    }
-
-    private fun toNodeString(): String = "$node"
-
-    override fun toString(): String {
-        val sb = StringBuilder("[")
-        sb.append(this.toNodeString())
-        if (to != null) {
-            sb.append("->").append(to?.toNodeString())
-        } else {
-            sb.append("<>")
-        }
-        if (extraTo != null) {
-            sb.append(extraTo?.joinToString(
-                separator = "+", prefix = "+") {
-                it.toNodeString() })
-        }
-        sb.append("]")
-        return sb.toString()
-    }
-}
 
 internal class RouteSequence(
     override val owner: IActiveRoute,
@@ -76,99 +41,197 @@ internal class RouteSequence(
         startNode = node
     }
 
-    private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): GraphNode {
-        val start = sequenceToLinearGraph(sequence)
+    private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): RouteGraph {
+        val builder = RouteGraphBuilder()
+        builder.setSequence(sequence)
         for (branch in branches) {
-            addGraphBranch(start, branch)
+            builder.addBranch(branch)
         }
-        return start
+
+        return builder.build()
+    }
+}
+
+internal data class RouteEdge(val from: INode, val to: INode, val isBranch: Boolean) {
+    /** RouteEdge equality is a strict from-to object equality. */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as RouteEdge
+
+        // Must use === and not == here. We want to compare pointers, not content.
+        if (from !== other.from) return false
+        if (to !== other.to) return false
+        // The "isBranch" type is NOT part of the equality test. Two branches are
+        // still equal even if they differ only on their branch type.
+        return true
     }
 
-    companion object {
-        fun sequenceToLinearGraph(sequence: List<INode>): GraphNode {
-            check(sequence.isNotEmpty())
-            var start: GraphNode? = null
-            var last: GraphNode? = null
+    override fun hashCode(): Int {
+        var result = from.hashCode()
+        result = 31 * result + to.hashCode()
+        result = 31 * result + isBranch.hashCode()
+        return result
+    }
+}
 
-            for (n in sequence) {
-                val g = GraphNode(
-                    node = n,
-                    to = null
-                )
 
-                if (start == null) {
-                    start = g
+internal data class RouteGraph(
+    val start: INode,
+    val nodes: Set<INode>,
+    val edges: Map<INode, List<RouteEdge>>
+) {
+    /**
+     * Returns a flattened view of the graph by visiting all edges from main sequence
+     * followed by all edges from all branches in their cycle order. Cycles are omitted.
+     * At the end, dump any unreachable edge.
+     */
+    fun flatten(): List<RouteEdge> {
+        val visited = mutableSetOf<RouteEdge>()
+        val toVisit = mutableListOf<RouteEdge>()
+        val output = mutableListOf<RouteEdge>()
+
+        // Parse the main sequence
+        var nSeq = start
+        while (true) {
+            val toList = edges[nSeq]
+            if (toList == null || toList.isEmpty()) {
+                break
+            }
+
+            val edgeList = toList.filter { !it.isBranch && !visited.contains(it) }
+            if (edgeList.isEmpty()) {
+                break
+            }
+            val edge = edgeList.first()
+            visited.add(edge)
+
+            output.add(edge)
+            toVisit.addAll(toList.subList(1, toList.size))
+            nSeq = edge.to
+        }
+
+        // Parse all branches forked from the main sequence, and queue any new branch we find.
+        while (toVisit.isNotEmpty()) {
+            val visit = toVisit.removeAt(0)
+            var nBr = visit.from
+            while (true) {
+                val toList = edges[nBr]
+                if (toList == null || toList.isEmpty()) {
+                    break
                 }
-                if (last != null) {
-                    last.to = g
+
+                val edgeList = toList.filter { !visited.contains(it) }
+                if (edgeList.isEmpty()) {
+                    break
                 }
-                last = g
-            }
+                val edge = edgeList.first()
+                visited.add(edge)
+                toVisit.remove(edge)
 
-            return start!!
+                output.add(edge)
+                toVisit.addAll(toList.subList(1, toList.size))
+                nBr = edge.to
+            }
         }
 
-        fun addGraphBranch(start: GraphNode, branch: List<INode>) {
-            val sz = branch.size
-            check(sz >= 2) { "A branch must have at least 2 nodes (start -> branch -> end)" }
+        // Finally dump any edge that has not been reached by the main sequence or its
+        // forked branches. Ideally there should not be any.
+        output.addAll(edges.values.flatten().subtract(visited))
 
-            // Initial and end nodes must be in the graph already
-            val flat = visitGraph(start)
-            val initial = findInGraph(flat, branch[0])
-            val end = findInGraph(flat, branch[sz - 1])
-            checkNotNull(initial) { "A branch's first node must be in the sequence graph." }
-            checkNotNull(end) { "A branch's end node must be in the sequence graph." }
+        return output
+    }
 
-            var last: GraphNode = initial
-            var index = 1
-            while (index < sz-1) {
-                val g = GraphNode(
-                    node = branch[index],
-                    to = null
-                )
-                last.addTo(g)
-                last = g
-                index++
+    override fun toString(): String {
+        val sb = StringBuilder()
+
+        val edges = flatten()
+
+        var prev : INode? = null
+        for (edge in edges) {
+            if (prev == null) {
+                sb.append("[" + edge.from)
+            } else if (prev !== edge.from) {
+                sb.append("],[" + edge.from)
             }
-            last.addTo(end)
+            sb.append(if (edge.isBranch) "->" else "=>")
+            sb.append(edge.to)
+            prev = edge.to
+        }
+        if (prev != null) {
+            sb.append("]")
         }
 
-        fun findInGraph(flat: List<GraphNode>, node: INode): GraphNode? {
-            return flat.firstOrNull { it.node == node }
+        return sb.toString()
+    }
+}
+
+internal class RouteGraphBuilder {
+    private lateinit var start : INode
+    private val nodes = mutableSetOf<INode>()
+    private val edges = mutableListOf<RouteEdge>()
+
+    fun build() : RouteGraph {
+        check(::start.isInitialized) { "A sequence must be defined for the route." }
+
+        val edgeMap = mutableMapOf<INode, MutableList<RouteEdge>>()
+
+        edges.forEach { edge -> edgeMap
+            .computeIfAbsent(edge.from) { mutableListOf() }
+            .add(edge) }
+
+        return RouteGraph(start, nodes, edgeMap)
+    }
+
+    fun setSequence(sequence: List<INode>): RouteGraphBuilder {
+        // It's fine for a sequence to contain a single node and no edges, but it cannot be empty.
+        check(sequence.isNotEmpty()) { "A route sequence cannot be empty." }
+
+        // The first node of the sequence is the default starting point of the graph.
+        start = sequence.first()
+
+        // Add all nodes if not already present.
+        // Create all sequence edges if not already defined.
+        var lastN = start
+        for (n in sequence) {
+            nodes.add(n)
+            if (n !== lastN) {
+                addEdge(lastN, n, isBranch = false)
+            }
+            lastN = n
         }
 
-        /** Returns a flat view of the graph, with sequences first. */
-        fun visitGraph(
-            start: GraphNode,
-            visited: MutableSet<GraphNode> = mutableSetOf()
-        ): List<GraphNode> {
-            val list = mutableListOf<GraphNode>()
-            // Visit main sequence first
-            var g: GraphNode? = start
-            while (g != null && g !in visited) {
-                list.add(g)
-                visited.add(g)
-                g = g.to
+        return this
+    }
+
+    fun addBranch(branch: List<INode>): RouteGraphBuilder {
+        check(::start.isInitialized) { "A sequence must be defined before its branches." }
+        check(branch.size >= 2) { "A branch must have at least 2 nodes (start -> branch -> end)" }
+
+        // Initial and end nodes must be in the graph already
+        check(nodes.contains(branch.first())) { "A branch's first node must be in the sequence graph." }
+        check(nodes.contains(branch.last())) { "A branch's end node must be in the sequence graph." }
+
+        // Add all nodes if not already present.
+        // Create all branch edges if not already defined.
+        var lastN : INode = branch.first()
+        for (n in branch) {
+            nodes.add(n)
+            if (n !== lastN) {
+                addEdge(lastN, n, isBranch = true)
             }
-            // Visit branches later
-            var g2: GraphNode? = start
-            while (g2 != null) {
-                g2.extraTo?.let {
-                    for (br in it) {
-                        if (br !in visited) {
-                            val brList = visitGraph(br, visited)
-                            if (brList.isNotEmpty()) {
-                                list.addAll(brList)
-                            }
-                        }
-                    }
-                }
-                g2 = g2.to
-            }
-            return list
+            lastN = n
         }
 
-        fun printGraph(start: GraphNode) : String =
-            visitGraph(start).joinToString(" -> ")
+        return this
+    }
+
+    private fun addEdge(from: INode, to: INode, isBranch: Boolean) {
+        check(from !== to) { "A route node cannot lead to itself." }
+        val edge = RouteEdge(from, to, isBranch)
+        if (!edges.contains(edge)) {
+            edges.add(edge)
+        }
     }
 }

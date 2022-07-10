@@ -27,7 +27,6 @@ import com.alflabs.utils.MockClock
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.google.common.truth.Truth.assertThat
-import com.nhaarman.mockitokotlin2.atLeastOnce
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset

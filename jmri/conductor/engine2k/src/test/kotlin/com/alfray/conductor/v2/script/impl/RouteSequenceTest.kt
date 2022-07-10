@@ -25,8 +25,10 @@ import com.alfray.conductor.v2.script.dsl.NodeBuilder
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import dagger.internal.InstanceFactory
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
+import java.lang.IllegalStateException
 
 class RouteSequenceTest {
     private lateinit var blockFactory: Block_Factory
@@ -43,27 +45,96 @@ class RouteSequenceTest {
     }
 
     @Test
-    fun testSequenceToLinearGraph1() {
-        val start = RouteSequence.sequenceToLinearGraph(
-            listOf(node(1)))
-        assertThat(RouteSequence.printGraph(start)).isEqualTo(
-            "[{1}<>]")
+    fun testSequenceLinearGraph0_throwsWhenNoSequence() {
+        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+            RouteGraphBuilder()
+                .build()
+        }
+        assertThat(thrown.message).contains("A sequence must be defined for the route.")
     }
 
     @Test
-    fun testSequenceToLinearGraph2() {
-        val start = RouteSequence.sequenceToLinearGraph(
-            listOf(node(1), node(2)))
-        assertThat(RouteSequence.printGraph(start)).isEqualTo(
-            "[{1}->{2}] -> [{2}<>]")
+    fun testSequenceLinearGraph1_noEdgeNoOutput() {
+        // There is no "graph edges" to print when there are no edges at all.
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(node(1)))
+            .build()
+        assertThat(graph.toString()).isEqualTo("")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
     }
 
     @Test
-    fun testSequenceToLinearGraph4() {
-        val start = RouteSequence.sequenceToLinearGraph(
-            listOf(node(1), node(2), node(3), node(4)))
-        assertThat(RouteSequence.printGraph(start)).isEqualTo(
-            "[{1}->{2}] -> [{2}->{3}] -> [{3}->{4}] -> [{4}<>]")
+    fun testSequenceLinearGraph2() {
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(node(1), node(2)))
+            .build()
+        assertThat(graph.toString()).isEqualTo(
+            "[{1}=>{2}]")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
+    }
+
+    @Test
+    fun testSequenceLinearGraph4() {
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(node(1), node(2), node(3), node(4)))
+            .build()
+        assertThat(graph.toString()).isEqualTo(
+            "[{1}=>{2}=>{3}=>{4}]")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
+    }
+
+    @Test
+    fun testBranch0_branchTooShort() {
+        val n1 = node(1)
+        val n2 = node(2)
+        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+            RouteGraphBuilder()
+                .setSequence(listOf(n1, n2))
+                .addBranch(listOf(n1))
+                .build()
+        }
+        assertThat(thrown.message).contains("A branch must have at least 2 nodes (start -> branch -> end)")
+    }
+
+    @Test
+    fun testBranch0_branchDoesntStartInSequence() {
+        val n1 = node(1)
+        val n2 = node(2)
+        val n3 = node(3)
+        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+            RouteGraphBuilder()
+                .setSequence(listOf(n1, n2))
+                .addBranch(listOf(n3, n2))
+                .build()
+        }
+        assertThat(thrown.message).contains("A branch's first node must be in the sequence graph.")
+    }
+
+    @Test
+    fun testBranch0_branchDoesntEndInSequence() {
+        val n1 = node(1)
+        val n2 = node(2)
+        val n3 = node(3)
+        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+            RouteGraphBuilder()
+                .setSequence(listOf(n1, n2))
+                .addBranch(listOf(n1, n3))
+                .build()
+        }
+        assertThat(thrown.message).contains("A branch's end node must be in the sequence graph.")
+    }
+
+    @Test
+    fun testBranch0_branchDupsMainSequence() {
+        val n1 = node(1)
+        val n2 = node(2)
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(n1, n2))
+            .addBranch(listOf(n1, n2))
+            .build()
+        assertThat(graph.toString()).isEqualTo(
+            "[{1}=>{2}]")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
     }
 
     @Test
@@ -72,21 +143,15 @@ class RouteSequenceTest {
         val n2 = node(2)
         val n3 = node(3)
         val n4 = node(4)
-        val start = RouteSequence.sequenceToLinearGraph(
-            listOf(n1, n2, n3, n4))
         val n5 = node(5)
         val n6 = node(6)
-        RouteSequence.addGraphBranch(start,
-            listOf(n2, n5, n6, n3))
-        assertThat(RouteSequence.visitGraph(start).map { it.toString() })
-            .containsExactly(
-                "[{1}->{2}]",
-                "[{2}->{3}+{5}]",
-                "[{3}->{4}]",
-                "[{4}<>]",
-                "[{5}->{6}]",
-                "[{6}->{3}]")
-            .inOrder()
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(n1, n2, n3, n4))
+            .addBranch(listOf(n2, n5, n6, n3))
+            .build()
+        assertThat(graph.toString()).isEqualTo(
+            "[{1}=>{2}=>{3}=>{4}],[{2}->{5}->{6}->{3}]")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
     }
 
     @Test
@@ -96,20 +161,15 @@ class RouteSequenceTest {
         val n3 = node(3)
         val n4 = node(4)
         val n5 = node(5)
-        val start = RouteSequence.sequenceToLinearGraph(
-            listOf(n1, n2, n5))
-        RouteSequence.addGraphBranch(start, listOf(n1, n3, n4, n5))
-        RouteSequence.addGraphBranch(start, listOf(n2, n3, n5))
-        RouteSequence.addGraphBranch(start, listOf(n1, n4))
-        assertThat(RouteSequence.visitGraph(start).map { it.toString() })
-            .containsExactly(
-                "[{1}->{2}+{3}+{4}]",
-                "[{2}->{5}+{3}]",
-                "[{5}<>]",
-                "[{3}->{4}]",
-                "[{4}->{5}]",
-                "[{3}->{5}]")
-            .inOrder()
+        val graph = RouteGraphBuilder()
+            .setSequence(listOf(n1, n2, n5))
+            .addBranch(listOf(n1, n3, n4, n5))
+            .addBranch(listOf(n2, n3, n5))
+            .addBranch(listOf(n1, n4))
+            .build()
+        assertThat(graph.toString()).isEqualTo(
+            "[{1}=>{2}=>{5}],[{1}->{3}->{4}->{5}],[{1}->{4}],[{2}->{3}->{5}]")
+        assertThat(graph.start.block.systemName).isEqualTo("1")
     }
 
     private fun node(index: Int) =

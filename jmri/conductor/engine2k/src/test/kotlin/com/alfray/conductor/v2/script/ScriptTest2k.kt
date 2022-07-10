@@ -479,12 +479,8 @@ class ScriptTest2k : ScriptTest2kBase() {
         ar.activate(ar.routes[1])
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
 
-        assertThat(RouteSequence.visitGraph(seq.graph).map { it.toString() })
-            .containsExactly(
-                "[{B01}->{B02}]",
-                "[{B02}->{B01}]",
-                "[{B01}<>]")
-            .inOrder()
+        assertThat(seq.graph.toString()).isEqualTo(
+            "[{B01}=>{B02}=>{B01}]")
     }
 
     @Test
@@ -524,19 +520,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val ar = conductorImpl.activeRoutes[0] as ActiveRoute
         val seq = ar.routes[1] as RouteSequence
 
-        assertThat(RouteSequence.visitGraph(seq.graph).map { it.toString() })
-            .containsExactly(
-                // main sequence
-                "[{B01}->{B02}+{B03}+{B04}]",
-                "[{B02}->{B01}+{B03}]",
-                "[{B01}<>]",
-                // branch 1
-                "[{B03}->{B04}]",
-                "[{B04}->{B01}]",
-                // branch 2
-                "[{B03}->{B01}]",
-                // branch 3 is a shortcut and adds no new graph node
-            )
-            .inOrder()
+        assertThat(seq.graph.toString()).isEqualTo(
+            "[{B01}=>{B02}=>{B01}],[{B01}->{B03}->{B04}->{B01}],[{B01}->{B04}],[{B02}->{B03}->{B01}]")
     }
 }
