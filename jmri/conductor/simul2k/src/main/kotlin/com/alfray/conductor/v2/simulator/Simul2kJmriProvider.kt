@@ -17,7 +17,7 @@ class Simul2kJmriProvider @Inject constructor(
     private val logger: ILogger = jmriProvider
 
     fun jmriProvider() : IJmriProvider {
-        logger.d(TAG, "Simul2kEntryPoint providing IJmriProvider at " + clock.elapsedRealtime())
+        logger.d(TAG, "Simul2k providing IJmriProvider at " + clock.elapsedRealtime())
         return jmriProvider
     }
 }

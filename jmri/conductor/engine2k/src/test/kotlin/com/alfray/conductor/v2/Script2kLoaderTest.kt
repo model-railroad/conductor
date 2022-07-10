@@ -21,16 +21,19 @@ package com.alfray.conductor.v2
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alfray.conductor.v2.dagger.Script2kContext
 import com.google.common.truth.Truth.assertThat
-import junit.framework.TestCase
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import javax.inject.Inject
 
-class Script2kLoaderTest : TestCase() {
+class Script2kLoaderTest {
 
     private val jmriProvider = FakeJmriProvider()
     private lateinit var component: ITestComponent2k
     @Inject internal lateinit var context: Script2kContext
 
-    public override fun setUp() {
+    @Before
+    fun setUp() {
         component = DaggerITestComponent2k
             .factory()
             .createComponent(jmriProvider)
@@ -38,10 +41,12 @@ class Script2kLoaderTest : TestCase() {
         assertThat(context).isNotNull()
     }
 
-    override fun tearDown() {
+    @After
+    fun tearDown() {
         context.reset()
     }
 
+    @Test
     fun testLoadEmptyScript() {
         val scriptComponent = context.createComponent()
         assertThat(context.script2kComponent.isPresent).isTrue()
