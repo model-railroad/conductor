@@ -6,6 +6,7 @@
         <compilerSettings />
         <compilerArguments>
           <stringArguments>
+            <stringArg name="jvmTarget" arg="1.8" />
             <stringArg name="apiVersion" arg="1.6" />
             <stringArg name="languageVersion" arg="1.6" />
           </stringArguments>
@@ -18,8 +19,8 @@
     </facet>
   </component>
   <component name="NewModuleRootManager">
-    <output url="file://$MODULE_DIR$/../../../engine2k/build/classes/java/main" />
-    <output-test url="file://$MODULE_DIR$/../../../engine2k/build/classes/java/test" />
+    <output url="file://$MODULE_DIR$/../../../engine2k/build/classes/kotlin/main" />
+    <output-test url="file://$MODULE_DIR$/../../../engine2k/build/classes/kotlin/test" />
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../engine2k">
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/kotlin" isTestSource="false" />
@@ -58,6 +59,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module" module-name="conductor.simul2k" />
     <orderEntry type="module" module-name="conductor.LibManifest" />
     <orderEntry type="module" module-name="conductor.LibUtilsJava" />
     <orderEntry type="library" scope="PROVIDED" name="Gradle: com.google.guava:guava:23.0" level="project" />

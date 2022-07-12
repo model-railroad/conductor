@@ -6,6 +6,7 @@
         <compilerSettings />
         <compilerArguments>
           <stringArguments>
+            <stringArg name="jvmTarget" arg="1.8" />
             <stringArg name="apiVersion" arg="1.6" />
             <stringArg name="languageVersion" arg="1.6" />
           </stringArguments>
@@ -18,8 +19,8 @@
     </facet>
   </component>
   <component name="NewModuleRootManager">
-    <output url="file://$MODULE_DIR$/../../../simul2k/build/classes/java/main" />
-    <output-test url="file://$MODULE_DIR$/../../../simul2k/build/classes/java/test" />
+    <output url="file://$MODULE_DIR$/../../../simul2k/build/classes/kotlin/main" />
+    <output-test url="file://$MODULE_DIR$/../../../simul2k/build/classes/kotlin/test" />
     <exclude-output />
     <content url="file://$MODULE_DIR$/../../../simul2k">
       <sourceFolder url="file://$MODULE_DIR$/../../../simul2k/src/main/kotlin" isTestSource="false" />

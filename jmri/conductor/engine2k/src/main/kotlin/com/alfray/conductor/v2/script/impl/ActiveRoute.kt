@@ -41,15 +41,17 @@ internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
     private var _active: IRoute? = null
     private var _error: Boolean = false
     private val actionOnError = builder.actionOnError
+    private val _routes = mutableListOf<IRoute>()
 
-    val routes = mutableListOf<IRoute>()
     override val active: IRoute
         get() = _active!!
+    override val routes: List<IRoute>
+        get() = _routes
     override val error: Boolean
         get() = _error
 
     override fun activate(route: IRoute) {
-        check(route in routes)
+        check(route in _routes)
         _active = route
     }
 
@@ -58,8 +60,8 @@ internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
     }
 
     private fun add(route: IRoute): IRoute {
-        check(route !in routes)
-        routes.add(route)
+        check(route !in _routes)
+        _routes.add(route)
         if (_active == null) { _active = route }
         return route
     }

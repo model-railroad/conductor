@@ -20,15 +20,17 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.RouteSequenceBuilder
+import com.alfray.conductor.v2.simulator.SimulRouteEdge
+import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
 
 internal class RouteSequence(
     override val owner: IActiveRoute,
-    builder: RouteSequenceBuilder) : IRoute {
+    builder: RouteSequenceBuilder) : IRouteSequence {
+    override val throttle = builder.throttle
     private var startNode: INode? = null
-    val throttle = builder.throttle
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
     val actionOnActivate = builder.actionOnActivate
@@ -50,7 +52,10 @@ internal class RouteSequence(
 
         return builder.build()
     }
+
+    override fun toSimulGraph(): SimulRouteGraph = graph.toSimulGraph()
 }
+
 
 internal data class RouteEdge(val from: INode, val to: INode, val isBranch: Boolean) {
     /** RouteEdge equality is a strict from-to object equality. */
@@ -87,7 +92,7 @@ internal data class RouteGraph(
      * followed by all edges from all branches in their cycle order. Cycles are omitted.
      * At the end, dump any unreachable edge.
      */
-    fun flatten(): List<RouteEdge> {
+    private fun flatten(): List<RouteEdge> {
         val visited = mutableSetOf<RouteEdge>()
         val toVisit = mutableListOf<RouteEdge>()
         val output = mutableListOf<RouteEdge>()
@@ -164,6 +169,23 @@ internal data class RouteGraph(
         }
 
         return sb.toString()
+    }
+
+    fun toSimulGraph(): SimulRouteGraph {
+        val sStart = start.block.systemName
+
+        val sNodes = nodes.map { n -> n.block.systemName }.distinct()
+
+        val sEdgeMap = mutableMapOf<String, MutableList<SimulRouteEdge>>()
+        val sEdges = edges.values
+            .flatten()
+            .map { gEdge -> SimulRouteEdge(gEdge.from.block.systemName, gEdge.to.block.systemName, gEdge.isBranch) }
+            .distinct()
+            .forEach { sEdge -> sEdgeMap
+                .computeIfAbsent(sEdge.from) { mutableListOf() }
+                .add(sEdge) }
+
+        return SimulRouteGraph(sStart, sNodes, sEdgeMap)
     }
 }
 

@@ -21,6 +21,10 @@ package com.alfray.conductor.v2.script.dsl
 interface IActiveRoute {
     /** The currently active route. */
     val active : IRoute
+
+    /** All the route choices for this active route. */
+    val routes : List<IRoute>
+
     /** Activates this route. */
     fun activate(route: IRoute)
 
@@ -29,6 +33,7 @@ interface IActiveRoute {
 
     /** Registers a new idle route. */
     fun idle(): IRoute
+
     /** Registers a new sequence route. */
     fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute
 }

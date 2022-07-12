@@ -72,6 +72,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final AtomicBoolean mPaused = new AtomicBoolean();
     private final Map<Object, Runnable> mUiUpdaters = new HashMap<>();
     private Optional<IEngineAdapter> mAdapter = Optional.empty();
+    private Optional<ISimul2kComponent> mSimul2kComponent = Optional.empty();
 
     @Inject ILogger mLogger;
     @Inject IClock mClock;
@@ -86,9 +87,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void init(@Null String simulationScript) {
         mIsSimulation = true;
 
-        ISimul2kComponent simul2kComponent = DaggerISimul2kComponent.factory().createComponent();
-
-        setup(simul2kComponent.getJmriProvider(), simulationScript);
+        mSimul2kComponent = Optional.of(DaggerISimul2kComponent.factory().createComponent());
+        setup(mSimul2kComponent.get().getJmriProvider(), simulationScript);
     }
 
     /**
@@ -123,6 +123,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             // Do not use any injected field before this call
             component.inject(this);
             component.inject(adapter);
+            adapter.setSimulator(mSimul2kComponent.orElse(null));
 
         } else {
             log("Unknown engine mode " + mode);

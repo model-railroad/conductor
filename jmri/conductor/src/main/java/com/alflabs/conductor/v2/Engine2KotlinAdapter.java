@@ -33,13 +33,18 @@ import com.alfray.conductor.v2.dagger.IScript2kComponent;
 import com.alfray.conductor.v2.dagger.Script2kContext;
 import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine2k;
+import com.alfray.conductor.v2.script.dsl.IActiveRoute;
 import com.alfray.conductor.v2.script.dsl.IBlock;
+import com.alfray.conductor.v2.script.dsl.IRouteSequence;
 import com.alfray.conductor.v2.script.dsl.ISensor;
 import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
 import com.alfray.conductor.v2.script.impl.SvgMap;
+import com.alfray.conductor.v2.simulator.SimulRouteGraph;
+import com.alfray.conductor.v2.simulator.Simul2k;
+import com.alfray.conductor.v2.simulator.dagger.ISimul2kComponent;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import dagger.BindsInstance;
@@ -65,6 +70,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
     @Inject FileOps mFileOps;
     @Inject Script2kContext mScript2kContext;
     private Optional<File> mScriptToLoad = Optional.empty();
+    private Optional<ISimul2kComponent> mSimul2kComponent = Optional.empty();
 
     /**
      * Gets the script file to load or reload.
@@ -88,7 +94,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
     @Override
     public void setScriptFile(@Null File scriptFile) {
-        mScriptToLoad = Optional.of(scriptFile);
+        mScriptToLoad = Optional.ofNullable(scriptFile);
+    }
+
+    public void setSimulator(@Null ISimul2kComponent simulator) {
+        mSimul2kComponent = Optional.ofNullable(simulator);
     }
 
     @Override
@@ -118,6 +128,8 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         // TBD Release any resources from current script component as needed.
         mScript2kContext.reset();
+        mSimul2kComponent.ifPresent(simul ->
+                simul.getRouteManager().clear());
 
         File file = getScriptFile()
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
@@ -133,7 +145,20 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         loader.getExecEngine().onExecStart();
 
+        mSimul2kComponent.ifPresent(simul ->
+                convertRoutes(loader.getConductorImpl().getActiveRoutes(), simul.getRouteManager()));
+
         return Pair.of(wasRunning, file);
+    }
+
+    private void convertRoutes(List<IActiveRoute> activeRoutes, Simul2k routeManager) {
+        activeRoutes.forEach(active -> active.getRoutes().forEach(route -> {
+            if (route instanceof IRouteSequence) {
+                IRouteSequence routeSequence = (IRouteSequence) route;
+                SimulRouteGraph graph = routeSequence.toSimulGraph();
+                routeManager.addRoute(routeSequence.getThrottle().getDccAddress(), graph);
+            }
+        }));
     }
 
     @NonNull
@@ -382,6 +407,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             mLogger.d(TAG, line);
         }
     }
+
 
     @Singleton
     @Component(modules = { CommonModule.class })
