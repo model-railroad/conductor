@@ -5,14 +5,16 @@ import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.jmri.IJmriTurnout
 import com.alflabs.utils.IClock
-import com.alflabs.utils.ILogger
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
 class SimulJmriProvider @Inject constructor(
-    val clock: IClock
+    private val clock: IClock,
+    private val simulSensorFactory: ISimulSensorFactory,
+    private val simulThrottleFactory: ISimulThrottleFactory,
+    private val simulTurnoutFactory: ISimulTurnoutFactory,
 ) : FakeJmriProvider() {
     private val TAG = javaClass.simpleName
 
@@ -24,18 +26,16 @@ class SimulJmriProvider @Inject constructor(
 
     override fun getSensor(systemName: String?): IJmriSensor? {
         if (systemName == null) return null
-        return mSensors.computeIfAbsent(systemName) { name -> SimulSensor(name) }
+        return mSensors.computeIfAbsent(systemName) { name -> simulSensorFactory.create(name) }
     }
 
     override fun getThrottle(dccAddress: Int): IJmriThrottle {
-        val logger: ILogger = this
-        return mThrottles.computeIfAbsent(dccAddress) { address -> SimulThrottle(address, logger) }
+        return mThrottles.computeIfAbsent(dccAddress) { address -> simulThrottleFactory.create(address) }
     }
 
     override fun getTurnout(systemName: String?): IJmriTurnout? {
-        val logger: ILogger = this
         if (systemName == null) return null
-        return mTurnouts.computeIfAbsent(systemName) { name -> SimulTurnout(name, logger) }
+        return mTurnouts.computeIfAbsent(systemName) { name -> simulTurnoutFactory.create(name) }
     }
 }
 

@@ -2,10 +2,19 @@ package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.utils.ILogger
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class SimulThrottle constructor(
-    private val dccAddress_: Int,
-    private val logger: ILogger
+/** Creates a new throttle for the given JMRI DCC Address. */
+@AssistedFactory
+interface ISimulThrottleFactory {
+    fun create(sdccAddress_: Int) : SimulThrottle
+}
+
+class SimulThrottle @AssistedInject constructor(
+    private val logger: ILogger,
+    @Assisted val dccAddress_: Int
 ) : IJmriThrottle {
     private val TAG = javaClass.simpleName
     var graph: SimulRouteGraph? = null

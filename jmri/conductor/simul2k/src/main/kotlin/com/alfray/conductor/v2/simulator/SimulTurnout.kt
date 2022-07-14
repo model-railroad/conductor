@@ -2,10 +2,19 @@ package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriTurnout
 import com.alflabs.utils.ILogger
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 
-class SimulTurnout(
-    val systemName: String,
-    val logger: ILogger
+/** Creates a new turnout for the given JMRI system name. */
+@AssistedFactory
+interface ISimulTurnoutFactory {
+    fun create(systemName: String) : SimulTurnout
+}
+
+class SimulTurnout @AssistedInject constructor(
+    private val logger: ILogger,
+    @Assisted val systemName: String
 ) : IJmriTurnout {
     private val TAG = javaClass.simpleName
     private var _normal = true
