@@ -4,24 +4,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class Simul2k @Inject constructor() {
-
-    val throttles = mutableMapOf<Int, SimulThrottle>()
-
+class Simul2k @Inject constructor(
+    val jmriProvider: SimulJmriProvider
+) {
     fun clear() {
-        throttles.clear()
+        jmriProvider.clear()
     }
 
     fun addRoute(dccAddress: Int, graph: SimulRouteGraph) {
-        throttles.merge(dccAddress, SimulThrottle(dccAddress, graph), SimulThrottle::mergeGraph)
+        val t = jmriProvider.getThrottle(dccAddress) as SimulThrottle
+        t.mergeGraph(graph)
     }
-
-}
-
-class SimulThrottle(val dccAddress: Int, var graph: SimulRouteGraph) {
-
-    fun mergeGraph(newThrottle: SimulThrottle): SimulThrottle {
-        return SimulThrottle(dccAddress, graph.merge(newThrottle.graph))
-    }
-
 }

@@ -18,15 +18,18 @@
 
 package com.alflabs.conductor.jmri;
 
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
+
 import java.util.Map;
 import java.util.TreeMap;
 
 public class FakeJmriProvider implements IJmriProvider {
     private static final String TAG = FakeJmriProvider.class.getSimpleName();
 
-    final Map<String, IJmriSensor> mSensors = new TreeMap<>();
-    final Map<String, IJmriTurnout> mTurnouts = new TreeMap<>();
-    final Map<Integer, IJmriThrottle> mThrottles = new TreeMap<>();
+    protected final Map<String, IJmriSensor> mSensors = new TreeMap<>();
+    protected final Map<String, IJmriTurnout> mTurnouts = new TreeMap<>();
+    protected final Map<Integer, IJmriThrottle> mThrottles = new TreeMap<>();
 
     // Interface ILogger
     @Override
@@ -44,6 +47,7 @@ public class FakeJmriProvider implements IJmriProvider {
         d(TAG, msg);
     }
 
+    @Null
     @Override
     public IJmriThrottle getThrottle(int dccAddress) {
         return mThrottles.computeIfAbsent(dccAddress, key -> new IJmriThrottle() {
@@ -84,8 +88,9 @@ public class FakeJmriProvider implements IJmriProvider {
         });
     }
 
+    @Null
     @Override
-    public IJmriSensor getSensor(String systemName) {
+    public IJmriSensor getSensor(@NonNull String systemName) {
         return mSensors.computeIfAbsent(systemName, key -> new IJmriSensor() {
             boolean mActive = false;
 
@@ -106,8 +111,9 @@ public class FakeJmriProvider implements IJmriProvider {
         });
     }
 
+    @Null
     @Override
-    public IJmriTurnout getTurnout(String systemName) {
+    public IJmriTurnout getTurnout(@NonNull String systemName) {
         return mTurnouts.computeIfAbsent(systemName, key -> new IJmriTurnout() {
             private boolean mKnownState = true;
 

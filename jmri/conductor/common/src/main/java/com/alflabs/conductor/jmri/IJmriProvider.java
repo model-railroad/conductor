@@ -18,6 +18,8 @@
 
 package com.alflabs.conductor.jmri;
 
+import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.utils.ILogger;
 
 /**
@@ -28,17 +30,20 @@ public interface IJmriProvider extends ILogger {
      * Returns a new JMRI throttle adapter for the given DCC long address.
      * Returns null if the object cannot be created.
      */
+    @Null
     IJmriThrottle getThrottle(int dccAddress);
 
     /**
      * Returns a new JMRI sensor adapter for the given sensor system name.
      * Returns null if the object cannot be created.
      */
-    IJmriSensor getSensor(String systemName);
+    @Null
+    IJmriSensor getSensor(@NonNull String systemName);
 
     /**
      * Returns a new JMRI turnout adapter for the given turnout system name.
      * Returns null if the object cannot be created.
      */
-    IJmriTurnout getTurnout(String systemName);
+    @Null
+    IJmriTurnout getTurnout(@NonNull String systemName);
 }

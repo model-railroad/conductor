@@ -18,16 +18,13 @@
 package com.alfray.conductor.v2.simulator.dagger
 
 import com.alflabs.conductor.jmri.IJmriProvider
-import com.alfray.conductor.v2.simulator.Simul2kJmriProvider
+import com.alfray.conductor.v2.simulator.SimulJmriProvider
+import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-object Simul2kModule {
+abstract class Simul2kModule {
     @Singleton
-    @Provides
-    fun provideJmriProvider(entryPoint: Simul2kJmriProvider): IJmriProvider {
-        return entryPoint.jmriProvider()
-    }
+    @Binds abstract fun bindJmriProvider(simulJmri: SimulJmriProvider) : IJmriProvider
 }
