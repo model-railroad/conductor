@@ -118,6 +118,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             return;
         }
 
+        mSimul2kComponent.ifPresent(simul -> simul.getSimul2k().onExecHandle());
         engine.get().onExecHandle();
     }
 
@@ -129,7 +130,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         // TBD Release any resources from current script component as needed.
         mScript2kContext.reset();
         mSimul2kComponent.ifPresent(simul ->
-                simul.getRouteManager().clear());
+                simul.getSimul2k().onReload());
 
         File file = getScriptFile()
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
@@ -145,8 +146,10 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         loader.getExecEngine().onExecStart();
 
-        mSimul2kComponent.ifPresent(simul ->
-                convertRoutes(loader.getConductorImpl().getActiveRoutes(), simul.getRouteManager()));
+        mSimul2kComponent.ifPresent(simul -> {
+            convertRoutes(loader.getConductorImpl().getActiveRoutes(), simul.getSimul2k());
+            simul.getSimul2k().onExecStart();
+        });
 
         return Pair.of(wasRunning, file);
     }

@@ -16,23 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.conductor.v2.simulator.dagger
+package com.alfray.conductor.v2.simulator
 
-import com.alflabs.conductor.dagger.CommonModule
-import com.alflabs.conductor.jmri.IJmriProvider
-import com.alfray.conductor.v2.simulator.Simul2k
-import dagger.Component
-import javax.inject.Singleton
+interface IExecSimul {
+    /** Initializes state before executing the script. */
+    fun onExecStart()
 
-
-@Singleton
-@Component(modules = [CommonModule::class, Simul2kModule::class])
-interface ISimul2kComponent {
-    fun getJmriProvider(): IJmriProvider
-    fun getSimul2k(): Simul2k
-
-    @Component.Factory
-    interface Factory {
-        fun createComponent(): ISimul2kComponent
-    }
+    /** Handles one execution of events. */
+    fun onExecHandle()
 }

@@ -15,7 +15,7 @@ class SimulJmriProvider @Inject constructor(
     private val simulSensorFactory: ISimulSensorFactory,
     private val simulThrottleFactory: ISimulThrottleFactory,
     private val simulTurnoutFactory: ISimulTurnoutFactory,
-) : FakeJmriProvider() {
+) : FakeJmriProvider(), IExecSimul {
     private val TAG = javaClass.simpleName
 
     fun clear() {
@@ -36,6 +36,14 @@ class SimulJmriProvider @Inject constructor(
     override fun getTurnout(systemName: String?): IJmriTurnout? {
         if (systemName == null) return null
         return mTurnouts.computeIfAbsent(systemName) { name -> simulTurnoutFactory.create(name) }
+    }
+
+    override fun onExecStart() {
+        mThrottles.values.forEach { (it as SimulThrottle).onExecStart() }
+    }
+
+    override fun onExecHandle() {
+        mThrottles.values.forEach { (it as SimulThrottle).onExecHandle() }
     }
 }
 
