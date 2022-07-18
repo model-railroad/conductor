@@ -37,7 +37,9 @@ internal class ActiveRouteBuilder : IActiveRouteBuilder {
     fun create() : IActiveRoute = ActiveRoute(this)
 }
 
-internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
+internal class ActiveRoute(
+    builder: ActiveRouteBuilder
+) : IActiveRoute, IExecEngine {
     private var _active: IRoute? = null
     private var _error: Boolean = false
     private val actionOnError = builder.actionOnError
@@ -62,7 +64,6 @@ internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
     private fun add(route: IRoute): IRoute {
         check(route !in _routes)
         _routes.add(route)
-        if (_active == null) { _active = route }
         return route
     }
 
@@ -75,4 +76,19 @@ internal class ActiveRoute(builder: ActiveRouteBuilder) : IActiveRoute {
         builder.init()
         return add(builder.create())
     }
+
+    override fun onExecStart() {
+        if (_active == null) {
+            _active = _routes.firstOrNull()
+        }
+    }
+
+    /** Invoked by the ExecEngine2 loop _before_ evaluating all the rules. */
+    override fun onExecHandle() {
+        val route = _active
+        if (route != null && route is IRouteManager) {
+            route.manageRoute()
+        }
+    }
 }
+

@@ -16,22 +16,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("FunctionName")
+package com.alfray.conductor.v2.script.impl
 
-package com.alfray.conductor.v2.script.dsl
-
-interface IRoute {
-    /** The [IActiveRoute] containing this route. */
-    val owner: IActiveRoute
-
-    /** Activates this route in its [IActiveRoute]. */
-    fun activate()
-
+interface IRouteManager {
     /**
-     * Changes the default starting block for this route.
-     * Only effective if called from the onActivate callback.
-     * Throws an error if the node is not part of the route.
-     * Throws an error if called on a route with no nodes like an Idle Route.
+     * Called at the start of each ExecEngine2 loop to manage the route.
+     * This is called before the route gets to evaluate all the current
+     * node rules.
+     * This is the proper place to evaluate current blocks to update the
+     * route's current node, move to the next node, update trailing ones,
+     * enter error if an unknown block is activated, etc.
      */
-    fun start_node(node: INode)
+    fun manageRoute()
 }

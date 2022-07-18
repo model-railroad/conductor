@@ -29,11 +29,11 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.Script2kErrors
 import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
+import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.impl.*
 import com.alfray.conductor.v2.script.impl.Block
-import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
-import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.script.impl.Turnout
 import com.fasterxml.jackson.core.JsonProcessingException
@@ -66,6 +66,7 @@ class ExecEngine2k @Inject constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
+        conductor.activeRoutes.forEach { (it as ActiveRoute).onExecStart() }
         reset()
         exportMaps()
         exportRoutes()
@@ -130,6 +131,7 @@ class ExecEngine2k @Inject constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecHandle() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecHandle() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecHandle() }
+        conductor.activeRoutes.forEach { (it as ActiveRoute).onExecHandle() }
     }
 
     private fun repeatSpeed() {
@@ -155,32 +157,11 @@ class ExecEngine2k @Inject constructor(
         ruleCondCache.clear()
         activatedRules.clear()
 
-        // First collect all rules with an active condition that have not been
-        // executed yet.
-        for (r in conductor.rules) {
-            val rule = r as Rule
-            val active = ruleCondCache.getOrEval(rule) {
-                var result = false
-                try {
-                    result = rule.evaluateCondition()
-                } catch (t: Throwable) {
-                    logger.d(TAG, "Eval Condition Failed", t)
-                }
-                result
-            }
+        // Collect all rules with an active condition that have not been executed yet.
+        conductor.rules.forEach { evalRule(it) }
 
-            // Rules only get executed once when activated and until
-            // the condition is cleared and activated again.
-            if (active) {
-                if (!ruleExecCache.get(rule)) {
-                    activatedRules.add(rule)
-                }
-            } else {
-                ruleExecCache.remove(rule)
-            }
-        }
-
-        // TBD also add rules from any currently active route, in order.
+        // Add rules from any currently active route, in order.
+        // TODO conductor.activeRoutes.forEach { a -> (a as ActiveRoute).evalRules { r -> evalRule(r)} }
 
         // Second execute all actions in the order they are queued.
         for (rule in activatedRules) {
@@ -190,6 +171,29 @@ class ExecEngine2k @Inject constructor(
             } catch (t: Throwable) {
                 logger.d(TAG, "Eval Action Failed", t)
             }
+        }
+    }
+
+    private fun evalRule(r: IRule) {
+        val rule = r as Rule
+        val active = ruleCondCache.getOrEval(rule) {
+            var result = false
+            try {
+                result = rule.evaluateCondition()
+            } catch (t: Throwable) {
+                logger.d(TAG, "Eval Condition Failed", t)
+            }
+            result
+        }
+
+        // Rules only get executed once when activated and until
+        // the condition is cleared and activated again.
+        if (active) {
+            if (!ruleExecCache.get(rule)) {
+                activatedRules.add(rule)
+            }
+        } else {
+            ruleExecCache.remove(rule)
         }
     }
 

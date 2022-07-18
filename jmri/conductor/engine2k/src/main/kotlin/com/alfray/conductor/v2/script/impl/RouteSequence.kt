@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.TAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
@@ -28,18 +29,23 @@ import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
 internal class RouteSequence(
     override val owner: IActiveRoute,
-    builder: RouteSequenceBuilder) : IRouteSequence {
+    builder: RouteSequenceBuilder
+) : IRouteSequence, IRouteManager {
     override val throttle = builder.throttle
     private var startNode: INode? = null
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
-    val actionOnActivate = builder.actionOnActivate
+    private val actionOnActivate = builder.actionOnActivate
+    private var callOnActivate: TAction? = null
+    private var currentNode: INode? = null
 
     override fun activate() {
         owner.activate(this)
+        callOnActivate = actionOnActivate
     }
 
     override fun start_node(node: INode) {
+        check(graph.nodes.contains(node))
         startNode = node
     }
 
@@ -54,6 +60,24 @@ internal class RouteSequence(
     }
 
     override fun toSimulGraph(): SimulRouteGraph = graph.toSimulGraph()
+
+    override fun manageRoute() {
+        // TODO("Not FULLY yet implemented")
+        // TBD:
+        // import clock, logger, IJmricheck blocks
+        // check current block is still active
+        // check unexpected blocks are active --> enter error mode
+        // need to change block, validate with graph it is as expected
+        // deal with decaying block states in the route active->trailing->fee.
+        // check flag to know if we nede to call onActivate
+        // etc
+        if (currentNode == null) {
+            currentNode = startNode
+            if (currentNode == null) {
+                currentNode = graph.start
+            }
+        }
+    }
 }
 
 
