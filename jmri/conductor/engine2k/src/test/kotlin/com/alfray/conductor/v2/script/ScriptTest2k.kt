@@ -341,6 +341,23 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
+    fun testGlobalOnRules_CannotBeNested() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S1")
+        val T1 = turnout("T1")
+        on { !S1 } then {
+            T1.reverse()
+            on { S1 } then { T1.normal()
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(1)
+        assertThat("").isEqualTo("TODO Expected error on..then in node function")
+    }
+
+    @Test
     fun testRuleTurnout() {
         loadScriptFromText(scriptText =
         """
@@ -522,5 +539,30 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         assertThat(seq.graph.toString()).isEqualTo(
             "[{B01}=>{B02}=>{B01}],[{B01}->{B03}->{B04}->{B01}],[{B01}->{B04}],[{B02}->{B03}->{B01}]")
+    }
+
+    @Test
+    fun testRouteSequence_OnRuleForbidden() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Routes = activeRoute {}
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                onEnter {
+                    on { Block2 } then { Train1.horn() }
+                }
+            }
+            sequence = listOf(block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(0)
+        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        assertThat("").isEqualTo("TODO Expected error on..then in node function")
     }
 }
