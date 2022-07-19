@@ -20,12 +20,12 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-import com.alfray.conductor.v2.script.TAction
-
+/** DSL script interface for an 'after..then' declaration. */
 interface IAfter {
     infix fun then(action: TAction) : IThenAfter
 }
 
+/** DSL script interface for an 'after..then..after' declaration. */
 interface IThenAfter {
     infix fun and_after(delay: Delay) : IAfter
 }

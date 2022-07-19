@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for a JMRI Turnout. */
 interface ITurnout : IActive {
     val systemName: String
     val normal: Boolean

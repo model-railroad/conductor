@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for a JMRI block. */
 interface IBlock : IActive {
     val systemName: String
 }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** Base abstract DSL script interface for any dynamic with a Conductor-exported variable name. */
 interface IVarName {
     /** The name set by the script for this object, or the default object name. */
     val name: String

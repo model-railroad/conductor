@@ -18,9 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-import com.alfray.conductor.v2.script.TAction
-import com.alfray.conductor.v2.script.impl.RouteSequence
-
+/** DSL script interface to build an [IRouteSequence]. */
 interface IRouteSequenceBuilder {
     val route: IActiveRoute
     var throttle: IThrottle
@@ -32,31 +30,3 @@ interface IRouteSequenceBuilder {
     fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
 }
 
-internal class RouteSequenceBuilder(private val owner: IActiveRoute) : IRouteSequenceBuilder {
-    override val route: IActiveRoute
-        get() = owner
-    override lateinit var throttle: IThrottle
-    override var timeout = 60
-    override lateinit var sequence: List<INode>
-    override val branches = mutableListOf<List<INode>>()
-    var actionOnActivate = RuleActionEmpty
-    var actionOnRecover = RuleActionEmpty
-
-    override fun onActivate(action: TAction) {
-        check(actionOnActivate == RuleActionEmpty)
-        actionOnActivate = action
-    }
-
-    override fun onRecover(action: TAction) {
-        check(actionOnRecover == RuleActionEmpty)
-        actionOnRecover = action
-    }
-
-    override fun node(block: IBlock, init: INodeBuilder.() -> Unit): INode {
-        val b = NodeBuilder(block)
-        b.init()
-        return Node(b)
-    }
-
-    fun create() : IRouteSequence = RouteSequence(owner, this)
-}

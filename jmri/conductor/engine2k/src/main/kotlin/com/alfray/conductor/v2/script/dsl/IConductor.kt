@@ -20,8 +20,6 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-import com.alfray.conductor.v2.script.TCondition
-
 /** Variables exchanged with the Conductor engine and exported via the KV Server. */
 data class ExportedVars(
     /** Current time in HHMM format set by the conductor engine. Read-only. */
@@ -75,7 +73,8 @@ interface IConductor {
     /** Registers a new map. */
     fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap
 
-    /** Creates a new rule with the specified conditions and actions. */
+    /** Creates a new rule with the specified conditions and actions.
+     * Can only be used at the top level / global scope. */
     fun on(condition: TCondition): IRule
 
     /** Creates a new delayed rule active after the specified delay. */

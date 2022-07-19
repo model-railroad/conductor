@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface to build a 'JsonEvent'. */
 interface IJsonEventBuilder {
     var key1: String
     var key2: String

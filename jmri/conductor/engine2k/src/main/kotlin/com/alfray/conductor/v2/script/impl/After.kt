@@ -21,7 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IThenAfter
-import com.alfray.conductor.v2.script.TAction
+import com.alfray.conductor.v2.script.dsl.TAction
 
 internal class After(val delay: Delay) : IAfter {
     private lateinit var action: TAction

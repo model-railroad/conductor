@@ -16,17 +16,19 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("FunctionName")
+package com.alfray.conductor.v2.script.impl
 
-package com.alfray.conductor.v2.script.dsl
+import com.alfray.conductor.v2.script.dsl.INode
 
-import com.alfray.conductor.v2.simulator.SimulRouteGraph
+/** Internal DSL script implementation for a route sequence node. */
+class Node(builder: NodeBuilder) : INode {
+    override val block = builder.block
+    val actionOnEnter = builder.actionOnEnter
+    val actionWhileOccupied = builder.actionWhileOccupied
+    val actionOnTrailing = builder.actionOnTrailing
+    val actionOnEmpty = builder.actionOnEmpty
 
-/** DSL script interface for a route sequence. */
-interface IRouteSequence : IRoute {
-    /** The [IActiveRoute] containing this route. */
-    val throttle: IThrottle
-
-    /** Converts the route graph into a Simulator route graph. */
-    fun toSimulGraph(): SimulRouteGraph
+    override fun toString(): String {
+        return "{${block.systemName}}"
+    }
 }

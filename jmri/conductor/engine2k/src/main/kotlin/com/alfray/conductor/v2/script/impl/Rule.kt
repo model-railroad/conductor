@@ -20,8 +20,8 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.IActive
 import com.alfray.conductor.v2.script.dsl.IRule
-import com.alfray.conductor.v2.script.TAction
-import com.alfray.conductor.v2.script.TCondition
+import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.script.dsl.TCondition
 
 private const val VERBOSE = false
 

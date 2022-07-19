@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface to build a 'GaEvent''. */
 interface IGaEventBuilder {
     var category: String
     var action: String

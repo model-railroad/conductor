@@ -18,24 +18,9 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.TAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
-import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
-import com.alfray.conductor.v2.script.dsl.RouteSequenceBuilder
-import com.alfray.conductor.v2.script.dsl.RuleActionEmpty
-
-internal class ActiveRouteBuilder : IActiveRouteBuilder {
-    var actionOnError = RuleActionEmpty
-
-    override fun onError(action: TAction) {
-        check(actionOnError == RuleActionEmpty)
-        actionOnError = action
-    }
-
-    fun create() : IActiveRoute = ActiveRoute(this)
-}
 
 internal class ActiveRoute(
     builder: ActiveRouteBuilder
@@ -78,8 +63,9 @@ internal class ActiveRoute(
     }
 
     override fun onExecStart() {
+        check(_routes.isNotEmpty()) { "An active route must contain at least one route definition, such as 'idle()'." }
         if (_active == null) {
-            _active = _routes.firstOrNull()
+            _active = _routes.first()
         }
     }
 

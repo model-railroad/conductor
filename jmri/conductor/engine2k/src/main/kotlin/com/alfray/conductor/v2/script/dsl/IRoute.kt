@@ -20,6 +20,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for a generic abstract route. */
 interface IRoute {
     /** The [IActiveRoute] containing this route. */
     val owner: IActiveRoute

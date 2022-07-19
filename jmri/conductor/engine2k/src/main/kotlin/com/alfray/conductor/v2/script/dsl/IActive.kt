@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** Base abstract DSL script interface for any object with a dynamic [active] state. */
 interface IActive {
     /** Object is active. */
     val active: Boolean

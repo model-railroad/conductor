@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for a JMRI sensor. */
 interface ISensor : IActive, IVarName {
     fun active(isActive: Boolean)
     val systemName: String

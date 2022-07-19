@@ -23,6 +23,7 @@ data class Delay(val seconds: Int)
 val Int.seconds: Delay
     get() = Delay(this)
 
+/** DSL script interface for a global timer. */
 interface ITimer: IActive {
     val name: String
     val delay: Delay

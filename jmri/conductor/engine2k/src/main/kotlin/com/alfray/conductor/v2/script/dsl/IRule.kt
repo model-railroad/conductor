@@ -18,8 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-import com.alfray.conductor.v2.script.TAction
-
+/** DSL script interface for a condition 'on..then' rule. */
 interface IRule {
     infix fun then(action: TAction)
 }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for an active route. */
 interface IActiveRoute {
     /** The currently active route. */
     val active : IRoute

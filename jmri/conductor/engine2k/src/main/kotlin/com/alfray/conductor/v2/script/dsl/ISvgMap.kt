@@ -18,11 +18,13 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/** DSL script interface for an SVG Map definition. */
 interface ISvgMap {
     val name: String
     val svg: String
 }
 
+/** DSL script interface to build an [ISvgMap]. */
 interface ISvgMapBuilder {
     var name: String
     var svg: String

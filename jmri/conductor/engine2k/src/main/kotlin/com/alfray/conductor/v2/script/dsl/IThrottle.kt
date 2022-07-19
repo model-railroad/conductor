@@ -32,6 +32,7 @@ data class DccSpeed(val speed: Int) {
 val Int.speed: DccSpeed
     get() = DccSpeed(this)
 
+/** DSL script interface for a JMRI Throttle. */
 interface IThrottle : IVarName {
     val dccAddress: Int
     /** The last speed set for this engine. */

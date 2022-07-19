@@ -16,17 +16,20 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("FunctionName")
+package com.alfray.conductor.v2.script.impl
 
-package com.alfray.conductor.v2.script.dsl
+import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.RuleActionEmpty
+import com.alfray.conductor.v2.script.dsl.TAction
 
-import com.alfray.conductor.v2.simulator.SimulRouteGraph
+internal class ActiveRouteBuilder : IActiveRouteBuilder {
+    var actionOnError = RuleActionEmpty
 
-/** DSL script interface for a route sequence. */
-interface IRouteSequence : IRoute {
-    /** The [IActiveRoute] containing this route. */
-    val throttle: IThrottle
+    override fun onError(action: TAction) {
+        check(actionOnError == RuleActionEmpty)
+        actionOnError = action
+    }
 
-    /** Converts the route graph into a Simulator route graph. */
-    fun toSimulGraph(): SimulRouteGraph
+    fun create() : IActiveRoute = ActiveRoute(this)
 }
