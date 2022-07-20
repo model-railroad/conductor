@@ -26,9 +26,10 @@ import javax.inject.Singleton
  * A global singleton context for the currently running script.
  * It holds the current script filename, the script-scoped component, and the loading error.
  */
-@Singleton
+//@Singleton
 class Script2kContext
-@Inject constructor(val script2kCompFactory: IScript2kComponent.Factory) {
+//@Inject
+constructor(private val script2kCompFactory: IScript2kComponent.Factory) {
     var script2kComponent: Optional<IScript2kComponent> = Optional.empty()
         private set
 

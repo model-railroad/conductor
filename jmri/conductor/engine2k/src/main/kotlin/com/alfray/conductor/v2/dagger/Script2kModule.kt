@@ -15,23 +15,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.alfray.conductor.v2.dagger
 
-import com.alflabs.conductor.dagger.CommonModule
-import com.alflabs.conductor.jmri.IJmriProvider
-import dagger.BindsInstance
-import dagger.Component
+import dagger.Module
+import dagger.Provides
 import javax.inject.Singleton
 
-
-@Singleton
-@Component(modules = [CommonModule::class, Script2kModule::class])
-interface IEngine2kComponent {
-    fun getScriptComponentFactory(): IScript2kComponent.Factory
-
-    @Component.Factory
-    interface Factory {
-        fun createComponent(@BindsInstance jmriProvider: IJmriProvider): IEngine2kComponent
+@Module
+object Script2kModule {
+    @Singleton
+    @Provides
+    fun provideScript2kContext(script2kCompFactory: IScript2kComponent.Factory): Script2kContext {
+        return Script2kContext(script2kCompFactory)
     }
 }
