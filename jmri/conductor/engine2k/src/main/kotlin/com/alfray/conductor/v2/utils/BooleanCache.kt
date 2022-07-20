@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.conductor.v2.script
+package com.alfray.conductor.v2.utils
 
 internal typealias TBoolean = () -> Boolean
 
