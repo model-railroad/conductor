@@ -39,12 +39,14 @@ class TurnoutTest {
     private val jmriProvider =
         mock<IJmriProvider> { on { getTurnout("jmriName") } doReturn jmriTurnout }
     private val keyValue = mock<IKeyValue>()
+    private val condCache = CondCache()
     private lateinit var turnout: Turnout
 
     @Before
     fun setUp() {
         val factory = Turnout_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(condCache),
             InstanceFactory.create(jmriProvider)
         )
         turnout = factory.get("jmriName")
@@ -72,6 +74,7 @@ class TurnoutTest {
             .putValue(anyString(), anyString(), anyBoolean())
 
         turnout.onExecHandle()
+        condCache.clear()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "N", true)
         assertThat(turnout.active).isTrue()
@@ -90,6 +93,7 @@ class TurnoutTest {
             .putValue(anyString(), anyString(), anyBoolean())
 
         turnout.onExecHandle()
+        condCache.clear()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "R", true)
         assertThat(turnout.active).isFalse()

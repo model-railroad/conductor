@@ -40,6 +40,7 @@ import dagger.assisted.AssistedInject
  */
 internal class Sensor @AssistedInject constructor(
     private val keyValue: IKeyValue,
+    private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
@@ -50,7 +51,7 @@ internal class Sensor @AssistedInject constructor(
     private val keyName = "${Prefix.Sensor}$systemName"
 
     override val active: Boolean
-        get() = _active // uses internal state, does NOT update from JMRI.
+        get() = condCache.cached(_active, keyName) // uses internal state, does NOT update from JMRI.
 
     override fun not(): Boolean = !active
 

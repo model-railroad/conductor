@@ -21,7 +21,6 @@ package com.alfray.conductor.v2
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
 import com.alfray.conductor.v2.dagger.ITestComponent2k
-import com.alfray.conductor.v2.dagger.Script2kContext
 import com.alfray.conductor.v2.dagger.Script2kTestContext
 import com.google.common.truth.Truth.assertThat
 import org.junit.After

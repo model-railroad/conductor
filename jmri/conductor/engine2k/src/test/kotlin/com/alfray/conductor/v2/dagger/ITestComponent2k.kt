@@ -34,9 +34,7 @@ interface ITestComponent2k : IEngine2kComponent {
     fun getScriptTestComponentFactory(): IScript2kTestComponent.Factory
 
     fun inject(test: ScriptTest2kBase)
-    fun inject(test: ScriptTest2k)
     fun inject(test: Script2kLoaderTest)
-    fun inject(test: ExecEngine2kTest)
 
     @Component.Factory
     interface Factory {

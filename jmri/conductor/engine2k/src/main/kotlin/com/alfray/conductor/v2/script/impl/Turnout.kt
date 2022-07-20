@@ -41,6 +41,7 @@ import dagger.assisted.AssistedInject
  */
 internal class Turnout @AssistedInject constructor(
     private val keyValue: IKeyValue,
+    private val condCache: CondCache,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
 ) : ITurnout, IExecEngine {
@@ -52,10 +53,10 @@ internal class Turnout @AssistedInject constructor(
     private val keyName = "${Prefix.Turnout}$systemName"
 
     override val normal: Boolean
-        get() = _normal
+        get() = condCache.cached(_normal, keyName)
 
     override val active: Boolean
-        get() = _normal // uses internal state, does NOT update from JMRI.
+        get() = normal // uses internal state, does NOT update from JMRI.
 
     override fun not(): Boolean = !active
 

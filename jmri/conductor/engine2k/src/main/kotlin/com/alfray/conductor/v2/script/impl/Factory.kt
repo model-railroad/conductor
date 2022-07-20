@@ -24,7 +24,6 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
-import com.alfray.conductor.v2.script.EStopHandler
 import javax.inject.Inject
 
 @Script2kScope
@@ -32,20 +31,20 @@ internal class Factory @Inject constructor(
     private val clock: IClock,
     private val logger: ILogger,
     private val keyValue: IKeyValue,
+    private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
-    private val eStopHandler: EStopHandler,
 ) {
     internal fun createSensor(systemName: String) : Sensor =
-        Sensor(keyValue, eventLogger, jmriProvider, systemName)
+        Sensor(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createBlock(systemName: String) : Block =
-        Block(keyValue, eventLogger, jmriProvider, systemName)
+        Block(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createTurnout(systemName: String) : Turnout =
-        Turnout(keyValue, jmriProvider, systemName)
+        Turnout(keyValue, condCache, jmriProvider, systemName)
 
     internal fun createThrottle(dccAddress: Int) : Throttle =
-        Throttle(clock, logger, keyValue, eventLogger, jmriProvider, dccAddress)
+        Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, dccAddress)
 }
 

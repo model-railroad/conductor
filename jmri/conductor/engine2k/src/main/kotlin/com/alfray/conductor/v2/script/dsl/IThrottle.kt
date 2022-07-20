@@ -57,7 +57,7 @@ interface IThrottle : IVarName {
     /** Sets the repeat speed interval. Does nothing if <= 0. */
     fun repeat(repeat: Delay)
 
-    val f: FBits
+    val f: IFBits
     val f0: Boolean
         get() = f[0]
     val f1: Boolean
@@ -81,24 +81,21 @@ interface IThrottle : IVarName {
     val f10: Boolean
         get() = f[10]
 
-    fun f(index: Int, on: Boolean) : FBits
-    fun f0(on: Boolean) : FBits = f(0, on)
-    fun f1(on: Boolean) : FBits = f(1, on)
-    fun f2(on: Boolean) : FBits = f(2, on)
-    fun f3(on: Boolean) : FBits = f(3, on)
-    fun f4(on: Boolean) : FBits = f(4, on)
-    fun f5(on: Boolean) : FBits = f(5, on)
-    fun f6(on: Boolean) : FBits = f(6, on)
-    fun f7(on: Boolean) : FBits = f(7, on)
-    fun f8(on: Boolean) : FBits = f(8, on)
-    fun f9(on: Boolean) : FBits = f(9, on)
-    fun f10(on: Boolean) : FBits = f(10, on)
+    fun f(index: Int, on: Boolean) : IFBits
+    fun f0(on: Boolean) : IFBits = f(0, on)
+    fun f1(on: Boolean) : IFBits = f(1, on)
+    fun f2(on: Boolean) : IFBits = f(2, on)
+    fun f3(on: Boolean) : IFBits = f(3, on)
+    fun f4(on: Boolean) : IFBits = f(4, on)
+    fun f5(on: Boolean) : IFBits = f(5, on)
+    fun f6(on: Boolean) : IFBits = f(6, on)
+    fun f7(on: Boolean) : IFBits = f(7, on)
+    fun f8(on: Boolean) : IFBits = f(8, on)
+    fun f9(on: Boolean) : IFBits = f(9, on)
+    fun f10(on: Boolean) : IFBits = f(10, on)
 }
 
-data class FBits(var f: Int = 0) {
-    operator fun get(bit: Int) : Boolean = (f and (1 shl bit)) != 0
-    operator fun set(bit: Int, on: Boolean) : FBits {
-        f = (f and (1 shl bit).inv()) or ((if (on) 1 else 0) shl bit)
-        return this
-    }
+interface IFBits {
+    operator fun get(bit: Int) : Boolean
+    operator fun set(bit: Int, on: Boolean) : IFBits
 }

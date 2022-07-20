@@ -17,11 +17,13 @@
  */
 package com.alfray.conductor.v2.dagger
 
+import com.alfray.conductor.v2.script.ScriptTest2k
 import dagger.Subcomponent
 
 @Script2kScope
 @Subcomponent
 interface IScript2kTestComponent: IScript2kComponent {
+    fun inject(scriptTest2k: ScriptTest2k)
 
     @Subcomponent.Factory
     interface Factory {

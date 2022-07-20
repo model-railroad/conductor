@@ -27,7 +27,7 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
-import com.alfray.conductor.v2.script.dsl.FBits
+import com.alfray.conductor.v2.script.dsl.IFBits
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -45,6 +45,7 @@ internal class Throttle @AssistedInject constructor(
     private val clock: IClock,
     private val logger: ILogger,
     private val keyValue: IKeyValue,
+    private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val dccAddress: Int
@@ -55,9 +56,10 @@ internal class Throttle @AssistedInject constructor(
     /** Delay in seconds after the last command sent to JMRI before repeating the current speed. */
     internal var repeatSpeedSeconds = Delay(0)
         private set // visible for testing
-    private var _f = FBits()
     private var lastJmriTS: Long = 0L
     private var jmriThrottle: IJmriThrottle? = null
+    private val keyName = "${Prefix.DccThrottle}$dccAddress"
+    private var _f = FBits(condCache, keyName)
 
     private companion object {
         val TAG: String = Throttle::class.java.simpleName
@@ -65,11 +67,11 @@ internal class Throttle @AssistedInject constructor(
 
     /** The last speed set for this engine. */
     override val speed: DccSpeed
-        get() = _speed
+        get() = condCache.cachedSpeed(_speed, keyName)
     override val light: Boolean
-        get() = _light
+        get() = condCache.cached(_light, keyName, "L")
     override val sound: Boolean
-        get() = _sound
+        get() = condCache.cached(_sound, keyName, "S")
     override val f: FBits
         get() = _f
 
@@ -92,7 +94,7 @@ internal class Throttle @AssistedInject constructor(
         setSpeed(DccSpeed(0))
     }
 
-    override fun f(index: Int, on: Boolean) : FBits {
+    override fun f(index: Int, on: Boolean) : IFBits {
         try {
             jmriThrottle?.triggerFunction(index, on)
         } catch (e: Throwable) {
@@ -137,7 +139,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun onExecStart() {
         jmriThrottle = checkNotNull(jmriProvider.getThrottle(dccAddress))
-        updateKV(dccAddress, _speed.speed)
+        updateKV(_speed.speed)
     }
 
     override fun onExecHandle() {
@@ -181,7 +183,7 @@ internal class Throttle @AssistedInject constructor(
             logger.d(TAG, "[$dccAddress] setSpeed exception: $e")
         }
         try {
-            updateKV(dccAddress, speed.speed)
+            updateKV(speed.speed)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] getDccAddress exception: $e")
         }
@@ -201,10 +203,24 @@ internal class Throttle @AssistedInject constructor(
         }
     }
 
-    private fun updateKV(address: Int, speed: Int) {
+    private fun updateKV(speed: Int) {
         keyValue.putValue(
-            "${Prefix.DccThrottle}$address",
+            keyName,
             speed.toString(), true /*broadcast*/
         )
+    }
+}
+
+internal data class FBits(
+    private val condCache: CondCache,
+    private val keyName: String,
+    var f: Int = 0,
+) : IFBits {
+    override operator fun get(bit: Int) : Boolean =
+        condCache.cached((f and (1 shl bit)) != 0, keyName, "F$bit")
+
+    override operator fun set(bit: Int, on: Boolean) : IFBits {
+        f = (f and (1 shl bit).inv()) or ((if (on) 1 else 0) shl bit)
+        return this
     }
 }

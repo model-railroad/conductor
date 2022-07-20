@@ -34,11 +34,13 @@ class RouteSequenceTest {
     private val jmriProvider = FakeJmriProvider()
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
+    private val condCache = CondCache()
 
     @Before
     fun setUp() {
         blockFactory = Block_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(condCache),
             InstanceFactory.create(eventLogger),
             InstanceFactory.create(jmriProvider))
     }

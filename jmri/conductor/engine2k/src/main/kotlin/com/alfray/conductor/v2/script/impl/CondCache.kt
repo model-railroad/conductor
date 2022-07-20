@@ -22,7 +22,7 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import javax.inject.Inject
 
-// TBD @Script2kScope
+@Script2kScope
 class CondCache @Inject constructor() {
     private val states = mutableMapOf<String, Boolean>()
     private val speeds = mutableMapOf<String, DccSpeed>()

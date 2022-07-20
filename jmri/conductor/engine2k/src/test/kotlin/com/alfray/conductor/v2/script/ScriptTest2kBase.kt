@@ -22,8 +22,10 @@ import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.utils.FakeFileOps
 import com.alfray.conductor.v2.Script2kLoader
 import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
+import com.alfray.conductor.v2.dagger.IScript2kTestComponent
 import com.alfray.conductor.v2.dagger.ITestComponent2k
 import com.alfray.conductor.v2.dagger.Script2kTestContext
+import com.alfray.conductor.v2.script.impl.CondCache
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
@@ -31,10 +33,12 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 
 open class ScriptTest2kBase {
     private val jmriProvider = FakeJmriProvider()
+    protected lateinit var scriptComponent: IScript2kTestComponent
     @Inject internal lateinit var context: Script2kTestContext
     @Inject internal lateinit var fileOps: FakeFileOps
 
     internal lateinit var loader: Script2kLoader
+    internal lateinit var condCache: CondCache
     internal lateinit var conductorImpl: ConductorImpl
     internal lateinit var execEngine: ExecEngine2k
 
@@ -43,11 +47,13 @@ open class ScriptTest2kBase {
             .factory()
             .createComponent(jmriProvider)
         mainComponent.inject(this)
-        val scriptComponent = context.createTestComponent()
+        scriptComponent = context.createTestComponent()
         loader = scriptComponent.script2kLoader
         execEngine = loader.execEngine
+        condCache = scriptComponent.condCache
         conductorImpl = loader.conductorImpl
         assertThat(execEngine).isNotNull()
+        assertThat(condCache).isNotNull()
         assertThat(conductorImpl).isNotNull()
         assertThat(loader.scriptHost).isNotNull()
         return mainComponent

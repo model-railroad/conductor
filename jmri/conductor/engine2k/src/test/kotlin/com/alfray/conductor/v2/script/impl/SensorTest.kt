@@ -40,12 +40,14 @@ class SensorTest {
     private val jmriProvider = mock<IJmriProvider> { on { getSensor("jmriName") } doReturn jmriSensor }
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
+    private val condCache = CondCache()
     private lateinit var sensor: Sensor
 
     @Before
     fun setUp() {
         val factory = Sensor_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(condCache),
             InstanceFactory.create(eventLogger),
             InstanceFactory.create(jmriProvider))
         sensor = factory.get("jmriName")
@@ -65,6 +67,7 @@ class SensorTest {
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
 
         sensor.onExecHandle()
+        condCache.clear()
         assertThat(sensor.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
         reset(keyValue)
@@ -73,6 +76,7 @@ class SensorTest {
         assertThat(sensor.active).isTrue()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
         sensor.onExecHandle()
+        condCache.clear()
         assertThat(sensor.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
     }

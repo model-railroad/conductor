@@ -32,6 +32,7 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.CondCache
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
@@ -50,6 +51,7 @@ class ExecEngine2k @Inject constructor(
     private val logger: ILogger,
     private val fileOps: FileOps,
     private val keyValue: IKeyValue,
+    private val condCache: CondCache,
     private val eStopHandler: EStopHandler,
     private val scriptSource: Script2kSource,
     private val scriptErrors: Script2kErrors,
@@ -61,7 +63,6 @@ class ExecEngine2k @Inject constructor(
     private val handleFrequency = FrequencyMeasurer(clock)
     private val handleRateLimiter = RateLimiter(30.0f, clock)
     private val activatedRules = mutableListOf<Rule>()
-    private val ruleCondCache = BooleanCache<Rule>()
     private val ruleExecCache = BooleanCache<Rule>()
 
     override fun onExecStart() {
@@ -151,13 +152,13 @@ class ExecEngine2k @Inject constructor(
         // conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).reset() }
         // conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).reset() }
         // conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).reset() }
-        ruleCondCache.clear()
+        condCache.clear()
         activatedRules.clear()
         eStopHandler.reset()
     }
 
     private fun evalScript() {
-        ruleCondCache.clear()
+        condCache.clear()
         activatedRules.clear()
 
         // Collect all rules with an active condition that have not been executed yet.
@@ -179,15 +180,7 @@ class ExecEngine2k @Inject constructor(
 
     private fun evalRule(r: IRule) {
         val rule = r as Rule
-        val active = ruleCondCache.getOrEval(rule) {
-            var result = false
-            try {
-                result = rule.evaluateCondition()
-            } catch (t: Throwable) {
-                logger.d(TAG, "Eval Condition Failed", t)
-            }
-            result
-        }
+        val active = rule.evaluateCondition()
 
         // Rules only get executed once when activated and until
         // the condition is cleared and activated again.

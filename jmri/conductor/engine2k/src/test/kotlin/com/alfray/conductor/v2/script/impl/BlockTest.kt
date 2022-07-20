@@ -40,12 +40,14 @@ class BlockTest {
     private val jmriProvider = mock<IJmriProvider> { on { getSensor("jmriName") } doReturn jmriSensor }
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
+    private val condCache = CondCache()
     private lateinit var block: Block
 
     @Before
     fun setUp() {
         val factory = Block_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(condCache),
             InstanceFactory.create(eventLogger),
             InstanceFactory.create(jmriProvider))
         block = factory.get("jmriName")
@@ -64,6 +66,7 @@ class BlockTest {
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
 
         block.onExecHandle()
+        condCache.clear()
         assertThat(block.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
         reset(keyValue)
@@ -72,6 +75,7 @@ class BlockTest {
         assertThat(block.active).isTrue()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
         block.onExecHandle()
+        condCache.clear()
         assertThat(block.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
     }

@@ -19,14 +19,17 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.script.dsl.speed
+import com.alfray.conductor.v2.script.impl.CondCache
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 
 class ExecEngine2kTest : ScriptTest2kBase() {
+
     @Before
     fun setUp() {
-        createComponent().inject(this)
+        createComponent()
     }
 
     @Test
@@ -51,28 +54,33 @@ class ExecEngine2kTest : ScriptTest2kBase() {
 
         // No change when sensor is inactive
         execEngine.onExecHandle()
+        condCache.clear()
         assertThat(t.speed).isEqualTo(0.speed)
 
         // Change *only once* when sensor becomes active.
         s.active(true)
         execEngine.onExecHandle()
+        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Further executions ignore this rule as the conditions has not reset yet.
         execEngine.onExecHandle()
         execEngine.onExecHandle()
+        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Sensor becomes inactive, which resets the condition.
         s.active(false)
         execEngine.onExecHandle()
         execEngine.onExecHandle()
+        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Next invocation thus executes the rule again.
         s.active(true)
         execEngine.onExecHandle()
         execEngine.onExecHandle()
+        condCache.clear()
         assertThat(t.speed).isEqualTo(10.speed)
     }
 
