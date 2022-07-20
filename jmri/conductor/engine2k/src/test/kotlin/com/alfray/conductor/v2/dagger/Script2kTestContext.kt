@@ -24,19 +24,13 @@ import java.util.Optional
  * A global singleton context for the currently running script.
  * It holds the current script filename, the script-scoped component, and the loading error.
  */
-open class Script2kContext
-constructor(private val script2kCompFactory: IScript2kComponent.Factory?) {
-    var script2kComponent: Optional<IScript2kComponent> = Optional.empty()
-        protected set
+class Script2kTestContext
+constructor(private val script2kCompFactory: IScript2kTestComponent.Factory): Script2kContext(null) {
 
-    fun createComponent() : IScript2kComponent {
+    fun createTestComponent() : IScript2kTestComponent {
         check(!script2kComponent.isPresent)
-        val scriptComponent = script2kCompFactory!!.createComponent()
+        val scriptComponent = script2kCompFactory.createTestComponent()
         script2kComponent = Optional.of(scriptComponent)
         return scriptComponent
-    }
-
-    open fun reset() {
-        script2kComponent = Optional.empty()
     }
 }

@@ -22,7 +22,7 @@ import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-object Script2kModule {
+class Script2kModule {
     @Singleton
     @Provides
     fun provideScript2kContext(script2kCompFactory: IScript2kComponent.Factory): Script2kContext {

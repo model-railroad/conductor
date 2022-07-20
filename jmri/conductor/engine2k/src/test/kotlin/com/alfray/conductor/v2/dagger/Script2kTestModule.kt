@@ -15,28 +15,23 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package com.alfray.conductor.v2.dagger
 
-import java.util.Optional
+import dagger.Module
+import dagger.Provides
+import javax.inject.Singleton
 
-/**
- * A global singleton context for the currently running script.
- * It holds the current script filename, the script-scoped component, and the loading error.
- */
-open class Script2kContext
-constructor(private val script2kCompFactory: IScript2kComponent.Factory?) {
-    var script2kComponent: Optional<IScript2kComponent> = Optional.empty()
-        protected set
-
-    fun createComponent() : IScript2kComponent {
-        check(!script2kComponent.isPresent)
-        val scriptComponent = script2kCompFactory!!.createComponent()
-        script2kComponent = Optional.of(scriptComponent)
-        return scriptComponent
+@Module
+class Script2kTestModule {
+    @Singleton
+    @Provides
+    fun provideScript2kTestContext(script2kCompFactory: IScript2kTestComponent.Factory): Script2kTestContext {
+        return Script2kTestContext(script2kCompFactory)
     }
 
-    open fun reset() {
-        script2kComponent = Optional.empty()
+    @Singleton
+    @Provides
+    fun providesScript2kContext(script2kTestContext: Script2kTestContext): Script2kContext {
+        return script2kTestContext
     }
 }

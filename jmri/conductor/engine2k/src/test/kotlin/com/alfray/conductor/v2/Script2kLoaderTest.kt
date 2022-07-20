@@ -19,7 +19,10 @@
 package com.alfray.conductor.v2
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
+import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
+import com.alfray.conductor.v2.dagger.ITestComponent2k
 import com.alfray.conductor.v2.dagger.Script2kContext
+import com.alfray.conductor.v2.dagger.Script2kTestContext
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -30,7 +33,7 @@ class Script2kLoaderTest {
 
     private val jmriProvider = FakeJmriProvider()
     private lateinit var component: ITestComponent2k
-    @Inject internal lateinit var context: Script2kContext
+    @Inject internal lateinit var context: Script2kTestContext
 
     @Before
     fun setUp() {
@@ -48,7 +51,7 @@ class Script2kLoaderTest {
 
     @Test
     fun testLoadEmptyScript() {
-        val scriptComponent = context.createComponent()
+        val scriptComponent = context.createTestComponent()
         assertThat(context.script2kComponent.isPresent).isTrue()
 
         val script2kLoader = scriptComponent.script2kLoader

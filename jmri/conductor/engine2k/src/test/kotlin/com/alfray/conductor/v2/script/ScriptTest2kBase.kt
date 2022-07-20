@@ -20,10 +20,10 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.utils.FakeFileOps
-import com.alfray.conductor.v2.DaggerITestComponent2k
-import com.alfray.conductor.v2.ITestComponent2k
 import com.alfray.conductor.v2.Script2kLoader
-import com.alfray.conductor.v2.dagger.Script2kContext
+import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
+import com.alfray.conductor.v2.dagger.ITestComponent2k
+import com.alfray.conductor.v2.dagger.Script2kTestContext
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
@@ -31,7 +31,7 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 
 open class ScriptTest2kBase {
     private val jmriProvider = FakeJmriProvider()
-    @Inject internal lateinit var context: Script2kContext
+    @Inject internal lateinit var context: Script2kTestContext
     @Inject internal lateinit var fileOps: FakeFileOps
 
     internal lateinit var loader: Script2kLoader
@@ -43,7 +43,7 @@ open class ScriptTest2kBase {
             .factory()
             .createComponent(jmriProvider)
         mainComponent.inject(this)
-        val scriptComponent = context.createComponent()
+        val scriptComponent = context.createTestComponent()
         loader = scriptComponent.script2kLoader
         execEngine = loader.execEngine
         conductorImpl = loader.conductorImpl
