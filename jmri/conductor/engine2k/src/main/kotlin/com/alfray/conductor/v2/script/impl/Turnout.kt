@@ -23,18 +23,9 @@ import com.alflabs.conductor.jmri.IJmriTurnout
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
-import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.ITurnout
 import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-
-/** Creates a new turnout for the given JMRI system name. */
-@Script2kScope
-@AssistedFactory
-internal interface ITurnoutFactory {
-    fun create(systemName: String) : Turnout
-}
 
 /**
  * A turnout defined by a script.

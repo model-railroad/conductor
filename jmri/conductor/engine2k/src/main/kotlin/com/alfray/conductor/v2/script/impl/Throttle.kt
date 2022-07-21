@@ -25,21 +25,13 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Prefix
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.FBits
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-/** Creates a new throttle for the given DCC addresses. */
-@Script2kScope
-@AssistedFactory
-internal interface IThrottleFactory {
-    fun create(dccAddress: Int) : Throttle
-}
 
 /**
  * A throttle defined by a script.

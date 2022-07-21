@@ -24,18 +24,9 @@ import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
-import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IBlock
 import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-
-/** Creates a new block for the given JMRI system name. */
-@Script2kScope
-@AssistedFactory
-internal interface IBlockFactory {
-    fun create(systemName: String) : Block
-}
 
 /**
  * A block matching an underlying JMRI sensor, as defined by a script.

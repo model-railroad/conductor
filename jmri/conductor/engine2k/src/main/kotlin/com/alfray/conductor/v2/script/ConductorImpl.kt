@@ -39,15 +39,11 @@ import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.ActiveRouteBuilder
 import com.alfray.conductor.v2.script.impl.After
-import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaEventBuilder
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.GaPageBuilder
-import com.alfray.conductor.v2.script.impl.IBlockFactory
-import com.alfray.conductor.v2.script.impl.ISensorFactory
-import com.alfray.conductor.v2.script.impl.IThrottleFactory
-import com.alfray.conductor.v2.script.impl.ITurnoutFactory
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
@@ -59,10 +55,7 @@ private const val VERBOSE = false
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
-    private val blockFactory: IBlockFactory,
-    private val sensorFactory: ISensorFactory,
-    private val turnoutFactory: ITurnoutFactory,
-    private val throttleFactory: IThrottleFactory,
+    private val factory: Factory,
 ) : IConductor {
 
     val sensors = mutableMapOf<String, ISensor>()
@@ -84,17 +77,17 @@ class ConductorImpl @Inject internal constructor(
 
     override fun sensor(systemName: String): ISensor {
         if (VERBOSE) println("@@ sensor systemName = $systemName")
-        return sensors.computeIfAbsent(systemName) { sensorFactory.create(it) }
+        return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
     }
 
     override fun block(systemName: String): IBlock {
         if (VERBOSE) println("@@ block systemName = $systemName")
-        return blocks.computeIfAbsent(systemName) { blockFactory.create(it) }
+        return blocks.computeIfAbsent(systemName) { factory.createBlock(it) }
     }
 
     override fun turnout(systemName: String): ITurnout {
         if (VERBOSE) println("@@ turnout systemName = $systemName")
-        return turnouts.computeIfAbsent(systemName) { turnoutFactory.create(it) }
+        return turnouts.computeIfAbsent(systemName) { factory.createTurnout(it) }
     }
 
     override fun timer(delay: Delay): ITimer {
@@ -106,7 +99,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun throttle(dccAddress: Int): IThrottle {
         if (VERBOSE) println("@@ throttle dccAddress = $dccAddress")
-        return throttles.computeIfAbsent(dccAddress) { throttleFactory.create(it) }
+        return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it) }
     }
 
     override fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap {

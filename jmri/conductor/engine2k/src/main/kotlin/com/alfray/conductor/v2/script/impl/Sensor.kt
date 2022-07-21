@@ -30,13 +30,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
-/** Creates a new sensor for the given JMRI system name. */
-@Script2kScope
-@AssistedFactory
-internal interface ISensorFactory {
-    fun create(systemName: String) : Sensor
-}
-
 /**
  * A sensor defined by a script.
  * <p/>

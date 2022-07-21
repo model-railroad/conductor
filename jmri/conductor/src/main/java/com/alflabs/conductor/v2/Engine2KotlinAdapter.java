@@ -31,6 +31,7 @@ import com.alfray.conductor.v2.Script2kLoader;
 import com.alfray.conductor.v2.dagger.IEngine2kComponent;
 import com.alfray.conductor.v2.dagger.IScript2kComponent;
 import com.alfray.conductor.v2.dagger.Script2kContext;
+import com.alfray.conductor.v2.dagger.Script2kModule;
 import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine2k;
 import com.alfray.conductor.v2.script.dsl.IActiveRoute;
@@ -413,7 +414,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
 
     @Singleton
-    @Component(modules = { CommonModule.class })
+    @Component(modules = { CommonModule.class, Script2kModule.class })
     public interface LocalComponent2k extends IEngine2kComponent {
         void inject(EntryPoint2 entryPoint);
         void inject(Engine2KotlinAdapter adapter);
