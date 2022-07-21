@@ -24,6 +24,7 @@ import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.MockClock
+import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.google.common.truth.Truth.assertThat

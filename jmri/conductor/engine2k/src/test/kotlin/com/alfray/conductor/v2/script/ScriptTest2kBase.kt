@@ -25,7 +25,6 @@ import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
 import com.alfray.conductor.v2.dagger.IScript2kTestComponent
 import com.alfray.conductor.v2.dagger.ITestComponent2k
 import com.alfray.conductor.v2.dagger.Script2kTestContext
-import com.alfray.conductor.v2.script.impl.CondCache
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult

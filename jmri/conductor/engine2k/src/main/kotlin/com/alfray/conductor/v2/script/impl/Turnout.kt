@@ -23,6 +23,7 @@ import com.alflabs.conductor.jmri.IJmriTurnout
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
+import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.ITurnout
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

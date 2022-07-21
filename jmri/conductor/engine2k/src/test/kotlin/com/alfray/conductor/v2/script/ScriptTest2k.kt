@@ -22,7 +22,6 @@ import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.Block
-import com.alfray.conductor.v2.script.impl.CondCache
 import com.alfray.conductor.v2.script.impl.FBits
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaPage
@@ -34,7 +33,6 @@ import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import javax.inject.Inject
 
 class ScriptTest2k : ScriptTest2kBase() {
 

@@ -24,6 +24,7 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
+import com.alfray.conductor.v2.script.CondCache
 import javax.inject.Inject
 
 @Script2kScope

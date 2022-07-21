@@ -22,6 +22,7 @@ import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
+import com.alfray.conductor.v2.script.CondCache
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
