@@ -19,11 +19,9 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.script.dsl.speed
-import com.alfray.conductor.v2.script.impl.CondCache
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import javax.inject.Inject
 
 class ExecEngine2kTest : ScriptTest2kBase() {
 
@@ -83,5 +81,4 @@ class ExecEngine2kTest : ScriptTest2kBase() {
         condCache.clear()
         assertThat(t.speed).isEqualTo(10.speed)
     }
-
 }
