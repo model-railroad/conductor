@@ -33,6 +33,7 @@ class CondCacheTest: ScriptTest2kBase() {
 
     @Test
     fun testCached() {
+        condCache.freeze()
         assertThat(condCache.cached(false, "NameA")).isFalse()
         assertThat(condCache.cached(true,  "NameA")).isFalse()
         assertThat(condCache.cached(false, "NameA", "2")).isFalse()
@@ -40,7 +41,7 @@ class CondCacheTest: ScriptTest2kBase() {
         assertThat(condCache.cached(true,  "NameB")).isTrue()
         assertThat(condCache.cached(false, "NameB")).isTrue()
 
-        condCache.clear()
+        condCache.unfreeze()
         assertThat(condCache.cached(true,  "NameA")).isTrue()
         assertThat(condCache.cached(true,  "NameA", "2")).isTrue()
         assertThat(condCache.cached(false, "NameB")).isFalse()
@@ -48,9 +49,10 @@ class CondCacheTest: ScriptTest2kBase() {
 
     @Test
     fun testCachedSpeed() {
+        condCache.freeze()
         assertThat(condCache.cachedSpeed(DccSpeed(5), "NameA")).isEqualTo(DccSpeed(5))
         assertThat(condCache.cachedSpeed(DccSpeed(0), "NameA")).isEqualTo(DccSpeed(5))
-        condCache.clear()
+        condCache.unfreeze()
         assertThat(condCache.cachedSpeed(DccSpeed(0), "NameA")).isEqualTo(DccSpeed(0))
     }
 }

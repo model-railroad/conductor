@@ -68,7 +68,6 @@ class SensorTest {
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
 
         sensor.onExecHandle()
-        condCache.clear()
         assertThat(sensor.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
         reset(keyValue)
@@ -77,7 +76,6 @@ class SensorTest {
         assertThat(sensor.active).isTrue()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
         sensor.onExecHandle()
-        condCache.clear()
         assertThat(sensor.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
     }

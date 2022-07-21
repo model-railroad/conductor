@@ -96,7 +96,6 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(s.systemName).isEqualTo("NS829")
         assertThat(s.active).isFalse()
         s.active(true)
-        condCache.clear()
         assertThat(s.active).isTrue()
         assertThat(!s).isFalse()
     }
@@ -114,9 +113,6 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(b.systemName).isEqualTo("NS768")
         assertThat(b.active).isFalse()
         b.active(true)
-        // state is cached and only clear at the beginning of each exec loop
-        assertThat(b.active).isFalse()
-        condCache.clear()
         assertThat(b.active).isTrue()
         assertThat(!b).isFalse()
     }
@@ -136,13 +132,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(!t).isFalse()
 
         t.reverse()
-        condCache.clear()
         assertThat(t.normal).isFalse()
         assertThat(t.active).isFalse()
         assertThat(!t).isTrue()
 
         t.normal()
-        condCache.clear()
         assertThat(t.normal).isTrue()
         assertThat(t.active).isTrue()
         assertThat(!t).isFalse()
@@ -162,28 +156,22 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(t.speed).isEqualTo(0.speed)
         assertThat(t.stopped).isTrue()
         t.forward(5.speed)
-        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
         assertThat(t.stopped).isFalse()
         t.reverse(15.speed)
-        condCache.clear()
         assertThat(t.speed).isEqualTo(15.speed.reverse())
         assertThat(t.stopped).isFalse()
 
         assertThat(t.light).isFalse()
         t.light(true)
-        condCache.clear()
         assertThat(t.light).isTrue()
         t.light(false)
-        condCache.clear()
         assertThat(t.light).isFalse()
 
         assertThat(t.sound).isFalse()
         t.sound(true)
-        condCache.clear()
         assertThat(t.sound).isTrue()
         t.sound(false)
-        condCache.clear()
         assertThat(t.sound).isFalse()
 
         assertThat((t.f as FBits).f).isEqualTo(0b00000000000)
@@ -199,13 +187,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(t.f9).isFalse()
 
         t.f1(true)
-        condCache.clear()
         assertThat(t.f1).isTrue()
         assertThat((t.f as FBits).f).isEqualTo(0b00000000010)
         t.f0(true)
         t.f1(false)
         t.f9(true)
-        condCache.clear()
         assertThat(t.f0).isTrue()
         assertThat(t.f1).isFalse()
         assertThat(t.f9).isTrue()
@@ -348,12 +334,10 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         s1.active(false)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t1.normal).isFalse()
 
         s1.active(true)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t1.normal).isTrue()
     }
 
@@ -397,12 +381,10 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         sensor1.active(true)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(turnout1.normal).isTrue()
 
         sensor1.active(false)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(turnout1.normal).isFalse()
     }
 
@@ -441,7 +423,6 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         sensor1.active(false)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train1.speed).isEqualTo(0.speed)
         assertThat(train1.light).isEqualTo(false)
         assertThat(train1.f1).isEqualTo(false)
@@ -453,12 +434,10 @@ class ScriptTest2k : ScriptTest2kBase() {
         sensor1.active(true)
         sensor2.active(true)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train1.speed).isEqualTo(5.speed)
         assertThat(train2.speed).isEqualTo(0.speed)
         // train1.forward condition is not active yet until the next execution pass.
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train1.light).isEqualTo(true)
         assertThat(train1.f1).isEqualTo(true)
         assertThat(train2.speed).isEqualTo(42.speed)
@@ -466,18 +445,14 @@ class ScriptTest2k : ScriptTest2kBase() {
         sensor1.active(true)
         sensor2.active(false)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train1.speed).isEqualTo(7.speed.reverse())
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train2.speed).isEqualTo(43.speed.reverse())
 
         sensor1.active(false)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train1.speed).isEqualTo(0.speed)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(train2.speed).isEqualTo(0.speed)
     }
 

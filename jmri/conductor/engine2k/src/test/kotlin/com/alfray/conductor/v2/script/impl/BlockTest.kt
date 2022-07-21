@@ -67,7 +67,6 @@ class BlockTest {
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
 
         block.onExecHandle()
-        condCache.clear()
         assertThat(block.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
         reset(keyValue)
@@ -76,7 +75,6 @@ class BlockTest {
         assertThat(block.active).isTrue()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
         block.onExecHandle()
-        condCache.clear()
         assertThat(block.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
     }

@@ -75,7 +75,6 @@ class TurnoutTest {
             .putValue(anyString(), anyString(), anyBoolean())
 
         turnout.onExecHandle()
-        condCache.clear()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "N", true)
         assertThat(turnout.active).isTrue()
@@ -94,7 +93,6 @@ class TurnoutTest {
             .putValue(anyString(), anyString(), anyBoolean())
 
         turnout.onExecHandle()
-        condCache.clear()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "R", true)
         assertThat(turnout.active).isFalse()

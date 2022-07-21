@@ -151,13 +151,13 @@ class ExecEngine2k @Inject constructor(
         // conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).reset() }
         // conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).reset() }
         // conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).reset() }
-        condCache.clear()
+        condCache.unfreeze()
         activatedRules.clear()
         eStopHandler.reset()
     }
 
     private fun evalScript() {
-        condCache.clear()
+        condCache.freeze()
         activatedRules.clear()
 
         // Collect all rules with an active condition that have not been executed yet.
@@ -175,6 +175,8 @@ class ExecEngine2k @Inject constructor(
                 logger.d(TAG, "Eval Action Failed", t)
             }
         }
+
+        condCache.unfreeze()
     }
 
     private fun evalRule(r: IRule) {

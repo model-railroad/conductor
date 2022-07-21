@@ -52,33 +52,28 @@ class ExecEngine2kTest : ScriptTest2kBase() {
 
         // No change when sensor is inactive
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t.speed).isEqualTo(0.speed)
 
         // Change *only once* when sensor becomes active.
         s.active(true)
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Further executions ignore this rule as the conditions has not reset yet.
         execEngine.onExecHandle()
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Sensor becomes inactive, which resets the condition.
         s.active(false)
         execEngine.onExecHandle()
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t.speed).isEqualTo(5.speed)
 
         // Next invocation thus executes the rule again.
         s.active(true)
         execEngine.onExecHandle()
         execEngine.onExecHandle()
-        condCache.clear()
         assertThat(t.speed).isEqualTo(10.speed)
     }
 }
