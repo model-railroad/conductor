@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
@@ -36,6 +37,11 @@ internal class RouteSequence(
     private val actionOnActivate = builder.actionOnActivate
     private var callOnActivate: TAction? = null
     private var currentNode: INode? = null
+    internal val context = object: ExecContext(ExecContext.State.UNKNOWN) {
+        override fun onStateChanged(oldState: State, newState: State) {
+            TODO("Not yet implemented")
+        }
+    }
 
     override fun activate() {
         owner.activate(this)

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
@@ -56,8 +57,9 @@ private const val VERBOSE = false
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
     private val factory: Factory,
+    private val logger: ILogger,
 ) : IConductor {
-
+    private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
     val blocks = mutableMapOf<String, IBlock>()
     val turnouts = mutableMapOf<String, ITurnout>()
@@ -72,42 +74,51 @@ class ConductorImpl @Inject internal constructor(
         private set
     var lastJsonEvent: JsonEvent? = null
         private set
-
     override val exportedVars = ExportedVars()
+    internal val globalContext = object: ExecContext(ExecContext.State.GLOBAL) {
+        override fun onStateChanged(oldState: State, newState: State) {
+            check(newState == State.GLOBAL) {
+                logger.d(TAG, "ERROR: Cannot change the global context state.")
+                "Cannot change the global context state."
+            }
+        }
+    }
+    internal var currentContext = globalContext
 
     override fun sensor(systemName: String): ISensor {
-        if (VERBOSE) println("@@ sensor systemName = $systemName")
+        if (VERBOSE) logger.d(TAG, "@@ sensor systemName = $systemName")
         return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
     }
 
     override fun block(systemName: String): IBlock {
-        if (VERBOSE) println("@@ block systemName = $systemName")
+        if (VERBOSE) logger.d(TAG, "@@ block systemName = $systemName")
         return blocks.computeIfAbsent(systemName) { factory.createBlock(it) }
     }
 
     override fun turnout(systemName: String): ITurnout {
-        if (VERBOSE) println("@@ turnout systemName = $systemName")
+        if (VERBOSE) logger.d(TAG, "@@ turnout systemName = $systemName")
         return turnouts.computeIfAbsent(systemName) { factory.createTurnout(it) }
     }
 
     override fun timer(delay: Delay): ITimer {
-        if (VERBOSE) println("@@ timer seconds = $delay")
+        if (VERBOSE) logger.d(TAG, "@@ timer seconds = $delay")
         val t = Timer(delay)
         timers.add(t)
         return t
     }
 
     override fun throttle(dccAddress: Int): IThrottle {
-        if (VERBOSE) println("@@ throttle dccAddress = $dccAddress")
+        if (VERBOSE) logger.d(TAG, "@@ throttle dccAddress = $dccAddress")
         return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it) }
     }
 
     override fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap {
-        if (VERBOSE) println("@@ map = $init")
+        if (VERBOSE) logger.d(TAG, "@@ map = $init")
         val builder = SvgMapBuilder()
         builder.init()
         val m = builder.create()
         if (svgMaps.contains(m.name)) {
+            logger.d(TAG, "SvgMap ERROR: Map name ${m.name} is already defined.")
             throw IllegalArgumentException ("Map name ${m.name} is already defined.")
         }
         svgMaps[m.name] = m
@@ -115,7 +126,11 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun on(condition: () -> Any): IRule {
-        if (VERBOSE) println("@@ on = $condition")
+        if (VERBOSE) logger.d(TAG, "@@ on = $condition")
+        check(currentContext === globalContext) {
+            logger.d(TAG, "ERROR: Can only define an on..then rule at the top global level.")
+            "ERROR: Can only define an on..then rule at the top global level."
+        }
         val rule = Rule(condition)
         rules.add(rule)
         return rule
@@ -134,7 +149,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun ga_page(init: IGaPageBuilder.() -> Unit) {
-        if (VERBOSE) println("@@ ga_page = $init")
+        if (VERBOSE) logger.d(TAG, "@@ ga_page = $init")
         val builder = GaPageBuilder()
         builder.init()
         val pg = builder.create()
@@ -143,7 +158,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun ga_event(init: IGaEventBuilder.() -> Unit) {
-        if (VERBOSE) println("@@ ga_event = $init")
+        if (VERBOSE) logger.d(TAG, "@@ ga_event = $init")
         val builder = GaEventBuilder()
         builder.init()
         val ev = builder.create()
@@ -152,7 +167,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun json_event(init: IJsonEventBuilder.() -> Unit) {
-        if (VERBOSE) println("@@ json_event = $init")
+        if (VERBOSE) logger.d(TAG, "@@ json_event = $init")
         val builder = JsonEventBuilder()
         builder.init()
         val ev = builder.create()
@@ -161,10 +176,10 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun estop() {
-        TODO("ConductionImpl: estop() is not yet implemented")
+        logger.d(TAG, "@@ TODO estop() is not yet implemented")
     }
 
     override fun reset_timers(vararg prefix: String) {
-        TODO("ConductionImpl: reset_timers() is not yet implemented")
+        logger.d(TAG, "@@ TODO reset_timers() is not yet implemented (if not obsolete)")
     }
 }

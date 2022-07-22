@@ -113,6 +113,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(b.systemName).isEqualTo("NS768")
         assertThat(b.active).isFalse()
         b.active(true)
+
         assertThat(b.active).isTrue()
         assertThat(!b).isFalse()
     }
@@ -348,13 +349,21 @@ class ScriptTest2k : ScriptTest2kBase() {
         val S1 = sensor("S1")
         val T1 = turnout("T1")
         on { !S1 } then {
+            on { S1 } then { T1.normal() }
             T1.reverse()
-            on { S1 } then { T1.normal()
         }
         """.trimIndent()
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(1)
+
+        val turnout1 = conductorImpl.turnouts["T1"]!!
+        val sensor1  = conductorImpl.sensors["S1"]!!
+        assertThat(turnout1.normal).isTrue()
+        sensor1.active(true)
+
+        execEngine.onExecHandle()
+        assertThat(turnout1.normal).isFalse()
         assertThat("").isEqualTo("TODO Expected error on..then in node function")
     }
 

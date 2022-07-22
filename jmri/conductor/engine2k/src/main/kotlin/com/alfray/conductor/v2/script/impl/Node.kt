@@ -18,15 +18,21 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.INode
 
 /** Internal DSL script implementation for a route sequence node. */
-class Node(builder: NodeBuilder) : INode {
+internal class Node(builder: NodeBuilder) : INode {
     override val block = builder.block
     val actionOnEnter = builder.actionOnEnter
     val actionWhileOccupied = builder.actionWhileOccupied
     val actionOnTrailing = builder.actionOnTrailing
     val actionOnEmpty = builder.actionOnEmpty
+    internal val context = object: ExecContext(ExecContext.State.UNKNOWN) {
+        override fun onStateChanged(oldState: State, newState: State) {
+            TODO("Not yet implemented")
+        }
+    }
 
     override fun toString(): String {
         return "{${block.systemName}}"
