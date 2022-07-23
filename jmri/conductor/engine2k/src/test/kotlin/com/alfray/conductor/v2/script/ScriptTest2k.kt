@@ -360,7 +360,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val turnout1 = conductorImpl.turnouts["T1"]!!
         val sensor1  = conductorImpl.sensors["S1"]!!
         assertThat(turnout1.normal).isTrue()
-        sensor1.active(true)
+        sensor1.active(false)
 
         execEngine.onExecHandle()
         assertThat(turnout1.normal).isFalse()
@@ -573,6 +573,12 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
+
+        val block1 = conductorImpl.sensors["B01"]!!
+        block1.active(true)
+
+        execEngine.onExecHandle()
+
         assertThat("").isEqualTo("TODO Expected error on..then in node function")
     }
 }

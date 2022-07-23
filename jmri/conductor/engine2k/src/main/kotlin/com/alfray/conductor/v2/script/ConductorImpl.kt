@@ -75,15 +75,8 @@ class ConductorImpl @Inject internal constructor(
     var lastJsonEvent: JsonEvent? = null
         private set
     override val exportedVars = ExportedVars()
-    internal val globalContext = object: ExecContext(ExecContext.State.GLOBAL) {
-        override fun onStateChanged(oldState: State, newState: State) {
-            check(newState == State.GLOBAL) {
-                logger.d(TAG, "ERROR: Cannot change the global context state.")
-                "Cannot change the global context state."
-            }
-        }
-    }
-    internal var currentContext = globalContext
+    internal val globalContext = ExecContext(ExecContext.State.GLOBAL_SCRIPT)
+    private var currentContext = globalContext
 
     override fun sensor(systemName: String): ISensor {
         if (VERBOSE) logger.d(TAG, "@@ sensor systemName = $systemName")
@@ -181,5 +174,13 @@ class ConductorImpl @Inject internal constructor(
 
     override fun reset_timers(vararg prefix: String) {
         logger.d(TAG, "@@ TODO reset_timers() is not yet implemented (if not obsolete)")
+    }
+
+    internal fun changeContext(context: ExecContext) {
+        currentContext = context
+    }
+
+    internal fun resetContext() {
+        currentContext = globalContext
     }
 }

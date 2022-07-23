@@ -30,6 +30,7 @@ import com.alfray.conductor.v2.Script2kErrors
 import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.IExecEngine
@@ -61,14 +62,16 @@ class ExecEngine2k @Inject constructor(
 
     private val handleFrequency = FrequencyMeasurer(clock)
     private val handleRateLimiter = RateLimiter(30.0f, clock)
-    private val activatedRules = mutableListOf<Rule>()
-    private val ruleExecCache = BooleanCache<Rule>()
+    private val activatedActions = mutableListOf<ExecAction>()
+    private val actionExecCache = BooleanCache<TAction>()
+    private val globalRuleContext = ExecContext(ExecContext.State.GLOBAL_RULE)
 
     override fun onExecStart() {
         conductor.blocks.forEach { (_, block) -> (block as Block).onExecStart() }
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
+        // Routes must be started after all sensor objects.
         conductor.activeRoutes.forEach { (it as ActiveRoute).onExecStart() }
         reset()
         exportMaps()
@@ -152,45 +155,63 @@ class ExecEngine2k @Inject constructor(
         // conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).reset() }
         // conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).reset() }
         condCache.unfreeze()
-        activatedRules.clear()
+        activatedActions.clear()
         eStopHandler.reset()
     }
 
     private fun evalScript() {
         condCache.freeze()
-        activatedRules.clear()
+        activatedActions.clear()
 
         // Collect all rules with an active condition that have not been executed yet.
-        conductor.rules.forEach { evalRule(it) }
+        conductor.rules.forEach { collectRuleAction(it) }
 
         // Add rules from any currently active route, in order.
-        // TODO conductor.activeRoutes.forEach { a -> (a as ActiveRoute).evalRules { r -> evalRule(r)} }
-
-        // Second execute all actions in the order they are queued.
-        for (rule in activatedRules) {
-            try {
-                ruleExecCache.put(rule, true)
-                rule.evaluateAction()
-            } catch (t: Throwable) {
-                logger.d(TAG, "Eval Action Failed", t)
-            }
+        conductor.activeRoutes.forEach { a ->
+            a as ActiveRoute
+            a.collectActions(activatedActions)
         }
 
+        // Execute all actions in the order they are queued.
+        for ((context, action) in activatedActions) {
+            conductor.changeContext(context)
+            actionExecCache.put(action, true)
+            try {
+                action.invoke()
+            } catch (t: Throwable) {
+                logger.d(TAG, "Eval action failed", t)
+            }
+        }
+        conductor.resetContext()
         condCache.unfreeze()
     }
 
-    private fun evalRule(r: IRule) {
+    private fun collectRuleAction(r: IRule) {
         val rule = r as Rule
-        val active = rule.evaluateCondition()
+        val active: Boolean
+        try {
+            active = rule.evaluateCondition()
+        } catch (t: Throwable) {
+            logger.d(TAG, "Eval rule condition failed", t)
+            return
+        }
 
         // Rules only get executed once when activated and until
         // the condition is cleared and activated again.
+        val action: TAction
+        try {
+            action = rule.getAction()
+        } catch (t: Throwable) {
+            logger.d(TAG, "Eval rule action failed", t)
+            return
+        }
+
         if (active) {
-            if (!ruleExecCache.get(rule)) {
-                activatedRules.add(rule)
+            if (!actionExecCache.get(action)) {
+                activatedActions.add(ExecAction(globalRuleContext, action))
             }
         } else {
-            ruleExecCache.remove(rule)
+            actionExecCache.remove(action)
         }
     }
 
@@ -203,3 +224,5 @@ class ExecEngine2k @Inject constructor(
     }
 
 }
+
+internal data class ExecAction(val context: ExecContext, val action: TAction)

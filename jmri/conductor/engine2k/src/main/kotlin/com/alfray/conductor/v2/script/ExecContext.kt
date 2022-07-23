@@ -28,28 +28,15 @@ import com.alfray.conductor.v2.script.impl.Timer
  * route/node callback is being executed.
  * The context for route or node gets cleared when the object's state changes.
  */
-internal abstract class ExecContext(private var state: State) {
+internal open class ExecContext(private val state: State) {
     val afterTimers = mutableListOf<Timer>()
 
     enum class State {
         UNKNOWN,
-        GLOBAL,
-        ROUTE_ACTIVATE,
-        ROUTE_ERROR,
-        NODE_ENTER,
-        NODE_OCCUPIED,
-        NODE_TRAILING,
-        NODE_EMPTY,
+        GLOBAL_SCRIPT,
+        GLOBAL_RULE,
+        ACTIVE_ROUTE,
+        ROUTE,
+        NODE,
     }
-
-    abstract fun onStateChanged(oldState: State, newState: State)
-
-    fun changeState(newState: State) {
-        if (newState != state) {
-            val oldState = state
-            state = newState
-            onStateChanged(oldState, newState)
-        }
-    }
-
 }

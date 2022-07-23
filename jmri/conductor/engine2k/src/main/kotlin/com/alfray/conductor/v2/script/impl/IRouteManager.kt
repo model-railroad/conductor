@@ -18,7 +18,13 @@
 
 package com.alfray.conductor.v2.script.impl
 
+/** Internal interface for a route that must be managed. */
 interface IRouteManager {
+    /**
+     * Called from ExecEngine2's onExecStart to initialize and validate the state of the route.
+     */
+    fun initRoute()
+
     /**
      * Called at the start of each ExecEngine2 loop to manage the route.
      * This is called before the route gets to evaluate all the current

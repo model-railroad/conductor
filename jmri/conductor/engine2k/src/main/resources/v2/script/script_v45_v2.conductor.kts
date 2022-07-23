@@ -248,6 +248,7 @@ val Passenger_Route = PA_Route.sequence {
             // Wait for train to have cleared up T320 before switching to full speed.
             // The problem is that B321 activates as train hits diverted leg of turnout.
             after(AM_Leaving_To_Full_Speed) then {
+                // TBD: validate PA_Toggle is still on
                 AM.forward(AM_Full_Speed)
             }
 

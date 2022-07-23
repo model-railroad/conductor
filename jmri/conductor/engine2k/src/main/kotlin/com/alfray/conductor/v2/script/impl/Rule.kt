@@ -26,7 +26,7 @@ import com.alfray.conductor.v2.script.dsl.TCondition
 private const val VERBOSE = false
 
 internal class Rule(private val condition: TCondition) : IRule {
-    private lateinit var action: TAction
+    private var action: TAction? = null
 
     override fun then(action: TAction) {
         this.action = action
@@ -45,8 +45,8 @@ internal class Rule(private val condition: TCondition) : IRule {
         return cond
     }
 
-    fun evaluateAction() {
-        if (VERBOSE) println("Rule eval action: $action")
-        action.invoke()
+    fun getAction() : TAction {
+        return action ?: throw IllegalStateException(
+            "Undefined Rule Action ('on..then' statement missing the 'then' part).")
     }
 }

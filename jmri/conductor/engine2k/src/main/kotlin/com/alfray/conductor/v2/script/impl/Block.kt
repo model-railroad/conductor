@@ -40,6 +40,9 @@ import dagger.assisted.AssistedInject
  * The main difference between a Block and a Sensor resides in the concept of an active block:
  * a block is active when its underlying physical sensor is active OR when a route manager
  * determines that a train must logically/virtually be occupying that block.
+ * A block has 3 states: empty, occupied (sensor active), and trailing (sensor either active or not).
+ * The state is computed by an external route manager which updates the block and any nodes that
+ * depend on this block.
  */
 internal class Block @AssistedInject constructor(
     private val keyValue: IKeyValue,
@@ -52,9 +55,10 @@ internal class Block @AssistedInject constructor(
     private var _active = false
     private var lastActive = false
     private val keyName = "${Prefix.Block}$systemName"
-
     override val active: Boolean
         get() = condCache.cached(_active, keyName) // uses internal state, does NOT update from JMRI.
+    var state = State.EMPTY
+        private set
 
     override fun not(): Boolean = !active
 
@@ -62,6 +66,16 @@ internal class Block @AssistedInject constructor(
     internal fun active(isActive: Boolean) {
         // Updates the internal state only.
         _active = isActive
+    }
+
+    enum class State {
+        EMPTY,
+        OCCUPIED,
+        TRAILING
+    }
+
+    fun changeState(newState: State) {
+        state = newState
     }
 
     /** Initializes the underlying JMRI sensor. */
