@@ -20,6 +20,9 @@ package com.alflabs.conductor.jmri;
 
 import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
+import com.alflabs.utils.ILogger;
+import com.alflabs.utils.JavaLogger;
+import com.alflabs.utils.StringLogger;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,20 +30,32 @@ import java.util.TreeMap;
 public class FakeJmriProvider implements IJmriProvider {
     private static final String TAG = FakeJmriProvider.class.getSimpleName();
 
+    private final ILogger mLogger;
     protected final Map<String, IJmriSensor> mSensors = new TreeMap<>();
     protected final Map<String, IJmriTurnout> mTurnouts = new TreeMap<>();
     protected final Map<Integer, IJmriThrottle> mThrottles = new TreeMap<>();
 
+    /** Default constructor that creates a {@link System#out} logger using {@link JavaLogger}. */
+    public FakeJmriProvider() {
+        mLogger = new JavaLogger();
+    }
+
+    /** Secondary constructor that enables selecting an alternate logger, such as
+     * {@link StringLogger}. */
+    public FakeJmriProvider(ILogger logger) {
+        mLogger = logger;
+    }
+
     // Interface ILogger
     @Override
     public void d(String tag, String message) {
-        System.out.println(tag + ": " + message);
+        mLogger.d(tag, message);
     }
 
     // Interface ILogger
     @Override
     public void d(String tag, String message, Throwable tr) {
-        System.out.println(tag + ": " + message + ": " + tr);
+        mLogger.d(tag, message, tr);
     }
 
     private void log(String msg) {

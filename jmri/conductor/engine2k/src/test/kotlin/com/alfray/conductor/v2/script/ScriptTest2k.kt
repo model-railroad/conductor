@@ -363,8 +363,10 @@ class ScriptTest2k : ScriptTest2kBase() {
         sensor1.active(false)
 
         execEngine.onExecHandle()
-        assertThat(turnout1.normal).isFalse()
-        assertThat("").isEqualTo("TODO Expected error on..then in node function")
+        assertThat(logger.string).contains("ERROR: Can only define an on..then rule at the top global level")
+        // execution aborted and the turnout was never thrown
+        assertThat(turnout1.normal).isTrue()
+
     }
 
     @Test
@@ -579,6 +581,6 @@ class ScriptTest2k : ScriptTest2kBase() {
         execEngine.onExecStart()
         execEngine.onExecHandle()
 
-        assertThat("").isEqualTo("TODO Expected error on..then in node function")
+        assertThat(logger.string).contains("ERROR: Can only define an on..then rule at the top global level")
     }
 }

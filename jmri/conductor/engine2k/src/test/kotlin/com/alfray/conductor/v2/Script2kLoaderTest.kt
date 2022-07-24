@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
+import com.alflabs.utils.StringLogger
 import com.alfray.conductor.v2.dagger.DaggerITestComponent2k
 import com.alfray.conductor.v2.dagger.ITestComponent2k
 import com.alfray.conductor.v2.dagger.Script2kTestContext
@@ -30,7 +31,8 @@ import javax.inject.Inject
 
 class Script2kLoaderTest {
 
-    private val jmriProvider = FakeJmriProvider()
+    private val logger = StringLogger(/* useSysOut */ true)
+    private val jmriProvider = FakeJmriProvider(logger)
     private lateinit var component: ITestComponent2k
     @Inject internal lateinit var context: Script2kTestContext
 
