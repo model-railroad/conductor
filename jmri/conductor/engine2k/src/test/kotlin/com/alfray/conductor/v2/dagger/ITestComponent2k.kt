@@ -21,8 +21,6 @@ package com.alfray.conductor.v2.dagger
 import com.alflabs.conductor.dagger.CommonTestModule
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alfray.conductor.v2.Script2kLoaderTest
-import com.alfray.conductor.v2.script.ExecEngine2kTest
-import com.alfray.conductor.v2.script.ScriptTest2k
 import com.alfray.conductor.v2.script.ScriptTest2kBase
 import dagger.BindsInstance
 import dagger.Component

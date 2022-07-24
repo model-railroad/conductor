@@ -31,8 +31,8 @@ import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 
 open class ScriptTest2kBase {
-    private val jmriProvider = FakeJmriProvider()
-    protected lateinit var scriptComponent: IScript2kTestComponent
+    protected val jmriProvider = FakeJmriProvider()
+    private lateinit var scriptComponent: IScript2kTestComponent
     @Inject internal lateinit var context: Script2kTestContext
     @Inject internal lateinit var fileOps: FakeFileOps
 
@@ -58,20 +58,31 @@ open class ScriptTest2kBase {
         return mainComponent
     }
 
-    fun loadScriptFromFile(scriptName: String): ResultWithDiagnostics<EvaluationResult> {
+    fun loadScriptFromFile(
+        scriptName: String,
+        performExecStart: Boolean = true,
+    ): ResultWithDiagnostics<EvaluationResult> {
         assertThat(loader).isNotNull()
         loader.loadScriptFromFile(scriptName)
-        execEngine.onExecStart()
+        if (performExecStart) {
+            execEngine.onExecStart()
+        }
         return loader.result
     }
 
-    fun loadScriptFromText(scriptName: String = "local", scriptText: String): ResultWithDiagnostics<EvaluationResult> {
+    fun loadScriptFromText(
+        scriptText: String,
+        scriptName: String = "local",
+        performExecStart: Boolean = true,
+    ): ResultWithDiagnostics<EvaluationResult> {
         assertThat(loader).isNotNull()
         val prefix = """
             import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
-        execEngine.onExecStart()
+        if (performExecStart) {
+            execEngine.onExecStart()
+        }
         return loader.result
     }
 

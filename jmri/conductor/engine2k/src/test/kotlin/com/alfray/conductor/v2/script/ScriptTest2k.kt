@@ -568,15 +568,15 @@ class ScriptTest2k : ScriptTest2kBase() {
             }
             sequence = listOf(block1_fwd)
         }
-        """.trimIndent()
+        """.trimIndent(),
+        performExecStart = false,
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
 
-        val block1 = conductorImpl.sensors["B01"]!!
-        block1.active(true)
-
+        jmriProvider.getSensor("B01").isActive = true
+        execEngine.onExecStart()
         execEngine.onExecHandle()
 
         assertThat("").isEqualTo("TODO Expected error on..then in node function")

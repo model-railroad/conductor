@@ -50,17 +50,22 @@ internal class Node(builder: NodeBuilder) : INode {
 //                context.changeState(ExecContext.State.NODE_OCCUPIED)
             }
         } else {
-            if (newState == Block.State.OCCUPIED) {
-                callOnEnter = actionOnEnter
-                callWhileOccupied = actionWhileOccupied
-//                context.changeState(ExecContext.State.NODE_ENTER) // TODO is that state useful?
-            } else if (newState == Block.State.TRAILING) {
-                callOnTrailing = actionOnTrailing
-//                context.changeState(ExecContext.State.NODE_TRAILING)
-            } else if (newState == Block.State.EMPTY) {
-                callOnEmpty = actionOnEmpty
-//                context.changeState(ExecContext.State.NODE_EMPTY)
+            when (newState) {
+                Block.State.OCCUPIED -> {
+                    callOnEnter = actionOnEnter
+                    callWhileOccupied = actionWhileOccupied
+        //                context.changeState(ExecContext.State.NODE_ENTER) // TODO is that state useful?
+                }
+                Block.State.TRAILING -> {
+                    callOnTrailing = actionOnTrailing
+        //                context.changeState(ExecContext.State.NODE_TRAILING)
+                }
+                Block.State.EMPTY -> {
+                    callOnEmpty = actionOnEmpty
+        //                context.changeState(ExecContext.State.NODE_EMPTY)
+                }
             }
+            block.changeState(newState)
         }
     }
 

@@ -56,7 +56,7 @@ internal class ActiveRoute(
         }
     }
 
-    inline fun checkError(value: Boolean, lazyMessage: () -> Any) {
+    inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
             _error = true
             val message = lazyMessage()
@@ -82,7 +82,9 @@ internal class ActiveRoute(
 
     override fun onExecStart() {
         _error = false
-        checkError(_routes.isNotEmpty()) { "An active route must contain at least one route definition, such as 'idle()'." }
+        assertOrError(_routes.isNotEmpty()) {
+            "An active route must contain at least one route definition, such as 'idle()'."
+        }
         if (_active == null) {
             _active = _routes.first()
         }
