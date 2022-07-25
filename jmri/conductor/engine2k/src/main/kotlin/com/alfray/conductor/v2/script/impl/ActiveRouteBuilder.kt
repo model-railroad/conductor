@@ -21,16 +21,19 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
-import com.alfray.conductor.v2.script.dsl.RuleActionEmpty
 import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal class ActiveRouteBuilder : IActiveRouteBuilder {
-    var actionOnError = RuleActionEmpty
+internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBuilder {
+    private val TAG = javaClass.simpleName
+    var actionOnError: TAction? = null
 
     override fun onError(action: TAction) {
-        check(actionOnError == RuleActionEmpty)
+        logger.assertOrThrow(TAG, actionOnError == null) {
+            "ActiveRoute onError defined more than once"
+        }
         actionOnError = action
     }
 
-    fun create(logger: ILogger): IActiveRoute = ActiveRoute(logger, this)
+    fun create(): IActiveRoute = ActiveRoute(logger, this)
 }

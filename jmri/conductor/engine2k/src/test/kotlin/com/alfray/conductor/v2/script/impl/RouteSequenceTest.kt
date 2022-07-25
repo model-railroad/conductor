@@ -185,5 +185,5 @@ class RouteSequenceTest {
     }
 
     private fun node(index: Int) =
-        NodeBuilder(blockFactory.get(index.toString())).create()
+        NodeBuilder(jmriProvider, blockFactory.get(index.toString())).create()
 }

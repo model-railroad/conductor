@@ -105,7 +105,7 @@ internal class ActiveRoute(
     }
 
     override fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute {
-        val builder = RouteSequenceBuilder(this)
+        val builder = RouteSequenceBuilder(logger, this)
         builder.init()
         return add(builder.create())
     }
@@ -135,7 +135,9 @@ internal class ActiveRoute(
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
     fun collectActions(execActions: MutableList<ExecAction>) {
         if (error) {
-            execActions.add(ExecAction(context, actionOnError))
+            actionOnError?.let {
+                execActions.add(ExecAction(context, it))
+            }
             return
         }
 

@@ -22,5 +22,3 @@ package com.alfray.conductor.v2.script.dsl
 interface IRule {
     infix fun then(action: TAction)
 }
-
-val RuleActionEmpty : TAction = {}

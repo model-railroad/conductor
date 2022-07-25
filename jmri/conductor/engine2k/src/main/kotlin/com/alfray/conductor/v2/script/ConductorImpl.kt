@@ -132,9 +132,9 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
-        val b = ActiveRouteBuilder()
+        val b = ActiveRouteBuilder(logger)
         b.init()
-        val a = b.create(logger)
+        val a = b.create()
         activeRoutes.add(a)
         return a
     }

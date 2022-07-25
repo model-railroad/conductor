@@ -18,36 +18,49 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.INodeBuilder
-import com.alfray.conductor.v2.script.dsl.RuleActionEmpty
 import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.utils.assertOrThrow
 
 /** Internal DSL script builder for [INode]. */
-class NodeBuilder(val block: IBlock) : INodeBuilder {
-    var actionOnEnter = RuleActionEmpty
-    var actionWhileOccupied = RuleActionEmpty
-    var actionOnTrailing = RuleActionEmpty
-    var actionOnEmpty = RuleActionEmpty
+class NodeBuilder(
+    private val logger: ILogger,
+    val block: IBlock
+) : INodeBuilder {
+    private val TAG = javaClass.simpleName
+    var actionOnEnter: TAction? = null
+    var actionWhileOccupied: TAction? = null
+    var actionOnTrailing: TAction? = null
+    var actionOnEmpty: TAction? = null
 
     override fun onEnter(action: TAction) {
-        check(actionOnEnter == RuleActionEmpty)
+        logger.assertOrThrow(TAG, actionOnEnter == null) {
+            "Node onEnter defined more than once"
+        }
         actionOnEnter = action
     }
 
     override fun whileOccupied(action: TAction) {
-        check(actionWhileOccupied == RuleActionEmpty)
+        logger.assertOrThrow(TAG, actionWhileOccupied == null) {
+            "Node whileOccupied defined more than once"
+        }
         actionWhileOccupied = action
     }
 
     override fun onTrailing(action: TAction) {
-        check(actionOnTrailing == RuleActionEmpty)
+        logger.assertOrThrow(TAG, actionOnTrailing == null) {
+            "Node onTrailing defined more than once"
+        }
         actionOnTrailing = action
     }
 
     override fun onEmpty(action: TAction) {
-        check(actionOnEmpty == RuleActionEmpty)
+        logger.assertOrThrow(TAG, actionOnEmpty == null) {
+            "Node onEmpty defined more than once"
+        }
         actionOnEmpty = action
     }
 
