@@ -16,25 +16,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.conductor.v2.script.dsl
+package com.alfray.conductor.v2.script.impl
 
-/** DSL script interface for an active route. */
-interface IActiveRoute {
-    /** The currently active route. */
-    val active : IRoute
+import com.alflabs.utils.ILogger
+import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 
-    /** All the route choices for this active route. */
-    val routes : List<IRoute>
+internal open class RouteIdleBuilder(
+    logger: ILogger,
+    owner: IActiveRoute
+) : RouteBaseBuilder(logger, owner), IRouteIdleBuilder {
 
-    /** Activates this route. */
-    fun activate(route: IRoute)
-
-    /** The current route and this are in error. */
-    val error : Boolean
-
-    /** Registers a new idle route. */
-    fun idle(init: IRouteIdleBuilder.() -> Unit): IRoute
-
-    /** Registers a new sequence route. */
-    fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute
+    fun create() : IRoute = RouteIdle(owner, this)
 }

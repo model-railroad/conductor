@@ -23,6 +23,7 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.utils.assertOrThrow
 
@@ -100,8 +101,10 @@ internal class ActiveRoute(
         return route
     }
 
-    override fun idle(): IRoute {
-        return add(RouteIdle(this))
+    override fun idle(init: IRouteIdleBuilder.() -> Unit): IRoute {
+        val builder = RouteIdleBuilder(logger, this)
+        builder.init()
+        return add(builder.create())
     }
 
     override fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute {

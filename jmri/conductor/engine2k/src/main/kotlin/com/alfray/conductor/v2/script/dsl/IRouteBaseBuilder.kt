@@ -18,23 +18,9 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface for an active route. */
-interface IActiveRoute {
-    /** The currently active route. */
-    val active : IRoute
-
-    /** All the route choices for this active route. */
-    val routes : List<IRoute>
-
-    /** Activates this route. */
-    fun activate(route: IRoute)
-
-    /** The current route and this are in error. */
-    val error : Boolean
-
-    /** Registers a new idle route. */
-    fun idle(init: IRouteIdleBuilder.() -> Unit): IRoute
-
-    /** Registers a new sequence route. */
-    fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute
+/** An abstract internal DSL script interface common to route builders. */
+interface IRouteBaseBuilder {
+    fun onActivate(action: TAction)
+    fun onRecover(action: TAction)
 }
+

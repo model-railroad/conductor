@@ -168,7 +168,7 @@ val PA_Route = activeRoute {
     }
 }
 
-val Route_Idle = PA_Route.idle()
+val Route_Idle = PA_Route.idle {}
 
 val _leaving_speed = 5.speed
 val _mainline_speed = 10.speed

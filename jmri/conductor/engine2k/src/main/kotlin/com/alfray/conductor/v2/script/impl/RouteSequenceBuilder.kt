@@ -26,13 +26,11 @@ import com.alfray.conductor.v2.script.dsl.INodeBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
-import com.alfray.conductor.v2.script.dsl.TAction
-import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal class RouteSequenceBuilder(
-    private val logger: ILogger,
-    private val owner: IActiveRoute
-) : IRouteSequenceBuilder {
+    logger: ILogger,
+    owner: IActiveRoute,
+) : RouteBaseBuilder(logger, owner), IRouteSequenceBuilder {
     private val TAG = javaClass.simpleName
     override val route: IActiveRoute
         get() = owner
@@ -40,22 +38,6 @@ internal class RouteSequenceBuilder(
     override var timeout = 60
     override lateinit var sequence: List<INode>
     override val branches = mutableListOf<List<INode>>()
-    var actionOnActivate: TAction? = null
-    var actionOnRecover: TAction? = null
-
-    override fun onActivate(action: TAction) {
-        logger.assertOrThrow(TAG, actionOnActivate == null) {
-            "RouteSequence onActive defined more than once"
-        }
-        actionOnActivate = action
-    }
-
-    override fun onRecover(action: TAction) {
-        logger.assertOrThrow(TAG, actionOnRecover == null) {
-            "RouteSequence onRecover defined more than once"
-        }
-        actionOnRecover = action
-    }
 
     override fun node(block: IBlock, init: INodeBuilder.() -> Unit): INode {
         val b = NodeBuilder(logger, block)

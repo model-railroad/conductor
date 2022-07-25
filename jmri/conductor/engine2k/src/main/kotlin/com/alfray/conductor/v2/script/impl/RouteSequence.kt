@@ -19,11 +19,9 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.ExecAction
-import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
-import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
 /**
@@ -61,33 +59,12 @@ import com.alfray.conductor.v2.simulator.SimulRouteGraph
 internal class RouteSequence(
     override val owner: IActiveRoute,
     builder: RouteSequenceBuilder
-) : IRouteSequence, IRouteManager {
+) : RouteBase(owner, builder), IRouteSequence, IRouteManager {
     override val throttle = builder.throttle
     private var startNode: INode? = null
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
-    private val actionOnActivate = builder.actionOnActivate
-    private var callOnActivate: TAction? = null
     private var currentNode: INode? = null
-    private val context = ExecContext(ExecContext.State.ROUTE)
-    var error = false
-        private set(v) {
-            field = v
-            (owner as ActiveRoute).reportError(this, v)
-        }
-
-    private inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
-        if (!value) {
-            error = true
-            val message = lazyMessage()
-            throw IllegalStateException(message.toString())
-        }
-    }
-
-    override fun activate() {
-        owner.activate(this)
-        callOnActivate = actionOnActivate
-    }
 
     override fun start_node(node: INode) {
         assertOrError(graph.nodes.contains(node)) {
@@ -197,6 +174,10 @@ internal class RouteSequence(
         callOnActivate?.let {
             execActions.add(ExecAction(context, it))
             callOnActivate = null
+        }
+        callOnRecover?.let {
+            execActions.add(ExecAction(context, it))
+            callOnRecover = null
         }
         currentNode?.let {
             it as Node

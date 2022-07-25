@@ -19,14 +19,12 @@
 package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface to build an [IRouteSequence]. */
-interface IRouteSequenceBuilder {
+interface IRouteSequenceBuilder : IRouteBaseBuilder {
     val route: IActiveRoute
     var throttle: IThrottle
     var timeout: Int
     var sequence: List<INode>
     val branches: MutableList<List<INode>>
-    fun onActivate(action: TAction)
-    fun onRecover(action: TAction)
     fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
 }
 

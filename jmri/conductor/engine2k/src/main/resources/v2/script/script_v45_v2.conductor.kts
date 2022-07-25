@@ -174,7 +174,7 @@ val PA_Route = activeRoute {
     }
 }
 
-val PA_Idle_Route = PA_Route.idle()
+val PA_Idle_Route = PA_Route.idle {}
 
 val Passenger_Route = PA_Route.sequence {
     throttle = AM
@@ -716,7 +716,7 @@ val BL_Route = activeRoute {
     }
 }
 
-val BL_Idle_Route = BL_Route.idle()
+val BL_Idle_Route = BL_Route.idle {}
 
 on { BL_Route.error } then {
     // Tip: can't call this from BL_Route.onError{} as neither BL_Route

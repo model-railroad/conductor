@@ -475,7 +475,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Block1  = block("B01")
         val Block2  = block("B02")
         val Routes = activeRoute {}
-        val Route_Idle = Routes.idle()
+        val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
             timeout = 42
@@ -522,7 +522,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Block3  = block("B03")
         val Block4  = block("B04")
         val Routes = activeRoute {}
-        val Route_Idle = Routes.idle()
+        val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
             timeout = 42
