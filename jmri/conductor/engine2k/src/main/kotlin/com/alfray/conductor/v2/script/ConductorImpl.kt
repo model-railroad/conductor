@@ -110,7 +110,7 @@ class ConductorImpl @Inject internal constructor(
         val builder = SvgMapBuilder()
         builder.init()
         val m = builder.create()
-        logger.assertOrThrow(TAG, svgMaps.contains(m.name)) {
+        logger.assertOrThrow(TAG, !svgMaps.contains(m.name)) {
             "SvgMap ERROR: Map name ${m.name} is already defined."
         }
         svgMaps[m.name] = m

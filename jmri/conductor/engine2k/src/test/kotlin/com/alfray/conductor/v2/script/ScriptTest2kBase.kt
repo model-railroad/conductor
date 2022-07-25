@@ -62,29 +62,23 @@ open class ScriptTest2kBase {
 
     fun loadScriptFromFile(
         scriptName: String,
-        performExecStart: Boolean = true,
     ): ResultWithDiagnostics<EvaluationResult> {
         assertThat(loader).isNotNull()
         loader.loadScriptFromFile(scriptName)
-        if (performExecStart) {
-            execEngine.onExecStart()
-        }
+        execEngine.onExecStart()
         return loader.result
     }
 
     fun loadScriptFromText(
         scriptText: String,
         scriptName: String = "local",
-        performExecStart: Boolean = true,
     ): ResultWithDiagnostics<EvaluationResult> {
         assertThat(loader).isNotNull()
         val prefix = """
             import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
-        if (performExecStart) {
-            execEngine.onExecStart()
-        }
+        execEngine.onExecStart()
         return loader.result
     }
 

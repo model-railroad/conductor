@@ -555,6 +555,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testRouteSequence_OnRuleForbidden() {
+        jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -570,14 +571,12 @@ class ScriptTest2k : ScriptTest2kBase() {
             }
             sequence = listOf(block1_fwd)
         }
-        """.trimIndent(),
-        performExecStart = false,
+        """.trimIndent()
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
 
-        jmriProvider.getSensor("B01").isActive = true
         execEngine.onExecStart()
         execEngine.onExecHandle()
 
