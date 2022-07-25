@@ -26,6 +26,26 @@ import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.utils.assertOrThrow
 
+
+/**
+ * An "active route" is a group of routes, of which one and only one is active at a given time.
+ *
+ * An active route must have at least one route associated with it. Routes can have different
+ * characteristics -- e.g. an 'idle' route does absolutely nothing, whereas a 'sequence' route
+ * implements a shuttle. Furthermore, the 'idle' exists with the sole purpose of having a default
+ * no-op route when an active route must not be operating (since an active route must have an...
+ * 'active' route, per definition).
+ *
+ * Routes have one state that matters to the active route:
+ * - Idle: the route is not active and not being invoked by the script.
+ * - Activated: the route has been activated. Its onActivated callback is called once.
+ * - Active: the route is active and processing its normal behavior (e.g. sequence).
+ * - Error: the route is in error. Its onRecover callback is called repeatedly.
+ *
+ * Routes are responsible for identifying their own error state. They do so by calling the
+ * active route [reportError] method. This triggers the ActiveRoute's onError callback once,
+ * after which the route's onRecover callback is used instead of the normal processing.
+ */
 internal class ActiveRoute(
     private var logger: ILogger,
     builder: ActiveRouteBuilder

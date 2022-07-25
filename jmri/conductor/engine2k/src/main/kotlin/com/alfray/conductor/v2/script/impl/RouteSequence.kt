@@ -26,7 +26,38 @@ import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
-
+/**
+ * A Route shuttle sequence.
+ *
+ * This is typically used to implement a circular cyclic shuttle route, e.g. engine going from
+ * point A to B and then reversing back from B to A. The route will use several times
+ * the same blocks typically in opposite directions with different behaviors. As such, the
+ * route is defined as a directed graph where each node represents a block and edges represent
+ * transition from one block to the next 'logical' one.
+ * There is a main sequence, which is the normal route behavior, then there are branches which
+ * allow the route to deviate from the main block sequence, e.g. for alternative routing or
+ * for error handling.
+ *
+ * Routes have one state that matters to the active route:
+ * - Idle: the route is not active and not being invoked by the script.
+ * - Activated: the route has been activated. Its onActivated callback is called once.
+ * - Active: the route is active and processing its normal behavior (e.g. sequence).
+ * - Error: the route is in error. Its onRecover callback is called repeatedly.
+ *
+ * Routes are responsible for identifying their own error state. They do so by calling the
+ * active route' reportError() method. This triggers the ActiveRoute's onError callback once,
+ * after which the route's onRecover callback is used instead of the normal processing.
+ *
+ * The onActivated callback can use call start_node() to change the starting node for the route.
+ * The starting node is used and validated during the activated-to-active transition. At that
+ * point the route also verifies that the starting node is actually an occupied block, and that
+ * there are no other occupied blocks on the route.
+ * The route manager starts all blocks in either empty or occupied state.
+ * (Note: we don't currently allow the route to start with a train crossing a block boundary.
+ *  That will result in an error and the route going into recover mode.)
+ *
+ * In the Active state, the route manager manages blocks and nodes.
+ */
 internal class RouteSequence(
     override val owner: IActiveRoute,
     builder: RouteSequenceBuilder
@@ -45,7 +76,7 @@ internal class RouteSequence(
             (owner as ActiveRoute).reportError(this, v)
         }
 
-    inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
+    private inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
             error = true
             val message = lazyMessage()
@@ -59,7 +90,9 @@ internal class RouteSequence(
     }
 
     override fun start_node(node: INode) {
-        check(graph.nodes.contains(node))
+        assertOrError(graph.nodes.contains(node)) {
+            "ERROR start_node $node is not part of the route $this"
+        }
         startNode = node
     }
 
@@ -121,6 +154,8 @@ internal class RouteSequence(
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
             val outgoingActive = outgoingNodes.filter { it.block.active }
+
+            // TBD rewrite this
 
             // Any other blocks than current or outgoing cannot be active.
             val extraActive = graph.nodes.filter { it !== node && !outgoingNodes.contains(it) }
