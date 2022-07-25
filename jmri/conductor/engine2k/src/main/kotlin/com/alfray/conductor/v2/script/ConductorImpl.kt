@@ -37,7 +37,6 @@ import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
-import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.ActiveRouteBuilder
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
@@ -50,6 +49,7 @@ import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
+import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
 
 private const val VERBOSE = false
@@ -110,9 +110,8 @@ class ConductorImpl @Inject internal constructor(
         val builder = SvgMapBuilder()
         builder.init()
         val m = builder.create()
-        if (svgMaps.contains(m.name)) {
-            logger.d(TAG, "SvgMap ERROR: Map name ${m.name} is already defined.")
-            throw IllegalArgumentException ("Map name ${m.name} is already defined.")
+        logger.assertOrThrow(TAG, svgMaps.contains(m.name)) {
+            "SvgMap ERROR: Map name ${m.name} is already defined."
         }
         svgMaps[m.name] = m
         return m
@@ -120,8 +119,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun on(condition: () -> Any): IRule {
         if (VERBOSE) logger.d(TAG, "@@ on = $condition")
-        check(currentContext === globalContext) {
-            logger.d(TAG, "ERROR: Can only define an on..then rule at the top global level.")
+        logger.assertOrThrow(TAG, currentContext === globalContext) {
             "ERROR: Can only define an on..then rule at the top global level."
         }
         val rule = Rule(condition)
@@ -136,7 +134,7 @@ class ConductorImpl @Inject internal constructor(
     override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
         val b = ActiveRouteBuilder()
         b.init()
-        val a = ActiveRoute(b)
+        val a = b.create(logger)
         activeRoutes.add(a)
         return a
     }
@@ -184,3 +182,4 @@ class ConductorImpl @Inject internal constructor(
         currentContext = globalContext
     }
 }
+
