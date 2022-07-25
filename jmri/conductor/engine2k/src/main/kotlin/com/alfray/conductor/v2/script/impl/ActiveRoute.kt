@@ -18,15 +18,19 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
+import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal class ActiveRoute(
+    private var logger: ILogger,
     builder: ActiveRouteBuilder
 ) : IActiveRoute, IExecEngine {
+    private val TAG = javaClass.simpleName
     private var _active: IRoute? = null
     private var _error: Boolean = false
     private val actionOnError = builder.actionOnError
@@ -41,7 +45,9 @@ internal class ActiveRoute(
         get() = _error
 
     override fun activate(route: IRoute) {
-        check(route in _routes)
+        logger.assertOrThrow(TAG, route in _routes) {
+            "ERROR cannot active a route not part of an active route: $route"
+        }
         _active = route
     }
 
@@ -52,6 +58,7 @@ internal class ActiveRoute(
      */
     fun reportError(route: IRoute, isError: Boolean) {
         if (isError) {
+            logger.d(TAG, "Route entered error mode: $route")
             _error = true
         }
     }
@@ -59,13 +66,16 @@ internal class ActiveRoute(
     inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
             _error = true
-            val message = lazyMessage()
-            throw IllegalStateException(message.toString())
+            val message = lazyMessage().toString()
+            logger.d(TAG, message)
+            throw IllegalStateException(message)
         }
     }
 
     private fun add(route: IRoute): IRoute {
-        check(route !in _routes)
+        logger.assertOrThrow(TAG, route !in _routes) {
+            "ERROR trying to add route already part of an active route: $route"
+        }
         _routes.add(route)
         return route
     }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
 import com.alfray.conductor.v2.script.dsl.RuleActionEmpty
@@ -31,5 +32,5 @@ internal class ActiveRouteBuilder : IActiveRouteBuilder {
         actionOnError = action
     }
 
-    fun create() : IActiveRoute = ActiveRoute(this)
+    fun create(logger: ILogger): IActiveRoute = ActiveRoute(logger, this)
 }
