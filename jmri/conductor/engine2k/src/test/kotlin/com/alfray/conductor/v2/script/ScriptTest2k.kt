@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.dsl.IRouteIdle
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.ActiveRoute
@@ -465,6 +466,20 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(train1.speed).isEqualTo(0.speed)
         execEngine.onExecHandle()
         assertThat(train2.speed).isEqualTo(0.speed)
+    }
+
+    @Test
+    fun testRouteIdle() {
+        loadScriptFromText(scriptText =
+        """
+        val Routes = activeRoute {}
+        val Route_Idle = Routes.idle {}
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(0)
+        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        assertThat(conductorImpl.activeRoutes[0].active).isInstanceOf(IRouteIdle::class.java)
     }
 
     @Test

@@ -16,20 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.conductor.v2.script.impl
+@file:Suppress("FunctionName")
 
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
-import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IRouteIdle
+package com.alfray.conductor.v2.script.dsl
 
-internal class RouteIdle(
-    owner: IActiveRoute,
-    builder: RouteIdleBuilder
-) : RouteBase(owner, builder), IRouteIdle {
-
-    override fun start_node(node: INode) {
-        assertOrError(false) {
-            "No start_node to set in an idle route."
-        }
-    }
+/** DSL script interface for an idle route. */
+interface IRouteIdle : IRoute {
 }
