@@ -39,9 +39,9 @@ internal class RouteSequenceBuilder(
     override lateinit var sequence: List<INode>
     override val branches = mutableListOf<List<INode>>()
 
-    override fun node(block: IBlock, init: INodeBuilder.() -> Unit): INode {
+    override fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit): INode {
         val b = NodeBuilder(logger, block)
-        b.init()
+        b.nodeSpecification()
         return Node(b)
     }
 

@@ -25,6 +25,6 @@ interface IRouteSequenceBuilder : IRouteBaseBuilder {
     var timeout: Int
     var sequence: List<INode>
     val branches: MutableList<List<INode>>
-    fun node(block: IBlock, init: INodeBuilder.() -> Unit) : INode
+    fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit) : INode
 }
 

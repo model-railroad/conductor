@@ -88,7 +88,13 @@ class Script2kLoader @Inject constructor(
             .filter {
                 it.severity == ScriptDiagnostic.Severity.ERROR ||
                 it.severity == ScriptDiagnostic.Severity.FATAL
-            }.map { it.toString() }
+            }.map {
+                it.render(
+                    withSeverity = true,
+                    withLocation = true,
+                    withException = true,
+                    withStackTrace = false,)
+            }
     }
 
     enum class Status {

@@ -33,8 +33,8 @@ interface IActiveRoute {
     val error : Boolean
 
     /** Registers a new idle route. */
-    fun idle(init: IRouteIdleBuilder.() -> Unit): IRoute
+    fun idle(routeIdleSpecification: IRouteIdleBuilder.() -> Unit): IRoute
 
     /** Registers a new sequence route. */
-    fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute
+    fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute
 }

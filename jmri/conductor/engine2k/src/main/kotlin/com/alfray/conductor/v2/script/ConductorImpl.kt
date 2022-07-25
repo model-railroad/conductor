@@ -105,10 +105,10 @@ class ConductorImpl @Inject internal constructor(
         return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it) }
     }
 
-    override fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap {
-        if (VERBOSE) logger.d(TAG, "@@ map = $init")
+    override fun map(svgMapSpecification: ISvgMapBuilder.() -> Unit): ISvgMap {
+        if (VERBOSE) logger.d(TAG, "@@ map = $svgMapSpecification")
         val builder = SvgMapBuilder()
-        builder.init()
+        builder.svgMapSpecification()
         val m = builder.create()
         logger.assertOrThrow(TAG, !svgMaps.contains(m.name)) {
             "SvgMap ERROR: Map name ${m.name} is already defined."
@@ -131,36 +131,36 @@ class ConductorImpl @Inject internal constructor(
         return After(delay)
     }
 
-    override fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute {
+    override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {
         val b = ActiveRouteBuilder(logger)
-        b.init()
+        b.activeRouteSpecification()
         val a = b.create()
         activeRoutes.add(a)
         return a
     }
 
-    override fun ga_page(init: IGaPageBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ ga_page = $init")
+    override fun ga_page(gaPageSpecification: IGaPageBuilder.() -> Unit) {
+        if (VERBOSE) logger.d(TAG, "@@ ga_page = $gaPageSpecification")
         val builder = GaPageBuilder()
-        builder.init()
+        builder.gaPageSpecification()
         val pg = builder.create()
         // TODO send page
         lastGaPage = pg
     }
 
-    override fun ga_event(init: IGaEventBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ ga_event = $init")
+    override fun ga_event(gaEventSpecification: IGaEventBuilder.() -> Unit) {
+        if (VERBOSE) logger.d(TAG, "@@ ga_event = $gaEventSpecification")
         val builder = GaEventBuilder()
-        builder.init()
+        builder.gaEventSpecification()
         val ev = builder.create()
         // TODO send event
         lastGaEvent = ev
     }
 
-    override fun json_event(init: IJsonEventBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ json_event = $init")
+    override fun json_event(jsonEventSpecification: IJsonEventBuilder.() -> Unit) {
+        if (VERBOSE) logger.d(TAG, "@@ json_event = $jsonEventSpecification")
         val builder = JsonEventBuilder()
-        builder.init()
+        builder.jsonEventSpecification()
         val ev = builder.create()
         // TODO send event
         lastJsonEvent = ev

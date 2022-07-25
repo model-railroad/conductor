@@ -46,6 +46,26 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
+    fun testScriptWithError() {
+        loadScriptFromText(scriptText =
+        """
+        Sensor1 = sensor("S01")
+        val T1 = throttle 1001
+        val Routes = activeRoute
+        """.trimIndent()
+        )
+        // TBD... can we make this error less cryptic?
+        assertResultHasError("""
+            ERROR Property getter or setter expected (local.conductor.kts:3:19)
+            ERROR Unresolved reference: Sensor1 (local.conductor.kts:2:1)
+            ERROR Function invocation 'throttle(...)' expected (local.conductor.kts:3:10)
+            ERROR No value passed for parameter 'dccAddress' (local.conductor.kts:3:10)
+            ERROR Function invocation 'activeRoute(...)' expected (local.conductor.kts:4:14)
+            ERROR No value passed for parameter 'activeRouteSpecification' (local.conductor.kts:4:14)
+        """.trimIndent())
+    }
+
+    @Test
     fun testSampleV2() {
         loadScriptFromFile("sample_v2")
         assertResultNoError()
@@ -480,6 +500,18 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
         assertThat(conductorImpl.activeRoutes[0].active).isInstanceOf(IRouteIdle::class.java)
+    }
+
+    @Test
+    fun testRouteIdle_error() {
+        loadScriptFromText(scriptText =
+        """
+        val Routes = activeRoute {}
+        val Route_Idle = Routes.idle()
+        """.trimIndent()
+        )
+        assertResultHasError(
+            "ERROR No value passed for parameter 'routeIdleSpecification' (local.conductor.kts:3:30)")
     }
 
     @Test

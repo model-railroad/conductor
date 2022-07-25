@@ -101,15 +101,15 @@ internal class ActiveRoute(
         return route
     }
 
-    override fun idle(init: IRouteIdleBuilder.() -> Unit): IRoute {
+    override fun idle(routeIdleSpecification: IRouteIdleBuilder.() -> Unit): IRoute {
         val builder = RouteIdleBuilder(logger, this)
-        builder.init()
+        builder.routeIdleSpecification()
         return add(builder.create())
     }
 
-    override fun sequence(init: IRouteSequenceBuilder.() -> Unit): IRoute {
+    override fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute {
         val builder = RouteSequenceBuilder(logger, this)
-        builder.init()
+        builder.routeSequenceSpecification()
         return add(builder.create())
     }
 

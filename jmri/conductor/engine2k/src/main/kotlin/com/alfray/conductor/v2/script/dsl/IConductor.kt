@@ -71,7 +71,7 @@ interface IConductor {
     fun reset_timers(vararg prefix: String)
 
     /** Registers a new map. */
-    fun map(init: ISvgMapBuilder.() -> Unit): ISvgMap
+    fun map(svgMapSpecification: ISvgMapBuilder.() -> Unit): ISvgMap
 
     /** Creates a new rule with the specified conditions and actions.
      * Can only be used at the top level / global scope. */
@@ -84,17 +84,17 @@ interface IConductor {
     fun estop()
 
     /** Creates a new ActiveRoute to select between multiple routes. */
-    fun activeRoute(init: IActiveRouteBuilder.() -> Unit): IActiveRoute
+    fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute
 
     /** Sends a GA Page statistic.
      * No-op till GA ID & URL are defined. */
-    fun ga_page(init: IGaPageBuilder.() -> Unit)
+    fun ga_page(gaPageSpecification: IGaPageBuilder.() -> Unit)
 
     /** Sends a GA Event statistic.
      * No-op till GA ID & URL are defined. */
-    fun ga_event(init: IGaEventBuilder.() -> Unit)
+    fun ga_event(gaEventSpecification: IGaEventBuilder.() -> Unit)
 
     /** Sends a JSON status.
      * No-op till the JSON URL is defined. */
-    fun json_event(init: IJsonEventBuilder.() -> Unit)
+    fun json_event(jsonEventSpecification: IJsonEventBuilder.() -> Unit)
 }
