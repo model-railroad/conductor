@@ -27,6 +27,7 @@ import com.alfray.conductor.v2.script.impl.FBits
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.JsonEvent
+import com.alfray.conductor.v2.script.impl.RouteBase
 import com.alfray.conductor.v2.script.impl.RouteIdle
 import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
@@ -499,7 +500,13 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
-        assertThat(conductorImpl.activeRoutes[0].active).isInstanceOf(IRouteIdle::class.java)
+
+        val activeRoute = conductorImpl.activeRoutes[0]
+        val route = activeRoute.active
+        assertThat(route).isInstanceOf(IRouteIdle::class.java)
+        assertThat(route.toString()).isEqualTo("Route Idle #0")
+        assertThat(activeRoute.toString()).isEqualTo("ActiveRoute[Route Idle #0]")
+
     }
 
     @Test
@@ -516,8 +523,9 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testRouteSequence() {
-        loadScriptFromText(scriptText =
-        """
+        loadScriptFromText(
+            scriptText =
+            """
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Block2  = block("B02")
@@ -543,6 +551,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         assertThat(conductorImpl.activeRoutes).hasSize(1)
         val ar = conductorImpl.activeRoutes[0] as ActiveRoute
+
         assertThat(ar.routes).hasSize(2)
         assertThat(ar.routes[0]).isInstanceOf(RouteIdle::class.java)
         assertThat(ar.routes[1]).isInstanceOf(RouteSequence::class.java)
@@ -556,8 +565,13 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
 
         assertThat(seq.graph.toString()).isEqualTo(
-            "[{B01}=>{B02}=>{B01}]")
+            "[{B01}=>{B02}=>{B01}]"
+        )
+
+        assertThat(seq.toString()).isEqualTo("Route Sequence #1 (1001)")
+        assertThat(ar.toString()).isEqualTo("ActiveRoute[Route Idle #0, Route Sequence #1 (1001)]")
     }
+
 
     @Test
     fun testRouteBranches() {
@@ -624,7 +638,10 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.activeRoutes).hasSize(1)
 
-        execEngine.onExecStart()
+        val route = conductorImpl.activeRoutes[0].active as RouteBase
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
         execEngine.onExecHandle()
 
         assertThat(logger.string).contains("ERROR: Can only define an on..then rule at the top global level")

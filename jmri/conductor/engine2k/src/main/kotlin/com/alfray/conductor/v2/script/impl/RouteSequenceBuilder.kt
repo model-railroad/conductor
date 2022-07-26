@@ -28,9 +28,9 @@ import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 
 internal class RouteSequenceBuilder(
-    logger: ILogger,
     owner: IActiveRoute,
-) : RouteBaseBuilder(logger, owner), IRouteSequenceBuilder {
+    logger: ILogger,
+) : RouteBaseBuilder(owner, logger), IRouteSequenceBuilder {
     private val TAG = javaClass.simpleName
     override val route: IActiveRoute
         get() = owner
@@ -45,5 +45,5 @@ internal class RouteSequenceBuilder(
         return Node(b)
     }
 
-    fun create() : IRouteSequence = RouteSequence(owner, this)
+    fun create() : IRouteSequence = RouteSequence(owner, logger, this)
 }

@@ -66,6 +66,14 @@ internal class ActiveRoute(
     override val error: Boolean
         get() = _active?.state == RouteBase.State.ERROR
 
+    /** Helper returning the index of this route in the active route table.
+     * Used for pretty-printing the route toString. Returns -1 if route unknown. */
+    fun routeIndex(route: IRoute): Int = routes.indexOf(route)
+
+    override fun toString(): String {
+        return "ActiveRoute$_routes"
+    }
+
     /** Called by script to change the active route. No-op if route is already active. */
     override fun activate(route: IRoute) {
         logger.assertOrThrow(TAG, route in _routes) {
@@ -78,12 +86,10 @@ internal class ActiveRoute(
 
         _active?.let {
             it.state = RouteBase.State.IDLE
-            logger.d(TAG, "Route is now idle: $it")
         }
 
         _active = route as RouteBase
         _active?.state = RouteBase.State.ACTIVATED
-        logger.d(TAG, "Route is now activated: $route")
     }
 
     /** Called by routes to indicate their error state has changed. */
@@ -111,13 +117,13 @@ internal class ActiveRoute(
     }
 
     override fun idle(routeIdleSpecification: IRouteIdleBuilder.() -> Unit): IRoute {
-        val builder = RouteIdleBuilder(logger, this)
+        val builder = RouteIdleBuilder(this, logger)
         builder.routeIdleSpecification()
         return add(builder.create())
     }
 
     override fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute {
-        val builder = RouteSequenceBuilder(logger, this)
+        val builder = RouteSequenceBuilder(this, logger)
         builder.routeSequenceSpecification()
         return add(builder.create())
     }
@@ -131,7 +137,7 @@ internal class ActiveRoute(
             it.state = RouteBase.State.IDLE
         }
         if (_active == null) {
-            _active = _routes.first() as RouteBase
+            activate(_routes.first())
         }
         val route = _active
         if (route is IRouteManager) {
@@ -154,8 +160,7 @@ internal class ActiveRoute(
             callOnError = null
         }
 
-        val route = _active
-        route?.collectActions(execActions)
+        _active?.collectActions(execActions)
     }
 }
 

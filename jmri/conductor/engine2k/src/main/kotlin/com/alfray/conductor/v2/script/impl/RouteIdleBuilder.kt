@@ -24,9 +24,9 @@ import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 
 internal open class RouteIdleBuilder(
+    owner: IActiveRoute,
     logger: ILogger,
-    owner: IActiveRoute
-) : RouteBaseBuilder(logger, owner), IRouteIdleBuilder {
+) : RouteBaseBuilder(owner as ActiveRoute, logger), IRouteIdleBuilder {
 
-    fun create() : IRoute = RouteIdle(owner, this)
+    fun create() : IRoute = RouteIdle(owner, logger, this)
 }

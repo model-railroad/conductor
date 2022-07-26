@@ -18,14 +18,16 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
+import java.util.Locale
 
 /**
- * A Route shuttle sequence.
+ * A route shuttle sequence.
  *
  * This is typically used to implement a circular cyclic shuttle route, e.g. engine going from
  * point A to B and then reversing back from B to A. The route will use several times
@@ -58,13 +60,21 @@ import com.alfray.conductor.v2.simulator.SimulRouteGraph
  */
 internal class RouteSequence(
     override val owner: IActiveRoute,
+    logger: ILogger,
     builder: RouteSequenceBuilder
-) : RouteBase(owner, builder), IRouteSequence, IRouteManager {
+) : RouteBase(logger, owner, builder), IRouteSequence, IRouteManager {
     override val throttle = builder.throttle
     private var startNode: INode? = null
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
     private var currentNode: INode? = null
+
+    override fun toString(): String {
+        owner as ActiveRoute
+        val index = owner.routeIndex(this)
+        val addr = throttle.dccAddress
+        return String.format(Locale.US, "Route Sequence #%d (%04d)", index, addr)
+    }
 
     override fun start_node(node: INode) {
         assertOrError(graph.nodes.contains(node)) {

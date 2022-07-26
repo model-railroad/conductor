@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
@@ -27,11 +28,13 @@ import com.alfray.conductor.v2.script.dsl.IRoute
 /**
  */
 internal abstract class RouteBase(
+    protected val logger: ILogger,
     override val owner: IActiveRoute,
     builder: RouteBaseBuilder
 ) : IRoute {
-    protected val actionOnActivate = builder.actionOnActivate
-    protected val actionOnRecover = builder.actionOnRecover
+    private val TAG = javaClass.simpleName
+    private val actionOnActivate = builder.actionOnActivate
+    private val actionOnRecover = builder.actionOnRecover
     protected val context = ExecContext(ExecContext.State.ROUTE)
 
     internal enum class State {
@@ -43,6 +46,12 @@ internal abstract class RouteBase(
 
     /** The state of this route, as managed by the [IActiveRoute] implementation. */
     var state = State.IDLE
+        set(value) {
+            if (value != field) {
+                field = value
+                logger.d(TAG, "$this is now $state")
+            }
+        }
 
     /** Internal utility that routes derived implementation can use to set the route in error mode. */
     protected inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
@@ -72,8 +81,8 @@ internal abstract class RouteBase(
             State.ACTIVATED -> {
                 actionOnActivate?.let {
                     execActions.add(ExecAction(context, it))
-                    state = State.ACTIVE
                 }
+                state = State.ACTIVE
             }
             State.ACTIVE -> {
                 // no-op ... typically overridden by derived class.

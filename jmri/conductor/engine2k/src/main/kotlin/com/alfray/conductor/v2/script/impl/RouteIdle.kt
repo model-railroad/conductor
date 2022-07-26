@@ -18,15 +18,31 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.ExecAction
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
 
+/**
+ * An idle route.
+ *
+ * Used to provide a no-op route to an [IActiveRoute] when no trains should be running.
+ * That's because an "active route" should always have a current active route.
+ *
+ * An idle route has an onActivated callback invoked when the route is first invoked.
+ *
+ * The idle route also inherits the base behavior of having an onRecover callback to
+ * deal with the route error state, however since an idle route does nothing it is not
+ * expected that it would ever enter error & recovery mode.
+ *
+ * The base start_node() method does not apply to an idle route and will throw an exception
+ * if used.
+ */
 internal class RouteIdle(
     owner: IActiveRoute,
+    logger: ILogger,
     builder: RouteIdleBuilder
-) : RouteBase(owner, builder), IRouteIdle {
+) : RouteBase(logger, owner, builder), IRouteIdle {
 
     override fun start_node(node: INode) {
         assertOrError(false) {
@@ -34,8 +50,9 @@ internal class RouteIdle(
         }
     }
 
-    /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    override fun collectActions(execActions: MutableList<ExecAction>) {
-        // no-op
+    override fun toString(): String {
+        owner as ActiveRoute
+        val index = owner.routeIndex(this)
+        return "Route Idle #$index"
     }
 }

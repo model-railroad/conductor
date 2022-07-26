@@ -25,8 +25,8 @@ import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal open class RouteBaseBuilder(
+    protected val owner: IActiveRoute,
     protected val logger: ILogger,
-    protected val owner: IActiveRoute
 ) : IRouteBaseBuilder {
     private val TAG = javaClass.simpleName
     var actionOnActivate: TAction? = null
