@@ -18,11 +18,11 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
-import com.alfray.conductor.v2.script.dsl.TAction
 
 /**
  */
@@ -32,29 +32,57 @@ internal abstract class RouteBase(
 ) : IRoute {
     protected val actionOnActivate = builder.actionOnActivate
     protected val actionOnRecover = builder.actionOnRecover
-    protected var callOnActivate: TAction? = null
-    protected var callOnRecover: TAction? = null
     protected val context = ExecContext(ExecContext.State.ROUTE)
-    var error = false
-        protected set(v) {
-            field = v
-            (owner as ActiveRoute).reportError(this, v)
-        }
 
+    internal enum class State {
+        IDLE,
+        ACTIVATED,
+        ACTIVE,
+        ERROR
+    }
+
+    /** The state of this route, as managed by the [IActiveRoute] implementation. */
+    var state = State.IDLE
+
+    /** Internal utility that routes derived implementation can use to set the route in error mode. */
     protected inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
-            error = true
+            (owner as ActiveRoute).reportError(this, true)
             val message = lazyMessage()
             throw IllegalStateException(message.toString())
         }
     }
 
+    /** Invoked by script to activate this route in its active route owner. */
     override fun activate() {
         owner.activate(this)
-        callOnActivate = actionOnActivate
     }
 
+    /** Invoked by script to change the start_node during the onActivated callback. */
     abstract override fun start_node(node: INode)
+
+    /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
+    open fun collectActions(execActions: MutableList<ExecAction>) {
+        when (state) {
+            State.ERROR -> {
+                actionOnRecover?.let {
+                    execActions.add(ExecAction(context, it))
+                }
+            }
+            State.ACTIVATED -> {
+                actionOnActivate?.let {
+                    execActions.add(ExecAction(context, it))
+                    state = State.ACTIVE
+                }
+            }
+            State.ACTIVE -> {
+                // no-op ... typically overridden by derived class.
+            }
+            State.IDLE -> {
+                // no-op
+            }
+        }
+    }
 }
 
 

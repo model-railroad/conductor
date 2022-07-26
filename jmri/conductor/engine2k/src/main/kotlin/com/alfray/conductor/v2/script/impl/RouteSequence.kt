@@ -109,8 +109,6 @@ internal class RouteSequence(
             // TODO later we can accept that numOccupied==2 if one is the current node and
             // the other is an adjacent edge, then mark one as trailing.
         }
-
-        error = false
     }
 
     /** Invoked by the ExecEngine2 loop _before_ collecting all the actions to evaluate. */
@@ -170,18 +168,17 @@ internal class RouteSequence(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    fun collectActions(execActions: MutableList<ExecAction>) {
-        callOnActivate?.let {
-            execActions.add(ExecAction(context, it))
-            callOnActivate = null
-        }
-        callOnRecover?.let {
-            execActions.add(ExecAction(context, it))
-            callOnRecover = null
-        }
-        currentNode?.let {
-            it as Node
-            it.collectActions(execActions)
+    override fun collectActions(execActions: MutableList<ExecAction>) {
+        when (state) {
+            State.ACTIVE -> {
+                currentNode?.let {
+                    it as Node
+                    it.collectActions(execActions)
+                }
+            }
+            else -> {
+                super.collectActions(execActions)
+            }
         }
     }
 }

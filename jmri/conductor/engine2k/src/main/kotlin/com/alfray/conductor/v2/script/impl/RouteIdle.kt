@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
@@ -31,5 +32,10 @@ internal class RouteIdle(
         assertOrError(false) {
             "No start_node to set in an idle route."
         }
+    }
+
+    /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
+    override fun collectActions(execActions: MutableList<ExecAction>) {
+        // no-op
     }
 }

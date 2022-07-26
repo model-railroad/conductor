@@ -25,6 +25,7 @@ import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 
@@ -52,9 +53,9 @@ internal class ActiveRoute(
     builder: ActiveRouteBuilder
 ) : IActiveRoute, IExecEngine {
     private val TAG = javaClass.simpleName
-    private var _active: IRoute? = null
-    private var _error: Boolean = false
+    private var _active: RouteBase? = null
     private val actionOnError = builder.actionOnError
+    private var callOnError: TAction? = null
     private val _routes = mutableListOf<IRoute>()
     private val context = ExecContext(ExecContext.State.ACTIVE_ROUTE)
 
@@ -63,33 +64,41 @@ internal class ActiveRoute(
     override val routes: List<IRoute>
         get() = _routes
     override val error: Boolean
-        get() = _error
+        get() = _active?.state == RouteBase.State.ERROR
 
+    /** Called by script to change the active route. No-op if route is already active. */
     override fun activate(route: IRoute) {
         logger.assertOrThrow(TAG, route in _routes) {
             "ERROR cannot active a route not part of an active route: $route"
         }
-        _active = route
-    }
 
-    /**
-     * Called by routes to indicate their error state has changed.
-     * Current behavior is to always set the error, there's no current way to clear
-     * it except by restarting the entire script.
-     */
-    fun reportError(route: IRoute, isError: Boolean) {
-        if (isError) {
-            logger.d(TAG, "Route entered error mode: $route")
-            _error = true
+        if (_active === route) {
+            return // no-op
         }
+
+        _active?.let {
+            it.state = RouteBase.State.IDLE
+            logger.d(TAG, "Route is now idle: $it")
+        }
+
+        _active = route as RouteBase
+        _active?.state = RouteBase.State.ACTIVATED
+        logger.d(TAG, "Route is now activated: $route")
     }
 
-    inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
-        if (!value) {
-            _error = true
-            val message = lazyMessage().toString()
-            logger.d(TAG, message)
-            throw IllegalStateException(message)
+    /** Called by routes to indicate their error state has changed. */
+    fun reportError(route: IRoute, isError: Boolean) {
+        if (route === _active) {
+            logger.d(TAG, "Active Route $route reports error $isError")
+            if (isError) {
+                callOnError = actionOnError
+                route.state = RouteBase.State.ERROR
+            } else {
+                callOnError = null
+                route.state = RouteBase.State.ACTIVATED
+            }
+        } else {
+            logger.d(TAG, "Ignore non-active Route $route reports error $isError")
         }
     }
 
@@ -114,12 +123,15 @@ internal class ActiveRoute(
     }
 
     override fun onExecStart() {
-        _error = false
-        assertOrError(_routes.isNotEmpty()) {
-            "An active route must contain at least one route definition, such as 'idle()'."
+        logger.assertOrThrow(TAG, _routes.isNotEmpty()) {
+            "An active route must contain at least one route definition, such as 'idle{}'."
+        }
+        _routes.forEach {
+            it as RouteBase
+            it.state = RouteBase.State.IDLE
         }
         if (_active == null) {
-            _active = _routes.first()
+            _active = _routes.first() as RouteBase
         }
         val route = _active
         if (route is IRouteManager) {
@@ -137,17 +149,13 @@ internal class ActiveRoute(
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
     fun collectActions(execActions: MutableList<ExecAction>) {
-        if (error) {
-            actionOnError?.let {
-                execActions.add(ExecAction(context, it))
-            }
-            return
+        callOnError?.let {
+            execActions.add(ExecAction(context, it))
+            callOnError = null
         }
 
         val route = _active
-        if (route is RouteSequence) {
-            route.collectActions(execActions)
-        }
+        route?.collectActions(execActions)
     }
 }
 

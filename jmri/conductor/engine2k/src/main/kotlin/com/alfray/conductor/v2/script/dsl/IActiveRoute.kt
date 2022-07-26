@@ -29,7 +29,7 @@ interface IActiveRoute {
     /** Activates this route. */
     fun activate(route: IRoute)
 
-    /** The current route and this are in error. */
+    /** True if the current route is in error. Useful as a script on..then condition test. */
     val error : Boolean
 
     /** Registers a new idle route. */
