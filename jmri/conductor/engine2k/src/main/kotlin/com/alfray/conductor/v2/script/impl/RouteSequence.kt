@@ -63,6 +63,7 @@ internal class RouteSequence(
     logger: ILogger,
     builder: RouteSequenceBuilder
 ) : RouteBase(logger, owner, builder), IRouteSequence, IRouteManager {
+    private val TAG = javaClass.simpleName
     override val throttle = builder.throttle
     private var startNode: INode? = null
     val timeout = builder.timeout
@@ -96,42 +97,51 @@ internal class RouteSequence(
     override fun toSimulGraph(): SimulRouteGraph = graph.toSimulGraph()
 
     /** Called from ExecEngine2's onExecStart to initialize and validate the state of the route. */
+    @Deprecated("Not useful for RouteSequence?")
     override fun initRoute() {
-        if (currentNode == null) {
-            currentNode = startNode ?: graph.start
-            assertOrError(currentNode != null) { "ERROR Missing start node for route." }
-        }
+    }
 
-        var numOccupied = 0
+    private fun onRouteActivated() {
+        // Set or reset the initial start node.
+        currentNode = startNode ?: graph.start
+        logger.d(TAG, "$this start node is $currentNode")
+        assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
+
+        // Set every block to its initial state of either occupied or empty.
+        var currentIsOccupied = false
+        val otherOccupied = mutableListOf<INode>()
         graph.nodes.forEach { node ->
             node as Node
             val b = node.block as Block
             node.changeState(if (b.active) Block.State.OCCUPIED else Block.State.EMPTY)
-            numOccupied++
+            if (b.active) {
+                if (node == currentNode) {
+                    currentIsOccupied = b.active
+                } else {
+                    otherOccupied.add(node)
+                }
+            }
         }
 
-        assertOrError((currentNode!!.block as Block).state == Block.State.OCCUPIED) {
-            "ERROR Route starting yet starting node $currentNode is not occupied."
+        // Validate that the initial start node is actually occupied.
+        assertOrError(currentIsOccupied) {
+            "ERROR $this cannot start because start node $currentNode is not occupied."
         }
 
-        assertOrError(numOccupied == 1) {
-            "TODO ERROR Route starting with $numOccupied occupied blocks is not supported yet"
-            // TODO later we can accept that numOccupied==2 if one is the current node and
-            // the other is an adjacent edge, then mark one as trailing.
+        // Validate not other block is occupied.
+        assertOrError(otherOccupied.isNotEmpty()) {
+            "ERROR $this cannot start because blocks are occupied: $otherOccupied"
         }
     }
 
     /** Invoked by the ExecEngine2 loop _before_ collecting all the actions to evaluate. */
     override fun manageRoute() {
-        // TODO("Not FULLY yet implemented")
-        // TBD:
-        // import clock, logger, IJmricheck blocks
-        // check current block is still active
-        // check unexpected blocks are active --> enter error mode
-        // need to change block, validate with graph it is as expected
-        // deal with decaying block states in the route active->trailing->fee.
-        // check flag to know if we nede to call onActivate
-        // etc
+        // Expected block change behavior:
+        // Block 1 is occupied
+        // Case A: Train still on same block. Block 1 active, no other active.
+        // Case B: Train moves to block 2 ⇒ block 2 sensor is active, block 1 is not active.
+        // Case C: Train moves to block 2 ⇒ block 2 sensor is active, block 1 keeps active.
+        // Any block that becomes active which is not an outgoing node is a potential error.
 
         currentNode?.let { node ->
             node as Node
@@ -140,46 +150,47 @@ internal class RouteSequence(
             val outgoingNodes = graph.outgoing(node)
             val outgoingActive = outgoingNodes.filter { it.block.active }
 
-            // TBD rewrite this
-
-            // Any other blocks than current or outgoing cannot be active.
+            // Any other blocks other than current or outgoing cannot be active.
             val extraActive = graph.nodes.filter { it !== node && !outgoingNodes.contains(it) }
             assertOrError(extraActive.isEmpty()) {
-                "ERROR Unexpected blocks are occupied out of node $node: $extraActive"
+                "ERROR $this has unexpected occupied blocks out of $node: $extraActive"
             }
 
             if (outgoingActive.isEmpty()) {
-                // It's possible that the currently active block flickers and appears missing for a short
-                // period of time.
+                // Case A: Train still on same block. Current block active, no other active.
+                // TODO later add a timer if the current node "flickers" and is temporarily off.
+                // TODO this will also cover the case where both blocks are temporarily off when moving.
                 assertOrError(stillCurrentActive) {
-                    "Current block suddenly became non-active. TBD average/use timer for that."
+                    "ERROR $this current block suddenly became non-active. TBD average/use timer for that."
+                }
+            } else if (outgoingActive.size >= 2) {
+                // The train cannot exit to more than one outgoing edge, so this has to be an error.
+                assertOrError(outgoingActive.size < 2) {
+                    "ERROR $this has more than one occupied blocks out of $node: $outgoingActive"
                 }
             } else if (outgoingActive.size == 1) {
                 // At that point, we have entered a single new block.
+                // The current node can either become inactive or remain inactive (aka trailing).
+                // Any trailing block becomes empty, current occupied becomes trailing.
 
-                // TODO update all blocks: trailing-->empty
+                graph.nodes
+                    .filter { (it.block as Block).state == Block.State.TRAILING }
+                    .forEach { (it as Node).changeState(Block.State.EMPTY) }
 
-                // It's also possible that the train is just on 2 blocks -- the current and the next one.
                 val enterNode = outgoingActive.first() as Node
-                enterNode.changeState(Block.State.OCCUPIED)
                 node.changeState(Block.State.TRAILING)
-
-            } else if (outgoingActive.size >= 2) {
-                // There can't be more than one block active once engine moves out of the current block
-                // thus there can be only either zero or one outgoing node possibilities.
-                assertOrError(outgoingActive.size < 2) {
-                    "ERROR More than one occupied blocks out of node $node: $outgoingActive"
-                }
+                enterNode.changeState(Block.State.OCCUPIED)
             }
-
-
-
         }
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
     override fun collectActions(execActions: MutableList<ExecAction>) {
         when (state) {
+            State.ACTIVATED -> {
+                super.collectActions(execActions)
+                onRouteActivated()
+            }
             State.ACTIVE -> {
                 currentNode?.let {
                     it as Node

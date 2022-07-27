@@ -141,6 +141,7 @@ internal class ActiveRoute(
         }
         val route = _active
         if (route is IRouteManager) {
+            // TODO not useful for RouteSequence... remove?
             route.initRoute()
         }
     }
