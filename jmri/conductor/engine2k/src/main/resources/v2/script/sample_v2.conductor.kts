@@ -198,7 +198,7 @@ val Route1 = PA_Route.sequence {
                 Train1.light(false)
             }
 
-            on { B311 } then {
+            if (B311.active) {
                 Train1.horn()
             }
         }

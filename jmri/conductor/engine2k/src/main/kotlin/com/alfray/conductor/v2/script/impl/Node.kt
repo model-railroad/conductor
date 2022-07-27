@@ -23,7 +23,17 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.TAction
 
-/** Internal DSL script implementation for a route sequence node. */
+/**
+ * Internal DSL script implementation for a route sequence node.
+ *
+ * Warning on node's equality: in some context "node equality" means strict object
+ * reference equality, yet in some other contexts it is best understood as "underlying
+ * block equality".
+ * Suggestion:
+ * - When comparing nodes, always use strict object equality (i.e. node1 === node2).
+ * - When *block equality* is desired, make that explicit by comparing node.block elements.
+ * - Make that explicit via clear variable names (e.g. listOfBlocks vs listOfNodes).
+ */
 internal class Node(builder: NodeBuilder) : INode {
     override val block = builder.block
     val actionOnEnter = builder.actionOnEnter

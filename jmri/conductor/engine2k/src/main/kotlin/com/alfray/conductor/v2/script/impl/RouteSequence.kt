@@ -148,27 +148,34 @@ internal class RouteSequence(
             val block = node.block as Block
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
-            val outgoingActive = outgoingNodes.filter { it.block.active }
+            val outgoingNodesActive = outgoingNodes.filter { it.block.active }
 
             // Any other blocks other than current or outgoing cannot be active.
-            val extraActive = graph.nodes.filter { it !== node && !outgoingNodes.contains(it) }
-            assertOrError(extraActive.isEmpty()) {
-                "ERROR $this has unexpected occupied blocks out of $node: $extraActive"
+            // Note that we really want to match blocks here, not nodes.
+            val extraBlocksActive = graph.nodes
+                .asSequence()
+                .filter { it.block.active }
+                .map { it.block }
+                .toSet()
+                .minus(node.block)
+                .minus(outgoingNodes.map { it.block }.toSet())
+            assertOrError(extraBlocksActive.isEmpty()) {
+                "ERROR $this has unexpected occupied blocks out of $node: $extraBlocksActive"
             }
 
-            if (outgoingActive.isEmpty()) {
+            if (outgoingNodesActive.isEmpty()) {
                 // Case A: Train still on same block. Current block active, no other active.
                 // TODO later add a timer if the current node "flickers" and is temporarily off.
                 // TODO this will also cover the case where both blocks are temporarily off when moving.
                 assertOrError(stillCurrentActive) {
                     "ERROR $this current block suddenly became non-active. TBD average/use timer for that."
                 }
-            } else if (outgoingActive.size >= 2) {
+            } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
-                assertOrError(outgoingActive.size < 2) {
-                    "ERROR $this has more than one occupied blocks out of $node: $outgoingActive"
+                assertOrError(outgoingNodesActive.size < 2) {
+                    "ERROR $this has more than one occupied blocks out of $node: $outgoingNodesActive"
                 }
-            } else if (outgoingActive.size == 1) {
+            } else if (outgoingNodesActive.size == 1) {
                 // At that point, we have entered a single new block.
                 // The current node can either become inactive or remain inactive (aka trailing).
                 // Any trailing block becomes empty, current occupied becomes trailing.
@@ -177,7 +184,7 @@ internal class RouteSequence(
                     .filter { (it.block as Block).state == Block.State.TRAILING }
                     .forEach { (it as Node).changeState(Block.State.EMPTY) }
 
-                val enterNode = outgoingActive.first() as Node
+                val enterNode = outgoingNodesActive.first() as Node
                 node.changeState(Block.State.TRAILING)
                 enterNode.changeState(Block.State.OCCUPIED)
             }
