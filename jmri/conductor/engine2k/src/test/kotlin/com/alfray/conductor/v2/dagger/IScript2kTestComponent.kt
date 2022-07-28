@@ -17,13 +17,17 @@
  */
 package com.alfray.conductor.v2.dagger
 
+import com.alfray.conductor.v2.script.CondCacheTest
 import com.alfray.conductor.v2.script.ScriptTest2k
+import com.alfray.conductor.v2.script.dsl.ExportedVarsTest
 import dagger.Subcomponent
 
 @Script2kScope
 @Subcomponent
 interface IScript2kTestComponent: IScript2kComponent {
     fun inject(scriptTest2k: ScriptTest2k)
+    fun inject(condCacheTest: CondCacheTest)
+    fun inject(exportedVarsTest: ExportedVarsTest)
 
     @Subcomponent.Factory
     interface Factory {

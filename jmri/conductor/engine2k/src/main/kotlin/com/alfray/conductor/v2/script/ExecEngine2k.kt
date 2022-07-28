@@ -126,6 +126,7 @@ class ExecEngine2k @Inject constructor(
                 reset()
             }
         }
+        conductor.exportedVars.export()
         eStopHandler.lastEStopState = eStopState
 
         handleFrequency.endWork()

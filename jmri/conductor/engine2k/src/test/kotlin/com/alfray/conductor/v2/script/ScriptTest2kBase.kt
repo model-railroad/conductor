@@ -34,12 +34,11 @@ import kotlin.script.experimental.api.ResultWithDiagnostics
 open class ScriptTest2kBase {
     protected val logger = StringLogger(/* useSysOut */ true)
     protected val jmriProvider = FakeJmriProvider(logger)
-    private lateinit var scriptComponent: IScript2kTestComponent
+    protected lateinit var scriptComponent: IScript2kTestComponent
     @Inject internal lateinit var context: Script2kTestContext
     @Inject internal lateinit var fileOps: FakeFileOps
 
     internal lateinit var loader: Script2kLoader
-    internal lateinit var condCache: CondCache
     internal lateinit var conductorImpl: ConductorImpl
     internal lateinit var execEngine: ExecEngine2k
 
@@ -51,10 +50,8 @@ open class ScriptTest2kBase {
         scriptComponent = context.createTestComponent()
         loader = scriptComponent.script2kLoader
         execEngine = loader.execEngine
-        condCache = scriptComponent.condCache
         conductorImpl = loader.conductorImpl
         assertThat(execEngine).isNotNull()
-        assertThat(condCache).isNotNull()
         assertThat(conductorImpl).isNotNull()
         assertThat(loader.scriptHost).isNotNull()
         return mainComponent

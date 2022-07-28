@@ -58,6 +58,7 @@ private const val VERBOSE = false
 class ConductorImpl @Inject internal constructor(
     private val factory: Factory,
     private val logger: ILogger,
+    override val exportedVars: ExportedVars,
 ) : IConductor {
     private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
@@ -74,7 +75,6 @@ class ConductorImpl @Inject internal constructor(
         private set
     var lastJsonEvent: JsonEvent? = null
         private set
-    override val exportedVars = ExportedVars()
     internal val globalContext = ExecContext(ExecContext.State.GLOBAL_SCRIPT)
     private var currentContext = globalContext
 

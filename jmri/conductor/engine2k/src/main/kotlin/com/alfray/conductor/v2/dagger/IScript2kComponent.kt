@@ -18,14 +18,12 @@
 package com.alfray.conductor.v2.dagger
 
 import com.alfray.conductor.v2.Script2kLoader
-import com.alfray.conductor.v2.script.CondCache
 import dagger.Subcomponent
 
 @Script2kScope
 @Subcomponent
 interface IScript2kComponent {
     val script2kLoader: Script2kLoader
-    val condCache: CondCache
 
     @Subcomponent.Factory
     interface Factory {

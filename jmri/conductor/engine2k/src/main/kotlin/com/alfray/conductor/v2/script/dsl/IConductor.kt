@@ -20,27 +20,6 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** Variables exchanged with the Conductor engine and exported via the KV Server. */
-data class ExportedVars(
-    /** Current time in HHMM format set by the conductor engine. Read-only. */
-    var Conductor_Time: Int = 0,
-    /** URL to the JSON server. Written by the script.
-     * The JSON server is inactive till this defined. */
-    var JSON_URL: String = "",
-    /** ID for the GA server. Written by the script.
-     * GA Events are not sent until this is defined. */
-    var GA_Tracking_Id: String = "",
-    /** Site URL for the GA server. Written by the script.
-     * GA Events are not sent until this is defined. */
-    var GA_URL: String = "",
-    /** Announcement text sent to the remote RTAC tablet android software.
-     * Written by the script. Sent via the KV Server. */
-    var RTAC_PSA_Text: String = "",
-    /** Motion indication sent to the remote RTAC tablet android software.
-     * Written by the script. Sent via the KV Server. */
-    var RTAC_Motion: Boolean = false,
-)
-
 /** Base interface for the Conductor script. */
 interface IConductor {
 

@@ -22,12 +22,16 @@ import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 
 class CondCacheTest: ScriptTest2kBase() {
+
+    @Inject lateinit var condCache: CondCache
 
     @Before
     fun setUp() {
         createComponent()
+        scriptComponent.inject(this)
         assertThat(condCache).isNotNull()
     }
 

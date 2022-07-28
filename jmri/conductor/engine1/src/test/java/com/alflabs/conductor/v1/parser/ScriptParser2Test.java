@@ -73,8 +73,7 @@ public class ScriptParser2Test {
     @Inject IKeyValue mKeyValue;
     @Inject FakeFileOps mFileOps;
     @Inject FakeClock mClock;
-    @Inject
-    Script1Context mScriptContext;
+    @Inject Script1Context mScriptContext;
 
 
     @Before
