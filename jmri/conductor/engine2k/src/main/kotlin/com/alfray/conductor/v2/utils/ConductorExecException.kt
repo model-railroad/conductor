@@ -18,12 +18,4 @@
 
 package com.alfray.conductor.v2.utils
 
-import com.alflabs.utils.ILogger
-
-fun ILogger.assertOrThrow(tag: String, value: Boolean, lazyMessage: () -> Any) {
-    if (!value) {
-        val message = lazyMessage().toString()
-        this.d(tag, message)
-        throw ConductorExecException(message)
-    }
-}
+public typealias ConductorExecException = java.lang.IllegalStateException

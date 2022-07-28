@@ -24,6 +24,7 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.utils.ConductorExecException
 
 /**
  */
@@ -58,7 +59,7 @@ internal abstract class RouteBase(
         if (!value) {
             (owner as ActiveRoute).reportError(this, true)
             val message = lazyMessage()
-            throw IllegalStateException(message.toString())
+            throw ConductorExecException(message.toString())
         }
     }
 

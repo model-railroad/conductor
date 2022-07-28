@@ -22,13 +22,13 @@ import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.utils.ConductorExecException
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import dagger.internal.InstanceFactory
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.lang.IllegalStateException
 
 class RouteSequenceTest {
     private lateinit var blockFactory: Block_Factory
@@ -48,7 +48,7 @@ class RouteSequenceTest {
 
     @Test
     fun testSequenceLinearGraph0_throwsWhenNoSequence() {
-        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+        val thrown = Assert.assertThrows(ConductorExecException::class.java) {
             RouteGraphBuilder()
                 .build()
         }
@@ -93,7 +93,7 @@ class RouteSequenceTest {
     fun testBranch0_branchTooShort() {
         val n1 = node(1)
         val n2 = node(2)
-        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+        val thrown = Assert.assertThrows(ConductorExecException::class.java) {
             RouteGraphBuilder()
                 .setSequence(listOf(n1, n2))
                 .addBranch(listOf(n1))
@@ -107,7 +107,7 @@ class RouteSequenceTest {
         val n1 = node(1)
         val n2 = node(2)
         val n3 = node(3)
-        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+        val thrown = Assert.assertThrows(ConductorExecException::class.java) {
             RouteGraphBuilder()
                 .setSequence(listOf(n1, n2))
                 .addBranch(listOf(n3, n2))
@@ -121,7 +121,7 @@ class RouteSequenceTest {
         val n1 = node(1)
         val n2 = node(2)
         val n3 = node(3)
-        val thrown = Assert.assertThrows(IllegalStateException::class.java) {
+        val thrown = Assert.assertThrows(ConductorExecException::class.java) {
             RouteGraphBuilder()
                 .setSequence(listOf(n1, n2))
                 .addBranch(listOf(n1, n3))

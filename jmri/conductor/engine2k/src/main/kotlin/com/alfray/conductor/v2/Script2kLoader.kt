@@ -23,13 +23,17 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
 import com.alfray.conductor.v2.script.ExecEngine2k
+import com.alfray.conductor.v2.utils.ConductorExecException
 import com.google.common.io.Resources
 import java.io.File
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
+import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.api.SourceCode
+import kotlin.script.experimental.api.valueOr
+import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
@@ -84,17 +88,34 @@ class Script2kLoader @Inject constructor(
     fun getResultErrors() = scriptErrors.errors.toList()
 
     private fun parseErrors(results: ResultWithDiagnostics<EvaluationResult>) : List<String> {
-        return results.reports
+        val errors = mutableListOf<String>()
+
+        val value = results.valueOrNull()
+        value?.let {
+            if (it.returnValue is ResultValue.Error) {
+                val rvErr = it.returnValue as ResultValue.Error
+                val t = rvErr.error
+                if (t is ConductorExecException && t.message != null) {
+                    errors.add(t.message!!)
+                } else {
+                    errors.add(t.toString())
+                }
+            }
+        }
+
+        results.reports
             .filter {
                 it.severity == ScriptDiagnostic.Severity.ERROR ||
                 it.severity == ScriptDiagnostic.Severity.FATAL
-            }.map {
+            }.mapTo(errors) {
                 it.render(
                     withSeverity = true,
                     withLocation = true,
                     withException = true,
                     withStackTrace = false,)
             }
+
+        return errors
     }
 
     enum class Status {

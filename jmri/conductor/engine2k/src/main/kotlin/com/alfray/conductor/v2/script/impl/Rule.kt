@@ -22,6 +22,7 @@ import com.alfray.conductor.v2.script.dsl.IActive
 import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TCondition
+import com.alfray.conductor.v2.utils.ConductorExecException
 
 private const val VERBOSE = false
 
@@ -39,14 +40,14 @@ internal class Rule(private val condition: TCondition) : IRule {
             when (result) {
                 is Boolean -> result
                 is IActive -> result.active
-                else -> throw IllegalArgumentException("Invalid Condition Return type")
+                else -> throw ConductorExecException("Invalid Condition Return type")
             }
         if (VERBOSE) println("Rule eval condition: $result -> $cond")
         return cond
     }
 
     fun getAction() : TAction {
-        return action ?: throw IllegalStateException(
+        return action ?: throw ConductorExecException(
             "Undefined Rule Action ('on..then' statement missing the 'then' part).")
     }
 }
