@@ -493,7 +493,11 @@ class ScriptTest2k : ScriptTest2kBase() {
     fun testRouteIdle() {
         loadScriptFromText(scriptText =
         """
-        val Routes = activeRoute {}
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
         val Route_Idle = Routes.idle {}
         """.trimIndent()
         )
@@ -504,8 +508,8 @@ class ScriptTest2k : ScriptTest2kBase() {
         val activeRoute = conductorImpl.activeRoutes[0]
         val route = activeRoute.active
         assertThat(route).isInstanceOf(IRouteIdle::class.java)
-        assertThat(route.toString()).isEqualTo("Route Idle #0")
-        assertThat(activeRoute.toString()).isEqualTo("ActiveRoute[Route Idle #0]")
+        assertThat(route.toString()).isEqualTo("Route Idle PA#0")
+        assertThat(activeRoute.toString()).isEqualTo("ActiveRoute PA")
 
     }
 
@@ -513,12 +517,16 @@ class ScriptTest2k : ScriptTest2kBase() {
     fun testRouteIdle_error() {
         loadScriptFromText(scriptText =
         """
-        val Routes = activeRoute {}
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
         val Route_Idle = Routes.idle()
         """.trimIndent()
         )
         assertResultHasError(
-            "ERROR No value passed for parameter 'routeIdleSpecification' (local.conductor.kts:3:30)")
+            "ERROR No value passed for parameter 'routeIdleSpecification' (local.conductor.kts:7:30)")
     }
 
     @Test
@@ -529,7 +537,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Block2  = block("B02")
-        val Routes = activeRoute {}
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
         val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
@@ -568,8 +580,8 @@ class ScriptTest2k : ScriptTest2kBase() {
             "[{B01}=>{B02}=>{B01}]"
         )
 
-        assertThat(seq.toString()).isEqualTo("Route Sequence #1 (1001)")
-        assertThat(ar.toString()).isEqualTo("ActiveRoute[Route Idle #0, Route Sequence #1 (1001)]")
+        assertThat(seq.toString()).isEqualTo("Route Sequence PA#1 (1001)")
+        assertThat(ar.toString()).isEqualTo("ActiveRoute PA")
     }
 
 
@@ -582,7 +594,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Block2  = block("B02")
         val Block3  = block("B03")
         val Block4  = block("B04")
-        val Routes = activeRoute {}
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
         val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
@@ -622,7 +638,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Block2  = block("B02")
-        val Routes = activeRoute {}
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
         val Route_Seq = Routes.sequence {
             throttle = Train1
             val block1_fwd = node(Block1) {

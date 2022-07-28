@@ -53,6 +53,6 @@ internal class RouteIdle(
     override fun toString(): String {
         owner as ActiveRoute
         val index = owner.routeIndex(this)
-        return "Route Idle #$index"
+        return "Route Idle ${owner.name}#$index"
     }
 }

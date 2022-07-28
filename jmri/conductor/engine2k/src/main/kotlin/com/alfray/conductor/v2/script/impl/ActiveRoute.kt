@@ -25,6 +25,7 @@ import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
+import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
@@ -53,9 +54,12 @@ internal class ActiveRoute(
     builder: ActiveRouteBuilder
 ) : IActiveRoute, IExecEngine {
     private val TAG = javaClass.simpleName
-    private var _active: RouteBase? = null
+    override val name = builder.name
+    override val toggle = builder.toggle
+    override val state = builder.state
     private val actionOnError = builder.actionOnError
     private var callOnError: TAction? = null
+    private var _active: RouteBase? = null
     private val _routes = mutableListOf<IRoute>()
     private val context = ExecContext(ExecContext.State.ACTIVE_ROUTE)
 
@@ -71,13 +75,13 @@ internal class ActiveRoute(
     fun routeIndex(route: IRoute): Int = routes.indexOf(route)
 
     override fun toString(): String {
-        return "ActiveRoute$_routes"
+        return "ActiveRoute $name"
     }
 
     /** Called by script to change the active route. No-op if route is already active. */
     override fun activate(route: IRoute) {
         logger.assertOrThrow(TAG, route in _routes) {
-            "ERROR cannot active a route not part of an active route: $route"
+            "ERROR $this: cannot activate a route not part of an active route: $route"
         }
 
         if (_active === route) {
@@ -95,7 +99,7 @@ internal class ActiveRoute(
     /** Called by routes to indicate their error state has changed. */
     fun reportError(route: IRoute, isError: Boolean) {
         if (route === _active) {
-            logger.d(TAG, "Active Route $route reports error $isError")
+            logger.d(TAG, "Active Route $name: $route reports error $isError")
             if (isError) {
                 callOnError = actionOnError
                 route.state = RouteBase.State.ERROR
@@ -104,13 +108,13 @@ internal class ActiveRoute(
                 route.state = RouteBase.State.ACTIVATED
             }
         } else {
-            logger.d(TAG, "Ignore non-active Route $route reports error $isError")
+            logger.d(TAG, "Active Route $name: Ignore non-active $route reports error $isError")
         }
     }
 
     private fun add(route: IRoute): IRoute {
         logger.assertOrThrow(TAG, route !in _routes) {
-            "ERROR trying to add route already part of an active route: $route"
+            "ERROR $this: trying to add route already part of an active route: $route"
         }
         _routes.add(route)
         return route
@@ -130,7 +134,7 @@ internal class ActiveRoute(
 
     override fun onExecStart() {
         logger.assertOrThrow(TAG, _routes.isNotEmpty()) {
-            "An active route must contain at least one route definition, such as 'idle{}'."
+            "ERROR $this: An active route must contain at least one route definition, such as 'idle{}'."
         }
         _routes.forEach {
             it as RouteBase

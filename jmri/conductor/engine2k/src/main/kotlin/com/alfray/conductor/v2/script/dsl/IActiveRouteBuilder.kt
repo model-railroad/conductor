@@ -20,6 +20,28 @@ package com.alfray.conductor.v2.script.dsl
 
 /** Interal DSL script interface to create a new [IActiveRoute]. */
 interface IActiveRouteBuilder {
+    /**
+     * The exported name of this route. Mandatory.
+     * This name is displayed on the RTAC tablet display.
+     */
+    var name: String
+
+    /**
+     * The toggle sensor that triggers route enablement. Mandatory.
+     * The toggle value has no bearing on the actual script execution -- it is up to the
+     * script to test for the toggle when and where needed.
+     * This is only used to display the toggle state on the RTAC tablet display.
+     */
+    var toggle: ISensor
+
+    /**
+     * The exported status of this route.
+     * This state is displayed on the RTAC tablet display.
+     * This is a callable (a.k.a. block in kotlin) that returns a string, queried lazily.
+     * The default implementation returns the string "Idle".
+     */
+    var state: () -> String
+
     /** Callback when a route becomes in error. */
     fun onError(action: TAction)
 }

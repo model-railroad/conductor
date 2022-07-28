@@ -162,7 +162,14 @@ json_event {
     value = "value"
 }
 
+enum class EPA_State { Idle, Running, Wait }
+var PA_State = EPA_State.Idle
+
 val PA_Route = activeRoute {
+    name = "PA"
+    toggle = Toggle
+    state = { PA_State.toString() }
+
     onError {
         estop()
     }

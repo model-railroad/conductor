@@ -153,6 +153,9 @@ on { !PA_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
 //}
 //
 //val PA_Route = activeRoute {
+//    name = "Mainline"
+//    toggle = PA_Toggle
+//    state = { PA_State.toString() }
 //    onError {
 //        // --- PA State: Error
 //        // Note this state can only be cleared using an RTAC reset.
@@ -702,6 +705,10 @@ on { !BL_Toggle } then {
 }
 
 val BL_Route = activeRoute {
+    name = "Branchline"
+    toggle = BL_Toggle
+    state = { BL_State.toString() }
+
     onError {
         // --- BL State: Error
         BL.repeat(1.seconds)

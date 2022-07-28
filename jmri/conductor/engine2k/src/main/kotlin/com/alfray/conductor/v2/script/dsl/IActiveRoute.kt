@@ -20,6 +20,15 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface for an active route. */
 interface IActiveRoute {
+    /** The exported name of this route. Displayed on RTAC. */
+    val name: String
+
+    /** The toggle sensor displayed on RTAC. */
+    val toggle: ISensor
+
+    /** The exported status of this route. Displayed on RTAC. Defaults to 'Idle'. */
+    val state: () -> String
+
     /** The currently active route. */
     val active : IRoute
 

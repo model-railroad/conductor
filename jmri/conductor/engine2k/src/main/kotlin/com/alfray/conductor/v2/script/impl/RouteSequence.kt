@@ -74,7 +74,7 @@ internal class RouteSequence(
         owner as ActiveRoute
         val index = owner.routeIndex(this)
         val addr = throttle.dccAddress
-        return String.format(Locale.US, "Route Sequence #%d (%04d)", index, addr)
+        return String.format(Locale.US, "Route Sequence %s#%d (%04d)", owner.name, index, addr)
     }
 
     override fun start_node(node: INode) {
@@ -129,7 +129,7 @@ internal class RouteSequence(
         }
 
         // Validate not other block is occupied.
-        assertOrError(otherOccupied.isNotEmpty()) {
+        assertOrError(otherOccupied.isEmpty()) {
             "ERROR $this cannot start because blocks are occupied: $otherOccupied"
         }
     }

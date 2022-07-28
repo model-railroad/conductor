@@ -20,7 +20,10 @@ package com.alfray.conductor.v2.script.dsl
 
 /** An abstract internal DSL script interface common to route builders. */
 interface IRouteBaseBuilder {
+    /** Callback when a route is being activated. Called once after activation. */
     fun onActivate(action: TAction)
+
+    /** Callback called repeatedly when a route is in error. */
     fun onRecover(action: TAction)
 }
 
