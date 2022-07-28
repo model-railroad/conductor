@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script.dsl
 
 import com.alflabs.kv.IKeyValue
+import com.alflabs.manifest.Constants
 import com.alfray.conductor.v2.dagger.Script2kScope
 import javax.inject.Inject
 
@@ -51,11 +52,11 @@ class ExportedVars @Inject internal constructor(
     var RTAC_Motion: Boolean = false
 
     internal fun export() {
-        keyValue.putValue("Conductor-Time", Conductor_Time.toString(), true /*broadcast*/)
-        keyValue.putValue("JSON-URL", JSON_URL, true /*broadcast*/)
-        keyValue.putValue("GA-Tracking-Id", GA_Tracking_Id, true /*broadcast*/)
-        keyValue.putValue("GA-URL", GA_URL, true /*broadcast*/)
-        keyValue.putValue("RTAC-PSA-Text", RTAC_PSA_Text, true /*broadcast*/)
-        keyValue.putValue("RTAC-Motion", RTAC_Motion.toString(), true /*broadcast*/)
+        keyValue.putValue(Constants.ConductorTime, Conductor_Time.toString(), true /*broadcast*/)
+        keyValue.putValue(Constants.GAId, GA_Tracking_Id, true /*broadcast*/)
+        keyValue.putValue(Constants.RtacPsaText, RTAC_PSA_Text, true /*broadcast*/)
+        keyValue.putValue(Constants.RtacMotion,
+            if (RTAC_Motion) Constants.On else Constants.Off,
+            true /*broadcast*/)
     }
 }
