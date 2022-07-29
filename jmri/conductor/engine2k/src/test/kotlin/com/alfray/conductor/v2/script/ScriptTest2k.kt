@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.kv.IKeyValue
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
@@ -35,12 +36,16 @@ import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 
 class ScriptTest2k : ScriptTest2kBase() {
+
+    @Inject lateinit var keyValue: IKeyValue
 
     @Before
     fun setUp() {
         createComponent()
+        scriptComponent.inject(this)
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "Map 1.svg"))
@@ -511,6 +516,22 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(route.toString()).isEqualTo("Route Idle PA#0")
         assertThat(activeRoute.toString()).isEqualTo("ActiveRoute PA")
 
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            "M/maps={\"mapInfos\":[]}",
+            "S/S01=OFF",
+            "V/\$estop-state\$=NORMAL",
+            "V/\$ga-id\$=",
+            "V/conductor-time=0",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
     }
 
     @Test
@@ -531,6 +552,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testRouteSequence() {
+        jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(
             scriptText =
             """
@@ -582,8 +604,27 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         assertThat(seq.toString()).isEqualTo("Route Sequence PA#1 (1001)")
         assertThat(ar.toString()).isEqualTo("ActiveRoute PA")
-    }
 
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            "D/1001=0",
+            "M/maps={\"mapInfos\":[]}",
+            "S/B01=ON",
+            "S/B02=OFF",
+            "S/S01=OFF",
+            "V/\$estop-state\$=NORMAL",
+            "V/\$ga-id\$=",
+            "V/conductor-time=0",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
+    }
 
     @Test
     fun testRouteBranches() {
