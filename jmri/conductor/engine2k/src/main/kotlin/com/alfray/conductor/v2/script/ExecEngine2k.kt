@@ -33,7 +33,9 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
@@ -46,10 +48,11 @@ import java.io.IOException
 import javax.inject.Inject
 
 @Script2kScope
-class ExecEngine2k @Inject constructor(
+class ExecEngine2k @Inject internal constructor(
     val conductor: ConductorImpl,
     private val clock: IClock,
     private val logger: ILogger,
+    private val factory: Factory,
     private val fileOps: FileOps,
     private val keyValue: IKeyValue,
     private val condCache: CondCache,
@@ -181,9 +184,16 @@ class ExecEngine2k @Inject constructor(
             a.collectActions(activatedActions)
         }
 
+        // Process all after timers
+        conductor.afterTimersContexts.forEach { c ->
+            c.afterTimers.forEach { collectAfterAction(c, it) }
+        }
+
         // Execute all actions in the order they are queued.
         for ((context, action) in activatedActions) {
             conductor.changeContext(context)
+            // Remember that this action has been executed. collectRuleAction() will later omit
+            // it unless the condition becomes false in between.
             actionExecCache.put(action, true)
             try {
                 action.invoke()
@@ -224,6 +234,15 @@ class ExecEngine2k @Inject constructor(
         }
     }
 
+    private fun collectAfterAction(context: ExecContext, after: After) {
+        after.start(logger, factory)
+        if (!after.invoked && after.active) {
+            after.invoked = true
+            activatedActions.add(ExecAction(context, after.collectAction()))
+
+        }
+    }
+
     fun getActualFrequency(): Float {
         return handleFrequency.actualFrequency
     }
@@ -231,7 +250,6 @@ class ExecEngine2k @Inject constructor(
     fun getMaxFrequency(): Float {
         return handleFrequency.maxFrequency
     }
-
 }
 
 internal data class ExecAction(val context: ExecContext, val action: TAction)

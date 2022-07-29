@@ -51,7 +51,7 @@ internal class Timer @AssistedInject constructor(
     override fun not(): Boolean = !active
 
     override fun start() {
-        if (endTS == 0L || activated) {
+        if (endTS == 0L) {
             endTS = now() + delay.seconds * 1000
             activated = false
             eventLogger.logAsync(

@@ -49,14 +49,13 @@ import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
-import com.alfray.conductor.v2.script.impl.Timer
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
-    private val factory: Factory,
     private val logger: ILogger,
+    private val factory: Factory,
     private val keyValue: IKeyValue,
     override val exportedVars: ExportedVars,
 ) : IConductor {
@@ -76,6 +75,7 @@ class ConductorImpl @Inject internal constructor(
     var lastJsonEvent: JsonEvent? = null
         private set
     internal val globalContext = ExecContext(ExecContext.State.GLOBAL_SCRIPT)
+    internal val afterTimersContexts = mutableSetOf<ExecContext>()
     private var currentContext = globalContext
 
     override fun sensor(systemName: String): ISensor {
@@ -121,7 +121,10 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun after(delay: Delay): IAfter {
-        return After(delay)
+        val after = After(delay)
+        currentContext.afterTimers.add(after)
+        afterTimersContexts.add(currentContext)
+        return after
     }
 
     override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {

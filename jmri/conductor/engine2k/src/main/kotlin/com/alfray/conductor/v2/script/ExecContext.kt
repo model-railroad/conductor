@@ -18,7 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.script.impl.Timer
+import com.alfray.conductor.v2.script.impl.After
 
 
 /**
@@ -29,7 +29,7 @@ import com.alfray.conductor.v2.script.impl.Timer
  * The context for route or node gets cleared when the object's state changes.
  */
 internal open class ExecContext(private val state: State) {
-    val afterTimers = mutableListOf<Timer>()
+    val afterTimers = mutableListOf<After>()
 
     enum class State {
         UNKNOWN,

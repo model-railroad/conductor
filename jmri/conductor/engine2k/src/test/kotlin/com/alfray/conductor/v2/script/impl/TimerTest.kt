@@ -68,11 +68,12 @@ class TimerTest: ScriptTest2kBase() {
         clock.setNow((100 + 42) * 1000L)
         assertThat(timer.active).isTrue()
 
-        // However once the timer has been activated, we can restart it even without calling end.
-        timer.start()
-        assertThat(timer.active).isFalse()
+        // Contrary to Conductor1, once the timer has been activated, we cannot restart it
+        // without calling reset first on it.
+        timer.start() // <-- this start call does not deactivate/reset the timer.
+        assertThat(timer.active).isTrue()
         clock.setNow((100 + 42 + 41) * 1000L)
-        assertThat(timer.active).isFalse()
+        assertThat(timer.active).isTrue()
         clock.setNow((100 + 42 + 42) * 1000L)
         assertThat(timer.active).isTrue()
         timer.reset()

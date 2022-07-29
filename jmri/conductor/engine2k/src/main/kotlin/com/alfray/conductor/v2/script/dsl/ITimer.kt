@@ -36,7 +36,7 @@ interface ITimer: IActive {
     /** Duration of that timer, in seconds. */
     val delay: Delay
 
-    /** Starts the timer. Restart it if it has expired. */
+    /** Starts the timer. Does nothing if the timer has already expired and is active. */
     fun start()
 
     /** Resets and stop the timer. */

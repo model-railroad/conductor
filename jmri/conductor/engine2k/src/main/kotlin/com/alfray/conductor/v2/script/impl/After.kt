@@ -18,24 +18,48 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IThenAfter
 import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal class After(val delay: Delay) : IAfter {
-    private lateinit var action: TAction
+internal class After(val delay: Delay, private val parent: After? = null) : IAfter {
+    private val TAG = javaClass.simpleName
+    private var action: TAction? = null
     private var thenAfter: IAfter? = null
+    private var timer: Timer? = null
+    internal var invoked: Boolean = false
+
+    internal val active: Boolean
+        get() = timer?.active ?: false
 
     override fun then(action: TAction) : IThenAfter {
+        val parent = this
         this.action = action
         return object : IThenAfter {
             override fun and_after(delay: Delay): IAfter {
-                val after = After(delay)
+                val after = After(delay, parent)
                 thenAfter = after
                 return after
             }
         }
     }
+
+    fun start(logger: ILogger, factory: Factory) {
+        if (timer == null) {
+            if (parent != null && !parent.active) {
+                return
+            }
+            logger.assertOrThrow(TAG, action != null) {
+                "ERROR missing 'then {...}' for 'after' or 'and_after' instruction."
+            }
+            timer = factory.createTimer(delay)
+            timer?.start()
+        }
+    }
+
+    fun collectAction(): TAction = action!!
 }
 
