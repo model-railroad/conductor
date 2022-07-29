@@ -50,7 +50,14 @@ internal abstract class RouteBase(
     /** The state of this route, as managed by the [IActiveRoute] implementation. */
     var state = State.IDLE
         set(value) {
-            if (value != field) {
+            if (field != value) {
+                if (field == State.ACTIVATED && value == State.ACTIVE) {
+                    // keep ACTIVATED timers when going to the ACTIVE state.
+                } else {
+                    // Clear all context timers.
+                    context.afterTimers.clear()
+                }
+                // Update state
                 field = value
                 logger.d(TAG, "$this is now $state")
             }

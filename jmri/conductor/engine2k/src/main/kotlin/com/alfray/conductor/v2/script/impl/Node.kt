@@ -57,22 +57,23 @@ internal class Node(builder: NodeBuilder) : INode {
         if (oldState == newState) {
             if (newState == Block.State.OCCUPIED) {
                 callWhileOccupied = actionWhileOccupied
-//                context.changeState(ExecContext.State.NODE_OCCUPIED)
             }
         } else {
+            // Clear all context timers when changing state.
+            // We do not clear timers when going from "Enter" to "Occupied" since they are
+            // actually both represented by the same state "Occupied".
+            context.afterTimers.clear()
+
             when (newState) {
                 Block.State.OCCUPIED -> {
                     callOnEnter = actionOnEnter
                     callWhileOccupied = actionWhileOccupied
-        //                context.changeState(ExecContext.State.NODE_ENTER) // TODO is that state useful?
                 }
                 Block.State.TRAILING -> {
                     callOnTrailing = actionOnTrailing
-        //                context.changeState(ExecContext.State.NODE_TRAILING)
                 }
                 Block.State.EMPTY -> {
                     callOnEmpty = actionOnEmpty
-        //                context.changeState(ExecContext.State.NODE_EMPTY)
                 }
             }
             block.changeState(newState)
