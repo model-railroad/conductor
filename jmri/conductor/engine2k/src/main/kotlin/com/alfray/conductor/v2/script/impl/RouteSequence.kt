@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
@@ -108,29 +109,30 @@ internal class RouteSequence(
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
 
         // Set every block to its initial state of either occupied or empty.
-        var currentIsOccupied = false
-        val otherOccupied = mutableListOf<INode>()
+        val currentBlock = (currentNode as Node).block
+        var currentBlockIsOccupied = false
+        val otherBlockOccupied = mutableSetOf<IBlock>()
         graph.nodes.forEach { node ->
             node as Node
             val b = node.block as Block
             node.changeState(if (b.active) Block.State.OCCUPIED else Block.State.EMPTY)
             if (b.active) {
-                if (node == currentNode) {
-                    currentIsOccupied = b.active
+                if (b == currentBlock) {
+                    currentBlockIsOccupied = b.active
                 } else {
-                    otherOccupied.add(node)
+                    otherBlockOccupied.add(node.block)
                 }
             }
         }
 
         // Validate that the initial start node is actually occupied.
-        assertOrError(currentIsOccupied) {
+        assertOrError(currentBlockIsOccupied) {
             "ERROR $this cannot start because start node $currentNode is not occupied."
         }
 
-        // Validate not other block is occupied.
-        assertOrError(otherOccupied.isEmpty()) {
-            "ERROR $this cannot start because blocks are occupied: $otherOccupied"
+        // Validate no other block is occupied.
+        assertOrError(otherBlockOccupied.isEmpty()) {
+            "ERROR $this cannot start because blocks are occupied: $otherBlockOccupied"
         }
     }
 

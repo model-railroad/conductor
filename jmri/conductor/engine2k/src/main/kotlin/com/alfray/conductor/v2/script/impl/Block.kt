@@ -94,4 +94,26 @@ internal class Block @AssistedInject constructor(
             eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
         }
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Block
+
+        if (systemName != other.systemName) return false
+        if (_active != other._active) return false
+        if (state != other.state) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = systemName.hashCode()
+        result = 31 * result + _active.hashCode()
+        result = 31 * result + state.hashCode()
+        return result
+    }
+
+
 }
