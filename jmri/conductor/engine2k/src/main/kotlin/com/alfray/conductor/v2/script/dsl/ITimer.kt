@@ -23,11 +23,22 @@ data class Delay(val seconds: Int)
 val Int.seconds: Delay
     get() = Delay(this)
 
-/** DSL script interface for a global timer. */
+/** DSL script interface for a global timer.
+ * <p/>
+ * Timers are initialized with a specific duration. Scripts only start or reset the timer.
+ * A timer is active once it has reached its expiration time and remains active until it
+ * is either restarted or reset.
+ */
 interface ITimer: IActive {
+    /** Computed name of the timer. TBD switch to IVarName. */
     val name: String
+
+    /** Duration of that timer, in seconds. */
     val delay: Delay
+
+    /** Starts the timer. Restart it if it has expired. */
     fun start()
-    fun stop()
+
+    /** Resets and stop the timer. */
     fun reset()
 }

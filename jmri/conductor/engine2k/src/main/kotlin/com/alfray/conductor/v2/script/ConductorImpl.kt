@@ -91,7 +91,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun timer(delay: Delay): ITimer {
-        val t = Timer(delay)
+        val t = factory.createTimer(delay)
         timers.add(t)
         return t
     }

@@ -18,44 +18,59 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
+import com.alflabs.utils.IClock
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ITimer
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-internal class Timer(override val delay: Delay) : ITimer {
+internal class Timer @AssistedInject constructor(
+    private val clock: IClock,
+    private val logger: ILogger,
+    private val eventLogger: EventLogger,
+    @Assisted override val delay: Delay
+) : ITimer {
+    private val TAG = javaClass.simpleName
     override val name = "@timer@${delay.seconds}"
-
-    var started = false
-        private set
-    var elapsed : Double = 0.0
-        private set
+    private var endTS: Long = 0L
+    private var activated = false
 
     override val active: Boolean
-        get() = elapsed >= delay.seconds
+        get() {
+            if (!activated) {
+                activated = endTS != 0L && now() >= endTS
+                if (activated) {
+                    eventLogger.logAsync(EventLogger.Type.Timer, name, "activated")
+                }
+            }
+            return activated
+        }
 
     override fun not(): Boolean = !active
 
     override fun start() {
-        if (!started) {
-            started = true
-            elapsed = 0.0
+        if (endTS == 0L || activated) {
+            endTS = now() + delay.seconds * 1000
+            activated = false
+            eventLogger.logAsync(
+                EventLogger.Type.Timer, name,
+                "start:${delay.seconds}"
+            )
+        } else {
+            logger.d(
+                TAG,
+                "Warning: ignoring ongoing Timer start for $name"
+            )
         }
-    }
-
-    override fun stop() {
-        started = false
     }
 
     override fun reset() {
-        started = false
-        elapsed = 0.0
+        endTS = 0L
+        activated = false
+        eventLogger.logAsync(EventLogger.Type.Timer, name, "reset")
     }
 
-    // TODO change to a clock provider with timeElapsed absolute
-    fun update(elapsed: Double) {
-        // Only increment time if increasing and timer is started.
-        // A stopped timer does not update anymore.
-        if (started && elapsed >= this.elapsed) {
-            this.elapsed = elapsed
-        }
-    }
+    private fun now(): Long = clock.elapsedRealtime()
 }

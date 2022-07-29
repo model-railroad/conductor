@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
@@ -39,7 +40,7 @@ import org.junit.Test
 import javax.inject.Inject
 
 class ScriptTest2k : ScriptTest2kBase() {
-
+    @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
 
     @Before
@@ -259,32 +260,16 @@ class ScriptTest2k : ScriptTest2kBase() {
         val t = conductorImpl.timers[0] as Timer
         assertThat(t.name).isEqualTo("@timer@5")
         assertThat(t.delay).isEqualTo(5.seconds)
-        assertThat(t.started).isFalse()
         assertThat(t.active).isFalse()
         assertThat(!t).isTrue()
 
         t.start()
-        assertThat(t.started).isTrue()
-        t.stop()
-        assertThat(t.started).isFalse()
-        t.start()
-        t.reset()
-        assertThat(t.started).isFalse()
-
-        t.reset()
-        t.start()
-        t.update(1.0)
+        clock.add(4 * 1000)
         assertThat(t.active).isFalse()
-        t.update(6.0)
+        clock.add(1 * 1000)
         assertThat(t.active).isTrue()
 
-        // A stopped timer does not update and does not become active
         t.reset()
-        t.start()
-        t.update(1.0)
-        assertThat(t.active).isFalse()
-        t.stop()
-        t.update(6.0)
         assertThat(t.active).isFalse()
     }
 

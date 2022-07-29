@@ -25,6 +25,7 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.script.dsl.Delay
 import javax.inject.Inject
 
 @Script2kScope
@@ -47,5 +48,8 @@ internal class Factory @Inject constructor(
 
     internal fun createThrottle(dccAddress: Int) : Throttle =
         Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, dccAddress)
+
+    internal fun createTimer(delay: Delay) : Timer =
+        Timer(clock, logger, eventLogger, delay)
 }
 
