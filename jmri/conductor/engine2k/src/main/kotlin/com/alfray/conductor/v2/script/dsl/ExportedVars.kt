@@ -53,10 +53,12 @@ class ExportedVars @Inject internal constructor(
 
     internal fun export() {
         keyValue.putValue(Constants.ConductorTime, Conductor_Time.toString(), true /*broadcast*/)
-        keyValue.putValue(Constants.GAId, GA_Tracking_Id, true /*broadcast*/)
-        keyValue.putValue(Constants.RtacPsaText, RTAC_PSA_Text, true /*broadcast*/)
         keyValue.putValue(Constants.RtacMotion,
             if (RTAC_Motion) Constants.On else Constants.Off,
             true /*broadcast*/)
+        keyValue.putValue(Constants.RtacPsaText, RTAC_PSA_Text, true /*broadcast*/)
+        if (GA_Tracking_Id.isNotBlank()) {
+            keyValue.putValue(Constants.GAId, GA_Tracking_Id, true /*broadcast*/)
+        }
     }
 }

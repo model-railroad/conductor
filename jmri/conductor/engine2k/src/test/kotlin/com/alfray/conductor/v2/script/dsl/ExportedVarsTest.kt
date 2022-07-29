@@ -19,6 +19,22 @@ class ExportedVarsTest: ScriptTest2kBase() {
     }
 
     @Test
+    fun testExported_empty() {
+        exportedVars.export()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            // "V/\$ga-id\$=", -- not exported when empty
+            "V/conductor-time=0",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
+    }
+
+    @Test
     fun testExported() {
         exportedVars.Conductor_Time = 1234
         exportedVars.JSON_URL = "json://url"    // not exported
