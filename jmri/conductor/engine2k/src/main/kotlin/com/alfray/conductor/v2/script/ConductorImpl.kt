@@ -53,8 +53,6 @@ import com.alfray.conductor.v2.script.impl.Timer
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
 
-private const val VERBOSE = false
-
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
     private val factory: Factory,
@@ -81,34 +79,28 @@ class ConductorImpl @Inject internal constructor(
     private var currentContext = globalContext
 
     override fun sensor(systemName: String): ISensor {
-        if (VERBOSE) logger.d(TAG, "@@ sensor systemName = $systemName")
         return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
     }
 
     override fun block(systemName: String): IBlock {
-        if (VERBOSE) logger.d(TAG, "@@ block systemName = $systemName")
         return blocks.computeIfAbsent(systemName) { factory.createBlock(it) }
     }
 
     override fun turnout(systemName: String): ITurnout {
-        if (VERBOSE) logger.d(TAG, "@@ turnout systemName = $systemName")
         return turnouts.computeIfAbsent(systemName) { factory.createTurnout(it) }
     }
 
     override fun timer(delay: Delay): ITimer {
-        if (VERBOSE) logger.d(TAG, "@@ timer seconds = $delay")
         val t = Timer(delay)
         timers.add(t)
         return t
     }
 
     override fun throttle(dccAddress: Int): IThrottle {
-        if (VERBOSE) logger.d(TAG, "@@ throttle dccAddress = $dccAddress")
         return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it) }
     }
 
     override fun map(svgMapSpecification: ISvgMapBuilder.() -> Unit): ISvgMap {
-        if (VERBOSE) logger.d(TAG, "@@ map = $svgMapSpecification")
         val builder = SvgMapBuilder()
         builder.svgMapSpecification()
         val m = builder.create()
@@ -120,7 +112,6 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun on(condition: () -> Any): IRule {
-        if (VERBOSE) logger.d(TAG, "@@ on = $condition")
         logger.assertOrThrow(TAG, currentContext === globalContext) {
             "ERROR: Can only define an on..then rule at the top global level."
         }
@@ -142,7 +133,6 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun ga_page(gaPageSpecification: IGaPageBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ ga_page = $gaPageSpecification")
         val builder = GaPageBuilder()
         builder.gaPageSpecification()
         val pg = builder.create()
@@ -151,7 +141,6 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun ga_event(gaEventSpecification: IGaEventBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ ga_event = $gaEventSpecification")
         val builder = GaEventBuilder()
         builder.gaEventSpecification()
         val ev = builder.create()
@@ -160,7 +149,6 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun json_event(jsonEventSpecification: IJsonEventBuilder.() -> Unit) {
-        if (VERBOSE) logger.d(TAG, "@@ json_event = $jsonEventSpecification")
         val builder = JsonEventBuilder()
         builder.jsonEventSpecification()
         val ev = builder.create()

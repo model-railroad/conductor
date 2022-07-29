@@ -24,8 +24,6 @@ import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.utils.ConductorExecException
 
-private const val VERBOSE = false
-
 internal class Rule(private val condition: TCondition) : IRule {
     private var action: TAction? = null
 
@@ -35,14 +33,12 @@ internal class Rule(private val condition: TCondition) : IRule {
 
     fun evaluateCondition() : Boolean {
         val result = condition.invoke()
-        if (VERBOSE) println("Rule eval condition: $result")
         val cond : Boolean =
             when (result) {
                 is Boolean -> result
                 is IActive -> result.active
                 else -> throw ConductorExecException("Invalid Condition Return type")
             }
-        if (VERBOSE) println("Rule eval condition: $result -> $cond")
         return cond
     }
 

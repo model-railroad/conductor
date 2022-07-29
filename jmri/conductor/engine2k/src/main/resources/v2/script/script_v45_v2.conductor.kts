@@ -920,12 +920,12 @@ on { BL_State == EBL_State.Wait } then {
     BL.stop()
 }
 
-on { BL_Timer_Wait.active && BL_Toggle.active } then {
+on { BL_Timer_Wait.active && BL_Toggle.active && AIU_Motion.active } then {
     BL_State = EBL_State.Ready
     BL_Route.activate(BL_Shuttle_Route)
 }
 
-on { BL_State == EBL_State.Start && BL_Toggle.active } then {
+on { BL_State == EBL_State.Start && BL_Toggle.active && AIU_Motion.active } then {
     BL_State = EBL_State.Ready
     BL_Route.activate(BL_Shuttle_Route)
 }

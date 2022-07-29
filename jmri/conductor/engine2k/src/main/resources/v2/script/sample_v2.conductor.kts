@@ -127,7 +127,7 @@ on { !!B310 && !!B311 } then {
     Train2.forward(10.speed)
 }
 
-after(MyTimer2.delay) then {
+on { MyTimer2 } then {
     Train1.light(true)
 }
 
