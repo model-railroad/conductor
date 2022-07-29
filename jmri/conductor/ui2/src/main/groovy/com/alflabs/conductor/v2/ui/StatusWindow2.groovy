@@ -31,6 +31,7 @@ import org.w3c.dom.svg.SVGStylable
 
 import javax.swing.Box
 import javax.swing.BoxLayout
+import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -72,6 +73,7 @@ class StatusWindow2 {
     def JPanel mThrottlePanel
     def JPanel mSensorPanel
     def JSVGCanvas mSvgCanvas
+    def JButton mPauseButton
     private def mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
@@ -102,7 +104,8 @@ class StatusWindow2 {
                                     gridwidth: wx-3, fill: HORIZONTAL, insets: inset, weightx: 1))
                     button(text: "Reload", constraints: gbc(gridx: wx-3, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowReload() })
-                    button(text: "Pause", constraints: gbc(gridx: wx-2, gridy: 0, insets: inset, weightx: 0),
+                    mPauseButton =
+                        button(text: "Pause", constraints: gbc(gridx: wx-2, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowPause() })
                     button(text: "Quit", constraints: gbc(gridx: wx-1, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> onQuit() })
@@ -169,6 +172,10 @@ class StatusWindow2 {
     def onQuit() {
         mFrame.dispose()
         mWindowCallback.onQuit();
+    }
+
+    def updatePause(boolean isPaused) {
+        mPauseButton.text = isPaused ? "Continue" : "Pause"
     }
 
     def updateScriptName(String scriptName) {

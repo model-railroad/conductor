@@ -358,6 +358,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowPause() {
         log("onWindowPause");
         mPaused.set(!mPaused.get());
+        if (mWin != null) {
+            mWin.updatePause(mPaused.get());
+        }
     }
 
     @Override
