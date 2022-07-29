@@ -18,16 +18,20 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.kv.IKeyValue
+import com.alflabs.manifest.Prefix
+import com.alflabs.manifest.RouteInfo
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
+import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
-import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
+import java.util.Locale
 
 
 /**
@@ -51,17 +55,20 @@ import com.alfray.conductor.v2.utils.assertOrThrow
  */
 internal class ActiveRoute(
     private var logger: ILogger,
+    private val keyValue: IKeyValue,
     builder: ActiveRouteBuilder
 ) : IActiveRoute, IExecEngine {
     private val TAG = javaClass.simpleName
     override val name = builder.name
     override val toggle = builder.toggle
-    override val state = builder.state
+    override val status = builder.status
     private val actionOnError = builder.actionOnError
     private var callOnError: TAction? = null
     private var _active: RouteBase? = null
     private val _routes = mutableListOf<IRoute>()
     private val context = ExecContext(ExecContext.State.ACTIVE_ROUTE)
+    var routeInfo: RouteInfo = createRouteInfo()
+        private set
 
     override val active: IRoute
         get() = _active!!
@@ -156,6 +163,7 @@ internal class ActiveRoute(
         if (route is IRouteManager) {
             route.manageRoute()
         }
+        exportRouteInfo()
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
@@ -166,6 +174,41 @@ internal class ActiveRoute(
         }
 
         _active?.collectActions(execActions)
+    }
+
+    private fun createRouteInfo(): RouteInfo {
+        // Sanitize the name into a key, hopefully unique.
+        val key = name
+            .trim()
+            .ifEmpty { this.hashCode().toString() }
+            .lowercase(Locale.US)
+            .replace(Regex("[^a-z0-9]+"), "_")
+        val prefix = Prefix.Route
+
+        return RouteInfo(
+            name,
+            "$prefix$key\$toggle",
+            "$prefix$key\$status",
+            "$prefix$key\$counter",
+            "$prefix$key\$throttle"
+        )
+    }
+
+    private fun exportRouteInfo() {
+        val route = _active
+
+        (toggle as Sensor).export(routeInfo.toggleKey)
+
+        if (route is IRouteSequence) {
+            (route.throttle as Throttle).export(routeInfo.throttleKey)
+        } else {
+            keyValue.putValue(routeInfo.throttleKey, "0", true /*broadcast*/)
+        }
+
+        // TBD export route counter
+
+        val statusText = status.invoke()
+        keyValue.putValue(routeInfo.statusKey, statusText, true /*broadcast*/)
     }
 }
 

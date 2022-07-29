@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.Delay
@@ -58,6 +59,7 @@ private const val VERBOSE = false
 class ConductorImpl @Inject internal constructor(
     private val factory: Factory,
     private val logger: ILogger,
+    private val keyValue: IKeyValue,
     override val exportedVars: ExportedVars,
 ) : IConductor {
     private val TAG = javaClass.simpleName
@@ -134,7 +136,7 @@ class ConductorImpl @Inject internal constructor(
     override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {
         val b = ActiveRouteBuilder(logger)
         b.activeRouteSpecification()
-        val a = b.create()
+        val a = b.create(keyValue)
         activeRoutes.add(a)
         return a
     }

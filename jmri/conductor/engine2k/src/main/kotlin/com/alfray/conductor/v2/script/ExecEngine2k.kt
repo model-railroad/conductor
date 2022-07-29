@@ -23,6 +23,7 @@ import com.alflabs.conductor.util.RateLimiter
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.MapInfos
+import com.alflabs.manifest.RouteInfos
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
@@ -102,7 +103,14 @@ class ExecEngine2k @Inject constructor(
     }
 
     private fun exportRoutes() {
-        // TODO("Not yet implemented")
+        val infos = RouteInfos(
+            conductor.activeRoutes.map { (it as ActiveRoute).routeInfo }.toTypedArray())
+
+        try {
+            keyValue.putValue(Constants.RoutesKey, infos.toJsonString(), true)
+        } catch (e: JsonProcessingException) {
+            logger.d(TAG, "Export Route Infos failed: $e")
+        }
     }
 
     override fun onExecHandle() {

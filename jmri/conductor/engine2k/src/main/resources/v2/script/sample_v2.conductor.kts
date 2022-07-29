@@ -168,7 +168,7 @@ var PA_State = EPA_State.Idle
 val PA_Route = activeRoute {
     name = "PA"
     toggle = Toggle
-    state = { PA_State.toString() }
+    status = { PA_State.toString() }
 
     onError {
         estop()

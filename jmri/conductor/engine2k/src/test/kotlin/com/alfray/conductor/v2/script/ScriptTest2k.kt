@@ -502,6 +502,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val Routes = activeRoute {
             name = "PA"
             toggle = Toggle
+            status = { "My Idle Route" }
         }
         val Route_Idle = Routes.idle {}
         """.trimIndent()
@@ -525,6 +526,10 @@ class ScriptTest2k : ScriptTest2kBase() {
             .toList()
         assertThat(kv).containsExactly(
             "M/maps={\"mapInfos\":[]}",
+            "R/pa\$status=My Idle Route",
+            "R/pa\$throttle=0",
+            "R/pa\$toggle=OFF",
+            "R/routes={\"routeInfos\":[{\"name\":\"PA\",\"toggleKey\":\"R/pa\$toggle\",\"statusKey\":\"R/pa\$status\",\"counterKey\":\"R/pa\$counter\",\"throttleKey\":\"R/pa\$throttle\"}]}",
             "S/S01=OFF",
             "V/\$estop-state\$=NORMAL",
             "V/\$ga-id\$=",
@@ -615,6 +620,10 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(kv).containsExactly(
             "D/1001=0",
             "M/maps={\"mapInfos\":[]}",
+            "R/pa\$status=Idle",
+            "R/pa\$throttle=0",
+            "R/pa\$toggle=OFF",
+            "R/routes={\"routeInfos\":[{\"name\":\"PA\",\"toggleKey\":\"R/pa\$toggle\",\"statusKey\":\"R/pa\$status\",\"counterKey\":\"R/pa\$counter\",\"throttleKey\":\"R/pa\$throttle\"}]}",
             "S/B01=ON",
             "S/B02=OFF",
             "S/S01=OFF",

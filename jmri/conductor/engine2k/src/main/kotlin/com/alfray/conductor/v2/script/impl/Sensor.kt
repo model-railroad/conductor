@@ -76,11 +76,16 @@ internal class Sensor @AssistedInject constructor(
     override fun onExecHandle() {
         // Update the state from JMRI
         jmriSensor?.let { _active = it.isActive }
-        val value = if (_active) Constants.On else Constants.Off
-        keyValue.putValue(keyName, value, true /*broadcast*/)
+        val value = export(keyName)
         if (_active != lastActive) {
             lastActive = _active
             eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
         }
+    }
+
+    fun export(keyName: String): String {
+        val value = if (_active) Constants.On else Constants.Off
+        keyValue.putValue(keyName, value, true /*broadcast*/)
+        return value
     }
 }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
@@ -30,7 +31,7 @@ internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBui
     var actionOnError: TAction? = null
     override lateinit var name: String
     override lateinit var toggle: ISensor
-    override lateinit var state: () -> String
+    override lateinit var status: () -> String
 
     override fun onError(action: TAction) {
         logger.assertOrThrow(TAG, actionOnError == null) {
@@ -39,17 +40,17 @@ internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBui
         actionOnError = action
     }
 
-    fun create(): IActiveRoute {
+    fun create(keyValue: IKeyValue): IActiveRoute {
         logger.assertOrThrow(TAG, this::name.isInitialized) {
             "ActiveRoute 'name' property has not been defined."
         }
         logger.assertOrThrow(TAG, this::toggle.isInitialized) {
             "ActiveRoute $name 'toggle' property has not been defined."
         }
-        if (!this::state.isInitialized) {
+        if (!this::status.isInitialized) {
             // Sets the default for the active route.state to be "Idle".
-            state = { "Idle" }
+            status = { "Idle" }
         }
-        return ActiveRoute(logger, this)
+        return ActiveRoute(logger, keyValue, this)
     }
 }

@@ -707,7 +707,7 @@ on { !BL_Toggle } then {
 val BL_Route = activeRoute {
     name = "Branchline"
     toggle = BL_Toggle
-    state = { BL_State.toString() }
+    status = { BL_State.toString() }
 
     onError {
         // --- BL State: Error

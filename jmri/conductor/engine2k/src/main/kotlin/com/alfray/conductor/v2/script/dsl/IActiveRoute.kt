@@ -27,7 +27,7 @@ interface IActiveRoute {
     val toggle: ISensor
 
     /** The exported status of this route. Displayed on RTAC. Defaults to 'Idle'. */
-    val state: () -> String
+    val status: () -> String
 
     /** The currently active route. */
     val active : IRoute

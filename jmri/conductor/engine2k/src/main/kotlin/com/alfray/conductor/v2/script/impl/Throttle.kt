@@ -140,7 +140,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun onExecStart() {
         jmriThrottle = checkNotNull(jmriProvider.getThrottle(dccAddress))
-        updateKV(_speed.speed)
+        updateKV()
     }
 
     override fun onExecHandle() {
@@ -184,7 +184,7 @@ internal class Throttle @AssistedInject constructor(
             logger.d(TAG, "[$dccAddress] setSpeed exception: $e")
         }
         try {
-            updateKV(speed.speed)
+            updateKV()
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] getDccAddress exception: $e")
         }
@@ -204,10 +204,15 @@ internal class Throttle @AssistedInject constructor(
         }
     }
 
-    private fun updateKV(speed: Int) {
+    private fun updateKV() {
+        export(keyName)
+    }
+
+    fun export(keyName: String) {
         keyValue.putValue(
             keyName,
-            speed.toString(), true /*broadcast*/
+            _speed.speed.toString(),
+            true /*broadcast*/
         )
     }
 }

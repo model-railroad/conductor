@@ -40,7 +40,7 @@ interface IActiveRouteBuilder {
      * This is a callable (a.k.a. block in kotlin) that returns a string, queried lazily.
      * The default implementation returns the string "Idle".
      */
-    var state: () -> String
+    var status: () -> String
 
     /** Callback when a route becomes in error. */
     fun onError(action: TAction)
