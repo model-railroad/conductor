@@ -205,7 +205,10 @@ internal class ActiveRoute(
             keyValue.putValue(routeInfo.throttleKey, "0", true /*broadcast*/)
         }
 
-        // TBD export route counter
+        route?.let {
+            val counter = it.activationCounter.toString()
+            keyValue.putValue(routeInfo.counterKey, counter, true /*broadcast*/)
+        }
 
         val statusText = status.invoke()
         keyValue.putValue(routeInfo.statusKey, statusText, true /*broadcast*/)

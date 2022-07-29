@@ -37,6 +37,8 @@ internal abstract class RouteBase(
     private val actionOnActivate = builder.actionOnActivate
     private val actionOnRecover = builder.actionOnRecover
     protected val context = ExecContext(ExecContext.State.ROUTE)
+    var activationCounter = 0
+        private set
 
     internal enum class State {
         IDLE,
@@ -80,6 +82,7 @@ internal abstract class RouteBase(
                 }
             }
             State.ACTIVATED -> {
+                activationCounter++
                 actionOnActivate?.let {
                     execActions.add(ExecAction(context, it))
                 }
