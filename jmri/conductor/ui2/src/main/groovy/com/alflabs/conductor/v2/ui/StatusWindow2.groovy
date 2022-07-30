@@ -17,6 +17,7 @@
  */
 package com.alflabs.conductor.v2.ui
 
+import com.alflabs.conductor.v2.IThrottleDisplayAdapter
 import groovy.swing.SwingBuilder
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.swing.JSVGCanvas
@@ -38,7 +39,13 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JTextField
+import javax.swing.text.BadLocationException
+import javax.swing.text.DefaultStyledDocument
 import javax.swing.text.JTextComponent
+import javax.swing.text.Style
+import javax.swing.text.StyleConstants
+import javax.swing.text.StyleContext
+import javax.swing.text.StyledDocument
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.event.WindowAdapter
@@ -63,7 +70,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class StatusWindow2 {
-
+    private def VERBOSE = true
     def IWindowCallback mWindowCallback
     def SwingBuilder mSwingBuilder
     def JFrame mFrame
@@ -77,8 +84,9 @@ class StatusWindow2 {
     private def mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
+    private final List<Runnable> mUpdaters = new ArrayList<>()
 
-    def open(IWindowCallback windowCallback) {
+    void open(IWindowCallback windowCallback) {
         mWindowCallback = windowCallback
         mSwingBuilder = new SwingBuilder()
         mSwingBuilder.registerBeanFactory("svgCanvas", JSVGCanvas)
@@ -169,55 +177,113 @@ class StatusWindow2 {
 
     }
 
-    def onQuit() {
+    void onQuit() {
         mFrame.dispose()
         mWindowCallback.onQuit();
     }
 
-    def updatePause(boolean isPaused) {
-        mPauseButton.text = isPaused ? "Continue" : "Pause"
-    }
-
-    def updateScriptName(String scriptName) {
-        mScriptNameField.text = scriptName
-    }
-
-    def updateLog(String logText) {
-        def p = mLogField.caretPosition
-        mLogField.text = logText
-        mLogField.caretPosition = p
-    }
-
-    def removeThrottles() {
+    void updatePause(boolean isPaused) {
         mSwingBuilder.edt {
+            mPauseButton.text = isPaused ? "Continue" : "Pause"
+        }
+    }
+
+    void updateScriptName(String scriptName) {
+        mSwingBuilder.edt {
+            mScriptNameField.text = scriptName
+        }
+    }
+
+    void updateLog(String logText) {
+        mSwingBuilder.edt {
+            def p = mLogField.caretPosition
+            mLogField.text = logText
+            mLogField.caretPosition = p
+        }
+    }
+
+    void removeThrottles() {
+        mSwingBuilder.edt {
+            if (VERBOSE) println("@@ UI2: removeThrottles")
             mThrottlePanel.removeAll()
             mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 0)))
             mFrame.pack()
         }
     }
 
-    def JTextComponent addThrottle(String name) {
-        AtomicReference<JTextComponent> wx = new AtomicReference<JTextComponent>()
+    void registerThrottles(List<IThrottleDisplayAdapter> throttles) {
         mSwingBuilder.edt {
-            wx.set(mSwingBuilder.textPane(
-                    text: name,
-                    opaque: false,
-                    editable: false))
-            mThrottlePanel.add(wx.get())
-            mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 0)))
+            if (VERBOSE) println("@@ UI2: registerThrottles # " + throttles.size())
+            for (final def throttle in throttles) {
+                addThrottle(throttle)
+            }
             mFrame.pack()
         }
-        return wx.get()
     }
 
-    def removeSensors() {
+    private void addThrottle(IThrottleDisplayAdapter throttleAdapter) {
+        def wx = mSwingBuilder.textPane(
+                text: throttleAdapter.name,
+                opaque: false,
+                editable: false)
+        mThrottlePanel.add(wx)
+        mThrottlePanel.setMinimumSize(new Dimension(5, 40))
+        mThrottlePanel.setBackground(Color.LIGHT_GRAY)
+
+        StyleContext context = new StyleContext()
+        StyledDocument doc = new DefaultStyledDocument(context)
+
+        Style d = context.getStyle(StyleContext.DEFAULT_STYLE)
+        Style c = context.addStyle("c", d)
+        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER)
+        Style b = context.addStyle("b", c)
+        b.addAttribute(StyleConstants.Bold, true)
+
+        wx.setDocument(doc)
+
+        def updater = new Runnable() {
+            @Override
+            void run() {
+                updateThrottlePane(wx, throttleAdapter)
+            }
+        }
+        updater.run()
+        mUpdaters.add(updater)
+    }
+
+    private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
+        int speed = throttleAdapter.getSpeed()
+
+        String line1 = String.format("%s [%d] %s %d\n",
+                throttleAdapter.getName(),
+                throttleAdapter.getDccAddress(),
+                speed < 0 ? " << " : (speed == 0 ? " == " : " >> "),
+                speed)
+
+        String line2 = String.format("L%s S%s",
+                throttleAdapter.isLight() ? "+" : "-",
+                throttleAdapter.isSound() ? "+" : "-")
+
+        try {
+            StyledDocument doc = (StyledDocument) textPane.getDocument()
+            doc.remove(0, doc.getLength())
+            doc.insertString(0, line1, null)
+            doc.insertString(doc.getLength(), line2, doc.getStyle("b"))
+            // everything is centered
+            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/)
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e)
+        }
+    }
+
+    void removeSensors() {
         mSwingBuilder.edt {
             mSensorPanel.removeAll()
             mFrame.pack()
         }
     }
 
-    def JCheckBox addSensor(String name) {
+    JCheckBox addSensor(String name) {
         AtomicReference<JCheckBox> wx = new AtomicReference<JCheckBox>()
         mSwingBuilder.edt {
             wx.set(mSwingBuilder.checkBox(text: name, selected: false))
@@ -225,6 +291,15 @@ class StatusWindow2 {
             mFrame.pack()
         }
         return wx.get()
+    }
+
+
+    void updateUI() {
+        mSwingBuilder.edt {
+            for (final def updater in mUpdaters) {
+                updater.run()
+            }
+        }
     }
 
     // Fill SVG using svgDocument (as text).
@@ -371,4 +446,5 @@ class StatusWindow2 {
 
         queue.invokeLater(r)
     }
+
 }

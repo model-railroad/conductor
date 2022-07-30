@@ -28,6 +28,8 @@ repositories {
 
 dependencies {
     implementation project(":common")
+    implementation project(":LibManifest")
+    implementation project(":LibUtilsJava")
 
     implementation "org.codehaus.groovy:groovy-all:$vers_groovy"
     implementation "org.apache.xmlgraphics:batik-swing:$vers_batik"

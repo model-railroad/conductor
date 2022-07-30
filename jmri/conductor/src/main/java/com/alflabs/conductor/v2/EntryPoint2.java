@@ -207,27 +207,28 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         while (mKeepRunning.get() && mWin != null) {
             try {
-                SwingUtilities.invokeAndWait(() -> {
                     updateWindowLog();
-
-                    try {
-                        mUiUpdaters.values().forEach(r -> {
-                            try {
-                                r.run();
-                            } catch (Exception e) {
-                                log("Window Update Thread - Exception (ignored): "
-                                        + ExceptionUtils.getStackTrace(e));
-                            }
-                        });
-                    } catch (ConcurrentModificationException ignore) {
-                    } catch (Exception e2) {
-                        log("Window Update Thread - Exception (ignored): "
-                                + ExceptionUtils.getStackTrace(e2));
-                    }
-                });
+                    mWin.updateUI();
+//                SwingUtilities.invokeAndWait(() -> {
+//
+//                    try {
+//                        mUiUpdaters.values().forEach(r -> {
+//                            try {
+//                                r.run();
+//                            } catch (Exception e) {
+//                                log("Window Update Thread - Exception (ignored): "
+//                                        + ExceptionUtils.getStackTrace(e));
+//                            }
+//                        });
+//                    } catch (ConcurrentModificationException ignore) {
+//                    } catch (Exception e2) {
+//                        log("Window Update Thread - Exception (ignored): "
+//                                + ExceptionUtils.getStackTrace(e2));
+//                    }
+//                });
 
                 Thread.sleep(330 /*ms*/);
-            } catch (InterruptedException | InvocationTargetException ignore) {
+            } catch (InterruptedException /*| InvocationTargetException*/ ignore) {
             }
         }
 
@@ -426,56 +427,57 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         mWin.removeThrottles();
 
         mAdapter.ifPresent(adapter -> {
-            adapter.getThrottles().forEach(throttleAdapter -> {
-                JTextComponent ui = mWin.addThrottle(throttleAdapter.getName());
-                setupThrottlePane(ui);
-
-                registerUiUpdate(throttleAdapter,
-                new ThrottleUpdater(
-                        throttleAdapter,
-                        () -> updateThrottlePane(ui, throttleAdapter)));
-
-            });
+            mWin.registerThrottles(adapter.getThrottles());
+//            adapter.getThrottles().forEach(throttleAdapter -> {
+//                JTextComponent ui = mWin.addThrottle(throttleAdapter.getName());
+//                setupThrottlePane(ui);
+//
+//                registerUiUpdate(throttleAdapter,
+//                    new ThrottleUpdater(
+//                        throttleAdapter,
+//                        () -> updateThrottlePane(ui, throttleAdapter)));
+//
+//            });
         });
     }
 
-    private void setupThrottlePane(JTextComponent textPane) {
-        StyleContext context = new StyleContext();
-        StyledDocument doc = new DefaultStyledDocument(context);
+//    private void setupThrottlePane(JTextComponent textPane) {
+//        StyleContext context = new StyleContext();
+//        StyledDocument doc = new DefaultStyledDocument(context);
+//
+//        Style d = context.getStyle(StyleContext.DEFAULT_STYLE);
+//        Style c = context.addStyle("c", d);
+//        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER);
+//        Style b = context.addStyle("b", c);
+//        b.addAttribute(StyleConstants.Bold, true);
+//
+//        textPane.setDocument(doc);
+//    }
 
-        Style d = context.getStyle(StyleContext.DEFAULT_STYLE);
-        Style c = context.addStyle("c", d);
-        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER);
-        Style b = context.addStyle("b", c);
-        b.addAttribute(StyleConstants.Bold, true);
-
-        textPane.setDocument(doc);
-    }
-
-    private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
-        int speed = throttleAdapter.getSpeed();
-
-        String line1 = String.format("%s [%d] %s %d\n",
-                throttleAdapter.getName(),
-                throttleAdapter.getDccAddress(),
-                speed < 0 ? " <= " : (speed == 0 ? " == " : " => "),
-                speed);
-
-        String line2 = String.format("L%s S%s",
-                throttleAdapter.isLight() ? "+" : "-",
-                throttleAdapter.isSound() ? "+" : "-");
-
-        try {
-            StyledDocument doc = (StyledDocument) textPane.getDocument();
-            doc.remove(0, doc.getLength());
-            doc.insertString(0, line1, null);
-            doc.insertString(doc.getLength(), line2, doc.getStyle("b"));
-            // everything is centered
-            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/);
-        } catch (BadLocationException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
+//        int speed = throttleAdapter.getSpeed();
+//
+//        String line1 = String.format("%s [%d] %s %d\n",
+//                throttleAdapter.getName(),
+//                throttleAdapter.getDccAddress(),
+//                speed < 0 ? " <= " : (speed == 0 ? " == " : " => "),
+//                speed);
+//
+//        String line2 = String.format("L%s S%s",
+//                throttleAdapter.isLight() ? "+" : "-",
+//                throttleAdapter.isSound() ? "+" : "-");
+//
+//        try {
+//            StyledDocument doc = (StyledDocument) textPane.getDocument();
+//            doc.remove(0, doc.getLength());
+//            doc.insertString(0, line1, null);
+//            doc.insertString(doc.getLength(), line2, doc.getStyle("b"));
+//            // everything is centered
+//            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/);
+//        } catch (BadLocationException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     private void registerUiConditionals() {
         if (mWin == null) { return; }
