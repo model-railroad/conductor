@@ -20,8 +20,13 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.INode
 
-internal data class RouteEdge(val from: INode, val to: INode, val isBranch: Boolean) {
-    /** RouteEdge equality is a strict from-to object equality. */
+internal data class RouteEdge(
+    val from: INode,
+    val to: INode,
+    val forward: Boolean,
+    val isBranch: Boolean,
+) {
+    /** RouteEdge equality is a strict from-to object equality. It ignores forward and isBranch. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -33,13 +38,13 @@ internal data class RouteEdge(val from: INode, val to: INode, val isBranch: Bool
         if (to !== other.to) return false
         // The "isBranch" type is NOT part of the equality test. Two branches are
         // still equal even if they differ only on their branch type.
+        // Same goes for the "forward" attribute.
         return true
     }
 
     override fun hashCode(): Int {
         var result = from.hashCode()
         result = 31 * result + to.hashCode()
-        result = 31 * result + isBranch.hashCode()
         return result
     }
 }

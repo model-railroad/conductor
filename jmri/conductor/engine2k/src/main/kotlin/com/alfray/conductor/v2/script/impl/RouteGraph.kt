@@ -108,7 +108,9 @@ internal data class RouteGraph(
             } else if (prev !== edge.from) {
                 sb.append("],[" + edge.from)
             }
-            sb.append(if (edge.isBranch) "->" else "=>")
+            sb.append(if (edge.isBranch) '-' else '=')
+                .append(if (edge.forward) '>' else '<')
+                .append('>')
             sb.append(edge.to)
             prev = edge.to
         }

@@ -26,7 +26,9 @@ import com.alfray.conductor.v2.utils.assertOrThrow
 internal class RouteGraphBuilder(private val logger: ILogger) {
     private val TAG = javaClass.simpleName
     private lateinit var start : INode
-    private val nodes = mutableSetOf<INode>()
+    /** Map of nodes to the direction leading to this node. */
+    private val nodes = mutableMapOf<INode, Boolean>()
+    /** Ordered list of graph edges. */
     private val edges = mutableListOf<RouteEdge>()
 
     /** Must be called once to set the main block sequence. */
@@ -38,7 +40,11 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
 
         // The first node of the sequence is the default starting point of the graph.
         start = sequence.first()
-        nodes.add(start)
+
+        // The start node is by definition not a reversal node.
+        // It is de facto in the "forward" direction.
+        var forward = true
+        nodes.put(start, forward)
         start.let {
             it as Node
             if (it.reversal == null) {
@@ -51,9 +57,11 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
         var lastLastN: INode? = null
         var lastN = start
         for (n in sequence.subList(1, sequence.size)) {
-            nodes.add(n)
-            computeReversal(prev = lastLastN, current = lastN, next = n)
-            addEdge(from = lastN, to = n, isBranch = false)
+            if (computeReversal(prev = lastLastN, current = lastN, next = n)) {
+                forward = !forward
+            }
+            addEdge(from = lastN, to = n, forward = forward, isBranch = false)
+            nodes.putIfAbsent(n, forward)
             lastLastN = lastN
             lastN = n
         }
@@ -62,7 +70,7 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
         return this
     }
 
-    private fun computeReversal(prev: INode?, current: INode, next: INode?) {
+    private fun computeReversal(prev: INode?, current: INode, next: INode?): Boolean {
         current as Node
         if (current.reversal == null) {
             // The previous node was a reversal node if its leading and outgoing *blocks*
@@ -74,6 +82,7 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
                 current.reversal = false
             }
         }
+        return current.reversal!!
     }
 
     /** Can be called zero or more times to create branches off previousky added nodes. */
@@ -86,21 +95,26 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
         }
 
         // Initial and end nodes must be in the graph already
-        logger.assertOrThrow(TAG, nodes.contains(branch.first())) {
+        val first = branch.first()
+        logger.assertOrThrow(TAG, nodes.containsKey(first)) {
             "A branch's first node must already be in the sequence graph: $branch"
         }
-        logger.assertOrThrow(TAG, nodes.contains(branch.last())) {
+        logger.assertOrThrow(TAG, nodes.containsKey(branch.last())) {
             "A branch's end node must already be in the sequence graph: $branch"
         }
+
+        var forward = nodes[first]!!
 
         // Add all nodes if not already present.
         // Create all branch edges if not already defined.
         var lastLastN: INode? = null
-        var lastN : INode = branch.first()
+        var lastN : INode = first
         for (n in branch.subList(1, branch.size)) {
-            nodes.add(n)
-            computeReversal(prev = lastLastN, current = lastN, next = n)
-            addEdge(from = lastN, to = n, isBranch = true)
+            if (computeReversal(prev = lastLastN, current = lastN, next = n)) {
+                forward = !forward
+            }
+            addEdge(from = lastN, to = n, forward = forward, isBranch = true)
+            nodes.putIfAbsent(n, forward)
             lastLastN = lastN
             lastN = n
         }
@@ -108,11 +122,11 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
         return this
     }
 
-    private fun addEdge(from: INode, to: INode, isBranch: Boolean) {
+    private fun addEdge(from: INode, to: INode, forward: Boolean, isBranch: Boolean) {
         logger.assertOrThrow(TAG, from !== to) {
             "A route node cannot lead to itself: $from"
         }
-        val edge = RouteEdge(from, to, isBranch)
+        val edge = RouteEdge(from, to, forward, isBranch)
         if (!edges.contains(edge)) {
             edges.add(edge)
         }
@@ -133,6 +147,6 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
             .computeIfAbsent(edge.from.block) { mutableListOf() }
             .add(edge) }
 
-        return RouteGraph(start, nodes, edgeMap)
+        return RouteGraph(start, nodes.keys, edgeMap)
     }
 }
