@@ -137,7 +137,8 @@ internal data class RouteGraph(
                 SimulRouteEdge(
                     sBlocksMap[gEdge.from.block.systemName]!!,
                     sBlocksMap[gEdge.to.block.systemName]!!,
-                    gEdge.isBranch
+                    gEdge.forward,
+                    gEdge.isBranch,
                 )
             }
             .distinct()

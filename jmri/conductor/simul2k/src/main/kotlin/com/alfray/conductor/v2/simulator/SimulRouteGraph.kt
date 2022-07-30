@@ -27,11 +27,14 @@ data class SimulRouteBlock(val systemName: String, val name: String) {
 
 /**
  * An edge in the simulated route. The edge is a directed edge from one block to another one.
+ * The 'forward' direction corresponds to the initial shuttle starting direction (which may or
+ * may not match a DCC engine 'forward' direction.)
  */
 data class SimulRouteEdge(
     val from: SimulRouteBlock,
     val to: SimulRouteBlock,
-    val isBranch: Boolean
+    val forward: Boolean,
+    val isBranch: Boolean,
 ) {
     /** RouteEdge equality is a strict from-to object equality, 'isBranch' is not used. */
     override fun equals(other: Any?): Boolean {
@@ -153,7 +156,9 @@ data class SimulRouteGraph(
             } else if (prev != edge.from) {
                 sb.append("],[" + edge.from)
             }
-            sb.append(if (edge.isBranch) "->" else "=>")
+            sb.append(if (edge.isBranch) '-' else '=')
+                .append(if (edge.forward) '>' else '<')
+                .append('>')
             sb.append(edge.to)
             prev = edge.to
         }

@@ -72,6 +72,7 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
 
     private fun computeReversal(prev: INode?, current: INode, next: INode?): Boolean {
         current as Node
+        // Set the value if not already defined.
         if (current.reversal == null) {
             // The previous node was a reversal node if its leading and outgoing *blocks*
             // are the same (e.g. B1 => B2 => B1). Note that even though the reversal flag
@@ -82,7 +83,8 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
                 current.reversal = false
             }
         }
-        return current.reversal!!
+        // Return the value we would have computed rather than the one already stored.
+        return prev != null && next != null && prev.block == next.block
     }
 
     /** Can be called zero or more times to create branches off previousky added nodes. */
