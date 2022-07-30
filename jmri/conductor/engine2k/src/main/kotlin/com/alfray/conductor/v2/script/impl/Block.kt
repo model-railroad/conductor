@@ -50,7 +50,7 @@ internal class Block @AssistedInject constructor(
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
-) : IBlock, IExecEngine {
+) : VarName(), IBlock, IExecEngine {
     private var jmriSensor: IJmriSensor? = null
     private var _active = false
     private var lastActive = false
@@ -67,6 +67,14 @@ internal class Block @AssistedInject constructor(
         // Updates the internal state only.
         _active = isActive
     }
+
+    override fun named(name: String): IBlock {
+        setNamed(name)
+        return this
+    }
+
+    override fun defaultName(): String = systemName
+
 
     enum class State {
         EMPTY,
@@ -115,5 +123,7 @@ internal class Block @AssistedInject constructor(
         return result
     }
 
-
+    override fun toString(): String {
+        return "Block($name)"
+    }
 }

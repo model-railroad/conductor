@@ -20,8 +20,18 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface for a JMRI sensor. */
 interface ISensor : IActive, IVarName {
+    /**
+     * Changes the internal state and the 'fake' JMRI state (used during simulation).
+     * This has no effect on a real JMRI server.
+     */
     fun active(isActive: Boolean)
+
+    /** The JMRI system name of the sensor. */
     val systemName: String
 
+    /**
+     * Provides a script-defined name for this sensor that differs from the JMRI system name.
+     * Can only be set once.
+     */
     infix fun named(name: String) : ISensor
 }

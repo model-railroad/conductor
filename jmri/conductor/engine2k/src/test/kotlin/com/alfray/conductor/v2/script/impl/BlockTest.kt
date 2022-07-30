@@ -78,4 +78,16 @@ class BlockTest {
         assertThat(block.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
     }
+
+    @Test
+    fun testName() {
+        assertThat(block.systemName).isEqualTo("jmriName")
+        assertThat(block.name).isEqualTo("jmriName")
+        assertThat(block.toString()).isEqualTo("Block(jmriName)")
+
+        block.named("Block-Name")
+        assertThat(block.systemName).isEqualTo("jmriName")
+        assertThat(block.name).isEqualTo("Block-Name")
+        assertThat(block.toString()).isEqualTo("Block(Block-Name)")
+    }
 }

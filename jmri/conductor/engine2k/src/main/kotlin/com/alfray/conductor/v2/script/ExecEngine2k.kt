@@ -37,6 +37,7 @@ import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
+import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMap
@@ -106,6 +107,16 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun exportRoutes() {
+        conductor.activeRoutes.forEach { ar ->
+            ar.routes.forEach {
+                if (it is RouteSequence) {
+                    logger.d(TAG, "Active Route [${ar.name}]: $it = ${it.graph}")
+                } else {
+                    logger.d(TAG, "Active Route [${ar.name}]: $it")
+                }
+            }
+        }
+
         val infos = RouteInfos(
             conductor.activeRoutes.map { (it as ActiveRoute).routeInfo }.toTypedArray())
 

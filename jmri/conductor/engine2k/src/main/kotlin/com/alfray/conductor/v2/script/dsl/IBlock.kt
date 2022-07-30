@@ -18,7 +18,14 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface for a JMRI block. */
-interface IBlock : IActive {
+/** DSL script interface for a JMRI-backed block. */
+interface IBlock : IActive, IVarName {
+    /** The JMRI system name of the sensor detecting this block's track occupation. */
     val systemName: String
+
+    /**
+     * Provides a script-defined name for this sensor that differs from the JMRI system name.
+     * Can only be set once.
+     */
+    infix fun named(name: String) : IBlock
 }

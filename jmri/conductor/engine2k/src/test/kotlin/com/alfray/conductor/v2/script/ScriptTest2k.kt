@@ -137,13 +137,21 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.blocks).containsKey("NS769")
         assertThat(conductorImpl.blocks["NS768"]).isSameInstanceAs(conductorImpl.block("NS768"))
 
-        val b = conductorImpl.blocks["NS768"]!! as Block
-        assertThat(b.systemName).isEqualTo("NS768")
-        assertThat(b.active).isFalse()
-        b.active(true)
+        val b1 = conductorImpl.blocks["NS768"]!! as Block
+        assertThat(b1.systemName).isEqualTo("NS768")
+        assertThat(b1.name).isEqualTo("NS768")
+        assertThat(b1.active).isFalse()
+        b1.active(true)
 
-        assertThat(b.active).isTrue()
-        assertThat(!b).isFalse()
+        assertThat(b1.active).isTrue()
+        assertThat(!b1).isFalse()
+
+        val b2 = conductorImpl.blocks["NS769"]!! as Block
+        assertThat(b2.systemName).isEqualTo("NS769")
+        assertThat(b2.name).isEqualTo("B311")
+        // the blocks map only uses system names as keys, not named variables
+        assertThat(conductorImpl.blocks).containsKey("NS769")
+        assertThat(conductorImpl.blocks).doesNotContainKey("B311")
     }
 
     @Test

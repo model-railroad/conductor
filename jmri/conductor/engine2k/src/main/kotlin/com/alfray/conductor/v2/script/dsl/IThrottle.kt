@@ -46,6 +46,10 @@ interface IThrottle : IVarName {
     val reverse: Boolean
         get() = speed.reverse
 
+    /**
+     * Provides a script-defined name for this throttle that differs from the JMRI system name.
+     * Can only be set once.
+     */
     infix fun named(name: String) : IThrottle
 
     fun forward(speed: DccSpeed)

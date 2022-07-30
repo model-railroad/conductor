@@ -28,23 +28,23 @@ val Off = false
 
 // sensors
 
-val BLParked     = block ("NS752")     // 48:1
-val BLStation    = block ("NS753")     // 48:2
-val BLTunnel     = block ("NS754")     // 48:3
-val BLReverse    = block ("NS755")     // 48:4
-val BLRun        = block ("NS765")     // 48:14, Disconnected BL activation button
+val BLParked     = block ("NS752") named "BLParked"     // 48:1
+val BLStation    = block ("NS753") named "BLStation"    // 48:2
+val BLTunnel     = block ("NS754") named "BLTunnel"     // 48:3
+val BLReverse    = block ("NS755") named "BLReverse"    // 48:4
+val BLRun        = block ("NS765") // 48:14, Disconnected BL activation button
 
-val B310         = block ("NS768")     // 49:1
-val B311         = block ("NS769")     // 49:2
-val B320         = block ("NS770")     // 49:3
-val B321         = block ("NS771")     // 49:4
-val B330         = block ("NS773")     // 49:6
-val B340         = block ("NS774")     // 49:7
-val B360         = block ("NS775")     // 49:8
-val B370         = block ("NS776")     // 49:9
+val B310         = block ("NS768") named "B310"         // 49:1
+val B311         = block ("NS769") named "B311"         // 49:2
+val B320         = block ("NS770") named "B320"         // 49:3
+val B321         = block ("NS771") named "B321"         // 49:4
+val B330         = block ("NS773") named "B330"         // 49:6
+val B340         = block ("NS774") named "B340"         // 49:7
+val B360         = block ("NS775") named "B360"         // 49:8
+val B370         = block ("NS776") named "B370"         // 49:9
 
-val B503a        = block ("NS786")     // 50:3
-val B503b        = block ("NS787")     // 50:4
+val B503a        = block ("NS786") named "B503a"        // 50:3
+val B503b        = block ("NS787") named "B503b"        // 50:4
 val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13

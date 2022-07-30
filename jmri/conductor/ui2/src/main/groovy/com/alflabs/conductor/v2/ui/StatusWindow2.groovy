@@ -476,9 +476,8 @@ class StatusWindow2 {
         def queue = mSvgCanvas?.getUpdateManager()?.getUpdateRunnableQueue()
 
         if (queue == null) {
-            if (VERBOSE) println "@@ Deferring SVG update -------------- (DEBUG)"
             mModifSvgQueue.add(r)
-            return;
+            return
         }
 
         while (!mModifSvgQueue.isEmpty()) {

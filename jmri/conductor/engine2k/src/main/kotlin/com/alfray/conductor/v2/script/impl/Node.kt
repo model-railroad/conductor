@@ -48,7 +48,7 @@ internal class Node(builder: NodeBuilder) : INode {
     private val context = ExecContext(ExecContext.State.NODE)
 
     override fun toString(): String {
-        return "{${block.systemName}}"
+        return "{${block.name}}"
     }
 
     fun changeState(newState: Block.State) {
