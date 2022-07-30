@@ -86,7 +86,7 @@ internal class RouteSequence(
     }
 
     private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): RouteGraph {
-        val builder = RouteGraphBuilder()
+        val builder = RouteGraphBuilder(logger)
         builder.setSequence(sequence)
         for (branch in branches) {
             builder.addBranch(branch)

@@ -597,7 +597,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(ar.active).isSameInstanceAs(ar.routes[1])
 
         assertThat(seq.graph.toString()).isEqualTo(
-            "[{B01}=>{B02}=>{B01}]"
+            "[{B01}=><B02>=>{B01}]"
         )
 
         assertThat(seq.toString()).isEqualTo("Route Sequence PA#1 (1001)")
@@ -670,7 +670,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         val seq = ar.routes[1] as RouteSequence
 
         assertThat(seq.graph.toString()).isEqualTo(
-            "[{B01}=>{B02}=>{B01}],[{B01}->{B03}->{B04}->{B01}],[{B01}->{B04}],[{B02}->{B03}->{B01}]")
+            "[{B01}=><B02>=>{B01}],[{B01}->{B03}->{B04}->{B01}],[{B01}->{B04}],[<B02>->{B03}->{B01}]")
     }
 
     @Test

@@ -41,6 +41,15 @@ internal class Node(builder: NodeBuilder) : INode {
     val actionOnTrailing = builder.actionOnTrailing
     val actionOnEmpty = builder.actionOnEmpty
 
+    /**
+     * A shuttle node is a "reversal" node where a shuttle stops and reverses direction.
+     * In a "reversal node", the incoming node and the outgoing nodes point to the same
+     * underlying block, even though the nodes themselves may be different.
+     * This attribute is computed by the RouteSequenceBuilder and can only figured out once
+     * we have the entire route mapped.
+     */
+    var reversal: Boolean? = null
+
     private var callOnEnter: TAction? = null
     private var callWhileOccupied: TAction? = null
     private var callOnTrailing: TAction? = null
@@ -48,7 +57,11 @@ internal class Node(builder: NodeBuilder) : INode {
     private val context = ExecContext(ExecContext.State.NODE)
 
     override fun toString(): String {
-        return "{${block.name}}"
+        return if (reversal != null && reversal == true) {
+            "<${block.name}>"
+        } else {
+            "{${block.name}}"
+        }
     }
 
     fun changeState(newState: Block.State) {

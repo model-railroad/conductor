@@ -58,6 +58,7 @@ internal class Block @AssistedInject constructor(
     private val keyName = "${Prefix.Block}$systemName"
     override val active: Boolean
         get() = condCache.cached(_active, keyName) // uses internal state, does NOT update from JMRI.
+    /** Occupancy state of the block: empty, occupied, or trailing. */
     var state = State.EMPTY
         private set
 
@@ -75,7 +76,6 @@ internal class Block @AssistedInject constructor(
     }
 
     override fun defaultName(): String = systemName
-
 
     enum class State {
         EMPTY,
