@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 
 internal class RouteGraphBuilder {
@@ -28,10 +29,10 @@ internal class RouteGraphBuilder {
     fun build() : RouteGraph {
         check(::start.isInitialized) { "A sequence must be defined for the route." }
 
-        val edgeMap = mutableMapOf<INode, MutableList<RouteEdge>>()
+        val edgeMap = mutableMapOf<IBlock, MutableList<RouteEdge>>()
 
         edges.forEach { edge -> edgeMap
-            .computeIfAbsent(edge.from) { mutableListOf() }
+            .computeIfAbsent(edge.from.block) { mutableListOf() }
             .add(edge) }
 
         return RouteGraph(start, nodes, edgeMap)

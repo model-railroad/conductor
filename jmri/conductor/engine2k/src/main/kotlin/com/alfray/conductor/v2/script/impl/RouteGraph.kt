@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.simulator.SimulRouteEdge
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
@@ -25,7 +26,7 @@ import com.alfray.conductor.v2.simulator.SimulRouteGraph
 internal data class RouteGraph(
     val start: INode,
     val nodes: Set<INode>,
-    val edges: Map<INode, List<RouteEdge>>
+    val edges: Map<IBlock, List<RouteEdge>>
 ) {
     /**
      * Returns a flattened view of the graph by visiting all edges from main sequence
@@ -40,7 +41,7 @@ internal data class RouteGraph(
         // Parse the main sequence
         var nSeq = start
         while (true) {
-            val toList = edges[nSeq]
+            val toList = edges[nSeq.block]?.filter { it.from === nSeq }
             if (toList == null || toList.isEmpty()) {
                 break
             }
@@ -62,7 +63,7 @@ internal data class RouteGraph(
             val visit = toVisit.removeAt(0)
             var nBr = visit.from
             while (true) {
-                val toList = edges[nBr]
+                val toList = edges[nBr.block]?.filter { it.from === nBr }
                 if (toList == null || toList.isEmpty()) {
                     break
                 }
@@ -90,17 +91,17 @@ internal data class RouteGraph(
 
     /** Computes all outgoing nodes out of the provided one. */
     fun outgoing(node: INode): Set<INode> {
-        val nodeEdges = edges[node] ?: return emptySet()
-        return nodeEdges.map { it.to }.toSet()
+        val nodeEdges = edges[node.block] ?: return emptySet()
+        return nodeEdges.filter { it.from === node }.map { it.to }.toSet()
     }
 
     override fun toString(): String {
         val sb = StringBuilder()
 
-        val edges = flatten()
+        val flatEdges = flatten()
 
         var prev : INode? = null
-        for (edge in edges) {
+        for (edge in flatEdges) {
             if (prev == null) {
                 sb.append("[" + edge.from)
             } else if (prev !== edge.from) {
