@@ -17,6 +17,8 @@
  */
 package com.alflabs.conductor.v2.ui
 
+import com.alflabs.conductor.v2.IActivableDisplayAdapter
+import com.alflabs.conductor.v2.ISensorDisplayAdapter
 import com.alflabs.conductor.v2.IThrottleDisplayAdapter
 import groovy.swing.SwingBuilder
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory
@@ -202,20 +204,22 @@ class StatusWindow2 {
         }
     }
 
-    void removeThrottles() {
+    void clearUpdates() {
         mSwingBuilder.edt {
-            if (VERBOSE) println("@@ UI2: removeThrottles")
-            mThrottlePanel.removeAll()
-            mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 0)))
-            mFrame.pack()
+            mUpdaters.clear()
         }
     }
 
     void registerThrottles(List<IThrottleDisplayAdapter> throttles) {
         mSwingBuilder.edt {
             if (VERBOSE) println("@@ UI2: registerThrottles # " + throttles.size())
-            for (final def throttle in throttles) {
-                addThrottle(throttle)
+            mThrottlePanel.removeAll()
+            if (throttles.empty) {
+                mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 40)))
+            } else {
+                for (final def throttle in throttles) {
+                    addThrottle(throttle)
+                }
             }
             mFrame.pack()
         }
@@ -241,12 +245,7 @@ class StatusWindow2 {
 
         wx.setDocument(doc)
 
-        def updater = new Runnable() {
-            @Override
-            void run() {
-                updateThrottlePane(wx, throttleAdapter)
-            }
-        }
+        Runnable updater = { -> updateThrottlePane(wx, throttleAdapter) }
         updater.run()
         mUpdaters.add(updater)
     }
@@ -276,21 +275,63 @@ class StatusWindow2 {
         }
     }
 
-    void removeSensors() {
+    void registerActivables(
+            List<ISensorDisplayAdapter> sensors,
+            List<IActivableDisplayAdapter> blocks,
+            List<IActivableDisplayAdapter> turnouts) {
         mSwingBuilder.edt {
             mSensorPanel.removeAll()
+
+            for (final def sensor in sensors) {
+                addSensor(sensor)
+            }
+
+            for (final def block in blocks) {
+                addBlock(block)
+            }
+
+            for (final def turnout in turnouts) {
+                addTurnout(turnout)
+            }
+
             mFrame.pack()
         }
     }
 
-    JCheckBox addSensor(String name) {
-        AtomicReference<JCheckBox> wx = new AtomicReference<JCheckBox>()
-        mSwingBuilder.edt {
-            wx.set(mSwingBuilder.checkBox(text: name, selected: false))
-            mSensorPanel.add(wx.get())
-            mFrame.pack()
+    void addSensor(ISensorDisplayAdapter sensorAdapter) {
+        def wx = mSwingBuilder.checkBox(text: sensorAdapter.name, selected: false)
+        mSensorPanel.add(wx)
+
+        Runnable updater = { -> wx.setSelected(sensorAdapter.active) }
+        updater.run()
+        mUpdaters.add(updater)
+
+        wx.addActionListener(actionEvent -> sensorAdapter.setActive(wx.isSelected()))
+    }
+
+    void addBlock(IActivableDisplayAdapter adapter) {
+
+        Runnable updater = { ->
+            String name = "S-" + adapter.name
+            setBlockColor(name, adapter.active)
         }
-        return wx.get()
+        updater.run()
+        mUpdaters.add(updater)
+    }
+
+    void addTurnout(IActivableDisplayAdapter adapter) {
+
+        Runnable updater = { ->
+            boolean normal = adapter.active
+            String name = "T-" + adapter.name
+            String N = name + "N"
+            String R = name + "R"
+
+            setTurnoutVisible(N,  normal)
+            setTurnoutVisible(R, !normal)
+        }
+        updater.run()
+        mUpdaters.add(updater)
     }
 
 
@@ -435,7 +476,7 @@ class StatusWindow2 {
         def queue = mSvgCanvas?.getUpdateManager()?.getUpdateRunnableQueue()
 
         if (queue == null) {
-            println "@@ Deferring SVG update -------------- (DEBUG)"
+            if (VERBOSE) println "@@ Deferring SVG update -------------- (DEBUG)"
             mModifSvgQueue.add(r)
             return;
         }
@@ -446,5 +487,4 @@ class StatusWindow2 {
 
         queue.invokeLater(r)
     }
-
 }

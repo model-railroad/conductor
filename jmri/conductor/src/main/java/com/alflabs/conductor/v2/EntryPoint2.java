@@ -38,23 +38,10 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 
 import javax.inject.Inject;
-import javax.swing.JCheckBox;
-import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -70,16 +57,15 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
     private final AtomicBoolean mPaused = new AtomicBoolean();
-    private final Map<Object, Runnable> mUiUpdaters = new HashMap<>();
     private Optional<IEngineAdapter> mAdapter = Optional.empty();
     private Optional<ISimul2kComponent> mSimul2kComponent = Optional.empty();
 
-    @Inject ILogger mLogger;
     @Inject IClock mClock;
-    @Inject KeyValueServer mKeyValueServer;
-    @Inject EventLogger mEventLogger;
+    @Inject ILogger mLogger;
     @Inject Analytics mAnalytics;
     @Inject JsonSender mJsonSender;
+    @Inject EventLogger mEventLogger;
+    @Inject KeyValueServer mKeyValueServer;
 
     /**
      * Entry point invoked from DevEntryPoint2.
@@ -207,28 +193,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         while (mKeepRunning.get() && mWin != null) {
             try {
-                    updateWindowLog();
-                    mWin.updateUI();
-//                SwingUtilities.invokeAndWait(() -> {
-//
-//                    try {
-//                        mUiUpdaters.values().forEach(r -> {
-//                            try {
-//                                r.run();
-//                            } catch (Exception e) {
-//                                log("Window Update Thread - Exception (ignored): "
-//                                        + ExceptionUtils.getStackTrace(e));
-//                            }
-//                        });
-//                    } catch (ConcurrentModificationException ignore) {
-//                    } catch (Exception e2) {
-//                        log("Window Update Thread - Exception (ignored): "
-//                                + ExceptionUtils.getStackTrace(e2));
-//                    }
-//                });
-
+                updateWindowLog();
+                mWin.updateUI();
                 Thread.sleep(330 /*ms*/);
-            } catch (InterruptedException /*| InvocationTargetException*/ ignore) {
+            } catch (InterruptedException ignore) {
             }
         }
 
@@ -298,7 +266,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowReload() {
         log("onWindowReload");
 
-        mUiUpdaters.clear();
+        mWin.clearUpdates();
 
         if (!mAdapter.isPresent()) {
             log("onWindowReload: no engine adapter.");
@@ -424,151 +392,19 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     private void registerUiThrottles() {
         if (mWin == null) { return; }
-        mWin.removeThrottles();
 
-        mAdapter.ifPresent(adapter -> {
-            mWin.registerThrottles(adapter.getThrottles());
-//            adapter.getThrottles().forEach(throttleAdapter -> {
-//                JTextComponent ui = mWin.addThrottle(throttleAdapter.getName());
-//                setupThrottlePane(ui);
-//
-//                registerUiUpdate(throttleAdapter,
-//                    new ThrottleUpdater(
-//                        throttleAdapter,
-//                        () -> updateThrottlePane(ui, throttleAdapter)));
-//
-//            });
-        });
+        mAdapter.ifPresent(adapter ->
+                mWin.registerThrottles(adapter.getThrottles()));
     }
-
-//    private void setupThrottlePane(JTextComponent textPane) {
-//        StyleContext context = new StyleContext();
-//        StyledDocument doc = new DefaultStyledDocument(context);
-//
-//        Style d = context.getStyle(StyleContext.DEFAULT_STYLE);
-//        Style c = context.addStyle("c", d);
-//        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER);
-//        Style b = context.addStyle("b", c);
-//        b.addAttribute(StyleConstants.Bold, true);
-//
-//        textPane.setDocument(doc);
-//    }
-
-//    private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
-//        int speed = throttleAdapter.getSpeed();
-//
-//        String line1 = String.format("%s [%d] %s %d\n",
-//                throttleAdapter.getName(),
-//                throttleAdapter.getDccAddress(),
-//                speed < 0 ? " <= " : (speed == 0 ? " == " : " => "),
-//                speed);
-//
-//        String line2 = String.format("L%s S%s",
-//                throttleAdapter.isLight() ? "+" : "-",
-//                throttleAdapter.isSound() ? "+" : "-");
-//
-//        try {
-//            StyledDocument doc = (StyledDocument) textPane.getDocument();
-//            doc.remove(0, doc.getLength());
-//            doc.insertString(0, line1, null);
-//            doc.insertString(doc.getLength(), line2, doc.getStyle("b"));
-//            // everything is centered
-//            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/);
-//        } catch (BadLocationException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
 
     private void registerUiConditionals() {
         if (mWin == null) { return; }
-        mWin.removeSensors();
 
-        mAdapter.ifPresent(adapter -> {
-            adapter.getSensors().forEach(sensorAdapter -> {
-                JCheckBox ui = mWin.addSensor(sensorAdapter.getName());
-
-                registerUiUpdate(sensorAdapter,
-                        new ActivableUpdater(
-                                sensorAdapter,
-                                () -> ui.setSelected(sensorAdapter.isActive())
-                        ));
-                ui.addActionListener(actionEvent -> sensorAdapter.setActive(ui.isSelected()));
-            });
-
-            adapter.getBlocks().forEach(blockAdapter -> {
-                registerUiUpdate(blockAdapter,
-                        new ActivableUpdater(
-                                blockAdapter,
-                                () -> {
-                                    String name = "S-" + blockAdapter.getName();
-                                    mWin.setBlockColor(name, blockAdapter.isActive());
-                                }
-                        ));
-            });
-
-            adapter.getTurnouts().forEach(turnoutAdapter -> {
-                registerUiUpdate(turnoutAdapter,
-                        new ActivableUpdater(
-                                turnoutAdapter,
-                                () -> {
-                                    boolean normal = turnoutAdapter.isActive();
-                                    String name = "T-" + turnoutAdapter.getName();
-                                    String N = name + "N";
-                                    String R = name + "R";
-
-                                    mWin.setTurnoutVisible(N,  normal);
-                                    mWin.setTurnoutVisible(R, !normal);
-                                }
-                        ));
-            });
-
-        });
+        mAdapter.ifPresent(adapter ->
+                mWin.registerActivables(
+                    adapter.getSensors(),
+                    adapter.getBlocks(),
+                    adapter.getTurnouts()
+        ));
     }
-
-    private void registerUiUpdate(Object ref, Runnable updater) {
-        mUiUpdaters.put(ref, updater);
-    }
-
-    private static class ThrottleUpdater implements Runnable {
-        private final IThrottleDisplayAdapter mThrottleAdapter;
-        private final Runnable mUpdate;
-        private int mLastSpeed = Integer.MAX_VALUE;
-
-        public ThrottleUpdater(IThrottleDisplayAdapter throttleAdapter, Runnable update) {
-            mThrottleAdapter = throttleAdapter;
-            mUpdate = update;
-            mUpdate.run();
-        }
-
-        @Override
-        public void run() {
-            int newSpeed = mThrottleAdapter.getSpeed();
-            if (newSpeed != mLastSpeed) {
-                mLastSpeed = newSpeed;
-                mUpdate.run();
-            }
-        }
-    }
-
-    private static class ActivableUpdater implements Runnable {
-        private final IActivableDisplayAdapter mActivable;
-        private final Runnable mUpdate;
-        private boolean mLastActive;
-
-        public ActivableUpdater(IActivableDisplayAdapter activable, Runnable update) {
-            mActivable = activable;
-            mUpdate = update;
-            mUpdate.run();
-        }
-
-        @Override
-        public void run() {
-            boolean newState = mActivable.isActive();
-            if (newState != mLastActive) {
-                mLastActive = newState;
-                mUpdate.run();
-            }
-        }
-    }
-
 }
