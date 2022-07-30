@@ -1,16 +1,47 @@
 package com.alfray.conductor.v2.simulator
 
+/**
+ * A block for the simulator.
+ * 'systemName' is the internal unique identifier for the block,
+ * whereas 'name' is an option script-provided name for display purposes.
+ */
+data class SimulRouteBlock(val systemName: String, val name: String) {
+    override fun toString(): String {
+        return "{$name}"
+    }
 
-data class SimulRouteEdge(val from: String, val to: String, val isBranch: Boolean) {
-    /** RouteEdge equality is a strict from-to object equality. */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SimulRouteBlock
+
+        if (systemName != other.systemName) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return systemName.hashCode()
+    }
+}
+
+/**
+ * An edge in the simulated route. The edge is a directed edge from one block to another one.
+ */
+data class SimulRouteEdge(
+    val from: SimulRouteBlock,
+    val to: SimulRouteBlock,
+    val isBranch: Boolean
+) {
+    /** RouteEdge equality is a strict from-to object equality, 'isBranch' is not used. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
         other as SimulRouteEdge
 
-        if (from !== other.from) return false
-        if (to !== other.to) return false
+        if (from != other.from) return false
+        if (to != other.to) return false
         // The "isBranch" type is NOT part of the equality test. Two branches are
         // still equal even if they differ only on their branch type.
         return true
@@ -19,24 +50,26 @@ data class SimulRouteEdge(val from: String, val to: String, val isBranch: Boolea
     override fun hashCode(): Int {
         var result = from.hashCode()
         result = 31 * result + to.hashCode()
-        result = 31 * result + isBranch.hashCode()
         return result
     }
 }
 
+/**
+ * A route graph used in the simulation.
+ */
 data class SimulRouteGraph(
-    val start: String,
-    val nodes: List<String>,
-    val edges: Map<String, List<SimulRouteEdge>>
+    val start: SimulRouteBlock,
+    val blocks: List<SimulRouteBlock>,
+    val edges: Map<SimulRouteBlock, List<SimulRouteEdge>>
 ) {
     /**
      * Returns a new [SimulRouteGraph] appending the new graph to the current one.
-     * Existing nodes/edges are kept intact.
+     * Existing blocks/edges are kept intact.
      */
     fun merge(newGraph: SimulRouteGraph): SimulRouteGraph {
-        val newNodes = nodes.plus(newGraph.nodes).distinct()
+        val newBlocks = blocks.plus(newGraph.blocks).distinct()
 
-        val newEdges = mutableMapOf<String, MutableList<SimulRouteEdge>>()
+        val newEdges = mutableMapOf<SimulRouteBlock, MutableList<SimulRouteEdge>>()
         edges.flatMap { e -> e.value }
             .plus(newGraph.edges.flatMap { e -> e.value })
             .distinct()
@@ -44,7 +77,7 @@ data class SimulRouteGraph(
                 newEdges.computeIfAbsent(newEdge.from) { mutableListOf() }.add(newEdge)
             }
 
-        return SimulRouteGraph(start, newNodes, newEdges)
+        return SimulRouteGraph(start, newBlocks, newEdges)
     }
 
     /**
@@ -113,11 +146,11 @@ data class SimulRouteGraph(
 
         val edges = flatten()
 
-        var prev : String? = null
+        var prev : SimulRouteBlock? = null
         for (edge in edges) {
             if (prev == null) {
                 sb.append("[" + edge.from)
-            } else if (prev !== edge.from) {
+            } else if (prev != edge.from) {
                 sb.append("],[" + edge.from)
             }
             sb.append(if (edge.isBranch) "->" else "=>")
@@ -128,10 +161,10 @@ data class SimulRouteGraph(
             sb.append("]")
         }
 
-        return "(start=$start, nodes=$nodes, edges=$sb)"
+        return "(start=$start, blocks=$blocks, edges=$sb)"
     }
 
-    fun whereTo(from: String): String? {
+    fun whereTo(from: SimulRouteBlock): SimulRouteBlock? {
         // Get the list of outgoing edges from that block/sensor.
         // The list can be null or empty.
         val dest = edges[from]

@@ -74,7 +74,7 @@ class RouteSequenceTest {
             "[{1}=>{2}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start=1, nodes=[1, 2], edges=[1=>2])")
+            "(start={1}, blocks=[{1}, {2}], edges=[{1}=>{2}])")
     }
 
     @Test
@@ -86,7 +86,7 @@ class RouteSequenceTest {
             "[{1}=>{2}=>{3}=>{4}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start=1, nodes=[1, 2, 3, 4], edges=[1=>2=>3=>4])")
+            "(start={1}, blocks=[{1}, {2}, {3}, {4}], edges=[{1}=>{2}=>{3}=>{4}])")
     }
 
     @Test
@@ -142,7 +142,7 @@ class RouteSequenceTest {
             "[{1}=>{2}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start=1, nodes=[1, 2], edges=[1=>2])")
+            "(start={1}, blocks=[{1}, {2}], edges=[{1}=>{2}])")
     }
 
     @Test
@@ -161,7 +161,7 @@ class RouteSequenceTest {
             "[{1}=>{2}=>{3}=>{4}],[{2}->{5}->{6}->{3}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start=1, nodes=[1, 2, 3, 4, 5, 6], edges=[1=>2=>3=>4],[2->5->6->3])")
+            "(start={1}, blocks=[{1}, {2}, {3}, {4}, {5}, {6}], edges=[{1}=>{2}=>{3}=>{4}],[{2}->{5}->{6}->{3}])")
     }
 
     @Test
@@ -181,7 +181,7 @@ class RouteSequenceTest {
             "[{1}=>{2}=>{5}],[{1}->{3}->{4}->{5}],[{1}->{4}],[{2}->{3}->{5}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start=1, nodes=[1, 2, 5, 3, 4], edges=[1=>2=>5],[1->3->4->5],[1->4],[2->3->5])")
+            "(start={1}, blocks=[{1}, {2}, {5}, {3}, {4}], edges=[{1}=>{2}=>{5}],[{1}->{3}->{4}->{5}],[{1}->{4}],[{2}->{3}->{5}])")
     }
 
     private fun node(index: Int) =

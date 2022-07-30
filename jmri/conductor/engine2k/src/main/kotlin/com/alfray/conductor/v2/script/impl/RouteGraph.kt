@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
+import com.alfray.conductor.v2.simulator.SimulRouteBlock
 import com.alfray.conductor.v2.simulator.SimulRouteEdge
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
@@ -119,17 +120,21 @@ internal data class RouteGraph(
     }
 
     fun toSimulGraph(): SimulRouteGraph {
-        val sStart = start.block.systemName
+        val sBlocks = nodes
+            .distinctBy { n -> n.block.systemName }
+            .map { n -> (n.block as Block).toSimulRouteBlock() }
+        val sBlocksMap = mutableMapOf<String, SimulRouteBlock>()
+        sBlocks.forEach { sBlocksMap[it.systemName] = it }
 
-        val sNodes = nodes.map { n -> n.block.systemName }.distinct()
+        val sStart = sBlocksMap[start.block.systemName]!!
 
-        val sEdgeMap = mutableMapOf<String, MutableList<SimulRouteEdge>>()
-        val sEdges = edges.values
+        val sEdgeMap = mutableMapOf<SimulRouteBlock, MutableList<SimulRouteEdge>>()
+        edges.values
             .flatten()
             .map { gEdge ->
                 SimulRouteEdge(
-                    gEdge.from.block.systemName,
-                    gEdge.to.block.systemName,
+                    sBlocksMap[gEdge.from.block.systemName]!!,
+                    sBlocksMap[gEdge.to.block.systemName]!!,
                     gEdge.isBranch
                 )
             }
@@ -138,6 +143,6 @@ internal data class RouteGraph(
                 .computeIfAbsent(sEdge.from) { mutableListOf() }
                 .add(sEdge) }
 
-        return SimulRouteGraph(sStart, sNodes, sEdgeMap)
+        return SimulRouteGraph(sStart, sBlocks, sEdgeMap)
     }
 }

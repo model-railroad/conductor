@@ -26,6 +26,7 @@ import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.IBlock
+import com.alfray.conductor.v2.simulator.SimulRouteBlock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
@@ -126,4 +127,6 @@ internal class Block @AssistedInject constructor(
     override fun toString(): String {
         return "Block($name)"
     }
+
+    fun toSimulRouteBlock(): SimulRouteBlock = SimulRouteBlock(systemName, name)
 }

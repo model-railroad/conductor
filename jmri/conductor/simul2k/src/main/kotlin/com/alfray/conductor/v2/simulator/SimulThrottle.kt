@@ -1,7 +1,6 @@
 package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriProvider
-import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
@@ -23,7 +22,7 @@ class SimulThrottle @AssistedInject constructor(
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
     private var graph: SimulRouteGraph? = null
-    private var block: IJmriSensor? = null
+    private var block: SimulRouteBlock? = null
     /** Time in ms we have accumulated on this block. */
     private var blockMS: Long = 0
     /** Time when the block time was last updated. */
@@ -67,19 +66,21 @@ class SimulThrottle @AssistedInject constructor(
         graph = graph?.merge(newGraph) ?: newGraph
     }
 
-    private fun changeBlock(newBlock: IJmriSensor?) {
-        if (newBlock != block) {
-            block?.let { it.isActive = false }
-            newBlock?.let { it.isActive = true }
+    private fun changeBlock(newBlock: SimulRouteBlock?) {
+        val oldBlock = block
+        if (newBlock != oldBlock) {
+            oldBlock?.let {
+                jmriProvider.getSensor(it.systemName)?.isActive = false
+            }
+            newBlock?.let {
+                jmriProvider.getSensor(it.systemName)?.isActive = true
+            }
+
             block = newBlock
             blockMS = 0
             lastTS = clock.elapsedRealtime()
-            logger.d(TAG, String.format("[%04d] Move To Block %s", dccAddress, (block as SimulSensor?)?.systemName))
+            logger.d(TAG, String.format("[%04d] Move To Block %s", dccAddress, block))
         }
-    }
-
-    private fun changeBlock(systemName: String) {
-        changeBlock(jmriProvider.getSensor(systemName))
     }
 
     override fun onExecStart() {
@@ -95,14 +96,14 @@ class SimulThrottle @AssistedInject constructor(
             val nowTS = clock.elapsedRealtime()
             if (_speed == 0) {
                 lastTS = nowTS
+                blockMS = 0
             } else {
                 blockMS += nowTS - lastTS
                 lastTS = nowTS
 
                 if (blockMS >= blockMaxMs) {
                     // change blocks
-                    b as SimulSensor
-                    graph?.whereTo(b.systemName)?.let { name -> changeBlock(name) }
+                    graph?.whereTo(b)?.let { newBlock -> changeBlock(newBlock) }
                 }
             }
         }
