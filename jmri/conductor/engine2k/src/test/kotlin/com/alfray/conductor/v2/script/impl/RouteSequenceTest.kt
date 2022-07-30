@@ -105,7 +105,7 @@ class RouteSequenceTest {
             "[{1}=>>{2}=>><3>=<>{2}=<>{1}]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start={1}, blocks=[{1}, {2}, {3}], edges=[{1}=>>{2}=>>{3}=<>{2}=<>{1}])")
+            "(start={1}, blocks=[{1}, {2}, <3>], edges=[{1}=>>{2}=>><3>=<>{2}=<>{1}])")
     }
 
     @Test
@@ -206,7 +206,7 @@ class RouteSequenceTest {
             "[{1}=>>{2}=>><3>=<>{2}=<>{1}],[{2}->>{4}->><5>-<>{4}-<>{1}],[<3>->><6>-<><3>]")
         assertThat(graph.start.block.systemName).isEqualTo("1")
         assertThat(graph.toSimulGraph().toString()).isEqualTo(
-            "(start={1}, blocks=[{1}, {2}, {3}, {4}, {5}, {6}], edges=[{1}=>>{2}=>>{3}=<>{2}=<>{1}],[{2}->>{4}->>{5}-<>{4}-<>{1}],[{3}->>{6}-<>{3}])")
+            "(start={1}, blocks=[{1}, {2}, <3>, {4}, <5>, <6>], edges=[{1}=>>{2}=>><3>=<>{2}=<>{1}],[{2}->>{4}->><5>-<>{4}-<>{1}],[<3>->><6>-<><3>])")
     }
 
     @Test

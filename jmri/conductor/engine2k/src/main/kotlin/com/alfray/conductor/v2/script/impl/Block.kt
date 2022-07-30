@@ -128,5 +128,6 @@ internal class Block @AssistedInject constructor(
         return "Block($name)"
     }
 
-    fun toSimulRouteBlock(): SimulRouteBlock = SimulRouteBlock(systemName, name)
+    fun toSimulRouteBlock(reversal: Boolean?): SimulRouteBlock =
+        SimulRouteBlock(systemName, name, reversal ?: false)
 }

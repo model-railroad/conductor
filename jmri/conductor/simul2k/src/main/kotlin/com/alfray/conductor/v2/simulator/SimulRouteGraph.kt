@@ -5,9 +5,17 @@ package com.alfray.conductor.v2.simulator
  * 'systemName' is the internal unique identifier for the block,
  * whereas 'name' is an option script-provided name for display purposes.
  */
-data class SimulRouteBlock(val systemName: String, val name: String) {
+data class SimulRouteBlock(
+    val systemName: String,
+    val name: String,
+    val reversal: Boolean
+) {
     override fun toString(): String {
-        return "{$name}"
+        return if (reversal) {
+            "<$name>"
+        } else {
+            "{$name}"
+        }
     }
 
     override fun equals(other: Any?): Boolean {
