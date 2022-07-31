@@ -11,7 +11,7 @@ import dagger.assisted.AssistedInject
 /** Creates a new throttle for the given JMRI DCC Address. */
 @AssistedFactory
 interface ISimulThrottleFactory {
-    fun create(sdccAddress_: Int) : SimulThrottle
+    fun create(dccAddress: Int) : SimulThrottle
 }
 
 class SimulThrottle @AssistedInject constructor(
@@ -22,15 +22,16 @@ class SimulThrottle @AssistedInject constructor(
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
     private var graph: SimulRouteGraph? = null
-    private var block: SimulRouteBlock? = null
+    internal /*VisibleForTesting*/ var block: SimulRouteBlock? = null
+    internal /*VisibleForTesting*/ var graphForward = true
     /** Time in ms we have accumulated on this block. */
-    private var blockMS: Long = 0
+    private var blockMS: Long = 0L
     /** Time when the block time was last updated. */
-    private var lastTS: Long = 0
+    private var lastTS: Long = 0L
     /** Current engine speed and direction. */
     private var _speed: Int = 0
     /** Max time to spend on this block before moving to the next one. */
-    private val blockMaxMs = 5*1000 /* 5s for debugging TBD make customizable/variable */
+    internal val blockMaxMs = 30*1000L /* 5s for debugging TBD make customizable/variable */
 
     override fun eStop() {
         _speed = 0
@@ -74,12 +75,18 @@ class SimulThrottle @AssistedInject constructor(
             }
             newBlock?.let {
                 jmriProvider.getSensor(it.systemName)?.isActive = true
+                if (it.reversal) {
+                    graphForward = !graphForward
+                }
             }
 
             block = newBlock
             blockMS = 0
             lastTS = clock.elapsedRealtime()
-            logger.d(TAG, String.format("[%04d] Move To Block %s", dccAddress, block))
+            logger.d(TAG, String.format("[%04d] Move to block %s then %s",
+                dccAddress,
+                block,
+                if (graphForward) "FWD" else "REV"))
         }
     }
 
@@ -88,6 +95,7 @@ class SimulThrottle @AssistedInject constructor(
         graph?.let { g ->
             logger.d(TAG, String.format("[%04d] Route Graph: %s", dccAddress, g.toString()))
             changeBlock(g.start)
+            graphForward = true
         }
     }
 
@@ -103,7 +111,7 @@ class SimulThrottle @AssistedInject constructor(
 
                 if (blockMS >= blockMaxMs) {
                     // change blocks
-                    graph?.whereTo(b)?.let { newBlock -> changeBlock(newBlock) }
+                    graph?.whereTo(b, graphForward)?.let { newBlock -> changeBlock(newBlock) }
                 }
             }
         }

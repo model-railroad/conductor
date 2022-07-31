@@ -28,6 +28,7 @@ import javax.inject.Singleton
 @Component(modules = [CommonTestModule::class, Simul2kModule::class])
 interface ISimul2kTestComponent : ISimul2kComponent {
     fun inject(test: Simul2kJmriProviderTest)
+    fun inject(test: SimulThrottleTest)
 
     @Component.Factory
     interface Factory {

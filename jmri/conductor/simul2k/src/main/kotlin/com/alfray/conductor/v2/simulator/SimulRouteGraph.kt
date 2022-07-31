@@ -177,19 +177,15 @@ data class SimulRouteGraph(
         return "(start=$start, blocks=$blocks, edges=$sb)"
     }
 
-    fun whereTo(from: SimulRouteBlock): SimulRouteBlock? {
+    fun whereTo(from: SimulRouteBlock, dirForward: Boolean): SimulRouteBlock? {
         // Get the list of outgoing edges from that block/sensor.
         // The list can be null or empty.
         val dest = edges[from]
-        dest?.let {
-            // Return the first main-sequence edge we can find, if any.
-            val main = dest.firstOrNull { !it.isBranch }
-            if (main != null) {
-                return main.to
-            }
-            // Otherwise just return whatever is the first outgoing edge
-            return dest.firstOrNull()?.to
-        }
-        return null
+
+        // Sort the list by matching forward direction first, then by main-to-branch.
+        val result = dest?.sortedWith(compareBy( { it.forward == dirForward }, { !it.isBranch } ))
+
+        // Pick the first choice from the selected list, if any.
+        return result?.firstOrNull()?.to
     }
 }

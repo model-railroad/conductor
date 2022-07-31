@@ -1,0 +1,76 @@
+package com.alfray.conductor.v2.simulator
+
+import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.utils.FakeClock
+import com.google.common.truth.Truth.assertThat
+import org.junit.Before
+import org.junit.Test
+import javax.inject.Inject
+
+
+class SimulThrottleTest {
+
+    @Inject internal lateinit var jmriProvider: IJmriProvider
+    @Inject internal lateinit var simul2k: Simul2k
+    @Inject internal lateinit var clock: FakeClock
+    private lateinit var throttle: SimulThrottle
+    private val dccAddress = 123
+
+    @Before
+    fun setUp() {
+        val component = DaggerISimul2kTestComponent
+            .factory()
+            .createComponent()
+        component.inject(this)
+
+        throttle = jmriProvider.getThrottle(dccAddress) as SimulThrottle
+    }
+
+    @Test
+    fun testThrottleProgression() {
+        val graph = createGraph()
+        assertThat(graph.toString())
+            .isEqualTo("(start={B1}, blocks=[{B1}, <B2>], edges=[{B1}=>><B2>=<>{B1}])")
+        val b1 = graph.blocks[0]
+        val b2 = graph.blocks[1]
+        simul2k.addRoute(dccAddress, graph)
+
+        assertThat(throttle.block).isNull()
+        assertThat(throttle.graphForward).isTrue()
+
+        simul2k.onExecStart()
+        assertThat(throttle.block).isEqualTo(b1)
+        assertThat(throttle.graphForward).isTrue()
+
+        throttle.setSpeed(5)
+        simul2k.onExecHandle()
+        assertThat(throttle.block).isEqualTo(b1)
+        assertThat(throttle.graphForward).isTrue()
+
+        clock.add(throttle.blockMaxMs)
+        simul2k.onExecHandle()
+        assertThat(throttle.block).isEqualTo(b2)
+        assertThat(throttle.graphForward).isFalse()
+
+        clock.add(throttle.blockMaxMs)
+        simul2k.onExecHandle()
+        assertThat(throttle.block).isEqualTo(b1)
+        assertThat(throttle.graphForward).isFalse()
+    }
+
+    private fun createGraph(): SimulRouteGraph {
+        val b1 = SimulRouteBlock("B1", "B1", reversal = false)
+        val b2 = SimulRouteBlock("B2", "B2", reversal = true)
+        val edge12 = SimulRouteEdge(from = b1, to = b2, forward = true, isBranch = false)
+        val edge21 = SimulRouteEdge(from = b2, to = b1, forward = false, isBranch = false)
+
+        return SimulRouteGraph(
+            b1,
+            listOf(b1, b2),
+            mapOf(
+                b1 to listOf(edge12),
+                b2 to listOf(edge21),
+            )
+        )
+    }
+}

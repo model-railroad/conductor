@@ -24,7 +24,7 @@ class Simul2kJmriProviderTest {
     }
 
     @Test
-    fun basicTest() {
+    fun basicComponentTest() {
         assertThat(jmriProvider).isInstanceOf(FakeJmriProvider::class.java)
         assertThat(clock).isInstanceOf(FakeClock::class.java)
 

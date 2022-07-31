@@ -610,10 +610,18 @@ on { PA_State == EPA_State.Wait } then {
 
 // Departure from Station (going up)
 // REQUIRES both trains stopped.
-on { PA_Train == EPA_Train.Passenger && PA_State == EPA_State.Station && AM.stopped && SP.stopped && AIU_Motion.active } then {
+on { PA_Train == EPA_Train.Passenger
+        && PA_State == EPA_State.Station
+        && AM.stopped && SP.stopped
+        && PA_Toggle.active
+        && AIU_Motion.active } then {
     PA_State = EPA_State.Shuttle
 }
-on { PA_Train == EPA_Train.Freight && PA_State == EPA_State.Station && AM.stopped && SP.stopped && AIU_Motion.active } then {
+on { PA_Train == EPA_Train.Freight
+        && PA_State == EPA_State.Station
+        && AM.stopped && SP.stopped
+        && PA_Toggle.active
+        && AIU_Motion.active } then {
     PA_State = EPA_State.Shuttle
 }
 
