@@ -19,6 +19,7 @@ package com.alfray.conductor.v2.dagger
 
 import com.alfray.conductor.v2.script.CondCacheTest
 import com.alfray.conductor.v2.script.ScriptTest2k
+import com.alfray.conductor.v2.script.Scriptv45v2Test2k
 import com.alfray.conductor.v2.script.dsl.ExportedVarsTest
 import com.alfray.conductor.v2.script.impl.TimerTest
 import dagger.Subcomponent
@@ -27,6 +28,7 @@ import dagger.Subcomponent
 @Subcomponent
 interface IScript2kTestComponent: IScript2kComponent {
     fun inject(scriptTest2k: ScriptTest2k)
+    fun inject(scriptv45v2Test2k: Scriptv45v2Test2k)
     fun inject(condCacheTest: CondCacheTest)
     fun inject(exportedVarsTest: ExportedVarsTest)
     fun inject(timerTest: TimerTest)

@@ -79,15 +79,6 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testScript45() {
-        fileOps.writeBytes(
-            "<svg/>".toByteArray(Charsets.UTF_8),
-            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v45_v2")
-        assertResultNoError()
-    }
-
-    @Test
     fun testVariables() {
         loadScriptFromFile("sample_v2")
         assertResultNoError()
