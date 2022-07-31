@@ -44,6 +44,10 @@ import dagger.assisted.AssistedInject
  * A block has 3 states: empty, occupied (sensor active), and trailing (sensor either active or not).
  * The state is computed by an external route manager which updates the block and any nodes that
  * depend on this block.
+ *
+ * Block equality purely relies on the equality of the unique systemName ID.
+ * The active state of the block is NOT used in equality. This ensures stability
+ * when used as a map key.
  */
 internal class Block @AssistedInject constructor(
     private val keyValue: IKeyValue,
@@ -104,6 +108,11 @@ internal class Block @AssistedInject constructor(
         }
     }
 
+    /**
+     * Block equality purely relies on the equality of the unique systemName ID.
+     * The active state of the block is NOT used in equality. This ensures stability
+     * when used as a map key.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -111,16 +120,12 @@ internal class Block @AssistedInject constructor(
         other as Block
 
         if (systemName != other.systemName) return false
-        if (_active != other._active) return false
-        if (state != other.state) return false
 
         return true
     }
 
     override fun hashCode(): Int {
         var result = systemName.hashCode()
-        result = 31 * result + _active.hashCode()
-        result = 31 * result + state.hashCode()
         return result
     }
 

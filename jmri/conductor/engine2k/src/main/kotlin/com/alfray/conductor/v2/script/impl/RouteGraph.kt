@@ -92,7 +92,8 @@ internal data class RouteGraph(
 
     /** Computes all outgoing nodes out of the provided one. */
     fun outgoing(node: INode): Set<INode> {
-        val nodeEdges = edges[node.block] ?: return emptySet()
+        val nodeEdges = edges[node.block]
+        if (nodeEdges == null) return emptySet()
         return nodeEdges.filter { it.from === node }.map { it.to }.toSet()
     }
 
