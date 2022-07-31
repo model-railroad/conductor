@@ -45,5 +45,9 @@ class SimulJmriProvider @Inject constructor(
     override fun onExecHandle() {
         mThrottles.values.forEach { (it as SimulThrottle).onExecHandle() }
     }
+
+    fun getUiLogOutput(): String {
+        return mThrottles.values.map { (it as SimulThrottle).getUiLogOutput() }.joinToString("\n")
+    }
 }
 

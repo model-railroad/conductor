@@ -33,4 +33,6 @@ class Simul2k @Inject constructor(
     override fun onExecHandle() {
         jmriProvider.onExecHandle()
     }
+
+    fun getUiLogOutput(): String = jmriProvider.getUiLogOutput()
 }

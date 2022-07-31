@@ -179,212 +179,212 @@ val PA_Route = activeRoute {
 
 val PA_Idle_Route = PA_Route.idle {}
 
-val Passenger_Route = PA_Route.sequence {
-    throttle = AM
-    timeout = 60 // 1 minute
-
-    val AM_Leaving_Speed    = 6.speed
-    val AM_Station_Speed    = 12.speed
-    val AM_Summit_Speed     = 6.speed
-    val AM_Summit_Bridge_Speed = 4.speed
-    val AM_Sonora_Speed     = 8.speed
-    val AM_Crossover_Speed  = 4.speed
-    val AM_Full_Speed       = 12.speed
-
-    val AM_Delayed_Horn             = 2.seconds
-    val AM_Leaving_To_Full_Speed    = 15.seconds
-    val AM_Timer_B321_Up_Doppler    = 27.seconds
-    val AM_Timer_B330_Up_Resume     = 12.seconds
-    val AM_Timer_B340_Up_Horn       = 5.seconds
-    val AM_Timer_B370_Forward_Stop  = 17.seconds  // time running at AM_Summit_Speed before stopping
-    val AM_Timer_B370_Pause_Delay   = 16.seconds
-    val AM_Timer_B360_Full_Reverse  = 12.seconds
-    val AM_Timer_B330_Down_Speed    = 8.seconds
-    val AM_Timer_B321_Down_Crossover = 27.seconds
-    val AM_Timer_B503b_Down_Stop    = 20.seconds
-    val AM_Timer_Down_Station_Lights_Off = 10.seconds
-
-    fun AM_Fn_Acquire_Route() {
-        T311.reverse()
-        T320.normal()
-        T321.normal()
-        T322.normal()
-        T326.normal()
-        T330.reverse()
-        T370.normal()
-        T504.normal()
-    }
-
-    onActivate {
-        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
-        json_event {
-            key1 = "Depart"
-            key2 = "Passenger"
-        }
-        AM.light(On)
-        AM.sound(On)
-        SP.sound(Off)
-        AM.forward(AM_Leaving_Speed)
-    }
-
-    val B503b_start = node(B503b) {
-        whileOccupied {
-            if (AM.stopped) {
-                AM.forward(AM_Leaving_Speed)
-                AM.f1(Off)
-                SP.sound(Off)
-                AM.horn()
-                AM_Fn_Acquire_Route()
-                AM.f1(On)
-                after(AM_Delayed_Horn) then {
-                    AM.horn()
-                }
-            }
-        }
-    }
-
-    val B503a_fwd = node(B503a) {
-    }
-
-    val B321_fwd = node(B321) {
-        onEnter {
-            // Wait for train to have cleared up T320 before switching to full speed.
-            // The problem is that B321 activates as train hits diverted leg of turnout.
-            after(AM_Leaving_To_Full_Speed) then {
-                // TBD: validate PA_Toggle is still on
-                AM.forward(AM_Full_Speed)
-            }
-
-            // Mid_Station doppler on the way up
-            after(AM_Timer_B321_Up_Doppler) then {
-                AM.f9(On)
-                AM.f9(Off)
-            }
-        }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
-            }
-        }
-    }
-
-    val B330_fwd = node(B330) {
-        onEnter {
-            // Sonora speed reduction
-            AM.forward(AM_Sonora_Speed)
-            after(AM_Timer_B330_Up_Resume) then {
-                AM.forward(AM_Full_Speed)
-                AM.horn()
-            }
-        }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
-            }
-        }
-    }
-
-    val B340_fwd = node(B340) {
-        onEnter {
-            // After tunnel on the way up
-            after(AM_Timer_B340_Up_Horn) then {
-                AM.horn()
-            }
-        }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
-            }
-        }
-    }
-
-    //--- PA State: AM Summit
-
-    val B360_fwd = node(B360) {
-    }
-
-    val B370_end = node(B370) {
-        onEnter {
-            after(4.seconds) then {
-                // Forward
-                AM.forward(AM_Summit_Speed)
-                AM.f1(On)
-            } and_after(AM_Timer_B370_Forward_Stop) then {
-                AM.stop()
-                AM.horn()
-            } and_after(AM_Timer_B370_Pause_Delay) then {
-                // Stopped
-                AM.f1(Off)
-                AM.horn()
-                AM.reverse(AM_Summit_Speed)
-            }
-        }
-    }
-
-    val B360_rev = node(B360) {
-        onEnter {
-            after(AM_Timer_B360_Full_Reverse) then {
-                AM.reverse(AM_Full_Speed)
-            }
-        }
-    }
-
-    val B340_rev = node(B340) {
-    }
-
-    val B330_rev = node(B330) {
-        after(AM_Timer_B330_Down_Speed) then {
-            AM.horn()
-            AM.reverse(AM_Sonora_Speed)
-        }
-    }
-
-    val B321_rev = node(B321) {
-        AM.reverse(AM_Full_Speed)
-        AM.f9(On)
-        AM.f9(Off)
-        after(AM_Timer_B321_Down_Crossover) then {
-            AM.horn()
-            AM.f1(On)
-            AM.reverse(AM_Crossover_Speed)
-        }
-    }
-
-    val B503a_rev = node(B503a) {
-    }
-
-    val B503b_rev = node(B503b) {
-        after(AM_Timer_B503b_Down_Stop) then {
-            AM.stop()
-            AM.horn()
-            AM.f1(Off)
-        } and_after(AM_Timer_Down_Station_Lights_Off) then {
-            ga_event {
-                category = "Activation"
-                action = "Stop"
-                label = PA_Train.name
-                user = PA_Start_Counter.toString()
-            }
-            PA_Train = EPA_Train.Freight
-            PA_State = EPA_State.Wait
-            route.activate(PA_Idle_Route)
-        }
-    }
-
-    sequence = listOf(
-        B503b_start, B503a_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
-        B370_end,
-        B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
-}
+//val Passenger_Route = PA_Route.sequence {
+//    throttle = AM
+//    timeout = 60 // 1 minute
+//
+//    val AM_Leaving_Speed    = 6.speed
+//    val AM_Station_Speed    = 12.speed
+//    val AM_Summit_Speed     = 6.speed
+//    val AM_Summit_Bridge_Speed = 4.speed
+//    val AM_Sonora_Speed     = 8.speed
+//    val AM_Crossover_Speed  = 4.speed
+//    val AM_Full_Speed       = 12.speed
+//
+//    val AM_Delayed_Horn             = 2.seconds
+//    val AM_Leaving_To_Full_Speed    = 15.seconds
+//    val AM_Timer_B321_Up_Doppler    = 27.seconds
+//    val AM_Timer_B330_Up_Resume     = 12.seconds
+//    val AM_Timer_B340_Up_Horn       = 5.seconds
+//    val AM_Timer_B370_Forward_Stop  = 17.seconds  // time running at AM_Summit_Speed before stopping
+//    val AM_Timer_B370_Pause_Delay   = 16.seconds
+//    val AM_Timer_B360_Full_Reverse  = 12.seconds
+//    val AM_Timer_B330_Down_Speed    = 8.seconds
+//    val AM_Timer_B321_Down_Crossover = 27.seconds
+//    val AM_Timer_B503b_Down_Stop    = 20.seconds
+//    val AM_Timer_Down_Station_Lights_Off = 10.seconds
+//
+//    fun AM_Fn_Acquire_Route() {
+//        T311.reverse()
+//        T320.normal()
+//        T321.normal()
+//        T322.normal()
+//        T326.normal()
+//        T330.reverse()
+//        T370.normal()
+//        T504.normal()
+//    }
+//
+//    onActivate {
+//        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
+//        json_event {
+//            key1 = "Depart"
+//            key2 = "Passenger"
+//        }
+//        AM.light(On)
+//        AM.sound(On)
+//        SP.sound(Off)
+//        AM.forward(AM_Leaving_Speed)
+//    }
+//
+//    val B503b_start = node(B503b) {
+//        whileOccupied {
+//            if (AM.stopped) {
+//                AM.forward(AM_Leaving_Speed)
+//                AM.f1(Off)
+//                SP.sound(Off)
+//                AM.horn()
+//                AM_Fn_Acquire_Route()
+//                AM.f1(On)
+//                after(AM_Delayed_Horn) then {
+//                    AM.horn()
+//                }
+//            }
+//        }
+//    }
+//
+//    val B503a_fwd = node(B503a) {
+//    }
+//
+//    val B321_fwd = node(B321) {
+//        onEnter {
+//            // Wait for train to have cleared up T320 before switching to full speed.
+//            // The problem is that B321 activates as train hits diverted leg of turnout.
+//            after(AM_Leaving_To_Full_Speed) then {
+//                // TBD: validate PA_Toggle is still on
+//                AM.forward(AM_Full_Speed)
+//            }
+//
+//            // Mid_Station doppler on the way up
+//            after(AM_Timer_B321_Up_Doppler) then {
+//                AM.f9(On)
+//                AM.f9(Off)
+//            }
+//        }
+//
+//        whileOccupied {
+//            // PA_Toggle off reverts train to down but only on specific "safe" blocks
+//            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
+//            if (!PA_Toggle) {
+//                AM.reverse(AM_Summit_Speed)
+//            }
+//        }
+//    }
+//
+//    val B330_fwd = node(B330) {
+//        onEnter {
+//            // Sonora speed reduction
+//            AM.forward(AM_Sonora_Speed)
+//            after(AM_Timer_B330_Up_Resume) then {
+//                AM.forward(AM_Full_Speed)
+//                AM.horn()
+//            }
+//        }
+//
+//        whileOccupied {
+//            // PA_Toggle off reverts train to down but only on specific "safe" blocks
+//            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
+//            if (!PA_Toggle) {
+//                AM.reverse(AM_Summit_Speed)
+//            }
+//        }
+//    }
+//
+//    val B340_fwd = node(B340) {
+//        onEnter {
+//            // After tunnel on the way up
+//            after(AM_Timer_B340_Up_Horn) then {
+//                AM.horn()
+//            }
+//        }
+//
+//        whileOccupied {
+//            // PA_Toggle off reverts train to down but only on specific "safe" blocks
+//            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
+//            if (!PA_Toggle) {
+//                AM.reverse(AM_Summit_Speed)
+//            }
+//        }
+//    }
+//
+//    //--- PA State: AM Summit
+//
+//    val B360_fwd = node(B360) {
+//    }
+//
+//    val B370_end = node(B370) {
+//        onEnter {
+//            after(4.seconds) then {
+//                // Forward
+//                AM.forward(AM_Summit_Speed)
+//                AM.f1(On)
+//            } and_after(AM_Timer_B370_Forward_Stop) then {
+//                AM.stop()
+//                AM.horn()
+//            } and_after(AM_Timer_B370_Pause_Delay) then {
+//                // Stopped
+//                AM.f1(Off)
+//                AM.horn()
+//                AM.reverse(AM_Summit_Speed)
+//            }
+//        }
+//    }
+//
+//    val B360_rev = node(B360) {
+//        onEnter {
+//            after(AM_Timer_B360_Full_Reverse) then {
+//                AM.reverse(AM_Full_Speed)
+//            }
+//        }
+//    }
+//
+//    val B340_rev = node(B340) {
+//    }
+//
+//    val B330_rev = node(B330) {
+//        after(AM_Timer_B330_Down_Speed) then {
+//            AM.horn()
+//            AM.reverse(AM_Sonora_Speed)
+//        }
+//    }
+//
+//    val B321_rev = node(B321) {
+//        AM.reverse(AM_Full_Speed)
+//        AM.f9(On)
+//        AM.f9(Off)
+//        after(AM_Timer_B321_Down_Crossover) then {
+//            AM.horn()
+//            AM.f1(On)
+//            AM.reverse(AM_Crossover_Speed)
+//        }
+//    }
+//
+//    val B503a_rev = node(B503a) {
+//    }
+//
+//    val B503b_rev = node(B503b) {
+//        after(AM_Timer_B503b_Down_Stop) then {
+//            AM.stop()
+//            AM.horn()
+//            AM.f1(Off)
+//        } and_after(AM_Timer_Down_Station_Lights_Off) then {
+//            ga_event {
+//                category = "Activation"
+//                action = "Stop"
+//                label = PA_Train.name
+//                user = PA_Start_Counter.toString()
+//            }
+//            PA_Train = EPA_Train.Freight
+//            PA_State = EPA_State.Wait
+//            route.activate(PA_Idle_Route)
+//        }
+//    }
+//
+//    sequence = listOf(
+//        B503b_start, B503a_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
+//        B370_end,
+//        B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+//}
 
 
 //val Freight_Route = PA_Route.sequence {
@@ -655,9 +655,9 @@ on { PA_State == EPA_State.Wait    && PA_Toggle.active && PA_Train == EPA_Train.
 }
 
 // DEBUG place to force AM_up vs SP_up
-on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Passenger } then {
-    PA_Route.activate(Passenger_Route)
-}
+//on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Passenger } then {
+//    PA_Route.activate(Passenger_Route)
+//}
 //on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Freight   } then {
 //    PA_Route.activate(Freight_Route)
 //}

@@ -79,6 +79,7 @@ class StatusWindow2 {
     def JTextField mScriptNameField
     def JTextArea mLogField
     def JScrollPane mLogScroller
+    def JTextArea mLogSimul
     def JPanel mThrottlePanel
     def JPanel mSensorPanel
     def JSVGCanvas mSvgCanvas
@@ -142,18 +143,19 @@ class StatusWindow2 {
                     checkBox(text: "No JMRI Sensor", selected: false)
                 }
 
-                // Bottom Log
-                /*
+                // Bottom Simulator Log
                 scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_ALWAYS,
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
                         constraints: gbc(gridx: 0, gridy: gy++,
                                 gridwidth: gx, fill: BOTH,
-                                minHeight: 100, insets: inset,
+                                minHeight: 100,
+                                insets: inset,
                                 weightx: 1, weighty: 1)) {
-                    textArea(text: "Output Log (TBD)", editable: true,
+                    mLogSimul = textArea(text: "Simulator output\nLine 2\nLine 3",
+                            editable: false,
                             lineWrap: true, wrapStyleWord: true)
+                    mLogSimul.caretPosition = 0
                 }
-                */
 
                 // Side Log
                 mLogScroller = scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_ALWAYS,
@@ -196,11 +198,19 @@ class StatusWindow2 {
         }
     }
 
-    void updateLog(String logText) {
+    void updateMainLog(String logText) {
         mSwingBuilder.edt {
             def p = mLogField.caretPosition
             mLogField.text = logText
             mLogField.caretPosition = p
+        }
+    }
+
+    void updateSimuLog(String logText) {
+        mSwingBuilder.edt {
+            def p = mLogField.caretPosition
+            mLogSimul.text = logText
+            mLogSimul.caretPosition = p
         }
     }
 

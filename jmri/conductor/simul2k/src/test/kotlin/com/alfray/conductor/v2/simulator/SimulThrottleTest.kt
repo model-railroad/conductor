@@ -28,11 +28,12 @@ class SimulThrottleTest {
 
     @Test
     fun testThrottleProgression() {
-        val graph = createGraph()
+        val (graph, blocks) = createGraph()
+        val (b1, b2) = blocks
+
         assertThat(graph.toString())
             .isEqualTo("(start={B1}, blocks=[{B1}, <B2>], edges=[{B1}=>><B2>=<>{B1}])")
-        val b1 = graph.blocks[0]
-        val b2 = graph.blocks[1]
+
         simul2k.addRoute(dccAddress, graph)
 
         assertThat(throttle.block).isNull()
@@ -58,13 +59,13 @@ class SimulThrottleTest {
         assertThat(throttle.graphForward).isFalse()
     }
 
-    private fun createGraph(): SimulRouteGraph {
+    private fun createGraph(): Pair<SimulRouteGraph, List<SimulRouteBlock>> {
         val b1 = SimulRouteBlock("B1", "B1", reversal = false)
         val b2 = SimulRouteBlock("B2", "B2", reversal = true)
         val edge12 = SimulRouteEdge(from = b1, to = b2, forward = true, isBranch = false)
         val edge21 = SimulRouteEdge(from = b2, to = b1, forward = false, isBranch = false)
 
-        return SimulRouteGraph(
+        val graph = SimulRouteGraph(
             b1,
             listOf(b1, b2),
             mapOf(
@@ -72,5 +73,7 @@ class SimulThrottleTest {
                 b2 to listOf(edge21),
             )
         )
+
+        return Pair(graph, listOf(b1, b2))
     }
 }

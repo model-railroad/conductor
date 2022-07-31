@@ -191,12 +191,15 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private void _windowUpdateThread() {
         log("Window Update Thread - Start");
 
-        while (mKeepRunning.get() && mWin != null) {
-            try {
-                updateWindowLog();
-                mWin.updateUI();
-                Thread.sleep(330 /*ms*/);
-            } catch (InterruptedException ignore) {
+        while (mKeepRunning.get()) {
+            StatusWindow2 win = mWin;
+            if (win != null) {
+                try {
+                    updateWindowLog();
+                    win.updateUI();
+                    Thread.sleep(330 /*ms*/);
+                } catch (InterruptedException ignore) {
+                }
             }
         }
 
@@ -279,8 +282,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             boolean wasRunning = reloaded.mFirst;
             File file = reloaded.mSecond;
 
-            if (mWin != null) {
-                mWin.updateScriptName(file.getName());
+            StatusWindow2 win = mWin;
+            if (win != null) {
+                win.updateScriptName(file.getName());
                 loadMap();
             }
 
@@ -327,8 +331,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowPause() {
         log("onWindowPause");
         mPaused.set(!mPaused.get());
-        if (mWin != null) {
-            mWin.updatePause(mPaused.get());
+        StatusWindow2 win = mWin;
+        if (win != null) {
+            win.updatePause(mPaused.get());
         }
     }
 
@@ -344,7 +349,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     /** Executes on the Swing EDT thread. */
     private void updateWindowLog() {
-        if (mWin == null) return;
+        StatusWindow2 win = mWin;
+        if (win == null) return;
 
         mStatus.setLength(0);
 
@@ -356,7 +362,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         mAdapter.ifPresent(adapter -> adapter.appendToLog(mStatus));
         appendVarStatus(mStatus, mKeyValueServer);
 
-        mWin.updateLog(mStatus.toString());
+        win.updateMainLog(mStatus.toString());
+
+        if (mIsSimulation) {
+            mSimul2kComponent.ifPresent( comp ->
+                    win.updateSimuLog(comp.getSimul2k().getUiLogOutput()));
+        } else {
+            win.updateSimuLog("Simulator not running.");
+        }
     }
 
     private static void appendVarStatus(
@@ -391,17 +404,19 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void registerUiThrottles() {
-        if (mWin == null) { return; }
+        StatusWindow2 win = mWin;
+        if (win == null) { return; }
 
         mAdapter.ifPresent(adapter ->
-                mWin.registerThrottles(adapter.getThrottles()));
+                win.registerThrottles(adapter.getThrottles()));
     }
 
     private void registerUiConditionals() {
-        if (mWin == null) { return; }
+        StatusWindow2 win = mWin;
+        if (win == null) { return; }
 
         mAdapter.ifPresent(adapter ->
-                mWin.registerActivables(
+                win.registerActivables(
                     adapter.getSensors(),
                     adapter.getBlocks(),
                     adapter.getTurnouts()

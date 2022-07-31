@@ -7,6 +7,7 @@ import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.util.Locale
 
 /** Creates a new throttle for the given JMRI DCC Address. */
 @AssistedFactory
@@ -115,5 +116,27 @@ class SimulThrottle @AssistedInject constructor(
                 }
             }
         }
+    }
+
+    fun getUiLogOutput(): String {
+        val sb = StringBuilder(String.format(Locale.US, "[%04d]", dccAddress))
+
+        block?.let { b ->
+            sb.append(" on $block")
+            if (_speed == 0) {
+                sb.append(" STOP")
+            } else {
+                sb.append(String.format(Locale.US,
+                    " for %.1f / %.1f s",
+                    blockMS / 1000.0, blockMaxMs / 1000.0))
+            }
+
+            graph?.whereTo(b, graphForward)?.let { nb ->
+                sb.append(", next to $nb")
+            }
+            sb.append(if (graphForward) " FWD" else " REV")
+        }
+
+        return sb.toString()
     }
 }
