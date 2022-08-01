@@ -44,7 +44,8 @@ data class SimulRouteEdge(
     val forward: Boolean,
     val isBranch: Boolean,
 ) {
-    /** RouteEdge equality is a strict from-to object equality, 'isBranch' is not used. */
+    /** RouteEdge equality is a strict from-to object equality,
+     * 'forward' and 'isBranch' is not used. */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -54,7 +55,7 @@ data class SimulRouteEdge(
         if (from != other.from) return false
         if (to != other.to) return false
         // The "isBranch" type is NOT part of the equality test. Two branches are
-        // still equal even if they differ only on their branch type.
+        // still equal even if they differ only on their forward direction or branch type.
         return true
     }
 
@@ -182,8 +183,12 @@ data class SimulRouteGraph(
         // The list can be null or empty.
         val dest = edges[from]
 
-        // Sort the list by matching forward direction first, then by main-to-branch.
-        val result = dest?.sortedWith(compareBy( { it.forward == dirForward }, { !it.isBranch } ))
+        // Filter by direction. We should not choose nodes in the wrong direction.
+        val filtered = dest?.filter { it.forward == dirForward }
+
+        // Sort the list by by main-to-branch.
+        // Note: compareBy{} sorts booleans in order (false, true).
+        val result = filtered?.sortedWith(compareBy { it.isBranch })
 
         // Pick the first choice from the selected list, if any.
         return result?.firstOrNull()?.to
