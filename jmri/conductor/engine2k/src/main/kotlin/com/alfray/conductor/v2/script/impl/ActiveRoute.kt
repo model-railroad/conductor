@@ -81,8 +81,36 @@ internal class ActiveRoute(
      * Used for pretty-printing the route toString. Returns -1 if route unknown. */
     fun routeIndex(route: IRoute): Int = routes.indexOf(route)
 
+    /** A short display of the active route name.
+     * For detailed information suitable for logging purposes, use [getLogStatus]. */
     override fun toString(): String {
         return "ActiveRoute $name"
+    }
+
+    override fun getLogStatus(): String {
+        val sb = StringBuilder()
+        val index = routeIndex(active)
+
+        sb.append(_active?.javaClass?.simpleName?.replace("Route", ""))
+            .append(" #$index = ")
+            .append(_active?.state)
+
+        val countTimers = context.countTimers()
+        _active?.let { r ->
+            countTimers.add(r.context.countTimers())
+            if (r is RouteSequence) {
+                r.currentNode?.let {
+                    it as Node
+                    countTimers.add(it.context.countTimers())
+                }
+            }
+        }
+        sb.append(", ${countTimers.numTimers} timers")
+        if (countTimers.numTimers > 0) {
+            sb.append(" (${countTimers.numStarted} started, ${countTimers.numActive} active)")
+        }
+
+        return sb.toString()
     }
 
     /** Called by script to change the active route. No-op if route is already active. */

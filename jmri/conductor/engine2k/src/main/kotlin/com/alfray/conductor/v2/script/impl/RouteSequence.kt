@@ -69,7 +69,8 @@ internal class RouteSequence(
     private var startNode: INode? = null
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
-    private var currentNode: INode? = null
+    var currentNode: INode? = null
+        private set
 
     override fun toString(): String {
         owner as ActiveRoute

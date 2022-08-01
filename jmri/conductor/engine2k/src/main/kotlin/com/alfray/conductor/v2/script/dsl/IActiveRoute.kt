@@ -46,4 +46,8 @@ interface IActiveRoute {
 
     /** Registers a new sequence route. */
     fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute
+
+    /** Returns a string representation of the status of that route. */
+    fun getLogStatus(): String
 }
+

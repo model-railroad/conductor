@@ -35,6 +35,9 @@ internal class After(val delay: Delay, private val parent: After? = null) : IAft
     internal val active: Boolean
         get() = timer?.active ?: false
 
+    internal val started: Boolean
+        get() = timer?.started ?: false
+
     override fun then(action: TAction) : IThenAfter {
         val parent = this
         this.action = action

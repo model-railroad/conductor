@@ -336,9 +336,18 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             ExecEngine2k engine) {
 
         outStatus.append("Freq: ");
-        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n\n",
+        outStatus.append(String.format("%.1f Hz  [%.1f Hz]\n",
                 engine.getActualFrequency(),
                 engine.getMaxFrequency()));
+
+        outStatus.append("\n--- [ ACTIVE ROUTES ] ---\n");
+        for (IActiveRoute activeRoute : script.getActiveRoutes()) {
+            outStatus.append(activeRoute.getName())
+                    .append(": ")
+                    .append(activeRoute.getLogStatus())
+                    .append('\n');
+        }
+        appendNewLine(outStatus);
 
         outStatus.append("\n--- [ TURNOUTS ] ---\n");
         int i = 0;
@@ -376,16 +385,6 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             outStatus.append(timer.getName()).append(':').append(timer.getActive() ? '1' : '0');
             outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
         }
-        appendNewLine(outStatus);
-
-        outStatus.append("\n--- [ ROUTES ] ---\n");
-//        i = 0;
-//        for (Map.Entry<String, ActiveRoute> entry : script.activeRoutes().entrySet()) {
-//            String name = entry.getKey();
-//            ActiveRoute activeRoute = entry.getValue();
-//            outStatus.append(name).append(':').append(activeRoute.get());
-//            outStatus.append((i++) % 4 == 3 ? "\n" : "   ");
-//        }
         appendNewLine(outStatus);
 
         outStatus.append("\n--- [ VARS ] ---\n");

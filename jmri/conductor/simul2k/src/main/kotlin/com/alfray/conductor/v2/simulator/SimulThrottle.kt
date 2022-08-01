@@ -40,8 +40,10 @@ class SimulThrottle @AssistedInject constructor(
     }
 
     override fun setSpeed(speed: Int) {
+        if (speed != _speed) {
+            logger.d(TAG, String.format("[%04d] Speed: %d", dccAddress, speed))
+        }
         _speed = speed
-        logger.d(TAG, String.format("[%04d] Speed: %d", dccAddress, speed))
     }
 
     override fun setSound(on: Boolean) {

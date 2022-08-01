@@ -39,4 +39,22 @@ internal open class ExecContext(private val state: State) {
         ROUTE,
         NODE,
     }
+
+    /** Returns a summary representation of the timers' activity for log purposes:
+     *  Count: num timers, num started timer, num active timers. */
+    fun countTimers(): CountTimers {
+        val t = afterTimers.size
+        val s = if (t == 0) 0 else afterTimers.count { it.started }
+        val a = if (t == 0) 0 else afterTimers.count { it.active }
+        return CountTimers(t, s, a)
+    }
+
+    data class CountTimers(var numTimers: Int, var numStarted: Int, var numActive: Int) {
+        fun add(other: CountTimers): CountTimers {
+            numTimers += other.numTimers
+            numStarted += other.numStarted
+            numActive += other.numActive
+            return this
+        }
+    }
 }

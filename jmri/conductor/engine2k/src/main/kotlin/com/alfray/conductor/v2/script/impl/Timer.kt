@@ -40,7 +40,7 @@ internal class Timer @AssistedInject constructor(
     override val active: Boolean
         get() {
             if (!activated) {
-                activated = endTS != 0L && now() >= endTS
+                activated = started && now() >= endTS
                 if (activated) {
                     eventLogger.logAsync(EventLogger.Type.Timer, name, "activated")
                 }
@@ -48,10 +48,12 @@ internal class Timer @AssistedInject constructor(
             return activated
         }
 
+    val started: Boolean = endTS != 0L
+
     override fun not(): Boolean = !active
 
     override fun start() {
-        if (endTS == 0L) {
+        if (!started) {
             endTS = now() + delay.seconds * 1000
             activated = false
             eventLogger.logAsync(

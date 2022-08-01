@@ -36,7 +36,7 @@ internal abstract class RouteBase(
     private val TAG = javaClass.simpleName
     private val actionOnActivate = builder.actionOnActivate
     private val actionOnRecover = builder.actionOnRecover
-    protected val context = ExecContext(ExecContext.State.ROUTE)
+    val context = ExecContext(ExecContext.State.ROUTE)
     var activationCounter = 0
         private set
 
