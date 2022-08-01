@@ -3,32 +3,27 @@ package com.alfray.conductor.v2.simulator
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.utils.FakeClock
-import com.alflabs.utils.IClock
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-class Simul2kJmriProviderTest {
+class Simul2kJmriProviderTest : Simul2kTestBase() {
 
-    private lateinit var component: ISimul2kTestComponent
-    @Inject internal lateinit var jmriProvider: IJmriProvider
-    @Inject internal lateinit var clock: IClock
+    @Inject internal lateinit var jmriProvider2: IJmriProvider
 
     @Before
     fun setUp() {
-        component = DaggerISimul2kTestComponent
-            .factory()
-            .createComponent()
-        component.inject(this)
+        createComponent().inject(this)
     }
 
     @Test
-    fun basicComponentTest() {
+    fun testInjection() {
         assertThat(jmriProvider).isInstanceOf(FakeJmriProvider::class.java)
-        assertThat(clock).isInstanceOf(FakeClock::class.java)
-
-        (clock as FakeClock).setNow(42)
         assertThat(component.getJmriProvider()).isSameInstanceAs(jmriProvider)
+        assertThat(jmriProvider2).isSameInstanceAs(jmriProvider)
+
+        assertThat(clock).isInstanceOf(FakeClock::class.java)
+        clock.setNow(42)
     }
 }

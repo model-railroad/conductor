@@ -1,27 +1,18 @@
 package com.alfray.conductor.v2.simulator
 
-import com.alflabs.conductor.jmri.IJmriProvider
-import com.alflabs.utils.FakeClock
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
-import javax.inject.Inject
 
 
-class SimulThrottleTest {
+class SimulThrottleTest : Simul2kTestBase() {
 
-    @Inject internal lateinit var jmriProvider: IJmriProvider
-    @Inject internal lateinit var simul2k: Simul2k
-    @Inject internal lateinit var clock: FakeClock
     private lateinit var throttle: SimulThrottle
     private val dccAddress = 123
 
     @Before
     fun setUp() {
-        val component = DaggerISimul2kTestComponent
-            .factory()
-            .createComponent()
-        component.inject(this)
+        createComponent()
 
         throttle = jmriProvider.getThrottle(dccAddress) as SimulThrottle
     }

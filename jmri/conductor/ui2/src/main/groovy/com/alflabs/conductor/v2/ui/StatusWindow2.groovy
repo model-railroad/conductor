@@ -67,8 +67,11 @@ import java.util.concurrent.atomic.AtomicReference
 
 import static java.awt.GridBagConstraints.BOTH
 import static java.awt.GridBagConstraints.HORIZONTAL
+import static java.awt.GridBagConstraints.NONE
+import static java.awt.GridBagConstraints.VERTICAL
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class StatusWindow2 {
@@ -144,14 +147,15 @@ class StatusWindow2 {
                 }
 
                 // Bottom Simulator Log
-                scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_ALWAYS,
+                scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_AS_NEEDED,
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
                         constraints: gbc(gridx: 0, gridy: gy++,
                                 gridwidth: gx, fill: BOTH,
-                                minHeight: 100,
+                                minHeight: 300,
                                 insets: inset,
-                                weightx: 1, weighty: 1)) {
+                                weightx: 1, weighty: 0.5)) {
                     mLogSimul = textArea(text: "Simulator output\nLine 2\nLine 3",
+                            rows: 4,
                             editable: false,
                             lineWrap: true, wrapStyleWord: true)
                     mLogSimul.caretPosition = 0
@@ -162,10 +166,11 @@ class StatusWindow2 {
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
                         constraints: gbc(gridx: gx, gridy: 1,
                                 gridwidth: wx-gx, gridheight: gy-1, fill: BOTH,
-                                minHeight: 200, insets: inset,
+                                minWidth: 200, minHeight: 200, insets: inset,
                                 weightx: 1, weighty: 1)) {
-                    mLogField = textArea(text: "Log Area", editable: false,
-                            lineWrap: true, wrapStyleWord: true)
+                    mLogField = textArea(text: "Log Area",
+                            columns: 100,
+                            editable: false, lineWrap: true, wrapStyleWord: true)
                     mLogField.caretPosition = 0
                 }
             }
