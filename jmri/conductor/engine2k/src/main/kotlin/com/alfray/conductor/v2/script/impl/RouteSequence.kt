@@ -189,6 +189,7 @@ internal class RouteSequence(
                 val enterNode = outgoingNodesActive.first() as Node
                 node.changeState(Block.State.TRAILING)
                 enterNode.changeState(Block.State.OCCUPIED)
+                currentNode = enterNode
             }
         }
     }
