@@ -674,7 +674,7 @@ on { PA_State == EPA_State.Station && !PA_Toggle } then {
 // ---------
 
 
-val BL = throttle(191)
+val BL = throttle(191) named "BL"
 
 val BL_Speed = 10.speed
 val BL_Speed_Station = 6.speed

@@ -64,13 +64,18 @@ class Scriptv45v2Test2k : ScriptTest2kBase() {
         val pa = conductorImpl.activeRoutes[0]
         assertThat(pa.toString()).isEqualTo("ActiveRoute Mainline")
 
-        assertThat(pa.routes).hasSize(2)
+        assertThat(pa.routes).hasSize(3)
         assertThat(pa.routes[0].toString()).isEqualTo("Route Idle Mainline#0")
         assertThat(pa.routes[1].toString()).isEqualTo("Route Sequence Mainline#1 (8749)")
+        assertThat(pa.routes[2].toString()).isEqualTo("Route Sequence Mainline#2 (1072)")
 
         val paRoute1 = pa.routes[1] as RouteSequence
         assertThat(paRoute1.graph.toString()).isEqualTo(
             "[{B503b}=>>{B503a}=>>{B321}=>>{B330}=>>{B340}=>>{B360}=>><B370>=<>{B360}=<>{B340}=<>{B330}=<>{B321}=<>{B503a}=<>{B503b}]")
+
+        val paRoute2 = pa.routes[2] as RouteSequence
+        assertThat(paRoute2.graph.toString()).isEqualTo(
+            "[{B311}=>><B321>=<>{B311}],[<B321>->><B330>-<>{B321}-<>{B311}]")
 
         // --- BL route ---
         val bl = conductorImpl.activeRoutes[1]
