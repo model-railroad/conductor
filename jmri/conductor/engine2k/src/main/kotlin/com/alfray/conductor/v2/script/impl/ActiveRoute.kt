@@ -93,7 +93,11 @@ internal class ActiveRoute(
 
         sb.append(_active?.javaClass?.simpleName?.replace("Route", ""))
             .append(" #$index = ")
+            .append(if (toggle.active) "ON" else "OFF")
+            .append(' ')
             .append(_active?.state)
+            .append(' ')
+            .append(status.invoke())
 
         val countTimers = context.countTimers()
         _active?.let { r ->

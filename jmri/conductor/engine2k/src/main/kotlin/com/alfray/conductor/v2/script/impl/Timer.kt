@@ -48,7 +48,11 @@ internal class Timer @AssistedInject constructor(
             return activated
         }
 
-    val started: Boolean = endTS != 0L
+    val started: Boolean
+        get() {
+            return endTS != 0L
+        }
+
 
     override fun not(): Boolean = !active
 
