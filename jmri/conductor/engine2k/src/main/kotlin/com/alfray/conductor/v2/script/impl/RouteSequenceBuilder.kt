@@ -42,7 +42,7 @@ internal class RouteSequenceBuilder(
     override fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit): INode {
         val b = NodeBuilder(logger, block)
         b.nodeSpecification()
-        return Node(b)
+        return b.create()
     }
 
     fun create() : IRouteSequence = RouteSequence(owner, logger, this)
