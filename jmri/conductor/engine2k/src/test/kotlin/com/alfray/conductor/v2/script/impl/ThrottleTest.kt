@@ -43,7 +43,7 @@ import javax.inject.Inject
 
 class ThrottleTest : ScriptTest2kBase() {
     @Inject internal lateinit var currentContext: CurrentContext
-    private val testContext = ExecContext(ExecContext.State.GLOBAL_RULE)
+    private val testContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     private val mockThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
     private val mockProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn mockThrottle }

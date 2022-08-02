@@ -66,7 +66,7 @@ internal class ActiveRoute(
     private var callOnError: TAction? = null
     private var _active: RouteBase? = null
     private val _routes = mutableListOf<IRoute>()
-    private val context = ExecContext(ExecContext.State.ACTIVE_ROUTE)
+    private val context = ExecContext(ExecContext.Reason.ACTIVE_ROUTE)
     var routeInfo: RouteInfo = createRouteInfo()
         private set
 

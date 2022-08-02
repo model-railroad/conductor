@@ -36,7 +36,7 @@ internal abstract class RouteBase(
     private val TAG = javaClass.simpleName
     private val actionOnActivate = builder.actionOnActivate
     private val actionOnRecover = builder.actionOnRecover
-    val context = ExecContext(ExecContext.State.ROUTE)
+    val context = ExecContext(ExecContext.Reason.ROUTE)
     var activationCounter = 0
         private set
 
@@ -55,7 +55,7 @@ internal abstract class RouteBase(
                     // keep ACTIVATED timers when going to the ACTIVE state.
                 } else {
                     // Clear all context timers.
-                    context.afterTimers.clear()
+                    context.clearTimers()
                 }
                 // Update state
                 field = value

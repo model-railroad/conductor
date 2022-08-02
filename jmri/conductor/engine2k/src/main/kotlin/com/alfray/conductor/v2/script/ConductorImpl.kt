@@ -124,7 +124,7 @@ class ConductorImpl @Inject internal constructor(
             "ERROR: after..then action must be defined in an event callback."
         }
         val after = After(delay)
-        context.afterTimers.add(after)
+        context.addTimer(after)
         afterTimersContexts.add(context)
         return after
     }

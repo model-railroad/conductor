@@ -44,7 +44,7 @@ class ScriptTest2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
     @Inject internal lateinit var currentContext: CurrentContext
-    private val testContext = ExecContext(ExecContext.State.GLOBAL_RULE)
+    private val testContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     @Before
     fun setUp() {
@@ -406,12 +406,17 @@ class ScriptTest2k : ScriptTest2kBase() {
         val turnout1 = conductorImpl.turnouts["T1"]!!
         val sensor1  = conductorImpl.sensors["S1"]!!
         assertThat(turnout1.normal).isTrue()
-        sensor1.active(false)
 
+        // 1- on condition becomes true: action invoked, after() gets created and queued.
+        sensor1.active(false)
         execEngine.onExecHandle()
         assertThat(logger.string).doesNotContain("ERROR")
         assertThat(turnout1.normal).isTrue()
 
+        // 2- after timer gets started
+        execEngine.onExecHandle()
+
+        // 3- after timer gets activated, after..then action invoked.
         clock.add(6*1000)
         execEngine.onExecHandle()
         assertThat(logger.string).doesNotContain("ERROR")

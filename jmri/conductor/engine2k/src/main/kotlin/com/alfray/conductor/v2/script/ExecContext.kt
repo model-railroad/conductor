@@ -28,23 +28,33 @@ import com.alfray.conductor.v2.script.impl.After
  * route/node callback is being executed.
  * The context for route or node gets cleared when the object's state changes.
  */
-internal open class ExecContext(private val state: State) {
-    val afterTimers = mutableListOf<After>()
+internal open class ExecContext(private val reason: Reason) {
+    private val afterTimers_ = mutableListOf<After>()
+    val afterTimers: List<After> = afterTimers_
 
-    enum class State {
+    enum class Reason {
         LOAD_SCRIPT,
         GLOBAL_RULE,
+        ON_RULE,
         ACTIVE_ROUTE,
         ROUTE,
         NODE,
     }
 
+    fun clearTimers() {
+        afterTimers_.clear()
+    }
+
+    fun addTimer(after: After) {
+        afterTimers_.add(after)
+    }
+
     /** Returns a summary representation of the timers' activity for log purposes:
      *  Count: num timers, num started timer, num active timers. */
     fun countTimers(): CountTimers {
-        val t = afterTimers.size
-        val s = if (t == 0) 0 else afterTimers.count { it.started }
-        val a = if (t == 0) 0 else afterTimers.count { it.active }
+        val t = afterTimers_.size
+        val s = if (t == 0) 0 else afterTimers_.count { it.started }
+        val a = if (t == 0) 0 else afterTimers_.count { it.active }
         return CountTimers(t, s, a)
     }
 

@@ -27,7 +27,7 @@ import javax.inject.Inject
 internal class CurrentContext @Inject internal constructor(
     private val logger: ILogger
 ) {
-    val scriptLoaderContext = ExecContext(ExecContext.State.LOAD_SCRIPT)
+    val scriptLoaderContext = ExecContext(ExecContext.Reason.LOAD_SCRIPT)
     private var current: ExecContext? = null
 
     fun changeContext(context: ExecContext) {

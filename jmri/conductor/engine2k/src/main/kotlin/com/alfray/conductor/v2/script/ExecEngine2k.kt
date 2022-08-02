@@ -70,7 +70,7 @@ class ExecEngine2k @Inject internal constructor(
     private val handleRateLimiter = RateLimiter(30.0f, clock)
     private val activatedActions = mutableListOf<ExecAction>()
     private val actionExecCache = BooleanCache<TAction>()
-    private val globalRuleContext = ExecContext(ExecContext.State.GLOBAL_RULE)
+    private val globalRuleContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     override fun onExecStart() {
         conductor.blocks.forEach { (_, block) -> (block as Block).onExecStart() }
@@ -234,7 +234,7 @@ class ExecEngine2k @Inject internal constructor(
 
         // Rules only get executed once when activated and until
         // the condition is cleared and activated again.
-        val action: TAction
+        val action: ExecAction
         try {
             action = rule.getAction()
         } catch (t: Throwable) {
@@ -243,11 +243,12 @@ class ExecEngine2k @Inject internal constructor(
         }
 
         if (active) {
-            if (!actionExecCache.get(action)) {
-                activatedActions.add(ExecAction(globalRuleContext, action))
+            if (!actionExecCache.get(action.action)) {
+                activatedActions.add(action)
             }
         } else {
-            actionExecCache.remove(action)
+            rule.clearTimers()
+            actionExecCache.remove(action.action)
         }
     }
 
@@ -269,4 +270,3 @@ class ExecEngine2k @Inject internal constructor(
     }
 }
 
-internal data class ExecAction(val context: ExecContext, val action: TAction)

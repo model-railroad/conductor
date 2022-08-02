@@ -54,7 +54,7 @@ internal class Node(builder: NodeBuilder) : INode {
     private var callWhileOccupied: TAction? = null
     private var callOnTrailing: TAction? = null
     private var callOnEmpty: TAction? = null
-    val context = ExecContext(ExecContext.State.NODE)
+    val context = ExecContext(ExecContext.Reason.NODE)
 
     override fun toString(): String {
         return if (reversal != null && reversal == true) {
@@ -75,7 +75,7 @@ internal class Node(builder: NodeBuilder) : INode {
             // Clear all context timers when changing state.
             // We do not clear timers when going from "Enter" to "Occupied" since they are
             // actually both represented by the same state "Occupied".
-            context.afterTimers.clear()
+            context.clearTimers()
 
             when (newState) {
                 Block.State.OCCUPIED -> {

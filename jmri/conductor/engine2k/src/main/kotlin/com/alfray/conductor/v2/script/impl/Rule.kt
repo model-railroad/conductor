@@ -18,6 +18,8 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alfray.conductor.v2.script.ExecAction
+import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActive
 import com.alfray.conductor.v2.script.dsl.IRule
 import com.alfray.conductor.v2.script.dsl.TAction
@@ -26,6 +28,7 @@ import com.alfray.conductor.v2.utils.ConductorExecException
 
 internal class Rule(private val condition: TCondition) : IRule {
     private var action: TAction? = null
+    private val context = ExecContext(ExecContext.Reason.ON_RULE)
 
     override fun then(action: TAction) {
         this.action = action
@@ -42,8 +45,14 @@ internal class Rule(private val condition: TCondition) : IRule {
         return cond
     }
 
-    fun getAction() : TAction {
-        return action ?: throw ConductorExecException(
-            "Undefined Rule Action ('on..then' statement missing the 'then' part).")
+    fun getAction() : ExecAction {
+        return action
+            ?.let { ExecAction(context, it) }
+            ?: throw ConductorExecException(
+                "Undefined Rule Action ('on..then' statement missing the 'then' part).")
+    }
+
+    fun clearTimers() {
+        context.clearTimers()
     }
 }
