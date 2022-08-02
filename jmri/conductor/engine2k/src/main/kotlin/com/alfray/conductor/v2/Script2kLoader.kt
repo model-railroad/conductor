@@ -22,6 +22,7 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.host.ConductorScriptHost
 import com.alfray.conductor.v2.script.ConductorImpl
+import com.alfray.conductor.v2.script.CurrentContext
 import com.alfray.conductor.v2.script.ExecEngine2k
 import com.alfray.conductor.v2.utils.ConductorExecException
 import com.google.common.io.Resources
@@ -32,7 +33,6 @@ import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.api.SourceCode
-import kotlin.script.experimental.api.valueOr
 import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
@@ -45,14 +45,12 @@ class Script2kLoader @Inject constructor(
     val scriptErrors: Script2kErrors,
     val scriptSource: Script2kSource,
 ) {
+    private val TAG = javaClass.simpleName
+    @Inject internal lateinit var currentContext: CurrentContext
     @Inject internal lateinit var scriptHost: ConductorScriptHost
     internal lateinit var result: ResultWithDiagnostics<EvaluationResult>
     var status = Status.NotLoaded
         internal set
-
-    private companion object {
-        val TAG = Script2kLoader::class.simpleName
-    }
 
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
@@ -79,7 +77,12 @@ class Script2kLoader @Inject constructor(
     }
 
     private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
-        return scriptHost.eval(source, conductorImpl)
+        currentContext.changeContext(currentContext.scriptLoaderContext)
+        try {
+            return scriptHost.eval(source, conductorImpl)
+        } finally {
+            currentContext.resetContext()
+        }
     }
 
     fun getResultOutputs() : String =

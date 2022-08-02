@@ -58,6 +58,7 @@ class ConductorImpl @Inject internal constructor(
     private val factory: Factory,
     private val keyValue: IKeyValue,
     override val exportedVars: ExportedVars,
+    private val currentContext: CurrentContext,
 ) : IConductor {
     private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
@@ -74,9 +75,7 @@ class ConductorImpl @Inject internal constructor(
         private set
     var lastJsonEvent: JsonEvent? = null
         private set
-    internal val globalContext = ExecContext(ExecContext.State.GLOBAL_SCRIPT)
     internal val afterTimersContexts = mutableSetOf<ExecContext>()
-    private var currentContext = globalContext
 
     override fun sensor(systemName: String): ISensor {
         return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
@@ -112,8 +111,8 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun on(condition: () -> Any): IRule {
-        logger.assertOrThrow(TAG, currentContext === globalContext) {
-            "ERROR: Can only define an on..then rule at the top global level."
+        currentContext.assertInScriptLoader(TAG) {
+            "ERROR: on..then rule must be defined at the top global level."
         }
         val rule = Rule(condition)
         rules.add(rule)
@@ -121,9 +120,12 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun after(delay: Delay): IAfter {
+        val context = currentContext.assertNotInScriptLoader(TAG) {
+            "ERROR: after..then action must be defined in an event callback."
+        }
         val after = After(delay)
-        currentContext.afterTimers.add(after)
-        afterTimersContexts.add(currentContext)
+        context.afterTimers.add(after)
+        afterTimersContexts.add(context)
         return after
     }
 
@@ -165,14 +167,6 @@ class ConductorImpl @Inject internal constructor(
 
     override fun reset_timers(vararg prefix: String) {
         logger.d(TAG, "@@ TODO reset_timers() is not yet implemented (if not obsolete)")
-    }
-
-    internal fun changeContext(context: ExecContext) {
-        currentContext = context
-    }
-
-    internal fun resetContext() {
-        currentContext = globalContext
     }
 }
 

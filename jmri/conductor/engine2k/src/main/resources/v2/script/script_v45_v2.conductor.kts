@@ -342,20 +342,24 @@ val Passenger_Route = PA_Route.sequence {
     }
 
     val B330_rev = node(B330) {
-        after(AM_Timer_B330_Down_Speed) then {
-            AM.horn()
-            AM.reverse(AM_Sonora_Speed)
+        whileOccupied {
+            after(AM_Timer_B330_Down_Speed) then {
+                AM.horn()
+                AM.reverse(AM_Sonora_Speed)
+            }
         }
     }
 
     val B321_rev = node(B321) {
-        AM.reverse(AM_Full_Speed)
-        AM.f9(On)
-        AM.f9(Off)
-        after(AM_Timer_B321_Down_Crossover) then {
-            AM.horn()
-            AM.f1(On)
-            AM.reverse(AM_Crossover_Speed)
+        whileOccupied {
+            AM.reverse(AM_Full_Speed)
+            AM.f9(On)
+            AM.f9(Off)
+            after(AM_Timer_B321_Down_Crossover) then {
+                AM.horn()
+                AM.f1(On)
+                AM.reverse(AM_Crossover_Speed)
+            }
         }
     }
 
@@ -363,20 +367,22 @@ val Passenger_Route = PA_Route.sequence {
     }
 
     val B503b_rev = node(B503b) {
-        after(AM_Timer_B503b_Down_Stop) then {
-            AM.stop()
-            AM.horn()
-            AM.f1(Off)
-        } and_after(AM_Timer_Down_Station_Lights_Off) then {
-            ga_event {
-                category = "Activation"
-                action = "Stop"
-                label = PA_Train.name
-                user = PA_Start_Counter.toString()
+        whileOccupied {
+            after(AM_Timer_B503b_Down_Stop) then {
+                AM.stop()
+                AM.horn()
+                AM.f1(Off)
+            } and_after (AM_Timer_Down_Station_Lights_Off) then {
+                ga_event {
+                    category = "Activation"
+                    action = "Stop"
+                    label = PA_Train.name
+                    user = PA_Start_Counter.toString()
+                }
+                PA_Train = EPA_Train.Freight
+                PA_State = EPA_State.Wait
+                route.activate(PA_Idle_Route)
             }
-            PA_Train = EPA_Train.Freight
-            PA_State = EPA_State.Wait
-            route.activate(PA_Idle_Route)
         }
     }
 

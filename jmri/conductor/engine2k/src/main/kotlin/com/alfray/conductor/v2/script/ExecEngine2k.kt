@@ -60,6 +60,7 @@ class ExecEngine2k @Inject internal constructor(
     private val eStopHandler: EStopHandler,
     private val scriptSource: Script2kSource,
     private val scriptErrors: Script2kErrors,
+    private val currentContext: CurrentContext,
 ) : IExecEngine {
     private companion object {
         val TAG = ExecEngine2k::class.simpleName
@@ -164,7 +165,12 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun repeatSpeed() {
-        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).repeatSpeed() }
+        currentContext.changeContext(globalRuleContext)
+        try {
+            conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).repeatSpeed() }
+        } finally {
+            currentContext.resetContext()
+        }
     }
 
     private fun eStopAllThrottles() {
@@ -202,7 +208,7 @@ class ExecEngine2k @Inject internal constructor(
 
         // Execute all actions in the order they are queued.
         for ((context, action) in activatedActions) {
-            conductor.changeContext(context)
+            currentContext.changeContext(context)
             // Remember that this action has been executed. collectRuleAction() will later omit
             // it unless the condition becomes false in between.
             actionExecCache.put(action, true)
@@ -212,7 +218,7 @@ class ExecEngine2k @Inject internal constructor(
                 logger.d(TAG, "Eval action failed", t)
             }
         }
-        conductor.resetContext()
+        currentContext.resetContext()
         condCache.unfreeze()
     }
 

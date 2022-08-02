@@ -89,7 +89,7 @@ internal class ActiveRoute(
 
     override fun getLogStatus(): String {
         val sb = StringBuilder()
-        val index = routeIndex(active)
+        val index = if (_active == null) -1 else routeIndex(_active!!)
 
         sb.append(_active?.javaClass?.simpleName?.replace("Route", ""))
             .append(" #$index = ")

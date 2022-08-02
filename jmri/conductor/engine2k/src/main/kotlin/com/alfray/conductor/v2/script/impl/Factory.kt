@@ -25,6 +25,7 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.script.CurrentContext
 import com.alfray.conductor.v2.script.dsl.Delay
 import javax.inject.Inject
 
@@ -36,6 +37,7 @@ internal class Factory @Inject constructor(
     private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
+    private val currentContext: CurrentContext,
 ) {
     internal fun createSensor(systemName: String) : Sensor =
         Sensor(keyValue, condCache, eventLogger, jmriProvider, systemName)
@@ -47,7 +49,7 @@ internal class Factory @Inject constructor(
         Turnout(keyValue, condCache, jmriProvider, systemName)
 
     internal fun createThrottle(dccAddress: Int) : Throttle =
-        Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, dccAddress)
+        Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, currentContext, dccAddress)
 
     internal fun createTimer(delay: Delay) : Timer =
         Timer(clock, logger, eventLogger, delay)

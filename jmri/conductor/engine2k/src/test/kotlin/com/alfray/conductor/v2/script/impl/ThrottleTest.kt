@@ -22,9 +22,11 @@ import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
-import com.alflabs.utils.ILogger
 import com.alflabs.utils.MockClock
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.script.CurrentContext
+import com.alfray.conductor.v2.script.ExecContext
+import com.alfray.conductor.v2.script.ScriptTest2kBase
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.google.common.truth.Truth.assertThat
@@ -34,36 +36,50 @@ import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import dagger.internal.InstanceFactory
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 
-class ThrottleTest {
-    private val jmriThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
-    private val jmriProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn jmriThrottle }
+class ThrottleTest : ScriptTest2kBase() {
+    @Inject internal lateinit var currentContext: CurrentContext
+    private val testContext = ExecContext(ExecContext.State.GLOBAL_RULE)
+
+    private val mockThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
+    private val mockProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn mockThrottle }
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
-    private val logger = mock<ILogger>()
-    private val clock = MockClock()
+    private val mockClock = MockClock()
     private val condCache = CondCache()
     private lateinit var throttle: Throttle
 
     @Before
     fun setUp() {
+        createComponent()
+        scriptComponent.inject(this)
+
         val factory = Throttle_Factory(
-            InstanceFactory.create(clock),
+            InstanceFactory.create(mockClock),
             InstanceFactory.create(logger),
             InstanceFactory.create(keyValue),
             InstanceFactory.create(condCache),
             InstanceFactory.create(eventLogger),
-            InstanceFactory.create(jmriProvider))
+            InstanceFactory.create(mockProvider),
+            InstanceFactory.create(currentContext))
         throttle = factory.get(42)
 
         assertThat(throttle.dccAddress).isEqualTo(42)
+        currentContext.changeContext(testContext)
 
         throttle.onExecStart()
-        verify(jmriProvider).getThrottle(42)
+        verify(mockProvider).getThrottle(42)
         verify(keyValue).putValue("D/42", "0", true)
         reset(keyValue)
+    }
+
+    @After
+    fun tearDown() {
+        currentContext.resetContext()
     }
 
     @Test
@@ -76,14 +92,14 @@ class ThrottleTest {
     @Test
     fun testForward() {
         throttle.forward(DccSpeed(41))
-        verify(jmriThrottle).setSpeed(41)
+        verify(mockThrottle).setSpeed(41)
         verify(keyValue).putValue("D/42", "41", true)
         assertThat(throttle.forward).isTrue()
         assertThat(throttle.reverse).isFalse()
         assertThat(throttle.stopped).isFalse()
         // Contrary to Conductor1, forward(negative value) means going reverse.
         throttle.forward(DccSpeed(-43))
-        verify(jmriThrottle).setSpeed(-43)
+        verify(mockThrottle).setSpeed(-43)
         verify(keyValue).putValue("D/42", "-43", true)
         assertThat(throttle.forward).isFalse()
         assertThat(throttle.reverse).isTrue()
@@ -93,14 +109,14 @@ class ThrottleTest {
     @Test
     fun testReverse() {
         throttle.reverse(DccSpeed(41))
-        verify(jmriThrottle).setSpeed(-41)
+        verify(mockThrottle).setSpeed(-41)
         verify(keyValue).putValue("D/42", "-41", true)
         assertThat(throttle.forward).isFalse()
         assertThat(throttle.reverse).isTrue()
         assertThat(throttle.stopped).isFalse()
         // Contrary to Conductor1, reverse(positive value) means going forward.
         throttle.reverse(DccSpeed(-43))
-        verify(jmriThrottle).setSpeed(43)
+        verify(mockThrottle).setSpeed(43)
         verify(keyValue).putValue("D/42", "43", true)
         assertThat(throttle.forward).isTrue()
         assertThat(throttle.reverse).isFalse()
@@ -110,10 +126,10 @@ class ThrottleTest {
     @Test
     fun testStop() {
         throttle.forward(DccSpeed(41))
-        verify(jmriThrottle).setSpeed(41)
+        verify(mockThrottle).setSpeed(41)
         verify(keyValue).putValue("D/42", "41", true)
         throttle.stop()
-        verify(jmriThrottle).setSpeed(0)
+        verify(mockThrottle).setSpeed(0)
         verify(keyValue).putValue("D/42", "0", true)
         assertThat(throttle.forward).isFalse()
         assertThat(throttle.reverse).isFalse()
@@ -125,14 +141,14 @@ class ThrottleTest {
         assertThat(throttle.sound).isFalse()
         throttle.sound(false)
         assertThat(throttle.sound).isFalse()
-        verify(jmriThrottle).setSound(false)
+        verify(mockThrottle).setSound(false)
         throttle.sound(true)
         assertThat(throttle.sound).isTrue()
-        verify(jmriThrottle).setSound(true)
-        reset(jmriThrottle)
+        verify(mockThrottle).setSound(true)
+        reset(mockThrottle)
         throttle.sound(false)
         assertThat(throttle.sound).isFalse()
-        verify(jmriThrottle).setSound(false)
+        verify(mockThrottle).setSound(false)
     }
 
     @Test
@@ -140,26 +156,26 @@ class ThrottleTest {
         assertThat(throttle.light).isFalse()
         throttle.light(false)
         assertThat(throttle.light).isFalse()
-        verify(jmriThrottle).setLight(false)
+        verify(mockThrottle).setLight(false)
         throttle.light(true)
         assertThat(throttle.light).isTrue()
-        verify(jmriThrottle).setLight(true)
-        reset(jmriThrottle)
+        verify(mockThrottle).setLight(true)
+        reset(mockThrottle)
         throttle.light(false)
         assertThat(throttle.light).isFalse()
-        verify(jmriThrottle).setLight(false)
+        verify(mockThrottle).setLight(false)
     }
 
     @Test
     fun testFnFunction() {
         throttle.f(3, true)
-        verify(jmriThrottle).triggerFunction(3, true)
+        verify(mockThrottle).triggerFunction(3, true)
         throttle.f(5, false)
-        verify(jmriThrottle).triggerFunction(5, false)
+        verify(mockThrottle).triggerFunction(5, false)
         throttle.f(12, true)
-        verify(jmriThrottle).triggerFunction(12, true)
+        verify(mockThrottle).triggerFunction(12, true)
         throttle.f(28, false)
-        verify(jmriThrottle).triggerFunction(28, false)
+        verify(mockThrottle).triggerFunction(28, false)
     }
 
     @Test
@@ -178,16 +194,16 @@ class ThrottleTest {
         throttle.repeat(Delay(1))
         throttle.forward(DccSpeed(41))
         throttle.repeatSpeed()
-        verify(jmriThrottle, times(1)).setSpeed(41)
+        verify(mockThrottle, times(1)).setSpeed(41)
         verify(keyValue, times(1)).putValue("D/42", "41", true)
-        clock.sleep(500)
+        mockClock.sleep(500)
         throttle.repeatSpeed()
-        verify(jmriThrottle, times(1)).setSpeed(41)
-        clock.sleep(500)
+        verify(mockThrottle, times(1)).setSpeed(41)
+        mockClock.sleep(500)
         throttle.repeatSpeed()
-        verify(jmriThrottle, times(2)).setSpeed(41)
+        verify(mockThrottle, times(2)).setSpeed(41)
         verify(keyValue, times(2)).putValue("D/42", "41", true)
-        reset(jmriThrottle)
+        reset(mockThrottle)
         reset(keyValue)
     }
 }

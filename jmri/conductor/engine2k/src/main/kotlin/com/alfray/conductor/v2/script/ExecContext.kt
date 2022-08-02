@@ -32,8 +32,7 @@ internal open class ExecContext(private val state: State) {
     val afterTimers = mutableListOf<After>()
 
     enum class State {
-        UNKNOWN,
-        GLOBAL_SCRIPT,
+        LOAD_SCRIPT,
         GLOBAL_RULE,
         ACTIVE_ROUTE,
         ROUTE,

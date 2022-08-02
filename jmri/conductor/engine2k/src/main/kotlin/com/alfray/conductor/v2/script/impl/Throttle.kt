@@ -26,6 +26,7 @@ import com.alflabs.manifest.Prefix
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.script.CurrentContext
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IFBits
@@ -49,8 +50,10 @@ internal class Throttle @AssistedInject constructor(
     private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
+    private val currentContext: CurrentContext,
     @Assisted override val dccAddress: Int
 ) : VarName(), IThrottle, IExecEngine {
+    private val TAG = javaClass.simpleName
     private var _speed = DccSpeed(0)
     private var _light = false
     private var _sound = false
@@ -96,6 +99,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun f(index: Int, on: Boolean) : IFBits {
+        enforceContext()
         try {
             jmriThrottle?.triggerFunction(index, on)
         } catch (e: Throwable) {
@@ -105,6 +109,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun horn() {
+        enforceContext()
         try {
             jmriThrottle?.horn()
         } catch (e: Throwable) {
@@ -114,6 +119,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun light(on: Boolean) {
+        enforceContext()
         _light = on
         try {
             jmriThrottle?.setLight(_light)
@@ -124,6 +130,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun sound(on: Boolean) {
+        enforceContext()
         _sound = on
         try {
             jmriThrottle?.setSound(_sound)
@@ -135,6 +142,7 @@ internal class Throttle @AssistedInject constructor(
 
     /** Sets the repeat speed interval. Does nothing if <= 0. */
     override fun repeat(repeat: Delay) {
+        enforceContext()
         repeatSpeedSeconds = repeat
     }
 
@@ -168,6 +176,7 @@ internal class Throttle @AssistedInject constructor(
      * Speed 0 means stopped, a positive number for forward and a negative number for reverse.
      */
     private fun setSpeed(speed: DccSpeed) {
+        enforceContext()
         val speedChange = speed != _speed
         _speed = speed
 
@@ -214,6 +223,12 @@ internal class Throttle @AssistedInject constructor(
             _speed.speed.toString(),
             true /*broadcast*/
         )
+    }
+
+    private fun enforceContext() {
+        currentContext.assertNotInScriptLoader(TAG) {
+            "ERROR: throttle actions must be called in an event callback."
+        }
     }
 }
 

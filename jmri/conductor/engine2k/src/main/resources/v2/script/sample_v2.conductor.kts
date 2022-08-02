@@ -129,18 +129,19 @@ on { !!B310 && !!B311 } then {
 
 on { MyTimer2 } then {
     Train1.light(true)
-}
 
-after(42.seconds) then {
-    Train1.light(true)
-} and_after(5.seconds) then {
-    Train1.light(false)
-} and_after(7.seconds) then {
-    Train1.light(true)
-} and_after(9.seconds) then {
-    Train1.light(true)
+    after(42.seconds) then {
+        Train1.light(false)
+    } and_after (2.seconds) then {
+        Train1.light(true)
+    } and_after (5.seconds) then {
+        Train1.light(false)
+    } and_after (7.seconds) then {
+        Train1.light(true)
+    } and_after (9.seconds) then {
+        Train1.light(false)
+    }
 }
-
 // Events Logging
 
 ga_page {

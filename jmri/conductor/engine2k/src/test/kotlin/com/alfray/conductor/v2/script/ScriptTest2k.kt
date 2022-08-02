@@ -35,6 +35,7 @@ import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
@@ -42,6 +43,8 @@ import javax.inject.Inject
 class ScriptTest2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
+    @Inject internal lateinit var currentContext: CurrentContext
+    private val testContext = ExecContext(ExecContext.State.GLOBAL_RULE)
 
     @Before
     fun setUp() {
@@ -50,6 +53,11 @@ class ScriptTest2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "Map 1.svg"))
+    }
+
+    @After
+    fun tearDown() {
+        currentContext.resetContext()
     }
 
     @Test
@@ -174,6 +182,7 @@ class ScriptTest2k : ScriptTest2kBase() {
     fun testVarThrottle() {
         loadScriptFromFile("sample_v2")
         assertResultNoError()
+        currentContext.changeContext(testContext)
 
         assertThat(conductorImpl.throttles).containsKey(1001)
         assertThat(conductorImpl.throttles[1001]).isSameInstanceAs(conductorImpl.throttle(1001))
@@ -374,7 +383,8 @@ class ScriptTest2k : ScriptTest2kBase() {
         sensor1.active(false)
 
         execEngine.onExecHandle()
-        assertThat(logger.string).contains("ERROR: Can only define an on..then rule at the top global level")
+        assertThat(logger.string)
+            .contains("ERROR: on..then rule must be defined at the top global level.")
         // execution aborted and the turnout was never thrown
         assertThat(turnout1.normal).isTrue()
 
@@ -698,6 +708,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
         execEngine.onExecHandle()
 
-        assertThat(logger.string).contains("ERROR: Can only define an on..then rule at the top global level")
+        assertThat(logger.string)
+            .contains("ERROR: on..then rule must be defined at the top global level.")
     }
 }
