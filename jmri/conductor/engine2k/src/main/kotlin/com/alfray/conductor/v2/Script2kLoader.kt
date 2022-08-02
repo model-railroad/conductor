@@ -33,6 +33,7 @@ import kotlin.script.experimental.api.ResultValue
 import kotlin.script.experimental.api.ResultWithDiagnostics
 import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.api.SourceCode
+import kotlin.script.experimental.api.onFailure
 import kotlin.script.experimental.api.valueOrNull
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
@@ -63,7 +64,6 @@ class Script2kLoader @Inject constructor(
         val source = UrlScriptSource(scriptUrl)
         scriptSource.scriptInfo = Script2kSourceInfo(scriptName, File(scriptPath), source)
         result = loadScript(source)
-        scriptErrors.errors.addAll(parseErrors(result))
         status = Status.Loaded
     }
 
@@ -79,7 +79,9 @@ class Script2kLoader @Inject constructor(
     private fun loadScript(source: SourceCode): ResultWithDiagnostics<EvaluationResult> {
         currentContext.changeContext(currentContext.scriptLoaderContext)
         try {
-            return scriptHost.eval(source, conductorImpl)
+            return scriptHost.eval(source, conductorImpl).onFailure {
+                scriptErrors.errors.addAll(parseErrors(it))
+            }
         } finally {
             currentContext.resetContext()
         }
@@ -119,6 +121,13 @@ class Script2kLoader @Inject constructor(
             }
 
         return errors
+    }
+
+    fun addError(t: Throwable) {
+        when (t) {
+            is ConductorExecException -> scriptErrors.add(t.message ?: t.toString())
+            else -> scriptErrors.add(t.toString())
+        }
     }
 
     enum class Status {

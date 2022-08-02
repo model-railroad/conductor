@@ -27,7 +27,7 @@ class Script2kErrors @Inject constructor() {
     /** Errors collected. */
     val errors = mutableListOf<String>()
 
-    fun append(error: String) {
+    fun add(error: String) {
         errors.add(error)
     }
 }

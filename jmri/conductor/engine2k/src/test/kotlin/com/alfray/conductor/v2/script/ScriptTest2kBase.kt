@@ -75,7 +75,11 @@ open class ScriptTest2kBase {
             import com.alfray.conductor.v2.script.dsl.*
         """.trimIndent()
         loader.loadScriptFromText(scriptName, prefix + "\n" + scriptText)
-        execEngine.onExecStart()
+        try {
+            execEngine.onExecStart()
+        } catch (t: Throwable) {
+            loader.addError(t)
+        }
         return loader.result
     }
 

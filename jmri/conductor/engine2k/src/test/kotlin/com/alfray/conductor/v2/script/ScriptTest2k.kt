@@ -336,7 +336,7 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testGlobalOnRules() {
+    fun testOnRules() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S1")
@@ -363,7 +363,7 @@ class ScriptTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testGlobalOnRules_CannotBeNested() {
+    fun testOnRules_CannotBeNested() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S1")
@@ -387,7 +387,47 @@ class ScriptTest2k : ScriptTest2kBase() {
             .contains("ERROR: on..then rule must be defined at the top global level.")
         // execution aborted and the turnout was never thrown
         assertThat(turnout1.normal).isTrue()
+    }
 
+    @Test
+    fun testOnRules_WithAfterThen() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S1")
+        val T1 = turnout("T1")
+        on { !S1 } then {
+            after (5.seconds) then { T1.reverse() }
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(1)
+
+        val turnout1 = conductorImpl.turnouts["T1"]!!
+        val sensor1  = conductorImpl.sensors["S1"]!!
+        assertThat(turnout1.normal).isTrue()
+        sensor1.active(false)
+
+        execEngine.onExecHandle()
+        assertThat(logger.string).doesNotContain("ERROR")
+        assertThat(turnout1.normal).isTrue()
+
+        clock.add(6*1000)
+        execEngine.onExecHandle()
+        assertThat(logger.string).doesNotContain("ERROR")
+        assertThat(turnout1.normal).isFalse()
+    }
+
+    @Test
+    fun testAfterThen_NotAtTopLevel() {
+        loadScriptFromText(scriptText =
+        """
+        val T1 = turnout("T1")
+        after (5.seconds) then { T1.reverse() }
+        """.trimIndent()
+        )
+        assertResultHasError(
+            "ERROR: after..then action must be defined in an event callback.")
     }
 
     @Test
@@ -710,5 +750,55 @@ class ScriptTest2k : ScriptTest2kBase() {
 
         assertThat(logger.string)
             .contains("ERROR: on..then rule must be defined at the top global level.")
+    }
+
+    @Test
+    fun testRouteSequence_AfterOutsideEventCallbackForbidden() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                Train1.forward(5.speed)
+            }
+            sequence = listOf(block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultHasError(
+            "ERROR: throttle actions must be called in an event callback.")
+    }
+
+    @Test
+    fun testRouteSequence_TrainThrottleOutsideEventCallbackForbidden() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                after (2.seconds) then {
+                    Train1.forward(5.speed)
+                }
+            }
+            sequence = listOf(block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultHasError(
+            "ERROR: after..then action must be defined in an event callback.")
     }
 }

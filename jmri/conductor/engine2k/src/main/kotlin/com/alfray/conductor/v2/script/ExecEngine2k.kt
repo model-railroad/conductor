@@ -94,7 +94,7 @@ class ExecEngine2k @Inject internal constructor(
                 } catch (e: IOException) {
                     val error = "SvgMap[${svgMap.name}]: Failed to read file '${svgMap.svg}'."
                     logger.d(TAG, error, e)
-                    scriptErrors.append(error)
+                    scriptErrors.add(error)
                     return@map null
                 }
             }
