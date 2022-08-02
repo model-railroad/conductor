@@ -50,6 +50,7 @@ import javax.swing.text.StyleContext
 import javax.swing.text.StyledDocument
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -98,62 +99,57 @@ class StatusWindow2 {
         mSwingBuilder.registerBeanFactory("svgCanvas", JSVGCanvas)
         mSwingBuilder.edt {
             mFrame = frame(title: "Conductor v2",
-                    preferredSize: new Dimension(800, 500),
+                    preferredSize: new Dimension(1000, 500),
                     minimumSize: new Dimension(300, 300),
                     // locationRelativeTo: null,
                     pack: true,
                     show: true) {
                 gridBagLayout()
                 final def inset = [5, 5, 5, 5]
-                final def gx = 4
-                final def wx = 8
-                def gy = 0
+                final def wsvg = 4
+                final def wlog = 4
+                final def wmid = 2
+                final def wbtn = 3
+                final def wx = wsvg + wlog + wmid
+                final def hthl = 1
+                final def hsen = 1
+                final def hsvg = hthl + hsen
+                final def hy = 1 + hsvg + 1
                 // Top
-                panel(constraints: gbc(gridx:0, gridy: gy++,
+                panel(constraints: gbc(gridx:0, gridy: 0,
                         gridwidth: wx, gridheight: 1,
                         fill: HORIZONTAL, insets: inset)) {
                     gridBagLayout()
                     mScriptNameField = textField(text: "Script1 Name", editable: false,
                             constraints: gbc(gridx: 0, gridy: 0,
-                                    gridwidth: wx-3, fill: HORIZONTAL, insets: inset, weightx: 1))
-                    button(text: "Reload", constraints: gbc(gridx: wx-3, gridy: 0, insets: inset, weightx: 0),
+                                    gridwidth: wx-wbtn, fill: HORIZONTAL, insets: inset, weightx: 1))
+                    button(text: "Reload", constraints: gbc(gridx: wx-wbtn, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowReload() })
                     mPauseButton =
-                        button(text: "Pause", constraints: gbc(gridx: wx-2, gridy: 0, insets: inset, weightx: 0),
+                        button(text: "Pause", constraints: gbc(gridx: wx-wbtn+1, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowPause() })
-                    button(text: "Quit", constraints: gbc(gridx: wx-1, gridy: 0, insets: inset, weightx: 0),
+                    button(text: "Quit", constraints: gbc(gridx: wx-wbtn+2, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> onQuit() })
                 }
 
                 // Middle: SVG Map
                 mSvgCanvas = svgCanvas(background: Color.DARK_GRAY,
-                        constraints: gbc(gridx: 0, gridy: gy++,
-                                gridwidth: gx, fill: BOTH,
+                        constraints: gbc(gridx: 0, gridy: 1,
+                                gridwidth: wsvg, gridheight: hsvg,
+                                fill: BOTH,
                                 minHeight: 200, insets: inset,
-                                weightx: 1, weighty: 2))
+                                weightx: 1, weighty: 1))
 
                 // Below Map
-                mThrottlePanel = panel(constraints: gbc(gridx: 0, gridy: gy++,
-                        gridwidth: gx, fill: HORIZONTAL,
-                        insets: inset, weightx: 0)) {
-                    boxLayout(axis: BoxLayout.X_AXIS)
-                    textField(text: "No DCC Throttle", editable: false)
-                }
-                mSensorPanel = panel(constraints: gbc(gridx: 0, gridy: gy++,
-                        gridwidth: gx, fill: HORIZONTAL,
-                        insets: inset, weightx: 0)) {
-                    flowLayout()
-                    checkBox(text: "No JMRI Sensor", selected: false)
-                }
-
                 // Bottom Simulator Log
                 scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_AS_NEEDED,
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
-                        constraints: gbc(gridx: 0, gridy: gy++,
-                                gridwidth: gx, fill: BOTH,
+                        constraints: gbc(gridx: 0, gridy: hsvg + 1,
+                                gridwidth: wsvg + 1, gridheight: 1,
+                                fill: BOTH,
                                 minHeight: 300,
                                 insets: inset,
-                                weightx: 1, weighty: 0.5)) {
+                                weightx: 1, weighty: 0.3)) {
                     mLogSimul = textArea(text: "Simulator output\nLine 2\nLine 3",
                             rows: 4,
                             editable: false,
@@ -161,12 +157,30 @@ class StatusWindow2 {
                     mLogSimul.caretPosition = 0
                 }
 
+                // Mid column
+                mThrottlePanel = panel(constraints: gbc(gridx: wsvg, gridy: 1,
+                        gridwidth: 1, gridheight: hthl,
+                        fill: BOTH,
+                        insets: inset, weightx: 0, weighty: 1)) {
+                    boxLayout(axis: BoxLayout.Y_AXIS)
+                    textField(text: "No DCC Throttle", editable: false)
+                }
+                mSensorPanel = panel(constraints: gbc(gridx: wsvg, gridy: 1 + hthl,
+                        gridwidth: 1, gridheight: hsen,
+                        fill: VERTICAL,
+                        insets: inset, weightx: 0, weighty: 1)) {
+                    boxLayout(axis: BoxLayout.Y_AXIS)
+                    checkBox(text: "No JMRI Sensor", selected: false)
+                }
+
                 // Side Log
                 mLogScroller = scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_ALWAYS,
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
-                        constraints: gbc(gridx: gx, gridy: 1,
-                                gridwidth: wx-gx, gridheight: gy-1, fill: BOTH,
-                                minWidth: 200, minHeight: 200, insets: inset,
+                        constraints: gbc(gridx: wx-wlog, gridy: 1,
+                                gridwidth: wlog, gridheight: hsvg + 1,
+                                fill: BOTH,
+                                minWidth: 200, minHeight: 200,
+                                insets: inset,
                                 weightx: 1, weighty: 1)) {
                     mLogField = textArea(text: "Log Area",
                             columns: 100,
