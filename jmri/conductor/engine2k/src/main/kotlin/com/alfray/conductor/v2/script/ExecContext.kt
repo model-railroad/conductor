@@ -50,19 +50,26 @@ internal open class ExecContext(private val reason: Reason) {
     }
 
     /** Returns a summary representation of the timers' activity for log purposes:
-     *  Count: num timers, num started timer, num active timers. */
+     *  Count: num timers, num started timer, num active timers, duration of all timers. */
     fun countTimers(): CountTimers {
         val t = afterTimers_.size
-        val s = if (t == 0) 0 else afterTimers_.count { it.started }
-        val a = if (t == 0) 0 else afterTimers_.count { it.active }
-        return CountTimers(t, s, a)
+        val s = afterTimers_.count { it.started }
+        val a = afterTimers_.count { it.active }
+        val d = afterTimers_.sumOf { it.durationSec }
+        return CountTimers(t, s, a, d)
     }
 
-    data class CountTimers(var numTimers: Int, var numStarted: Int, var numActive: Int) {
+    data class CountTimers(
+        var numTimers: Int,
+        var numStarted: Int,
+        var numActive: Int,
+        var durationSec: Int
+    ) {
         fun add(other: CountTimers): CountTimers {
             numTimers += other.numTimers
             numStarted += other.numStarted
             numActive += other.numActive
+            durationSec += other.durationSec
             return this
         }
     }

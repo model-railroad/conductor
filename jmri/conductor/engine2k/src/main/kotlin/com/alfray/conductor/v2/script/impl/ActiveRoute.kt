@@ -111,7 +111,7 @@ internal class ActiveRoute(
         }
         sb.append(", ${countTimers.numTimers} timers")
         if (countTimers.numTimers > 0) {
-            sb.append(" (${countTimers.numStarted} started, ${countTimers.numActive} active)")
+            sb.append(" (${countTimers.numStarted} started, ${countTimers.numActive} active, ${countTimers.durationSec} sec)")
         }
 
         return sb.toString()

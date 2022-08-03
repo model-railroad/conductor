@@ -123,9 +123,11 @@ class ConductorImpl @Inject internal constructor(
         val context = currentContext.assertNotInScriptLoader(TAG) {
             "ERROR: after..then action must be defined in an event callback."
         }
-        val after = After(delay)
-        context.addTimer(after)
-        afterTimersContexts.add(context)
+        val after = After(delay) {
+            // The "After" timer only gets recorded when the "when" clause is parsed.
+            context.addTimer(it)
+            afterTimersContexts.add(context)
+        }
         return after
     }
 
@@ -167,6 +169,13 @@ class ConductorImpl @Inject internal constructor(
 
     override fun reset_timers(vararg prefix: String) {
         logger.d(TAG, "@@ TODO reset_timers() is not yet implemented (if not obsolete)")
+    }
+
+    /** Internal helper to check state of registered after timers, for tests & debugging. */
+    internal fun sumAfterTimers() : ExecContext.CountTimers {
+        val ct = ExecContext.CountTimers(0, 0, 0, 0)
+        afterTimersContexts.forEach { ct.add(it.countTimers()) }
+        return ct
     }
 }
 

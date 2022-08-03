@@ -32,7 +32,7 @@ class SimulThrottle @AssistedInject constructor(
     /** Current engine speed and direction. */
     private var _speed: Int = 0
     /** Max time to spend on this block before moving to the next one. */
-    internal val blockMaxMs = 30*1000L /* 5s for debugging TBD make customizable/variable */
+    internal val blockMaxMs = 5*1000L /* 5s for debugging TBD make customizable/variable */
 
     override fun eStop() {
         _speed = 0

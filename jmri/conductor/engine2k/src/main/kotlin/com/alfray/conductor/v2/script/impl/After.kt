@@ -25,7 +25,11 @@ import com.alfray.conductor.v2.script.dsl.IThenAfter
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal class After(val delay: Delay, private val parent: After? = null) : IAfter {
+internal class After(
+    val delay: Delay,
+    private val parent: After? = null,
+    private val registerAfter: (After) -> Unit,
+) : IAfter {
     private val TAG = javaClass.simpleName
     private var action: TAction? = null
     private var thenAfter: IAfter? = null
@@ -38,12 +42,18 @@ internal class After(val delay: Delay, private val parent: After? = null) : IAft
     internal val started: Boolean
         get() = timer?.started ?: false
 
+    internal val durationSec: Int
+        get() = delay.seconds
+
     override fun then(action: TAction) : IThenAfter {
+        // We only "register" this After timer when the "when" clause is parsed.
+        registerAfter(this)
+
         val parent = this
         this.action = action
         return object : IThenAfter {
             override fun and_after(delay: Delay): IAfter {
-                val after = After(delay, parent)
+                val after = After(delay, parent, registerAfter)
                 thenAfter = after
                 return after
             }

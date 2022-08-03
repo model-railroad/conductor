@@ -806,4 +806,69 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertResultHasError(
             "ERROR: after..then action must be defined in an event callback.")
     }
+
+    @Test
+    fun testAfterThen() {
+        loadScriptFromText(scriptText =
+        """
+        val Train = throttle(1001)
+        val S01 = sensor("S01")
+        on { S01.active } then {
+            Train.forward(1.speed)
+            after (2.seconds) then {
+                Train.forward(2.speed)
+            } and_after (3.seconds) then {
+                Train.forward(3.speed)
+            } and_after (4.seconds) then {
+                Train.forward(4.speed)
+            }
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(1)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 0, numStarted = 0, numActive = 0, durationSec = 0))
+
+        val train1 = conductorImpl.throttles[1001]!!
+        val sensor1 = conductorImpl.sensors["S01"]!!
+
+        assertThat(train1.speed).isEqualTo(0.speed)
+
+        sensor1.active(true)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(1.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 0, numActive = 0, durationSec = 9))
+
+        clock.add(1 * 1000)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(1.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 1, numActive = 0, durationSec = 9))
+
+        clock.add(2 * 1000)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(2.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 2, numActive = 1, durationSec = 9))
+
+        clock.add(3 * 1000)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(3.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 2, durationSec = 9))
+
+        clock.add(4 * 1000)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(4.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 3, durationSec = 9))
+
+        clock.add(5 * 1000)
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(4.speed)
+        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+            ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 3, durationSec = 9))
+    }
 }
