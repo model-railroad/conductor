@@ -45,10 +45,6 @@ interface IConductor {
     /** Creates a new timer object with the given delay. */
     fun timer(delay: Delay): ITimer
 
-    /** Reset all timers starting with the given prefixes.
-     * OBSOLETE from Conductor1, clean-up. */
-    fun reset_timers(vararg prefix: String)
-
     /** Registers a new map. */
     fun map(svgMapSpecification: ISvgMapBuilder.() -> Unit): ISvgMap
 

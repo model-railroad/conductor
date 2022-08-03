@@ -179,10 +179,6 @@ class ConductorImpl @Inject internal constructor(
         logger.d(TAG, "@@ TODO estop() is not yet implemented")
     }
 
-    override fun reset_timers(vararg prefix: String) {
-        logger.d(TAG, "@@ TODO reset_timers() is not yet implemented (if not obsolete)")
-    }
-
     /** Internal helper to check state of registered after timers, for tests & debugging. */
     internal fun sumAfterTimers() : ExecContext.CountTimers {
         val ct = ExecContext.CountTimers(0, 0, 0, 0)

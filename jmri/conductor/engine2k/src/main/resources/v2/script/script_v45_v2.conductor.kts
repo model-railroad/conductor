@@ -644,7 +644,7 @@ on { PA_State == EPA_State.Shuttle } then {
         label = PA_Train.name
         user = PA_Start_Counter.toString()
     }
-    reset_timers("PA", "AM", "SP")
+    // reset_timers("PA", "AM", "SP") -- obsolete
 }
 
 on { PA_State == EPA_State.Station && PA_Toggle.active && PA_Train == EPA_Train.Passenger } then {
@@ -669,7 +669,7 @@ on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Freight   } then {
 }
 
 on { PA_State == EPA_State.Station && !PA_Toggle } then {
-    reset_timers("PA", "AM", "SP")
+    // reset_timers("PA", "AM", "SP") -- obsolete
     PA_State = EPA_State.Idle
     PA_Route.activate(PA_Idle_Route)
 }
@@ -929,7 +929,7 @@ val BL_Timer_Wait = timer(120.seconds)  // 300=5 minutes -- changed to 2 minutes
 //}
 
 on { BL_State == EBL_State.Wait } then {
-    reset_timers("BL") // TODO obsolete
+    // reset_timers("BL") -- obsolete
     BL_Timer_Wait.start()
     BL.stop()
 }
