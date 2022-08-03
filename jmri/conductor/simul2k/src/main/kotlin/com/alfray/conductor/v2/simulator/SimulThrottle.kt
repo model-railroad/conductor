@@ -31,8 +31,17 @@ class SimulThrottle @AssistedInject constructor(
     private var lastTS: Long = 0L
     /** Current engine speed and direction. */
     private var _speed: Int = 0
-    /** Max time to spend on this block before moving to the next one. */
-    internal val blockMaxMs = 5*1000L /* 5s for debugging TBD make customizable/variable */
+    /**
+     * Max time to spend on this block before moving to the next one.
+     * This is a dynamic property that uses a base 5-second time + any extra timer duration
+     * from the current block.
+     */
+    internal val blockMaxMs: Int
+        get() {
+            var sec = 5
+            block?.let { sec += it.extraTimersSec }
+            return sec * 1000
+        }
 
     override fun eStop() {
         _speed = 0

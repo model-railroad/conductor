@@ -47,9 +47,12 @@ import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.GaPageBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
+import com.alfray.conductor.v2.script.impl.Node
 import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
+import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
+import java.util.Optional
 import javax.inject.Inject
 
 @Script2kScope
@@ -76,6 +79,7 @@ class ConductorImpl @Inject internal constructor(
     var lastJsonEvent: JsonEvent? = null
         private set
     internal val afterTimersContexts = mutableSetOf<ExecContext>()
+    private var simulCallback: ISimulCallback? = null
 
     override fun sensor(systemName: String): ISensor {
         return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
@@ -123,10 +127,18 @@ class ConductorImpl @Inject internal constructor(
         val context = currentContext.assertNotInScriptLoader(TAG) {
             "ERROR: after..then action must be defined in an event callback."
         }
-        val after = After(delay) {
+        val after = After(delay) { t ->
             // The "After" timer only gets recorded when the "when" clause is parsed.
-            context.addTimer(it)
+            context.addTimer(t)
             afterTimersContexts.add(context)
+
+            if (context.reason == ExecContext.Reason.NODE
+                && context.parent is Node) {
+                simulCallback?.onBlockTimersChanged(
+                    context.parent.block.systemName,
+                    context.countTimers().durationSec
+                )
+            }
         }
         return after
     }
@@ -176,6 +188,10 @@ class ConductorImpl @Inject internal constructor(
         val ct = ExecContext.CountTimers(0, 0, 0, 0)
         afterTimersContexts.forEach { ct.add(it.countTimers()) }
         return ct
+    }
+
+    fun setSimulCallback(simulCallback: ISimulCallback?) {
+        this.simulCallback = simulCallback
     }
 }
 

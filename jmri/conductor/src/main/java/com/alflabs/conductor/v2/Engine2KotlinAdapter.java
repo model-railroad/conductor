@@ -148,8 +148,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         loader.getExecEngine().onExecStart();
 
         mSimul2kComponent.ifPresent(simul -> {
-            convertRoutes(loader.getConductorImpl().getActiveRoutes(), simul.getSimul2k());
-            simul.getSimul2k().onExecStart();
+            ConductorImpl conductorImpl = loader.getConductorImpl();
+            Simul2k simul2k = simul.getSimul2k();
+            conductorImpl.setSimulCallback(simul2k);
+            convertRoutes(conductorImpl.getActiveRoutes(), simul2k);
+            simul2k.onExecStart();
         });
 
         return Pair.of(wasRunning, file);

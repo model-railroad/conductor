@@ -15,7 +15,7 @@ class SimulJmriProvider @Inject constructor(
     private val simulSensorFactory: ISimulSensorFactory,
     private val simulThrottleFactory: ISimulThrottleFactory,
     private val simulTurnoutFactory: ISimulTurnoutFactory,
-) : FakeJmriProvider(), IExecSimul {
+) : FakeJmriProvider(), IExecSimul, ISimulCallback {
     private val TAG = javaClass.simpleName
 
     fun clear() {
@@ -44,6 +44,14 @@ class SimulJmriProvider @Inject constructor(
 
     override fun onExecHandle() {
         mThrottles.values.forEach { (it as SimulThrottle).onExecHandle() }
+    }
+
+    /** Notifies the simulator that the sum of timers for that block have changed. */
+    override fun onBlockTimersChanged(systemName: String, sumTimersSec: Int) {
+        mThrottles.values
+            .mapNotNull { (it as SimulThrottle).block }
+            .filter { it.systemName == systemName }
+            .forEach { it.updateNodeTimers(sumTimersSec) }
     }
 
     fun getUiLogOutput(): String {

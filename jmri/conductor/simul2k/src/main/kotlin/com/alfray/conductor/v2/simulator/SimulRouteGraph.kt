@@ -1,5 +1,7 @@
 package com.alfray.conductor.v2.simulator
 
+import kotlin.math.max
+
 /**
  * A block for the simulator.
  * 'systemName' is the internal unique identifier for the block,
@@ -10,6 +12,9 @@ data class SimulRouteBlock(
     val name: String,
     val reversal: Boolean
 ) {
+    var extraTimersSec: Int = 0
+        private set
+
     override fun toString(): String {
         return if (reversal) {
             "<$name>"
@@ -30,6 +35,10 @@ data class SimulRouteBlock(
 
     override fun hashCode(): Int {
         return systemName.hashCode()
+    }
+
+    fun updateNodeTimers(sumTimersSec: Int) {
+        extraTimersSec = max(extraTimersSec, sumTimersSec)
     }
 }
 

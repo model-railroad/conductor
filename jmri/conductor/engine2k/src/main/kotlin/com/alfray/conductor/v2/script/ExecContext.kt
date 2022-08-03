@@ -28,7 +28,7 @@ import com.alfray.conductor.v2.script.impl.After
  * route/node callback is being executed.
  * The context for route or node gets cleared when the object's state changes.
  */
-internal open class ExecContext(private val reason: Reason) {
+internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
     private val afterTimers_ = mutableListOf<After>()
     val afterTimers: List<After> = afterTimers_
 

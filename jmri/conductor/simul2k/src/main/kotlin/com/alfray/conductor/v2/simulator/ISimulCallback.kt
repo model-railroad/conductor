@@ -18,11 +18,8 @@
 
 package com.alfray.conductor.v2.simulator
 
-/** Callback invoked by the main dev loop (via Engine2KotlinAdapter). */
-interface IExecSimul {
-    /** Initializes state before executing the script. */
-    fun onExecStart()
-
-    /** Handles one execution of events. */
-    fun onExecHandle()
+/** Callback provided to the ExecEngine to update the simulator based on actual route state. */
+interface ISimulCallback {
+    /** Notifies the simulator that the sum of timers for that block have changed. */
+    fun onBlockTimersChanged(systemName: String, sumTimersSec: Int)
 }

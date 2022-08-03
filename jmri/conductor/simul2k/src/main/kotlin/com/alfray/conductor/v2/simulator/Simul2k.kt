@@ -7,7 +7,7 @@ import javax.inject.Singleton
 @Singleton
 class Simul2k @Inject constructor(
     val jmriProvider: SimulJmriProvider
-) : IExecSimul {
+) : IExecSimul, ISimulCallback {
     private val TAG = javaClass.simpleName
     private val logger: ILogger = jmriProvider
 
@@ -32,6 +32,11 @@ class Simul2k @Inject constructor(
     /** Repeated called during the main exec/simulation loop. */
     override fun onExecHandle() {
         jmriProvider.onExecHandle()
+    }
+
+    /** Notifies the simulator that the sum of timers for that block have changed. */
+    override fun onBlockTimersChanged(systemName: String, sumTimersSec: Int) {
+        jmriProvider.onBlockTimersChanged(systemName, sumTimersSec)
     }
 
     fun getUiLogOutput(): String = jmriProvider.getUiLogOutput()

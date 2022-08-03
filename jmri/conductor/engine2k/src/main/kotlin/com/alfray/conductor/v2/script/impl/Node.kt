@@ -54,7 +54,7 @@ internal class Node(builder: NodeBuilder) : INode {
     private var callWhileOccupied: TAction? = null
     private var callOnTrailing: TAction? = null
     private var callOnEmpty: TAction? = null
-    val context = ExecContext(ExecContext.Reason.NODE)
+    val context = ExecContext(ExecContext.Reason.NODE, this)
 
     override fun toString(): String {
         return if (reversal != null && reversal == true) {
