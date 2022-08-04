@@ -25,14 +25,14 @@ interface IRoute {
     /** The [IActiveRoute] containing this route. */
     val owner: IActiveRoute
 
-    /** Activates this route in its [IActiveRoute]. */
+    /** Activates this route in its [IActiveRoute], or resets & re-activates the current route. */
     fun activate()
 
     /**
      * Changes the default starting block for this route.
      * Only effective if called from the onActivate callback.
      * Throws an error if the node is not part of the route.
-     * Throws an error if called on a route with no nodes like an Idle Route.
+     * Throws an error if called on a route without nodes such as an Idle Route.
      */
     fun start_node(node: INode)
 }

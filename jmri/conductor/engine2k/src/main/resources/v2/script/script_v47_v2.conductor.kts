@@ -138,25 +138,25 @@ val Passenger_Route = PA_Route.sequence {
     throttle = AM
     timeout = 60 // 1 minute
 
-    val AM_Leaving_Speed    = 6.speed
-    val AM_Station_Speed    = 12.speed
-    val AM_Summit_Speed     = 6.speed
-    val AM_Summit_Bridge_Speed = 4.speed
-    val AM_Sonora_Speed     = 8.speed
-    val AM_Crossover_Speed  = 4.speed
-    val AM_Full_Speed       = 12.speed
+    val AM_Leaving_Speed        = 6.speed
+    val AM_Station_Speed        = 12.speed
+    val AM_Summit_Speed         = 6.speed
+    val AM_Summit_Bridge_Speed  = 4.speed
+    val AM_Sonora_Speed         = 8.speed
+    val AM_Crossover_Speed      = 4.speed
+    val AM_Full_Speed           = 12.speed
 
-    val AM_Delayed_Horn             = 2.seconds
-    val AM_Leaving_To_Full_Speed    = 15.seconds
-    val AM_Timer_B321_Up_Doppler    = 27.seconds
-    val AM_Timer_B330_Up_Resume     = 12.seconds
-    val AM_Timer_B340_Up_Horn       = 5.seconds
-    val AM_Timer_B370_Forward_Stop  = 17.seconds  // time running at AM_Summit_Speed before stopping
-    val AM_Timer_B370_Pause_Delay   = 16.seconds
-    val AM_Timer_B360_Full_Reverse  = 12.seconds
-    val AM_Timer_B330_Down_Speed    = 8.seconds
+    val AM_Delayed_Horn              = 2.seconds
+    val AM_Leaving_To_Full_Speed     = 15.seconds
+    val AM_Timer_B321_Up_Doppler     = 27.seconds
+    val AM_Timer_B330_Up_Resume      = 12.seconds
+    val AM_Timer_B340_Up_Horn        = 5.seconds
+    val AM_Timer_B370_Forward_Stop   = 17.seconds  // time running at AM_Summit_Speed before stopping
+    val AM_Timer_B370_Pause_Delay    = 16.seconds
+    val AM_Timer_B360_Full_Reverse   = 12.seconds
+    val AM_Timer_B330_Down_Speed     = 8.seconds
     val AM_Timer_B321_Down_Crossover = 27.seconds
-    val AM_Timer_B503b_Down_Stop    = 20.seconds
+    val AM_Timer_B503b_Down_Stop     = 20.seconds
     val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
     fun AM_Fn_Acquire_Route() {

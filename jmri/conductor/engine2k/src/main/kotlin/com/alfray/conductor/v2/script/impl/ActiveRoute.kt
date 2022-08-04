@@ -117,14 +117,13 @@ internal class ActiveRoute(
         return sb.toString()
     }
 
-    /** Called by script to change the active route. No-op if route is already active. */
+    /**
+     * Called by script to change the active route.
+     * If the route is already active, it gets reset and re-activated.
+     */
     override fun activate(route: IRoute) {
         logger.assertOrThrow(TAG, route in _routes) {
             "ERROR $this: cannot activate a route not part of an active route: $route"
-        }
-
-        if (_active === route) {
-            return // no-op
         }
 
         _active?.let {

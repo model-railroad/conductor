@@ -24,9 +24,10 @@ import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
 /** DSL script interface for a route sequence. */
 interface IRouteSequence : IRoute {
-    /** The [IActiveRoute] containing this route. */
+    /** The [IThrottle] operating on this route. */
     val throttle: IThrottle
 
-    /** Converts the route graph into a Simulator route graph. */
+    /** Internal Converts the route graph into a Simulator route graph. */
     fun toSimulGraph(): SimulRouteGraph
+    // TODO IRouteSequence.toSimulGraph should not be exposed in the DSL.
 }

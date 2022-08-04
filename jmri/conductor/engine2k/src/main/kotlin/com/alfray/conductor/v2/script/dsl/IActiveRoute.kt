@@ -35,7 +35,7 @@ interface IActiveRoute {
     /** All the route choices for this active route. */
     val routes : List<IRoute>
 
-    /** Activates this route. */
+    /** Activates this route, or resets & re-activates the current route. */
     fun activate(route: IRoute)
 
     /** True if the current route is in error. Useful as a script on..then condition test. */
