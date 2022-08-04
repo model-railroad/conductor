@@ -24,7 +24,7 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
-import com.alfray.conductor.v2.utils.ConductorExecException
+import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
     protected val logger: ILogger,
@@ -61,12 +61,15 @@ internal abstract class RouteBase(
             }
         }
 
-    /** Internal utility that routes derived implementation can use to set the route in error mode. */
+    /**
+     * Internal utility that routes implementations can use to set the route in error mode.
+     * This does NOT throw an exception, unlike [ILogger.assertOrThrow].
+     */
     protected inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
+            val message = lazyMessage().toString()
+            logger.d(TAG, message)
             (owner as ActiveRoute).reportError(this, true)
-            val message = lazyMessage()
-            throw ConductorExecException(message.toString())
         }
     }
 
@@ -91,7 +94,9 @@ internal abstract class RouteBase(
                 actionOnActivate?.let {
                     execActions.add(ExecAction(context, it))
                 }
-                state = State.ACTIVE
+                execActions.add(ExecAction(context) {
+                    state = State.ACTIVE
+                })
             }
             State.ACTIVE -> {
                 // no-op ... typically overridden by derived class.

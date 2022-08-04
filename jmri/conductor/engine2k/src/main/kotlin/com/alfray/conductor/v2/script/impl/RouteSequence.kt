@@ -200,7 +200,9 @@ internal class RouteSequence(
         when (state) {
             State.ACTIVATED -> {
                 super.collectActions(execActions)
-                onRouteActivated()
+                execActions.add(ExecAction(context) {
+                    onRouteActivated()
+                })
             }
             State.ACTIVE -> {
                 currentNode?.let {
