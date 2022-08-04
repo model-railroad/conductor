@@ -19,5 +19,8 @@
 package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface to build an [IRouteIdle]. */
-interface IRouteIdleBuilder : IRouteBaseBuilder
+interface IRouteIdleBuilder : IRouteBaseBuilder {
+    /** Callback called repeatedly when the route is idle. */
+    fun onIdle(action: TAction)
+}
 

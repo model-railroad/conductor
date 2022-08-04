@@ -402,7 +402,272 @@ on { PA_State == EPA_State.Station && !PA_Toggle } then {
 // Events BL
 // ---------
 
-// TBD
+
+val BL = throttle(191) named "BL"
+
+val BL_Speed = 10.speed
+val BL_Speed_Station = 6.speed
+
+enum class EBL_State { Ready, Wait, Running, Recover }
+
+var BL_State = EBL_State.Ready
+
+var BL_Start_Counter = 0
+
+on { BL_Toggle.active } then {
+    ga_event {
+        category = "Automation"
+        action = "On"
+        label = "Branchline"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Branchline"
+        value = "On"
+    }
+}
+on { !BL_Toggle } then {
+    ga_event {
+        category = "Automation"
+        action = "Off"
+        label = "Branchline"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Branchline"
+        value = "Off"
+    }
+}
+
+val BL_Route = activeRoute {
+    name = "Branchline"
+    toggle = BL_Toggle
+    status = { BL_State.toString() }
+
+    onError {
+        // --- BL State: Error
+        BL.repeat(1.seconds)
+        BL.stop()
+        BL.sound(Off)
+        ga_event {
+            category = "Automation"
+            action = "Error"
+            label = "Branchline"
+            user = "Staff"
+        }
+    }
+}
+
+var BL_Idle_Route: IRoute
+BL_Idle_Route = BL_Route.idle {
+    onActivate {
+        BL_State = EBL_State.Ready
+    }
+
+    onIdle {
+        if (BL_Toggle.active && AIU_Motion.active) {
+            BL_Route.activate(BL_Shuttle_Route)
+        }
+    }
+}
+
+val BL_Shuttle_Route = BL_Route.sequence {
+    throttle = BL
+    timeout = 60 // 1 minute
+
+    val BL_Timer_Start_Delay = 5.seconds
+    val BL_Timer_Bell_Delay = 2.seconds
+    val BL_Timer_RevStation_Stop = 4.seconds
+    val BL_Timer_RevStation_Pause = 25.seconds
+    val BL_Timer_Station_Stop = 6.seconds
+    val BL_Timer_Station_Rev3 = 8.seconds
+    val BL_Timer_Wait = 30.seconds  // 300=5 minutes -- change for debugging
+
+    fun doStart() {
+        BL.horn()
+        BL.f1(On)
+        after(BL_Timer_Start_Delay) then {
+            BL.f1(Off)
+            BL.horn()
+            BL.forward(BL_Speed_Station)
+        }
+        json_event {
+            key1 = "Depart"
+            key2 = "Branchline"
+        }
+    }
+
+    val BLParked_fwd = node(BLParked) {
+        onEnter {
+            doStart()
+        }
+    }
+
+    val BLStation_fwd = node(BLStation) {
+        onEnter {
+            doStart()
+        }
+    }
+
+    val BLTunnel_fwd = node(BLTunnel) {
+        onEnter {
+            BL.horn()
+        }
+    }
+
+    val BLReverse_fwd = node(BLReverse) {
+        onEnter {
+            BL.horn()
+            BL.f1(On)
+            after(BL_Timer_RevStation_Stop) then {
+                // Toggle Stop/Reverse/Stop to turn off the Reverse front light.
+                // Next event should still be the BLReverse Stopped one.
+                BL.stop()
+                BL.horn()
+                BL.reverse(1.speed)
+                BL.stop()
+            } and_after(BL_Timer_Bell_Delay) then {
+                BL.f1(Off)
+            } and_after(BL_Timer_RevStation_Pause) then {
+                BL.f1(On)
+                BL.horn()
+            } and_after(5.seconds) then {
+                BL.reverse(BL_Speed)
+            } and_after(BL_Timer_Bell_Delay) then {
+                BL.light(On)
+                BL.f1(Off)
+                BL.f8(On)
+                BL.f9(On)
+                BL.f10(On)
+                BL.horn()
+            }
+        }
+    }
+
+    val BLTunnel_rev = node(BLTunnel) {
+        onEnter {
+            BL.horn()
+        }
+    }
+
+    val BLStation_rev = node(BLStation) {
+        onEnter {
+            BL.f1(On)
+            T324.normal()
+            BL.reverse(BL_Speed_Station)
+            after(BL_Timer_Station_Stop) then {
+                BL.stop()
+                BL.horn()
+            } and_after(BL_Timer_Station_Rev3) then {
+                BL.horn()
+                BL.reverse(BL_Speed_Station)
+            }
+        }
+    }
+
+    val BLParked_rev = node(BLParked) {
+        onEnter {
+            // We went too far, but it's not a problem / not an error.
+            BL.stop()
+            after(3.seconds) then {
+                BL.f1(Off)
+            } and_after(2.seconds) then {
+                BL.f8(Off)
+                BL.f9(Off)
+                BL.f10(Off)
+                BL_State = EBL_State.Wait
+            } and_after(BL_Timer_Wait) then {
+                BL_Route.activate(BL_Idle_Route)
+            }
+        }
+    }
+
+    onActivate {
+        BL_State = EBL_State.Running
+        BL_Start_Counter++
+        // It's ok to start either from BLParked or BLStation
+        if (BLParked.active) {
+            BL_Route.active.start_node(BLParked_fwd)
+        } else if (!BLParked && BLStation.active) {
+            BL_Route.active.start_node(BLStation_fwd)
+        }
+    }
+
+    onRecover {
+        BL_Route.activate(BL_Recover_Route)
+    }
+
+    sequence = listOf(BLParked_fwd, BLStation_fwd, BLTunnel_fwd,
+        BLReverse_fwd,
+        BLTunnel_rev, BLStation_rev, BLParked_rev)
+
+}
+
+val BL_Recover_Route = BL_Route.sequence {
+    throttle = BL
+    timeout = 60 // 1 minute
+
+    fun move() {
+        BL.f1(On)
+        BL.f8(Off)
+        BL.f9(Off)
+        BL.f10(Off)
+        BL.reverse(BL_Speed_Station)
+    }
+
+    val BLReverse_rev = node(BLReverse) {
+        onEnter {
+            move()
+        }
+    }
+
+    val BLTunnel_rev = node(BLTunnel) {
+        onEnter {
+            move()
+        }
+    }
+
+    val BLStation_rev = node(BLStation) {
+        onEnter {
+            move()
+        }
+    }
+
+    val BLParked_rev = node(BLParked) {
+        onEnter {
+            BL.stop()
+            BL.f1(Off)
+            BL.f8(Off)
+            BL.f9(Off)
+            BL.f10(Off)
+            BL_Route.activate(BL_Idle_Route)
+        }
+    }
+
+    onActivate {
+        BL_State = EBL_State.Recover
+        if (BLReverse.active) {
+            BL_Route.active.start_node(BLReverse_rev)
+        } else if (BLTunnel.active) {
+            BL_Route.active.start_node(BLTunnel_rev)
+        } else if (BLStation.active) {
+            BL_Route.active.start_node(BLStation_rev)
+        } else if (BLParked.active) {
+            BL_Route.active.start_node(BLParked_rev)
+        }
+    }
+
+    onRecover {
+        // We cannot recover from an error during the recover route.
+        BL.stop()
+    }
+
+    sequence = listOf(BLReverse_rev, BLTunnel_rev, BLStation_rev, BLParked_rev)
+
+}
+
 
 
 // ------------------

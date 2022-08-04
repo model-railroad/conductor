@@ -22,11 +22,22 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
+import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal open class RouteIdleBuilder(
     owner: IActiveRoute,
     logger: ILogger,
 ) : RouteBaseBuilder(owner as ActiveRoute, logger), IRouteIdleBuilder {
+    private val TAG = javaClass.simpleName
+    var actionOnIdle: TAction? = null
+
+    override fun onIdle(action: TAction) {
+        logger.assertOrThrow(TAG, actionOnIdle == null) {
+            "Route onIdle defined more than once"
+        }
+        actionOnIdle = action
+    }
 
     fun create() : IRoute = RouteIdle(owner, logger, this)
 }

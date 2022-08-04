@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.ILogger
+import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
@@ -43,6 +44,8 @@ internal class RouteIdle(
     logger: ILogger,
     builder: RouteIdleBuilder
 ) : RouteBase(logger, owner, builder), IRouteIdle {
+    private val TAG = javaClass.simpleName
+    private val actionOnIdle = builder.actionOnIdle
 
     override fun start_node(node: INode) {
         assertOrError(false) {
@@ -54,5 +57,19 @@ internal class RouteIdle(
         owner as ActiveRoute
         val index = owner.routeIndex(this)
         return "Route Idle ${owner.name}#$index"
+    }
+
+    /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
+    override fun collectActions(execActions: MutableList<ExecAction>) {
+        when (state) {
+            State.ACTIVE -> {
+                actionOnIdle?.let {
+                    execActions.add(ExecAction(context, it))
+                }
+            }
+            else -> {
+                super.collectActions(execActions)
+            }
+        }
     }
 }

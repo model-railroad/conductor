@@ -578,6 +578,46 @@ class ScriptTest2k : ScriptTest2kBase() {
         ).inOrder()
     }
 
+
+    @Test
+    fun testRouteIdle_onIdle() {
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Toggle = sensor("S01")
+        val Routes = activeRoute {
+            name = "PA"
+            toggle = Toggle
+            status = { "My Idle Route" }
+        }
+        val Route_Idle = Routes.idle {
+            onActivate {
+                Train1.forward(2.speed)
+            }
+            onIdle {
+                val s: Int = Train1.speed.speed + 1
+                Train1.forward(s.speed)
+            }
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(0)
+        assertThat(conductorImpl.activeRoutes).hasSize(1)
+
+        val train1 = conductorImpl.throttles[1001]!!
+        assertThat(train1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(2.speed)
+
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(3.speed)
+
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(4.speed)
+    }
+
     @Test
     fun testRouteIdle_error() {
         loadScriptFromText(scriptText =

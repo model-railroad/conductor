@@ -26,8 +26,6 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.utils.ConductorExecException
 
-/**
- */
 internal abstract class RouteBase(
     protected val logger: ILogger,
     override val owner: IActiveRoute,
