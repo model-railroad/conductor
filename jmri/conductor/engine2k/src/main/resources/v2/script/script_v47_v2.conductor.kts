@@ -402,8 +402,36 @@ on { PA_State == EPA_State.Station && !PA_Toggle } then {
 // Events BL
 // ---------
 
+/*
+On the Rapido RDC SP-10 / SantaFe 191:
+- F5 is a doppler horn, too long so not using it
+- F6 is disabled (function used by ESU PowerPack)
+- F7 for dim lights for stations
+- F8 1/0 for Sound (use BL Sound)
+- F9 for red markers on the "end" side
 
-val BL = throttle(191) named "BL"
+On the Mopac 153:
+- F8 is a mute (1 for silence, 0 for sound)
+- F9 is a crossing horn.
+
+On RS3 4070:
+- F5 is the gyro light.
+- F8 is mute (1 for silence, 0 for sound)
+
+Caboose UP 25520 --> DCC 2552
+- Lights on for lights
+- Chimney denotes front
+- FWD for red rear marker, REV for red front marker.
+- F3 on for green rear marker, F4 on for green front marker.
+*/
+
+
+val BL = throttle(4070) named "BL"
+val CAB = throttle(2552) named "Cab"
+
+fun BL_bell (on: Boolean) { BL.f1(on)  }
+fun BL_sound(on: Boolean) { BL.f8(!on) }
+fun BL_gyro (on: Boolean) { BL.f5(on) }
 
 val BL_Speed = 10.speed
 val BL_Speed_Station = 6.speed
@@ -441,6 +469,31 @@ on { !BL_Toggle } then {
     }
 }
 
+// --- BL Static State for 4070 and its Caboose
+
+// #4070 Gyro light on when moving.
+// Caboose lights are controled by the engine's direction.
+on {  BL.stopped } then {
+    BL_gyro(Off)
+    CAB.light(On)
+    CAB.f3(Off)
+    CAB.f4(Off)
+}
+on { BL.forward } then {
+    BL_gyro(On)
+    CAB.light(On)
+    CAB.forward(1.speed)
+    CAB.f3(Off)
+    CAB.f4(On)
+}
+on { BL.reverse } then {
+    BL_gyro(On)
+    CAB.light(On)
+    CAB.reverse(1.speed)
+    CAB.f3(On)
+    CAB.f4(Off)
+}
+
 val BL_Route = activeRoute {
     name = "Branchline"
     toggle = BL_Toggle
@@ -450,7 +503,7 @@ val BL_Route = activeRoute {
         // --- BL State: Error
         BL.repeat(1.seconds)
         BL.stop()
-        BL.sound(Off)
+        BL_sound(Off)
         ga_event {
             category = "Automation"
             action = "Error"
@@ -486,10 +539,11 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_Wait = 30.seconds  // 300=5 minutes -- change for debugging
 
     fun doStart() {
+        BL_sound(On)
         BL.horn()
-        BL.f1(On)
+        BL_bell(On)
         after(BL_Timer_Start_Delay) then {
-            BL.f1(Off)
+            BL_bell(Off)
             BL.horn()
             BL.forward(BL_Speed_Station)
         }
@@ -520,7 +574,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BLReverse_fwd = node(BLReverse) {
         onEnter {
             BL.horn()
-            BL.f1(On)
+            BL_bell(On)
             after(BL_Timer_RevStation_Stop) then {
                 // Toggle Stop/Reverse/Stop to turn off the Reverse front light.
                 // Next event should still be the BLReverse Stopped one.
@@ -529,18 +583,16 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.reverse(1.speed)
                 BL.stop()
             } and_after(BL_Timer_Bell_Delay) then {
-                BL.f1(Off)
+                BL_bell(Off)
             } and_after(BL_Timer_RevStation_Pause) then {
-                BL.f1(On)
+                BL_bell(On)
                 BL.horn()
             } and_after(5.seconds) then {
                 BL.reverse(BL_Speed)
             } and_after(BL_Timer_Bell_Delay) then {
                 BL.light(On)
-                BL.f1(Off)
-                BL.f8(On)
-                BL.f9(On)
-                BL.f10(On)
+                BL_bell(Off)
+                BL_sound(On)
                 BL.horn()
             }
         }
@@ -554,7 +606,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLStation_rev = node(BLStation) {
         onEnter {
-            BL.f1(On)
+            BL_bell(On)
             T324.normal()
             BL.reverse(BL_Speed_Station)
             after(BL_Timer_Station_Stop) then {
@@ -572,11 +624,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
             // We went too far, but it's not a problem / not an error.
             BL.stop()
             after(3.seconds) then {
-                BL.f1(Off)
+                BL_bell(Off)
             } and_after(2.seconds) then {
-                BL.f8(Off)
-                BL.f9(Off)
-                BL.f10(Off)
+                BL_sound(Off)
                 BL_State = EBL_State.Wait
             } and_after(BL_Timer_Wait) then {
                 BL_Route.activate(BL_Idle_Route)
@@ -610,10 +660,9 @@ val BL_Recover_Route = BL_Route.sequence {
     timeout = 60 // 1 minute
 
     fun move() {
-        BL.f1(On)
-        BL.f8(Off)
-        BL.f9(Off)
-        BL.f10(Off)
+        BL_bell(On)
+        BL_sound(On)
+        BL.horn()
         BL.reverse(BL_Speed_Station)
     }
 
@@ -638,11 +687,12 @@ val BL_Recover_Route = BL_Route.sequence {
     val BLParked_rev = node(BLParked) {
         onEnter {
             BL.stop()
-            BL.f1(Off)
-            BL.f8(Off)
-            BL.f9(Off)
-            BL.f10(Off)
-            BL_Route.activate(BL_Idle_Route)
+            after (5.seconds) then {
+                BL_bell(Off)
+                BL_sound(Off)
+            } and_after (2.seconds) then {
+                BL_Route.activate(BL_Idle_Route)
+            }
         }
     }
 

@@ -22,6 +22,7 @@ import autovalue.shaded.org.apache.commons.lang.exception.ExceptionUtils;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
 import com.alflabs.conductor.jmri.IJmriProvider;
+import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
@@ -344,7 +345,28 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     @Override
     public void onWindowSvgClick(String itemId) {
+        if (!mIsSimulation) {
+            mLogger.d(TAG, "SVG click on #" + itemId + " ignored when not in simulation.");
+            return;
+        }
 
+        final AtomicBoolean processed = new AtomicBoolean();
+        mSimul2kComponent.ifPresent(comp -> {
+            IJmriProvider jmri = comp.getJmriProvider();
+            if (itemId.startsWith("S-NS")) {
+                String blockId = itemId.substring(2);
+                IJmriSensor sensor = jmri.getSensor(blockId);
+                if (sensor != null) {
+                    mLogger.d(TAG, "SVG click on block " + itemId);
+                    sensor.setActive(!sensor.isActive());
+                    processed.set(true);
+                }
+            }
+        });
+
+        if (!processed.get()) {
+            mLogger.d(TAG, "SVG click on unknown element #" + itemId + " ignored.");
+        }
     }
 
     /** Executes on the Swing EDT thread. */

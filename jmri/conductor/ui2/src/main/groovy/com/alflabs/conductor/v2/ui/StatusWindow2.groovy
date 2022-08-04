@@ -76,6 +76,7 @@ import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class StatusWindow2 {
+    private static final String TAG = "@@ Ui2: "
     private def VERBOSE = true
     def IWindowCallback mWindowCallback
     def SwingBuilder mSwingBuilder
@@ -241,7 +242,7 @@ class StatusWindow2 {
 
     void registerThrottles(List<IThrottleDisplayAdapter> throttles) {
         mSwingBuilder.edt {
-            if (VERBOSE) println("@@ UI2: registerThrottles # " + throttles.size())
+            if (VERBOSE) println(TAG + "registerThrottles # " + throttles.size())
             mThrottlePanel.removeAll()
             if (throttles.empty) {
                 mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 40)))
@@ -309,6 +310,7 @@ class StatusWindow2 {
             List<IActivableDisplayAdapter> blocks,
             List<IActivableDisplayAdapter> turnouts) {
         mSwingBuilder.edt {
+            if (VERBOSE) println(TAG + "register UI Updates.")
             mSensorPanel.removeAll()
 
             for (final def sensor in sensors) {
@@ -339,7 +341,6 @@ class StatusWindow2 {
     }
 
     void addBlock(IActivableDisplayAdapter adapter) {
-
         Runnable updater = { ->
             String name = "S-" + adapter.name
             setBlockColor(name, adapter.active)
@@ -349,7 +350,6 @@ class StatusWindow2 {
     }
 
     void addTurnout(IActivableDisplayAdapter adapter) {
-
         Runnable updater = { ->
             boolean normal = adapter.active
             String name = "T-" + adapter.name
@@ -425,6 +425,7 @@ class StatusWindow2 {
                 // Otherwise let the SVG load the given URL (which much be valid)
                 mSvgCanvas.setURI(mapUrl.toString())
             }
+            if (VERBOSE) println(TAG + "SVG Map loaded from " + mapUrl)
         }
     }
 
@@ -435,8 +436,8 @@ class StatusWindow2 {
             }
             if (element instanceof SVGElement) {
                 String id = element.getId()
-                if (id != null && (id.startsWith("S-b") || id.startsWith("Toggle-T"))) {
-                    // println "visit id = $id" // -- for debugging
+                if (id != null && (id.startsWith("S-NS") || id.startsWith("T-NT"))) {
+                    //if (VERBOSE) println(TAG + "Add onClick listener to id = $id") // -- for debugging
                     element.addEventListener("click", onClick, false /* useCapture */)
                 }
                 if (id.startsWith("Toggle-T")) {
@@ -454,6 +455,7 @@ class StatusWindow2 {
         modifySvg {
             SVGDocument doc = mSvgCanvas.getSVGDocument()
             Element elem = doc?.getElementById(id)
+            // if (VERBOSE) println(TAG + "Set color for block id = $id") // -- for debugging
             if (elem instanceof SVGStylable) {
                 // Note: setProperty(String propertyName, String value, String priority)
                 def priority = "" // or "important"
@@ -481,6 +483,7 @@ class StatusWindow2 {
         modifySvg {
             SVGDocument doc = mSvgCanvas.getSVGDocument()
             Element elem = doc?.getElementById(id)
+            //if (VERBOSE) println(TAG + "Set turnout id = $id") // -- for debugging
             if (elem instanceof SVGStylable) {
                 def display = visible ? "inline" : "none"
                 ((SVGStylable) elem).getStyle()?.setProperty("display", display, "")
