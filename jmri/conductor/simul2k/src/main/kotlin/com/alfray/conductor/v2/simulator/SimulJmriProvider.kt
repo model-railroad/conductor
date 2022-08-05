@@ -54,6 +54,13 @@ class SimulJmriProvider @Inject constructor(
             .forEach { it.updateNodeTimers(sumTimersSec) }
     }
 
+    /** Sets the route definition for a given DCC throttle. */
+    override fun setRoute(dccAddress: Int, graph: SimulRouteGraph) {
+        this.d(TAG, "[Throttle $dccAddress] Set route $graph")
+        val t = getThrottle(dccAddress) as SimulThrottle
+        t.setGraph(graph)
+    }
+
     fun getUiLogOutput(): String {
         return mThrottles.values.map { (it as SimulThrottle).getUiLogOutput() }.joinToString("\n")
     }

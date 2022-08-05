@@ -139,6 +139,10 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         IScript2kComponent script2kComponent = mScript2kContext.createComponent();
         Script2kLoader loader = script2kComponent.getScript2kLoader();
+        ConductorImpl conductorImpl = loader.getConductorImpl();
+        mSimul2kComponent.ifPresent(simul -> {
+            conductorImpl.setSimulCallback(simul.getSimul2k());
+        });
 
         loader.loadScriptFromFile(file.getPath());
         log("Loaded in " + (mClock.elapsedRealtime() - nowMs) + " ms");
@@ -148,23 +152,24 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         loader.getExecEngine().onExecStart();
 
         mSimul2kComponent.ifPresent(simul -> {
-            ConductorImpl conductorImpl = loader.getConductorImpl();
             Simul2k simul2k = simul.getSimul2k();
-            conductorImpl.setSimulCallback(simul2k);
-            convertRoutes(conductorImpl.getActiveRoutes(), simul2k);
+            sendRoutesToSimulator(conductorImpl.getActiveRoutes(), simul2k);
             simul2k.onExecStart();
         });
 
         return Pair.of(wasRunning, file);
     }
 
-    private void convertRoutes(List<IActiveRoute> activeRoutes, Simul2k routeManager) {
-        activeRoutes.forEach(active -> active.getRoutes().forEach(route -> {
-            if (route instanceof IRouteSequence) {
+    private void sendRoutesToSimulator(List<IActiveRoute> activeRoutes, Simul2k routeManager) {
+        activeRoutes.forEach(active ->
+                active.getRoutes()
+                        .stream()
+                        .filter(r -> r instanceof IRouteSequence)
+                        .findFirst()
+                        .ifPresent(route -> {
                 IRouteSequence routeSequence = (IRouteSequence) route;
                 SimulRouteGraph graph = routeSequence.toSimulGraph();
-                routeManager.addRoute(routeSequence.getThrottle().getDccAddress(), graph);
-            }
+                routeManager.setRoute(routeSequence.getThrottle().getDccAddress(), graph);
         }));
     }
 

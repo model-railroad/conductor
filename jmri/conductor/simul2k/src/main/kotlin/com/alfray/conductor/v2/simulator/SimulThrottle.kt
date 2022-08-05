@@ -22,8 +22,11 @@ class SimulThrottle @AssistedInject constructor(
     @Assisted val dccAddress_: Int
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
+    /** The expected block graph for that throttle. */
     private var graph: SimulRouteGraph? = null
+    /** The block simulating the current engine location for that throttle. */
     internal /*VisibleForTesting*/ var block: SimulRouteBlock? = null
+    /** Direction the engine is moving in the route graph. */
     internal /*VisibleForTesting*/ var graphForward = true
     /** Time in ms we have accumulated on this block. */
     private var blockMS: Long = 0L
@@ -75,8 +78,40 @@ class SimulThrottle @AssistedInject constructor(
         return dccAddress_
     }
 
-    fun mergeGraph(newGraph: SimulRouteGraph) {
-        graph = graph?.merge(newGraph) ?: newGraph
+    fun setGraph(newGraph: SimulRouteGraph) {
+        graph = newGraph
+
+        var newBlock = block
+        // If we have a current block reference, validate that block is on that route.
+        if (newBlock != null && newBlock !in newGraph.blocks) {
+            newBlock = null
+        }
+        // If the current block is not active, we'll need a different one.
+        newBlock?.let {
+            if (jmriProvider.getSensor(it.systemName)?.isActive != true) {
+                newBlock = null
+            }
+        }
+
+        // Can we select an occupied block on that route?
+        if (newBlock == null) {
+            for (b in newGraph.blocks) {
+                val sensor = jmriProvider.getSensor(b.systemName)
+                if (sensor?.isActive == true) {
+                    newBlock = b
+                    break
+                }
+            }
+        }
+
+        // As a last resort, take the start block of the graph
+        if (newBlock == null) {
+            newBlock = newGraph.start
+        }
+
+        logger.d(TAG, "[Throttle $dccAddress_] Selected block $newBlock")
+        changeBlock(newBlock)
+        graphForward = true
     }
 
     private fun changeBlock(newBlock: SimulRouteBlock?) {
@@ -103,11 +138,8 @@ class SimulThrottle @AssistedInject constructor(
     }
 
     override fun onExecStart() {
-        changeBlock(null)
         graph?.let { g ->
             logger.d(TAG, String.format("[%04d] Route Graph: %s", dccAddress, g.toString()))
-            changeBlock(g.start)
-            graphForward = true
         }
     }
 

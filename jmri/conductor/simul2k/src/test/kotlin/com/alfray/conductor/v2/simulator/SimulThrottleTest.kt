@@ -25,9 +25,9 @@ class SimulThrottleTest : Simul2kTestBase() {
         assertThat(graph.toString())
             .isEqualTo("(start={B1}, blocks=[{B1}, <B2>], edges=[{B1}=>><B2>=<>{B1}])")
 
-        simul2k.addRoute(dccAddress, graph)
+        simul2k.setRoute(dccAddress, graph)
 
-        assertThat(throttle.block).isNull()
+        assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isTrue()
 
         simul2k.onExecStart()
@@ -39,12 +39,12 @@ class SimulThrottleTest : Simul2kTestBase() {
         assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isTrue()
 
-        clock.add(throttle.blockMaxMs)
+        clock.add(throttle.blockMaxMs.toLong())
         simul2k.onExecHandle()
         assertThat(throttle.block).isEqualTo(b2)
         assertThat(throttle.graphForward).isFalse()
 
-        clock.add(throttle.blockMaxMs)
+        clock.add(throttle.blockMaxMs.toLong())
         simul2k.onExecHandle()
         assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isFalse()

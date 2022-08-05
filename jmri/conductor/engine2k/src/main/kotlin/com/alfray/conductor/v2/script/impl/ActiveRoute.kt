@@ -30,6 +30,8 @@ import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.simulator.ISimulCallback
+import com.alfray.conductor.v2.simulator.SimulRouteGraph
 import com.alfray.conductor.v2.utils.assertOrThrow
 import java.util.Locale
 
@@ -56,6 +58,7 @@ import java.util.Locale
 internal class ActiveRoute(
     private var logger: ILogger,
     private val keyValue: IKeyValue,
+    private val simulCallback: ISimulCallback?,
     builder: ActiveRouteBuilder
 ) : IActiveRoute, IExecEngine {
     private val TAG = javaClass.simpleName
@@ -132,6 +135,13 @@ internal class ActiveRoute(
 
         _active = route as RouteBase
         _active?.state = RouteBase.State.ACTIVATED
+
+        simulCallback?.let {
+            if (route is RouteSequence) {
+                val simulGraph = route.toSimulGraph()
+                simulCallback.setRoute(route.throttle.dccAddress, simulGraph)
+            }
+        }
     }
 
     /** Called by routes to indicate their error state has changed. */

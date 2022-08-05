@@ -110,7 +110,8 @@ internal class RouteSequence(
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
 
         // Set every block to its initial state of either occupied or empty.
-        val currentBlock = (currentNode as Node).block
+        val currentNode_ = currentNode as Node
+        val currentBlock = currentNode_.block
         var currentBlockIsOccupied = false
         val otherBlockOccupied = mutableSetOf<IBlock>()
         graph.nodes.forEach { node ->
@@ -135,6 +136,10 @@ internal class RouteSequence(
         assertOrError(otherBlockOccupied.isEmpty()) {
             "ERROR $this cannot start because blocks are occupied: $otherBlockOccupied"
         }
+
+        // Ensure that the onEnter callback of the currently occupied block is executed
+        // since activating a route is akin to entering the current block.
+        currentNode_.changeEnterState()
     }
 
     /** Invoked by the ExecEngine2 loop _before_ collecting all the actions to evaluate. */

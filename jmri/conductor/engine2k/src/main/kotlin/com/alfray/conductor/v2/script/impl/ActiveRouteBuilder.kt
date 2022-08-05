@@ -24,6 +24,7 @@ import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
 import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBuilder {
@@ -40,7 +41,7 @@ internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBui
         actionOnError = action
     }
 
-    fun create(keyValue: IKeyValue): IActiveRoute {
+    fun create(keyValue: IKeyValue, simulCallback: ISimulCallback?): IActiveRoute {
         logger.assertOrThrow(TAG, this::name.isInitialized) {
             "ActiveRoute 'name' property has not been defined."
         }
@@ -51,6 +52,6 @@ internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBui
             // Sets the default for the active route.state to be "Idle".
             status = { "Idle" }
         }
-        return ActiveRoute(logger, keyValue, this)
+        return ActiveRoute(logger, keyValue, simulCallback, this)
     }
 }

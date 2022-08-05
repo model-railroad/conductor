@@ -52,7 +52,6 @@ import com.alfray.conductor.v2.script.impl.Rule
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
-import java.util.Optional
 import javax.inject.Inject
 
 @Script2kScope
@@ -146,7 +145,7 @@ class ConductorImpl @Inject internal constructor(
     override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {
         val b = ActiveRouteBuilder(logger)
         b.activeRouteSpecification()
-        val a = b.create(keyValue)
+        val a = b.create(keyValue, simulCallback)
         activeRoutes.add(a)
         return a
     }

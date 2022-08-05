@@ -22,4 +22,7 @@ package com.alfray.conductor.v2.simulator
 interface ISimulCallback {
     /** Notifies the simulator that the sum of timers for that block have changed. */
     fun onBlockTimersChanged(systemName: String, sumTimersSec: Int)
+
+    /** Sets the route definition for a given DCC throttle. */
+    fun setRoute(dccAddress: Int, graph: SimulRouteGraph)
 }
