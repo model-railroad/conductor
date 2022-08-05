@@ -89,21 +89,123 @@ exportedVars.GA_URL = "http://consist.alfray.com/train/"
 // Motion
 // -----------------
 
+var AIU_Motion_Counter = 0
+
+on { AIU_Motion } then {
+    exportedVars.RTAC_Motion = On
+    AIU_Motion_Counter += 1
+    ga_event {
+        category = "Motion"
+        action = "Start"
+        label = "AIU"
+        user = AIU_Motion_Counter.toString()
+    }
+}
+
+on { !AIU_Motion } then {
+    exportedVars.RTAC_Motion = Off
+    ga_event {
+        category = "Motion"
+        action = "Stop"
+        label = "AIU"
+        user = AIU_Motion_Counter.toString()
+    }
+}
 
 // ---------
 // End of the Day
 // ---------
 
+val End_Of_Day_HHMM = 1650
 
-// ---------
+on { PA_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+    PA_Toggle.active(Off)
+}
+
+on { BL_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+    BL_Toggle.active(Off)
+}
+
+on { PA_Toggle } then {
+    exportedVars.RTAC_PSA_Text = "Automation Started"
+}
+
+on { !PA_Toggle && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+    exportedVars.RTAC_PSA_Text = "{c:red}Automation Turned Off\nat 4:50 PM"
+}
+
+on { !PA_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
+    exportedVars.RTAC_PSA_Text = "{c:red}Automation Stopped"
+}
+
+// ---------------------
+// Events & RTAC Display
+// ---------------------
+
+on { PA_Toggle  } then {
+    ga_event {
+        category = "Automation"
+        action = "On"
+        label = "Passenger"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Passenger"
+        value = "On"
+    }
+}
+on { !PA_Toggle } then {
+    ga_event {
+        category = "Automation"
+        action = "Off"
+        label = "Passenger"
+        user = "Staff"
+    }
+    json_event {
+        key1 = "Toggle"
+        key2 = "Passenger"
+        value = "Off"
+    }
+}
+
+on { PA_Toggle } then {
+    AM.repeat(2.seconds)
+    SP.repeat(2.seconds)
+}
+
+on { !PA_Toggle } then {
+    AM.repeat(2.seconds)
+    SP.repeat(2.seconds)
+    AM.f1(Off)
+    SP.f1(Off)
+}
+
+
+on { PA_State == EPA_State.Ready && PA_Toggle.active && PA_Train == EPA_Train.Passenger } then {
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger"
+}
+on { PA_State == EPA_State.Wait  && PA_Toggle.active && PA_Train == EPA_Train.Passenger } then {
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+}
+on { PA_State == EPA_State.Ready && PA_Toggle.active && PA_Train == EPA_Train.Freight  } then {
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight"
+}
+on { PA_State == EPA_State.Wait  && PA_Toggle.active && PA_Train == EPA_Train.Freight  } then {
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+}
+
+// --------------------
 // Events PA (mainline)
-// ---------
+// --------------------
 
-enum class EPA_State { Idle, Station, Running, Manual, Error, Wait }
+enum class EPA_State { Ready, Wait, Running, Recover }
 enum class EPA_Train { Passenger, Freight, }
 
-var PA_State = EPA_State.Idle
+var PA_State = EPA_State.Ready
 var PA_Train = EPA_Train.Passenger
+var PA_Start_Counter = 0
+val PA_Timer_Wait = 60.seconds  // 1 minute
 
 val AM = throttle(8749) named "AM"     // Full Amtrak route
 val SP = throttle(1072) named "SP"     // "Short Passenger" (now Freight) on limited Amtrak route
@@ -120,18 +222,78 @@ val PA_Route = activeRoute {
     status = { "$PA_State $PA_Train" }
 
     onError {
-        // Note this state can only be cleared using an RTAC reset.
-        PA_State = EPA_State.Error
-        estop()
+        // The current route will trigger the corresponding PA_Recover_Route.
+        AM.repeat(1.seconds)
+        SP.repeat(1.seconds)
+        AM.stop()
+        SP.stop()
+        AM.sound(Off) ; AM.light(Off) ; AM.f1(Off)
+        SP.sound(Off) ; SP.light(Off) ; SP.f1(Off) ; SP.f5(Off)
+        ga_event {
+            category = "Automation"
+            action = "Error"
+            label = "Passenger"
+            user = "Staff"
+        }
+        exportedVars.RTAC_PSA_Text = "{b:red}{c:white}Automation ERROR"
     }
 }
 
-val PA_Idle_Route = PA_Route.idle {
+var PA_Idle_Route: IRoute
+PA_Idle_Route = PA_Route.idle {
     onActivate {
+        PA_State = EPA_State.Ready
         AM.stop()
         AM.light(On)
         AM.f1(Off)
+
+        SP.stop()
+        SP.light(On)
+        SP.f1(Off)
     }
+
+    onIdle {
+        if (PA_Toggle.active && AIU_Motion.active && AM.stopped && SP.stopped) {
+            when (PA_Train) {
+                EPA_Train.Passenger -> PA_Route.activate(Passenger_Route)
+                EPA_Train.Freight -> PA_Route.activate(Freight_Route)
+            }
+        }
+    }
+}
+
+on { PA_State == EPA_State.Ready && PA_Toggle.active } then {
+    AM.sound(On);   AM.light(On)
+    SP.sound(On);   SP.light(On)
+    AM.stop();      SP.stop()
+    PA_Fn_Release_Route()
+}
+
+val PA_Timer_Stop_Sound_Off = 10.seconds
+on { PA_State == EPA_State.Ready && !PA_Toggle } then {
+    AM.light(Off);  SP.light(Off)
+    AM.stop();      SP.stop()
+    after(PA_Timer_Stop_Sound_Off) then {
+        AM.sound(Off)
+        SP.sound(Off)
+    }
+    PA_Fn_Release_Route()
+}
+
+fun PA_send_start_ga_event() {
+    PA_Start_Counter += 1
+    ga_page {
+        url = exportedVars.GA_URL
+        path = PA_Train.name
+        user = PA_Start_Counter.toString()
+    }
+    ga_event {
+        category = "Automation"
+        action = "Start"
+        label = PA_Train.name
+        user = PA_Start_Counter.toString()
+    }
+    // reset_timers("PA", "AM", "SP") -- obsolete
 }
 
 val Passenger_Route = PA_Route.sequence {
@@ -170,7 +332,18 @@ val Passenger_Route = PA_Route.sequence {
         T504.normal()
     }
 
+    onRecover {
+        PA_Route.activate(PA_Recover_Route)
+    }
+
     onActivate {
+        PA_State = EPA_State.Running
+        PA_send_start_ga_event()
+        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
+        json_event {
+            key1 = "Depart"
+            key2 = "Passenger"
+        }
         AM.light(On)
         AM.f1(Off)
         AM.sound(On)
@@ -183,7 +356,7 @@ val Passenger_Route = PA_Route.sequence {
             AM.horn()
             AM_Fn_Acquire_Route()
             AM.f1(On)
-            after(AM_Delayed_Horn) then {
+            after (AM_Delayed_Horn) then {
                 AM.horn()
                 AM.forward(AM_Leaving_Speed)
             }
@@ -191,7 +364,7 @@ val Passenger_Route = PA_Route.sequence {
     }
 
     val B503a_fwd = node(B503a) {
-        whileOccupied {
+        onEnter {
             AM.f1(Off)
         }
     }
@@ -200,16 +373,16 @@ val Passenger_Route = PA_Route.sequence {
         onEnter {
             // Wait for train to have cleared up T320 before switching to full speed.
             // The problem is that B321 activates as train hits diverted leg of turnout.
-            after(AM_Leaving_To_Full_Speed) then {
+            after (AM_Leaving_To_Full_Speed) then {
                 if (PA_Toggle.active) {
                     AM.forward(AM_Full_Speed)
                 }
             }
 
             // Mid_Station doppler on the way up
-            after(AM_Timer_B321_Up_Doppler) then {
+            after (AM_Timer_B321_Up_Doppler) then {
                 AM.f9(On)
-            } and_after(1.seconds) then {
+            } and_after (1.seconds) then {
                 AM.f9(Off)
             }
         }
@@ -227,7 +400,7 @@ val Passenger_Route = PA_Route.sequence {
         onEnter {
             // Sonora speed reduction
             AM.forward(AM_Sonora_Speed)
-            after(AM_Timer_B330_Up_Resume) then {
+            after (AM_Timer_B330_Up_Resume) then {
                 AM.forward(AM_Full_Speed)
                 AM.horn()
             }
@@ -245,7 +418,7 @@ val Passenger_Route = PA_Route.sequence {
     val B340_fwd = node(B340) {
         onEnter {
             // After tunnel on the way up
-            after(AM_Timer_B340_Up_Horn) then {
+            after (AM_Timer_B340_Up_Horn) then {
                 AM.horn()
             }
         }
@@ -266,14 +439,14 @@ val Passenger_Route = PA_Route.sequence {
 
     val B370_end = node(B370) {
         onEnter {
-            after(4.seconds) then {
+            after (4.seconds) then {
                 // Forward
                 AM.forward(AM_Summit_Speed)
                 AM.f1(On)
-            } and_after(AM_Timer_B370_Forward_Stop) then {
+            } and_after (AM_Timer_B370_Forward_Stop) then {
                 AM.stop()
                 AM.horn()
-            } and_after(AM_Timer_B370_Pause_Delay) then {
+            } and_after (AM_Timer_B370_Pause_Delay) then {
                 // Stopped
                 AM.f1(Off)
                 AM.horn()
@@ -284,7 +457,7 @@ val Passenger_Route = PA_Route.sequence {
 
     val B360_rev = node(B360) {
         onEnter {
-            after(AM_Timer_B360_Full_Reverse) then {
+            after (AM_Timer_B360_Full_Reverse) then {
                 AM.reverse(AM_Full_Speed)
             }
         }
@@ -295,7 +468,7 @@ val Passenger_Route = PA_Route.sequence {
 
     val B330_rev = node(B330) {
         whileOccupied {
-            after(AM_Timer_B330_Down_Speed) then {
+            after (AM_Timer_B330_Down_Speed) then {
                 AM.horn()
                 AM.reverse(AM_Sonora_Speed)
             }
@@ -307,10 +480,10 @@ val Passenger_Route = PA_Route.sequence {
             AM.reverse(AM_Full_Speed)
             // Doppler sound
             AM.f9(On)
-            after(1.seconds) then {
+            after (1.seconds) then {
                 AM.f9(Off)
             }
-            after(AM_Timer_B321_Down_Crossover) then {
+            after (AM_Timer_B321_Down_Crossover) then {
                 AM.horn()
                 AM.f1(On)
                 AM.reverse(AM_Crossover_Speed)
@@ -319,18 +492,27 @@ val Passenger_Route = PA_Route.sequence {
     }
 
     val B503a_rev = node(B503a) {
+        onEnter {
+            AM.horn()
+        }
     }
 
     val B503b_rev = node(B503b) {
         whileOccupied {
-            after(AM_Timer_B503b_Down_Stop) then {
+            after (AM_Timer_B503b_Down_Stop) then {
                 AM.stop()
                 AM.horn()
                 AM.f1(Off)
             } and_after (AM_Timer_Down_Station_Lights_Off) then {
-                // TBD insert ga_event
+                ga_event {
+                    category = "Activation"
+                    action = "Stop"
+                    label = PA_Train.name
+                    user = PA_Start_Counter.toString()
+                }
                 PA_Train = EPA_Train.Freight
                 PA_State = EPA_State.Wait
+            } and_after (PA_Timer_Wait) then {
                 route.activate(PA_Idle_Route)
             }
         }
@@ -343,58 +525,159 @@ val Passenger_Route = PA_Route.sequence {
 }
 
 
+val Freight_Route = PA_Route.sequence {
+    throttle = SP
+    timeout = 60
 
-// --- PA State: Idle
+    // Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
+    val SP_Forward_Speed    = 8.speed
+    val SP_Reverse_Speed    = 4.speed
+    val SP_Station_Speed    = 2.speed
 
-on { PA_State == EPA_State.Idle && PA_Toggle.active } then {
-    AM.sound(On);   AM.light(On)
-    SP.sound(On);   SP.light(On)
-    AM.stop();      SP.stop()
-    AM.repeat(2.seconds);
-    SP.repeat(2.seconds)
-    PA_Fn_Release_Route()
-    PA_State = EPA_State.Station
-}
+    val SP_Sound_Started    = 2.seconds
+    val SP_Timer_Up_Slow    = 40.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+    val SP_Timer_Up_Stop    = 12.seconds    // Time on slow down before stop
+    val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
+    val SP_Timer_Reverse_Horn = 2.seconds
+    val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+    val SP_Timer_Down_Stop  = 16.seconds    // Time on slow down before stop.
+    val SP_Timer_Down_Off   = 20.seconds
+    val SP_Sound_Stopped    = 2.seconds
 
-on { PA_Toggle } then {
-    AM.repeat(2.seconds)
-    SP.repeat(2.seconds)
-}
-
-on { !PA_Toggle } then {
-    AM.repeat(2.seconds)
-    SP.repeat(2.seconds)
-    AM.f1(Off)
-    SP.f1(Off)
-}
-
-// --- PA State: Wait (to station)
-
-val PA_Timer_Wait = 60.seconds  // 1 minute
-
-on { PA_State == EPA_State.Wait } then {
-    after(PA_Timer_Wait) then {
-        PA_State = EPA_State.Station
+    fun SP_Fn_Acquire_Route() {
+        T311.normal()
+        T320.normal()
+        T321.normal()
+        T322.normal()
+        T326.normal()
+        T330.reverse()
+        T504.normal()
     }
+
+    onRecover {
+        PA_Route.activate(PA_Recover_Route)
+    }
+
+    onActivate {
+        PA_State = EPA_State.Running
+        PA_send_start_ga_event()
+        exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\n\nFreight"
+        json_event {
+            key1 = "Depart"
+            key2 = "Freight"
+        }
+    }
+
+    val B311_start = node(B311) {
+        whileOccupied {
+            SP.light(On)
+            SP.f5(On)
+            SP.sound(On)
+            AM.sound(Off)
+            after (SP_Sound_Started) then {
+                SP.horn()
+                SP.light(On)
+                SP.f1(Off)
+                SP.forward(SP_Forward_Speed)
+                SP_Fn_Acquire_Route()
+            } and_after (2.seconds) then {
+                SP.horn()
+            }
+        }
+    }
+
+    val B321_fwd = node(B321) {
+        onEnter {
+            SP.forward(SP_Forward_Speed)
+            after (SP_Timer_Up_Slow) then {
+                SP.horn()
+                SP.f1(On)
+                SP.forward(SP_Station_Speed)
+            } and_after (SP_Timer_Up_Stop) then {
+                // Stop in B321. Normal case is to *not* go into B330.
+                SP.horn()
+                SP.stop()
+                SP.f1(Off)
+                // This is the long stop at the station.
+            } and_after (SP_Timer_Up_Reverse) then {
+                // Start reversing after the long stop.
+                SP.horn()
+                SP.reverse(SP_Reverse_Speed)
+                SP.f1(On)
+            } and_after (SP_Timer_Reverse_Horn) then {
+                SP.horn()
+            } and_after (SP_Timer_Reverse_Horn) then {
+                SP.horn()
+                SP.f1(Off)
+                // Normal case: continue to B311_rev.
+            }
+        }
+
+        whileOccupied {
+            // PA_Toggle off reverts train to down but not in the start block.
+            // (we can't change the timer to stop in block B311 if we're already in it).
+            if (!PA_Toggle) {
+                SP.stop()
+            }
+        }
+    }
+
+    val B330_fwd = node(B330) {
+        // Error case: we should never reach block B330.
+        // If we do, reverse and act on B321_rev
+        onEnter {
+            SP.reverse(SP_Reverse_Speed)
+            SP.f1(On)
+        }
+    }
+
+    val B321_rev = node(B321) {
+        // Error case coming back to B321 after overshooting in B330
+        onEnter {
+            SP.horn()
+            after (SP_Timer_Reverse_Horn) then {
+                SP.horn()
+            }
+        }
+    }
+
+    val B311_rev = node(B311) {
+        onEnter {
+            after (SP_Timer_Down_Slow) then {
+                SP.f1(On)
+            } and_after (SP_Timer_Down_Stop) then {
+                SP.f1(Off)
+                SP.horn()
+                SP.stop()
+            } and_after (SP_Timer_Down_Off) then {
+                SP.horn()
+                SP.f1(Off)
+                SP.f1(Off)
+                SP.light(Off)
+                SP.f5(Off)
+            } and_after (SP_Sound_Stopped) then {
+                SP.sound(Off)
+                AM.sound(On)
+                ga_event {
+                    category = "Activation"
+                    action = "Stop"
+                    label = PA_Train.name
+                    user = PA_Start_Counter.toString()
+                }
+                PA_Train = EPA_Train.Passenger
+                PA_State = EPA_State.Wait
+            } and_after (PA_Timer_Wait) then {
+                route.activate(PA_Idle_Route)
+            }
+        }
+    }
+
+    sequence = listOf(B311_start, B321_fwd, B311_rev)
+    branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
 }
 
+val PA_Recover_Route = PA_Route.sequence {
 
-// --- PA State: Station
-
-// Departure from Station (going up)
-// REQUIRES both trains stopped.
-on { PA_Train == EPA_Train.Passenger
-        && PA_State == EPA_State.Station
-        && AM.stopped && SP.stopped
-        && PA_Toggle.active
-        && AIU_Motion.active } then {
-    PA_State = EPA_State.Running
-    PA_Route.activate(Passenger_Route)
-}
-
-on { PA_State == EPA_State.Station && !PA_Toggle } then {
-    PA_State = EPA_State.Idle
-    PA_Route.activate(PA_Idle_Route)
 }
 
 
@@ -441,6 +724,20 @@ enum class EBL_State { Ready, Wait, Running, Recover }
 var BL_State = EBL_State.Ready
 
 var BL_Start_Counter = 0
+
+
+on { BL_Toggle } then {
+    BL.repeat(2.seconds)
+    BL.light(Off)
+}
+
+on { !BL_Toggle } then {
+    BL.repeat(0.seconds)
+    BL.light(Off)
+    BL_bell(Off)
+    BL_sound(Off)
+    BL_gyro(Off)
+}
 
 on { BL_Toggle.active } then {
     ga_event {
@@ -501,6 +798,7 @@ val BL_Route = activeRoute {
 
     onError {
         // --- BL State: Error
+        // The current route will trigger the corresponding BL_Recover_Route.
         BL.repeat(1.seconds)
         BL.stop()
         BL_sound(Off)
@@ -542,7 +840,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_sound(On)
         BL.horn()
         BL_bell(On)
-        after(BL_Timer_Start_Delay) then {
+        after (BL_Timer_Start_Delay) then {
             BL_bell(Off)
             BL.horn()
             BL.forward(BL_Speed_Station)
@@ -575,21 +873,21 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             BL.horn()
             BL_bell(On)
-            after(BL_Timer_RevStation_Stop) then {
+            after (BL_Timer_RevStation_Stop) then {
                 // Toggle Stop/Reverse/Stop to turn off the Reverse front light.
                 // Next event should still be the BLReverse Stopped one.
                 BL.stop()
                 BL.horn()
                 BL.reverse(1.speed)
                 BL.stop()
-            } and_after(BL_Timer_Bell_Delay) then {
+            } and_after (BL_Timer_Bell_Delay) then {
                 BL_bell(Off)
-            } and_after(BL_Timer_RevStation_Pause) then {
+            } and_after (BL_Timer_RevStation_Pause) then {
                 BL_bell(On)
                 BL.horn()
-            } and_after(5.seconds) then {
+            } and_after (5.seconds) then {
                 BL.reverse(BL_Speed)
-            } and_after(BL_Timer_Bell_Delay) then {
+            } and_after (BL_Timer_Bell_Delay) then {
                 BL.light(On)
                 BL_bell(Off)
                 BL_sound(On)
@@ -609,10 +907,10 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL_bell(On)
             T324.normal()
             BL.reverse(BL_Speed_Station)
-            after(BL_Timer_Station_Stop) then {
+            after (BL_Timer_Station_Stop) then {
                 BL.stop()
                 BL.horn()
-            } and_after(BL_Timer_Station_Rev3) then {
+            } and_after (BL_Timer_Station_Rev3) then {
                 BL.horn()
                 BL.reverse(BL_Speed_Station)
             }
@@ -623,12 +921,12 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             // We went too far, but it's not a problem / not an error.
             BL.stop()
-            after(3.seconds) then {
+            after (3.seconds) then {
                 BL_bell(Off)
-            } and_after(2.seconds) then {
+            } and_after (2.seconds) then {
                 BL_sound(Off)
                 BL_State = EBL_State.Wait
-            } and_after(BL_Timer_Wait) then {
+            } and_after (BL_Timer_Wait) then {
                 BL_Route.activate(BL_Idle_Route)
             }
         }
