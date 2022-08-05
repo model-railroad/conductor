@@ -32,27 +32,13 @@ import org.w3c.dom.svg.SVGDocument
 import org.w3c.dom.svg.SVGElement
 import org.w3c.dom.svg.SVGStylable
 
-import javax.swing.Box
-import javax.swing.BoxLayout
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JFrame
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
-import javax.swing.JTextField
-import javax.swing.text.BadLocationException
-import javax.swing.text.DefaultStyledDocument
-import javax.swing.text.JTextComponent
-import javax.swing.text.Style
-import javax.swing.text.StyleConstants
-import javax.swing.text.StyleContext
-import javax.swing.text.StyledDocument
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.FlowLayout
+import javax.swing.*
+import javax.swing.text.*
+import java.awt.*
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.util.List
+import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 
 /*
@@ -64,15 +50,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * https://docs.oracle.com/javase/tutorial/uiswing/layout/visual.html
  */
 
-import java.util.concurrent.atomic.AtomicReference
-
-import static java.awt.GridBagConstraints.BOTH
-import static java.awt.GridBagConstraints.HORIZONTAL
-import static java.awt.GridBagConstraints.NONE
-import static java.awt.GridBagConstraints.VERTICAL
-import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
-import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+import static java.awt.GridBagConstraints.*
+import static javax.swing.ScrollPaneConstants.*
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class StatusWindow2 {
@@ -93,6 +72,7 @@ class StatusWindow2 {
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
     private final List<Runnable> mUpdaters = new ArrayList<>()
+    private final def midColumnW = 125
 
     void open(IWindowCallback windowCallback) {
         mWindowCallback = windowCallback
@@ -222,15 +202,15 @@ class StatusWindow2 {
         mSwingBuilder.edt {
             def p = mLogField.caretPosition
             mLogField.text = logText
-            mLogField.caretPosition = p
+            mLogField.caretPosition = Math.min(p, logText.size())
         }
     }
 
     void updateSimuLog(String logText) {
         mSwingBuilder.edt {
-            def p = mLogField.caretPosition
+            def p = mLogSimul.caretPosition
             mLogSimul.text = logText
-            mLogSimul.caretPosition = p
+            mLogSimul.caretPosition = Math.min(p, logText.size())
         }
     }
 
@@ -245,7 +225,8 @@ class StatusWindow2 {
             if (VERBOSE) println(TAG + "registerThrottles # " + throttles.size())
             mThrottlePanel.removeAll()
             if (throttles.empty) {
-                mThrottlePanel.add(Box.createRigidArea(new Dimension(5, 40)))
+                // Box Dimensions = MinSize / PreferredSize / MaxSize = given size.
+                mThrottlePanel.add(Box.createRigidArea(new Dimension(midColumnW, 45)))
             } else {
                 for (final def throttle in throttles) {
                     addThrottle(throttle)
@@ -261,7 +242,7 @@ class StatusWindow2 {
                 opaque: false,
                 editable: false)
         mThrottlePanel.add(wx)
-        mThrottlePanel.setMinimumSize(new Dimension(5, 40))
+        mThrottlePanel.setMinimumSize(new Dimension(midColumnW, 40))
         mThrottlePanel.setBackground(Color.LIGHT_GRAY)
 
         StyleContext context = new StyleContext()
