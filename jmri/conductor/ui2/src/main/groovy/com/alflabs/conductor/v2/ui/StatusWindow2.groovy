@@ -187,19 +187,19 @@ class StatusWindow2 {
     }
 
     void updatePause(boolean isPaused) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             mPauseButton.text = isPaused ? "Continue" : "Pause"
         }
     }
 
     void updateScriptName(String scriptName) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             mScriptNameField.text = scriptName
         }
     }
 
     void updateMainLog(String logText) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             def p = mLogField.caretPosition
             mLogField.text = logText
             mLogField.caretPosition = Math.min(p, logText.size())
@@ -207,7 +207,7 @@ class StatusWindow2 {
     }
 
     void updateSimuLog(String logText) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             def p = mLogSimul.caretPosition
             mLogSimul.text = logText
             mLogSimul.caretPosition = Math.min(p, logText.size())
@@ -215,13 +215,13 @@ class StatusWindow2 {
     }
 
     void clearUpdates() {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             mUpdaters.clear()
         }
     }
 
     void registerThrottles(List<IThrottleDisplayAdapter> throttles) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             if (VERBOSE) println(TAG + "registerThrottles # " + throttles.size())
             mThrottlePanel.removeAll()
             if (throttles.empty) {
@@ -290,7 +290,7 @@ class StatusWindow2 {
             List<ISensorDisplayAdapter> sensors,
             List<IActivableDisplayAdapter> blocks,
             List<IActivableDisplayAdapter> turnouts) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             if (VERBOSE) println(TAG + "register UI Updates.")
             mSensorPanel.removeAll()
 
@@ -346,7 +346,7 @@ class StatusWindow2 {
 
 
     void updateUI() {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             for (final def updater in mUpdaters) {
                 updater.run()
             }
@@ -356,7 +356,7 @@ class StatusWindow2 {
     // Fill SVG using svgDocument (as text).
     // If svgDocument is null or empty, rely only on mapUrl.
     void displaySvgMap(String svgDocument, URI mapUrl) {
-        mSwingBuilder.edt {
+        mSwingBuilder.doLater {
             mModifSvgQueue.clear()
             mBlockColorMap.clear()
             // Per documentation in JSVGComponentListener, this is invoked from a background thread.
@@ -373,7 +373,7 @@ class StatusWindow2 {
                             // Note: This is called on the SVG UpdateManager thread.
                             def target = event.getTarget()
                             if (target instanceof SVGElement) {
-                                mSwingBuilder.edt {
+                                mSwingBuilder.doLater {
                                     mWindowCallback.onWindowSvgClick(((SVGElement) target).getId())
                                 }
                             }

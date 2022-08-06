@@ -248,7 +248,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         }
 
         if (mWinUpdateThread != null) {
-            // TODO sometimes the win update threads is still stuck on the Swing invokeAndWait.
+            // Sometimes the win update threads is still stuck on the Swing invokeAndWait;
+            // use invokeLater for most UI updates instead.
             try {
                 mWinUpdateThread.join();
                 log("Window Update Thread terminated");
