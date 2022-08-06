@@ -210,6 +210,27 @@ val PA_Timer_Wait = 60.seconds  // 1 minute
 val AM = throttle(8749) named "AM"     // Full Amtrak route
 val SP = throttle(1072) named "SP"     // "Short Passenger" (now Freight) on limited Amtrak route
 
+fun AM_Fn_Acquire_Route() {
+    T311.reverse()
+    T320.normal()
+    T321.normal()
+    T322.normal()
+    T326.normal()
+    T330.reverse()
+    T370.normal()
+    T504.normal()
+}
+
+fun SP_Fn_Acquire_Route() {
+    T311.normal()
+    T320.normal()
+    T321.normal()
+    T322.normal()
+    T326.normal()
+    T330.reverse()
+    T504.normal()
+}
+
 fun PA_Fn_Release_Route() {
     T311.normal()
     T320.normal()
@@ -236,6 +257,8 @@ val PA_Route = activeRoute {
             user = "Staff"
         }
         exportedVars.RTAC_PSA_Text = "{b:red}{c:white}Automation ERROR"
+
+        PA_Fn_Try_Recover_Route()
     }
 }
 
@@ -280,7 +303,7 @@ on { PA_State == EPA_State.Ready && !PA_Toggle } then {
     PA_Fn_Release_Route()
 }
 
-fun PA_send_start_ga_event() {
+fun PA_Fn_Send_Start_GaEvent() {
     PA_Start_Counter += 1
     ga_page {
         url = exportedVars.GA_URL
@@ -296,49 +319,39 @@ fun PA_send_start_ga_event() {
     // reset_timers("PA", "AM", "SP") -- obsolete
 }
 
+val AM_Leaving_Speed        = 6.speed
+val AM_Station_Speed        = 12.speed
+val AM_Summit_Speed         = 6.speed
+val AM_Summit_Bridge_Speed  = 4.speed
+val AM_Sonora_Speed         = 8.speed
+val AM_Crossover_Speed      = 4.speed
+val AM_Full_Speed           = 12.speed
+
+val AM_Delayed_Horn              = 2.seconds
+val AM_Leaving_To_Full_Speed     = 15.seconds
+val AM_Timer_B321_Up_Doppler     = 27.seconds
+val AM_Timer_B330_Up_Resume      = 12.seconds
+val AM_Timer_B340_Up_Horn        = 5.seconds
+val AM_Timer_B370_Forward_Stop   = 17.seconds  // time running at AM_Summit_Speed before stopping
+val AM_Timer_B370_Pause_Delay    = 16.seconds
+val AM_Timer_B360_Full_Reverse   = 12.seconds
+val AM_Timer_B330_Down_Speed     = 8.seconds
+val AM_Timer_B321_Down_Crossover = 27.seconds
+val AM_Timer_B503b_Down_Stop     = 20.seconds
+val AM_Timer_Down_Station_Lights_Off = 10.seconds
+
 val Passenger_Route = PA_Route.sequence {
     throttle = AM
     timeout = 60 // 1 minute
 
-    val AM_Leaving_Speed        = 6.speed
-    val AM_Station_Speed        = 12.speed
-    val AM_Summit_Speed         = 6.speed
-    val AM_Summit_Bridge_Speed  = 4.speed
-    val AM_Sonora_Speed         = 8.speed
-    val AM_Crossover_Speed      = 4.speed
-    val AM_Full_Speed           = 12.speed
-
-    val AM_Delayed_Horn              = 2.seconds
-    val AM_Leaving_To_Full_Speed     = 15.seconds
-    val AM_Timer_B321_Up_Doppler     = 27.seconds
-    val AM_Timer_B330_Up_Resume      = 12.seconds
-    val AM_Timer_B340_Up_Horn        = 5.seconds
-    val AM_Timer_B370_Forward_Stop   = 17.seconds  // time running at AM_Summit_Speed before stopping
-    val AM_Timer_B370_Pause_Delay    = 16.seconds
-    val AM_Timer_B360_Full_Reverse   = 12.seconds
-    val AM_Timer_B330_Down_Speed     = 8.seconds
-    val AM_Timer_B321_Down_Crossover = 27.seconds
-    val AM_Timer_B503b_Down_Stop     = 20.seconds
-    val AM_Timer_Down_Station_Lights_Off = 10.seconds
-
-    fun AM_Fn_Acquire_Route() {
-        T311.reverse()
-        T320.normal()
-        T321.normal()
-        T322.normal()
-        T326.normal()
-        T330.reverse()
-        T370.normal()
-        T504.normal()
-    }
-
     onRecover {
-        PA_Route.activate(PA_Recover_Route)
+        // no-op
     }
 
     onActivate {
+        PA_Train = EPA_Train.Passenger
         PA_State = EPA_State.Running
-        PA_send_start_ga_event()
+        PA_Fn_Send_Start_GaEvent()
         exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
         json_event {
             key1 = "Depart"
@@ -476,6 +489,9 @@ val Passenger_Route = PA_Route.sequence {
     }
 
     val B321_rev = node(B321) {
+        onEnter {
+            AM_Fn_Acquire_Route()
+        }
         whileOccupied {
             AM.reverse(AM_Full_Speed)
             // Doppler sound
@@ -525,42 +541,33 @@ val Passenger_Route = PA_Route.sequence {
 }
 
 
+// Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
+val SP_Forward_Speed    = 8.speed
+val SP_Reverse_Speed    = 4.speed
+val SP_Station_Speed    = 2.speed
+
+val SP_Sound_Started    = 2.seconds
+val SP_Timer_Up_Slow    = 40.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+val SP_Timer_Up_Stop    = 12.seconds    // Time on slow down before stop
+val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
+val SP_Timer_Reverse_Horn = 2.seconds
+val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+val SP_Timer_Down_Stop  = 16.seconds    // Time on slow down before stop.
+val SP_Timer_Down_Off   = 20.seconds
+val SP_Sound_Stopped    = 2.seconds
+
 val Freight_Route = PA_Route.sequence {
     throttle = SP
     timeout = 60
 
-    // Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
-    val SP_Forward_Speed    = 8.speed
-    val SP_Reverse_Speed    = 4.speed
-    val SP_Station_Speed    = 2.speed
-
-    val SP_Sound_Started    = 2.seconds
-    val SP_Timer_Up_Slow    = 40.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
-    val SP_Timer_Up_Stop    = 12.seconds    // Time on slow down before stop
-    val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
-    val SP_Timer_Reverse_Horn = 2.seconds
-    val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-    val SP_Timer_Down_Stop  = 16.seconds    // Time on slow down before stop.
-    val SP_Timer_Down_Off   = 20.seconds
-    val SP_Sound_Stopped    = 2.seconds
-
-    fun SP_Fn_Acquire_Route() {
-        T311.normal()
-        T320.normal()
-        T321.normal()
-        T322.normal()
-        T326.normal()
-        T330.reverse()
-        T504.normal()
-    }
-
     onRecover {
-        PA_Route.activate(PA_Recover_Route)
+        // no-op
     }
 
     onActivate {
+        PA_Train = EPA_Train.Freight
         PA_State = EPA_State.Running
-        PA_send_start_ga_event()
+        PA_Fn_Send_Start_GaEvent()
         exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\n\nFreight"
         json_event {
             key1 = "Depart"
@@ -676,8 +683,212 @@ val Freight_Route = PA_Route.sequence {
     branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
 }
 
-val PA_Recover_Route = PA_Route.sequence {
+fun PA_Fn_Try_Recover_Route() {
+    if (!PA_Toggle) {
+        PA_Route.activate(PA_Idle_Route)
+        return
+    }
 
+    val PA = Passenger_Route as IRouteSequence
+    val FR = Freight_Route as IRouteSequence
+    val PA_start = PA.sequence.first().block.active
+    val FR_start = FR.sequence.first().block.active
+    val PA_occup = PA.sequence.subList(1, PA.sequence.size).count { it.block.active }
+    val FR_occup = FR.sequence.subList(1, PA.sequence.size).count { it.block.active }
+    val PA_total = PA.sequence.count { it.block.active }
+    val FR_total = FR.sequence.count { it.block.active }
+
+    if (!PA_start && FR_start && PA_occup == 1) {
+        // PA train is likely somewhere on its route... try to recover that one.
+        PA_Route.activate(PA_Recover_Passenger_Route)
+
+    } else if (PA_start && !FR_start && FR_occup == 1) {
+        // FR train is likely somewhere on its route... try to recover that one.
+        PA_Route.activate(PA_Recover_Freight_Route)
+
+    } else if (!PA_start && FR_start && PA_occup == 0) {
+        // PA train is either missing or on a dead block.
+        // In that case we can still run the FR route because it's a subset of the large route.
+        PA_Route.activate(Freight_Route)
+
+    } else if (PA_total > 1 || FR_total > 1) {
+        // We have more than one block occupied on the route. This is not recoverable
+        // but that's a case special enough we can ask for the track to be cleared.
+
+        exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track"
+        ga_event {
+            category = "Automation"
+            action = "Warning"
+            label = "Passenger_Route"
+            user = "Staff"
+        }
+    }
+}
+
+val PA_Recover_Passenger_Route = PA_Route.sequence {
+    throttle = AM
+    timeout = 60 // 1 minute
+
+    fun move() {
+        AM.f1(On)
+        AM.sound(On)
+        AM.horn()
+    }
+
+    val B370_rev = node(B370) {
+        onEnter {
+            move()
+            AM.reverse(AM_Summit_Speed)
+        }
+    }
+
+    val B360_rev = node(B360) {
+        onEnter {
+            move()
+            AM.reverse(AM_Summit_Speed)
+            after (AM_Timer_B360_Full_Reverse) then {
+                AM.reverse(AM_Full_Speed)
+            }
+        }
+    }
+
+    val B340_rev = node(B340) {
+        onEnter {
+            move()
+            AM.reverse(AM_Full_Speed)
+        }
+    }
+
+    val B330_rev = node(B330) {
+        onEnter {
+            move()
+            AM.reverse(AM_Sonora_Speed)
+        }
+    }
+
+    val B321_rev = node(B321) {
+        onEnter {
+            AM_Fn_Acquire_Route()
+            move()
+            AM.reverse(AM_Full_Speed)
+            after (AM_Timer_B321_Down_Crossover) then {
+                AM.horn()
+                AM.f1(On)
+                AM.reverse(AM_Crossover_Speed)
+            }
+        }
+    }
+
+    val B503a_rev = node(B503a) {
+        onEnter {
+            move()
+            AM.reverse(AM_Crossover_Speed)
+        }
+    }
+
+    val B503b_rev = node(B503b) {
+        onEnter {
+            // Note: this is the normal start block and is never
+            // a recover block. We do not set any speed on purpose.
+            after (AM_Timer_B503b_Down_Stop) then {
+                AM.stop()
+                AM.horn()
+                AM.f1(Off)
+            } and_after (5.seconds) then {
+                AM.sound(Off)
+            } and_after (2.seconds) then {
+                Passenger_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        PA_State = EPA_State.Recover
+        PA_Train = EPA_Train.Passenger
+        if (B370.active) {
+            PA_Route.active.start_node(B370_rev)
+        } else if (B360.active) {
+            PA_Route.active.start_node(B360_rev)
+        } else if (B340.active) {
+            PA_Route.active.start_node(B340_rev)
+        } else if (B330.active) {
+            PA_Route.active.start_node(B330_rev)
+        } else if (B321.active) {
+            PA_Route.active.start_node(B321_rev)
+        } else if (B503a.active) {
+            PA_Route.active.start_node(B503a_rev)
+        } else if (B503b.active) {
+            PA_Route.active.start_node(B503b_rev)
+        }
+    }
+
+    onRecover {
+        // We cannot recover from an error during the recover route.
+        if (PA_Toggle.active) {
+            SP.stop()
+        }
+    }
+
+    sequence = listOf(
+        B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+}
+
+val PA_Recover_Freight_Route = PA_Route.sequence {
+    throttle = SP
+    timeout = 60 // 1 minute
+
+    fun move() {
+        SP.f1(On)
+        SP.sound(On)
+        SP.horn()
+        SP.reverse(SP_Reverse_Speed)
+    }
+
+    val B321_rev = node(B321) {
+        onEnter {
+            SP_Fn_Acquire_Route()
+            move()
+        }
+    }
+
+    val B311_rev = node(B311) {
+        onEnter {
+            // Note: this is the normal start block and is never
+            // a recover block. We do not set any speed on purpose.
+            SP_Fn_Acquire_Route()
+            after (SP_Timer_Down_Slow) then {
+                SP.f1(On)
+            } and_after (SP_Timer_Down_Stop) then {
+                SP.f1(Off)
+                SP.horn()
+                SP.stop()
+            } and_after (5.seconds) then {
+                SP.f1(Off)
+                SP.sound(Off)
+            } and_after (2.seconds) then {
+                Freight_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        PA_State = EPA_State.Recover
+        PA_Train = EPA_Train.Freight
+        if (B321.active) {
+            PA_Route.active.start_node(B321_rev)
+        } else if (B311.active) {
+            PA_Route.active.start_node(B311_rev)
+        }
+    }
+
+    onRecover {
+        // We cannot recover from an error during the recover route.
+        if (PA_Toggle.active) {
+            SP.stop()
+        }
+    }
+
+    sequence = listOf(B321_rev, B311_rev)
 }
 
 
@@ -1009,11 +1220,12 @@ val BL_Recover_Route = BL_Route.sequence {
 
     onRecover {
         // We cannot recover from an error during the recover route.
-        BL.stop()
+        if (BL_Toggle.active) {
+            BL.stop()
+        }
     }
 
     sequence = listOf(BLReverse_rev, BLTunnel_rev, BLStation_rev, BLParked_rev)
-
 }
 
 
