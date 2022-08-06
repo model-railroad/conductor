@@ -66,6 +66,7 @@ internal class RouteSequence(
 ) : RouteBase(logger, owner, builder), IRouteSequence, IRouteManager {
     private val TAG = javaClass.simpleName
     override val throttle = builder.throttle
+    override val sequence = builder.sequence
     private var startNode: INode? = null
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)

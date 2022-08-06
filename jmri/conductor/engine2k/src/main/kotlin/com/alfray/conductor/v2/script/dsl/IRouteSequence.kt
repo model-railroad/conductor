@@ -27,6 +27,9 @@ interface IRouteSequence : IRoute {
     /** The [IThrottle] operating on this route. */
     val throttle: IThrottle
 
+    /** The [INode] main sequence provided to the Route Sequence builder. */
+    val sequence: List<INode>
+
     /** Internal Converts the route graph into a Simulator route graph. */
     fun toSimulGraph(): SimulRouteGraph
     // TODO IRouteSequence.toSimulGraph should not be exposed in the DSL.
