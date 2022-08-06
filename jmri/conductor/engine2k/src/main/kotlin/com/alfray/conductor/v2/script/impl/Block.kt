@@ -130,7 +130,11 @@ internal class Block @AssistedInject constructor(
     }
 
     override fun toString(): String {
-        return "Block($name)"
+        var s = name
+        if (s != systemName) {
+            s = "$s [$systemName]"
+        }
+        return if (_active) "<$s>" else "{$s}"
     }
 
     fun toSimulRouteBlock(reversal: Boolean?): SimulRouteBlock =

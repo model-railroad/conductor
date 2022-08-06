@@ -215,7 +215,8 @@ class ExecEngine2k @Inject internal constructor(
             try {
                 action.invoke()
             } catch (t: Throwable) {
-                logger.d(TAG, "Eval action failed", t)
+                val stackTrace = t.stackTraceToString()
+                logger.d(TAG, "Eval action failed: $t\n$stackTrace")
             }
         }
         currentContext.resetContext()

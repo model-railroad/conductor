@@ -689,31 +689,39 @@ fun PA_Fn_Try_Recover_Route() {
         return
     }
 
-    val PA = Passenger_Route as IRouteSequence
-    val FR = Freight_Route as IRouteSequence
-    val PA_start = PA.sequence.first().block.active
-    val FR_start = FR.sequence.first().block.active
-    val PA_occup = PA.sequence.subList(1, PA.sequence.size).count { it.block.active }
-    val FR_occup = FR.sequence.subList(1, PA.sequence.size).count { it.block.active }
-    val PA_total = PA.sequence.count { it.block.active }
-    val FR_total = FR.sequence.count { it.block.active }
+    val PA_blocks = (Passenger_Route as IRouteSequence).sequence.map { it.block }.distinct()
+    val FR_blocks = (Freight_Route as IRouteSequence).sequence.map { it.block }.distinct()
+    val PA_start = PA_blocks.first().active
+    val FR_start = FR_blocks.first().active
+    val PA_occup = PA_blocks.subList(1, PA_blocks.size).count { it.active }
+    val FR_occup = FR_blocks.subList(1, FR_blocks.size).count { it.active }
+    val PA_total = PA_blocks.count { it.active }
+    val FR_total = FR_blocks.count { it.active }
 
     if (!PA_start && FR_start && PA_occup == 1) {
+        // FR train is accounted for, where expected.
         // PA train is likely somewhere on its route... try to recover that one.
+        println("@@ PA Recovery: Recover Passenger")
         PA_Route.activate(PA_Recover_Passenger_Route)
 
     } else if (PA_start && !FR_start && FR_occup == 1) {
+        // PA train is accounted for, where expected.
         // FR train is likely somewhere on its route... try to recover that one.
+        println("@@ PA Recovery: Recover Freight")
         PA_Route.activate(PA_Recover_Freight_Route)
 
     } else if (!PA_start && FR_start && PA_occup == 0) {
         // PA train is either missing or on a dead block.
         // In that case we can still run the FR route because it's a subset of the large route.
+        println("@@ PA Recovery: Ignore Passenger, Activate Freight")
         PA_Route.activate(Freight_Route)
 
     } else if (PA_total > 1 || FR_total > 1) {
         // We have more than one block occupied on the route. This is not recoverable
         // but that's a case special enough we can ask for the track to be cleared.
+        val PA_names = PA_blocks.filter { it.active }
+        val FR_names = FR_blocks.filter { it.active }
+        println("@@ PA Recovery: Track occupied (Passenger: $PA_names, Freight: $FR_names)")
 
         exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track"
         ga_event {
@@ -722,6 +730,8 @@ fun PA_Fn_Try_Recover_Route() {
             label = "Passenger_Route"
             user = "Staff"
         }
+    } else {
+        println("@@ PA Recovery: Unknown situation. Cannot recover.")
     }
 }
 
@@ -797,7 +807,11 @@ val PA_Recover_Passenger_Route = PA_Route.sequence {
             } and_after (5.seconds) then {
                 AM.sound(Off)
             } and_after (2.seconds) then {
-                Passenger_Route.activate()
+                if (PA_Toggle.active) {
+                    Passenger_Route.activate()
+                } else {
+                    PA_Idle_Route.activate()
+                }
             }
         }
     }
@@ -866,7 +880,11 @@ val PA_Recover_Freight_Route = PA_Route.sequence {
                 SP.f1(Off)
                 SP.sound(Off)
             } and_after (2.seconds) then {
-                Freight_Route.activate()
+                if (PA_Toggle.active) {
+                    Freight_Route.activate()
+                } else {
+                    PA_Idle_Route.activate()
+                }
             }
         }
     }
