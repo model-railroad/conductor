@@ -21,8 +21,9 @@ package com.alfray.conductor.v2.script.dsl
 /** DSL script interface for a JMRI sensor. */
 interface ISensor : IActive, IVarName {
     /**
-     * Changes the internal state and the 'fake' JMRI state (used during simulation).
-     * This has no effect on a real JMRI server.
+     * Changes the internal state of the sensor, and propagates that state to the JMRI sensor.
+     * This only affects the "virtual" sensor (e.g. the internal state for JMRI or Conductor)
+     * and does not affect the real backing sensor (e.g. NCE AIU card, etc.)
      */
     fun active(isActive: Boolean)
 

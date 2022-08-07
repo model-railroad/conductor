@@ -387,9 +387,7 @@ val Passenger_Route = PA_Route.sequence {
             // Wait for train to have cleared up T320 before switching to full speed.
             // The problem is that B321 activates as train hits diverted leg of turnout.
             after (AM_Leaving_To_Full_Speed) then {
-                if (PA_Toggle.active) {
-                    AM.forward(AM_Full_Speed)
-                }
+                AM.forward(AM_Full_Speed)
             }
 
             // Mid_Station doppler on the way up
@@ -397,14 +395,6 @@ val Passenger_Route = PA_Route.sequence {
                 AM.f9(On)
             } and_after (1.seconds) then {
                 AM.f9(Off)
-            }
-        }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
             }
         }
     }
@@ -418,14 +408,6 @@ val Passenger_Route = PA_Route.sequence {
                 AM.horn()
             }
         }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
-            }
-        }
     }
 
     val B340_fwd = node(B340) {
@@ -433,14 +415,6 @@ val Passenger_Route = PA_Route.sequence {
             // After tunnel on the way up
             after (AM_Timer_B340_Up_Horn) then {
                 AM.horn()
-            }
-        }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but only on specific "safe" blocks
-            // (e.g. not in B503a/B503b because stop distances puts us in the next block)
-            if (!PA_Toggle) {
-                AM.reverse(AM_Summit_Speed)
             }
         }
     }
@@ -619,14 +593,6 @@ val Freight_Route = PA_Route.sequence {
                 // Normal case: continue to B311_rev.
             }
         }
-
-        whileOccupied {
-            // PA_Toggle off reverts train to down but not in the start block.
-            // (we can't change the timer to stop in block B311 if we're already in it).
-            if (!PA_Toggle) {
-                SP.stop()
-            }
-        }
     }
 
     val B330_fwd = node(B330) {
@@ -723,15 +689,19 @@ fun PA_Fn_Try_Recover_Route() {
         val FR_names = FR_blocks.filter { it.active }
         println("@@ PA Recovery: Track occupied (Passenger: $PA_names, Freight: $FR_names)")
 
-        exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track"
+        val names = PA_names.plus(FR_names).map { it.name }.distinct()
+        exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track $names"
         ga_event {
             category = "Automation"
             action = "Warning"
-            label = "Passenger_Route"
+            label = "Passenger"
             user = "Staff"
         }
+        PA_Route.activate(PA_Idle_Route)
+
     } else {
         println("@@ PA Recovery: Unknown situation. Cannot recover.")
+        PA_Route.activate(PA_Idle_Route)
     }
 }
 
@@ -839,7 +809,8 @@ val PA_Recover_Passenger_Route = PA_Route.sequence {
     onRecover {
         // We cannot recover from an error during the recover route.
         if (PA_Toggle.active) {
-            SP.stop()
+            AM.stop()
+            PA_Idle_Route.activate()
         }
     }
 
@@ -903,6 +874,7 @@ val PA_Recover_Freight_Route = PA_Route.sequence {
         // We cannot recover from an error during the recover route.
         if (PA_Toggle.active) {
             SP.stop()
+            PA_Idle_Route.activate()
         }
     }
 
@@ -943,7 +915,7 @@ val CAB = throttle(2552) named "Cab"
 
 fun BL_bell (on: Boolean) { BL.f1(on)  }
 fun BL_sound(on: Boolean) { BL.f8(!on) }
-fun BL_gyro (on: Boolean) { BL.f5(on) }
+fun BL_gyro (on: Boolean) { BL.f5(on)  }
 
 val BL_Speed = 10.speed
 val BL_Speed_Station = 6.speed

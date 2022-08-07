@@ -403,7 +403,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         outStatus.append("Connections: ").append(kvServer.getNumConnections()).append('\n');
         for (String key : kvServer.getKeys()) {
             String value = kvServer.getValue(key);
-            if (value.startsWith("{") && value.length() > 50) {
+            if (value.contains("[{") && value.length() > 50) {
                 // Shorten long JSON data
                 value = value.substring(0, 50) + "...}";
             }
