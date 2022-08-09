@@ -83,11 +83,18 @@ class BlockTest {
     fun testName() {
         assertThat(block.systemName).isEqualTo("jmriName")
         assertThat(block.name).isEqualTo("jmriName")
-        assertThat(block.toString()).isEqualTo("Block(jmriName)")
+        assertThat(block.toString()).isEqualTo("{jmriName}")
 
+        block.active(true)
+        assertThat(block.toString()).isEqualTo("<jmriName>")
+
+        block.active(false)
         block.named("Block-Name")
         assertThat(block.systemName).isEqualTo("jmriName")
         assertThat(block.name).isEqualTo("Block-Name")
-        assertThat(block.toString()).isEqualTo("Block(Block-Name)")
+        assertThat(block.toString()).isEqualTo("{Block-Name [jmriName]}")
+
+        block.active(true)
+        assertThat(block.toString()).isEqualTo("<Block-Name [jmriName]>")
     }
 }
