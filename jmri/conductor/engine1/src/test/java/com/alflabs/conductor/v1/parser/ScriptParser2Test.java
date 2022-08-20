@@ -493,11 +493,11 @@ public class ScriptParser2Test {
     public void testDefineMap() throws Exception {
         String source = "" +
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
-                "  Map Map-2 = \"path\\to\\map2.svg\" ";
+                "  Map Map-2 = \"path/to/map2.svg\" ";
 
         // Create test files
         mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
-        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
+        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path/to/map2.svg"));
 
         Script1 script = mScriptComponent.getScript1Parser2().parse(source);
 
@@ -519,17 +519,17 @@ public class ScriptParser2Test {
     public void testDefineMap_alreadyDefined() throws Exception {
         String source = "" +
                 "  Map Map-1 = \"path/to/map1.svg\" \n" +
-                "  Map Map-1 = \"path\\to\\map2.svg\" ";
+                "  Map Map-1 = \"path/to/map2.svg\" ";
 
         // Create test files
         mFileOps.writeBytes("<svg1/>".getBytes(UTF_8), new File("path/to/map1.svg"));
-        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path\\to\\map2.svg"));
+        mFileOps.writeBytes("<svg2/>".getBytes(UTF_8), new File("path/to/map2.svg"));
 
         Script1 script = mScriptComponent.getScript1Parser2().parse(source);
 
         assertThat(mReporter.toString()).isEqualTo(
                 "Error at line 2: Name 'Map-1' is already defined.\n" +
-                        "  Line 2: 'Map Map-1 = \"path\\to\\map2.svg\"'");
+                        "  Line 2: 'Map Map-1 = \"path/to/map2.svg\"'");
         assertThat(script).isNotNull();
     }
 
