@@ -40,7 +40,7 @@ class RouteGraphTest: ScriptTest2kBase() {
     @Test
     fun testRouteGraph() {
         val (graph, nodes) = createGraph()
-        val (n1, n2) = nodes
+        val (n1, _) = nodes
 
         assertThat(graph.start).isSameInstanceAs(n1)
         assertThat(graph.toString()).isEqualTo(

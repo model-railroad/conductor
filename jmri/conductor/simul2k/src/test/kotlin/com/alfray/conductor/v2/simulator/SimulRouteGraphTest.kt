@@ -15,7 +15,7 @@ class SimulRouteGraphTest : Simul2kTestBase() {
     @Test
     fun testSortEdgesByDirection() {
         val graph = createGraph3()
-        val edges = graph.edges.flatMap { (k, v) -> v }
+        val edges = graph.edges.flatMap { (_, v) -> v }
         val (b1, b2, b3) = graph.blocks
 
         // Unsorted should match the graph creation, except in from-block order.
@@ -66,7 +66,7 @@ class SimulRouteGraphTest : Simul2kTestBase() {
     @Test
     fun testSortEdgesByBranch() {
         val graph = createGraph3_branch1()
-        val edges = graph.edges.flatMap { (k, v) -> v }
+        val edges = graph.edges.flatMap { (_, v) -> v }
         val (b1, b2, b3, b4) = graph.blocks
 
         // Unsorted should match the graph creation, except in from-block order.
