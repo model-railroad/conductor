@@ -54,6 +54,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
+    private final ZeroConf mZeroConf = new ZeroConf();
     private final StringBuilder mStatus = new StringBuilder();
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
@@ -125,6 +126,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         openWindow();
         onWindowReload();
+        mZeroConf.start(mLogger, scriptFile);
 
         return true;
     }
@@ -233,6 +235,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         log("onQuit");
         mJsonSender.sendEvent("conductor", null, "off");
         sendEvent("Stop");
+        mZeroConf.stop();
 
         mKeepRunning.set(false);
 
@@ -245,6 +248,18 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             } finally {
                 mHandleThread = null;
             }
+        }
+
+        try {
+            mJsonSender.shutdown();
+        } catch (InterruptedException e) {
+            mLogger.d(TAG, "Teardown JsonSender exception: " + e);
+        }
+
+        try {
+            mAnalytics.shutdown();
+        } catch (Exception e) {
+            mLogger.d(TAG, "Teardown Analytics exception: " + e);
         }
 
         if (mWinUpdateThread != null) {
