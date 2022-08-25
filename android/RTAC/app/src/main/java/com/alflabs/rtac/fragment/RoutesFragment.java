@@ -67,7 +67,10 @@ public class RoutesFragment extends Fragment {
 
     protected IFragmentComponent createComponent(Context context) {
         if (DEBUG) Log.d(TAG, "createComponent");
-        return MainActivity.getMainActivityComponent(context).create();
+        return MainActivity
+                .getMainActivityComponent(context)
+                .getFragmentComponentFactory()
+                .create();
     }
 
     // Version for API 11+, deprecated in API 23
@@ -108,8 +111,8 @@ public class RoutesFragment extends Fragment {
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
-        mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
-        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getKeyChangedStream().subscribe(AndroidSchedulers.mainThread(), mKeyChangedSubscriber);
+        mDataClientMixin.getConnectedStream().subscribe(AndroidSchedulers.mainThread(), mConnectedSubscriber);
     }
 
     @Override

@@ -25,10 +25,11 @@ import dagger.Subcomponent;
 
 @ActivityScope
 @Subcomponent(modules = ActivityContextModule.class)
-public interface IMainActivityComponent
-    extends IFragmentComponent.Factory {
+public interface IMainActivityComponent {
 
+    IFragmentComponent.Factory getFragmentComponentFactory();
 
+    @Subcomponent.Factory
     interface Factory {
         IMainActivityComponent create(ActivityContextModule activityContextModule);
     }

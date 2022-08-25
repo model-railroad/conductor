@@ -2,12 +2,25 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/LibManifest/LibManifest.iml" filepath="$PROJECT_DIR$/LibManifest/LibManifest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsAndroid/LibUtilsAndroid.iml" />
-      <module fileurl="file://$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" filepath="$PROJECT_DIR$/LibUtils/LibUtilsJava/LibUtilsJava.iml" />
-      <module fileurl="file://$PROJECT_DIR$/RTAC.iml" filepath="$PROJECT_DIR$/RTAC.iml" />
-      <module fileurl="file://$PROJECT_DIR$/androidsvg/androidsvg/androidsvg.iml" filepath="$PROJECT_DIR$/androidsvg/androidsvg/androidsvg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/RTAC.iml" filepath="$PROJECT_DIR$/.idea/modules/RTAC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.iml" filepath="$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.test.iml" filepath="$PROJECT_DIR$/.idea/modules/LibManifest/RTAC.LibManifest.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsAndroid/RTAC.LibUtilsAndroid.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.main.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.test.iml" filepath="$PROJECT_DIR$/.idea/modules/LibUtils/LibUtilsJava/RTAC.LibUtilsJava.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.main.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.unitTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.unitTest.iml" />
     </modules>
   </component>
 </project>

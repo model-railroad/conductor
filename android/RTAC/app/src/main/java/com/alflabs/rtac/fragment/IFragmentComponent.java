@@ -18,14 +18,15 @@
 
 package com.alflabs.rtac.fragment;
 
-import com.alflabs.dagger.ActivityScope;
+import com.alflabs.dagger.FragmentScope;
 import dagger.Subcomponent;
 
 
-@ActivityScope
+@FragmentScope
 @Subcomponent
 public interface IFragmentComponent {
 
+    @Subcomponent.Factory
     interface Factory {
         IFragmentComponent create();
     }

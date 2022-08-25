@@ -22,11 +22,11 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.fragment.app.Fragment;
 import com.alflabs.kv.KeyValueClient;
 import com.alflabs.manifest.Constants;
 import com.alflabs.manifest.MapInfos;
@@ -68,7 +68,10 @@ public class MapFragment extends Fragment {
 
     protected IFragmentComponent createComponent(Context context) {
         if (DEBUG) Log.d(TAG, "createComponent");
-        return MainActivity.getMainActivityComponent(context).create();
+        return MainActivity
+                .getMainActivityComponent(context)
+                .getFragmentComponentFactory()
+                .create();
     }
 
     // Version for API 11+, deprecated in API 23
@@ -105,8 +108,8 @@ public class MapFragment extends Fragment {
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
-        mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
-        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getKeyChangedStream().subscribe(AndroidSchedulers.mainThread(), mKeyChangedSubscriber);
+        mDataClientMixin.getConnectedStream().subscribe(AndroidSchedulers.mainThread(), mConnectedSubscriber);
     }
 
     @Override

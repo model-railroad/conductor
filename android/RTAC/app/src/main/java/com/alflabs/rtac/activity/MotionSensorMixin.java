@@ -1,7 +1,7 @@
 package com.alflabs.rtac.activity;
 
 import android.hardware.usb.UsbDevice;
-import android.support.annotation.WorkerThread;
+import androidx.annotation.WorkerThread;
 import com.alflabs.dagger.ActivityScope;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
@@ -45,7 +45,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
     public void onResume() {
         super.onResume();
         stopTask();
-        mDataClientMixin.getConnectedStream().subscribe(mConnectedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getConnectedStream().subscribe(AndroidSchedulers.mainThread(), mConnectedSubscriber);
         startTask();
     }
 
@@ -80,7 +80,7 @@ public class MotionSensorMixin extends ActivityMixin<MainActivity> {
             mDataClientMixin.setMotionStatus(false, "Motion Disconnected");
 
         } else if (!runMonitor && !mHasKeyChangedSubscriber) {
-            mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+            mDataClientMixin.getKeyChangedStream().subscribe(AndroidSchedulers.mainThread(), mKeyChangedSubscriber);
             mHasKeyChangedSubscriber = true;
         }
     }

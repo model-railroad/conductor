@@ -29,11 +29,11 @@ import javax.inject.Singleton;
 @Singleton
 @Component(modules = { AppContextModule.class, AppDataModule.class, ServiceModule.class} )
 @SuppressWarnings("WeakerAccess")
-public interface IAppComponent
-    extends IMainActivityComponent.Factory {
+public interface IAppComponent {
 
     AppPrefsValues getAppPrefsValues();
     WakeWifiLockMixin getWakeWifiLockMixin();
+    IMainActivityComponent.Factory getMainActivityComponentFactory();
 
     void inject(MainApp mainApp);
     void inject(BootReceiver bootReceiver);

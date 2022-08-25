@@ -20,10 +20,10 @@ package com.alflabs.rtac.fragment;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.Nullable;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.rtac.BuildConfig;
 import com.caverock.androidsvg.Colour;

@@ -56,7 +56,10 @@ public class StatusFragment extends Fragment {
 
     protected IFragmentComponent createComponent(Context context) {
         if (DEBUG) Log.d(TAG, "createComponent");
-        return MainActivity.getMainActivityComponent(context).create();
+        return MainActivity
+                .getMainActivityComponent(context)
+                .getFragmentComponentFactory()
+                .create();
     }
 
     // Version for API 11+, deprecated in API 23
@@ -98,7 +101,7 @@ public class StatusFragment extends Fragment {
     public void onStart() {
         if (DEBUG) Log.d(TAG, "onStart activity=" + getActivity());
         super.onStart();
-        mDataClientMixin.getStatusStream().subscribe(mDataClientStatusSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getStatusStream().subscribe(AndroidSchedulers.mainThread(), mDataClientStatusSubscriber);
     }
 
     @Override

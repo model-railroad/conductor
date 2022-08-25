@@ -18,7 +18,6 @@
 
 package com.alflabs.rtac.activity;
 
-import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -26,26 +25,25 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import com.alflabs.dagger.ActivityScope;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.MainApp;
-import com.alflabs.rtac.fragment.PsaTextFragment;
 import com.alflabs.rtac.fragment.MapFragment;
+import com.alflabs.rtac.fragment.PsaTextFragment;
 import com.alflabs.rtac.service.RtacService;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.Utils;
@@ -92,7 +90,10 @@ public class MainActivity extends FragmentActivity {
 
     protected IMainActivityComponent createComponent() {
         if (DEBUG) Log.d(TAG, "createComponent");
-        return MainApp.getAppComponent(this).create(new ActivityContextModule(this));
+        return MainApp
+                .getAppComponent(this)
+                .getMainActivityComponentFactory()
+                .create(new ActivityContextModule(this));
     }
 
     IMainActivityComponent getComponent() {

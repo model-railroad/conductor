@@ -60,7 +60,7 @@ public class AnalyticsMixin extends ServiceMixin<RtacService> {
     public void onCreate(RtacService service) {
         super.onCreate(service);
         if (DEBUG) Log.d(TAG, "onCreate");
-        mDataClientMixin.getKeyChangedStream().subscribe(mKeyChangedSubscriber, AndroidSchedulers.mainThread());
+        mDataClientMixin.getKeyChangedStream().subscribe(AndroidSchedulers.mainThread(), mKeyChangedSubscriber);
         if (mTrackingId == null) {
             mTrackingLatch = new CountDownLatch(1);
         }

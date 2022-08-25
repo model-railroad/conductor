@@ -19,14 +19,17 @@
 apply plugin: "com.android.application"
 
 android {
-    compileSdkVersion 26
+    compileSdkVersion 32
 
     defaultConfig {
         applicationId "com.alflabs.rtac"
+
+        // Hard-requirement: Hi10 Pro ⇒ Android 5.1 ⇒ API 22 (Lollipop MR1)
         minSdkVersion 21
-        targetSdkVersion 26
-        versionCode 1002
-        versionName "1.02"
+
+        targetSdkVersion 32
+        versionCode 1003
+        versionName "1.03"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -57,24 +60,27 @@ android {
 }
 
 dependencies {
-    compile project(":LibManifest")
-    compile project(":LibUtilsJava")
-    compile project(":LibUtilsAndroid")
-    compile project(":androidsvg")
+    implementation project(":LibManifest")
+    implementation project(":LibUtilsJava")
+    implementation project(":LibUtilsAndroid")
+    implementation project(":androidsvg")
 
-    compile "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
-    compile "com.squareup.okhttp3:okhttp:3.10.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
+    implementation "com.squareup.okhttp3:okhttp:3.10.0"
+    implementation "androidx.fragment:fragment:1.5.2"
+    implementation "com.google.guava:guava:20.0"
 
     // Note: annotationProcessor starting with gradle 2.2 replaces the previous APT (annotation processor plugin)
-    compile "com.google.dagger:dagger:2.5"
-    annotationProcessor "com.google.dagger:dagger-compiler:2.5"
+    def dagger_version = "2.25.2"
+    implementation "com.google.dagger:dagger:$dagger_version"
+    annotationProcessor "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Testing: Robolectric, Mockito and Truth
-    testCompile "org.mockito:mockito-core:2.2.9"
-    testCompile "org.robolectric:robolectric:3.1" // uses hamcrest 1.3
-    testCompile "com.google.truth:truth:0.34"     // to match hamcrest 1.3 from Robolectric
-    testCompile "junit:junit:4.12"                // to match hamcrest 1.3 from Robolectric
-    testCompile "com.google.guava:guava:20.0"
+    testImplementation "org.mockito:mockito-core:2.2.9"
+    testImplementation "org.robolectric:robolectric:3.1" // uses hamcrest 1.3
+    testImplementation "com.google.truth:truth:0.34"     // to match hamcrest 1.3 from Robolectric
+    testImplementation "junit:junit:4.12"                // to match hamcrest 1.3 from Robolectric
+    testImplementation "com.google.guava:guava:20.0"
 
     //--not used--
     // compile fileTree(dir: "libs", include: ["*.jar"])
