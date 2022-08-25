@@ -39,6 +39,7 @@ dependencies {
     implementation project(":LibUtilsJava")
     implementation "com.google.guava:guava:$vers_guava"
     implementation "com.squareup.okhttp3:okhttp:$vers_okhttp"
+    implementation "com.fasterxml.jackson.core:jackson-databind:$vers_jackson"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$vers_kotlin"
     // For Kotlin KTS and Scripting Host:
