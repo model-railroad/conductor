@@ -133,7 +133,7 @@ The full GPL license is available in the file "LICENSE-gpl-3.0.txt".
 
 Before building, the git submodules must be imported:
 
-    $ android/RTAC/_init.sh
+    $ android/RTAC/_init.sh -f
 
 This script will checkout the
 [LibUtils](https://bitbucket.org/ralfoide/libutils) submodule which
@@ -149,20 +149,24 @@ This works under Linux or under Windows using Cygwin 64.
 
 To build and use this from IntelliJ using the Community Edition:
 
-- Open Existing Project, select the "Conductor" directory.
+- Open Existing Project located in the `jmri/conductor` directory.
+- Build > Build Project at least once (to load dependencies and build the main classes).
 - File > Project Structure > Project > Project SDK: JRE or JDK 1.8.
 - Create Run/Debug Configurations:
-  - Application > Name "Entry Point"
+  - Application > Name `DevEntryPoint2`
     - Check Single Instance Only.
-    - Main Class: com.alflabs.conductor.DevelopmentEntryPoint.
-    - Workding dir: Set to ".../automation/jmri/conductor".
-    - Use classpath of module: conductor_main.
+    - Main Class: `com.alflabs.conductor.v2.DevEntryPoint2`.
+    - Workding dir: Set to `.../automation/jmri/conductor`.
+    - Use classpath of module: `-cp conductor`.
     - JRE: 1.8.
     - Before launch: Build.
   - Gradle > Name "All Tests"
     - Check Single Instance Only.
-    - Project: Conductor (use the project icon, not the ... button)
-    - Tasks: test
+    - Project: `conductor` (use the project icon, not the ... button)
+    - Run Tasks `test`
+  - Gradle tests for individual modules.
+    - For example expand `engine2k/src`.
+    - Right-click on `test/kotlin` and select `Run Tests in conductor...`
   - Gradle > Name "Assemble App"
     - Check Single Instance Only.
     - Project: Conductor (use the project icon, not the ... button)
