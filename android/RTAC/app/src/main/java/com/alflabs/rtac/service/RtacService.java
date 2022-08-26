@@ -26,6 +26,7 @@ import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -188,7 +189,12 @@ public class RtacService extends android.app.Service {
         TaskStackBuilder stackBuilder = createTaskStackBuilder();
         stackBuilder.addParentStack(parentActivity.getClass());
         stackBuilder.addNextIntent(i);
-        PendingIntent pending = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        int flag = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= 23) {
+            flag |= PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pending = stackBuilder.getPendingIntent(0, flag);
         builder.setContentIntent(pending);
 
         Notification notif = builder.build();

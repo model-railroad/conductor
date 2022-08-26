@@ -28,8 +28,8 @@ android {
         minSdkVersion 21
 
         targetSdkVersion 32
-        versionCode 1003
-        versionName "1.03"
+        versionCode 1004
+        versionName "1.04"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
