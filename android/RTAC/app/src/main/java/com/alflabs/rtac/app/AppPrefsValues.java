@@ -52,6 +52,7 @@ public class AppPrefsValues extends BasePrefsValues {
     public static final String PREF_JMRI__THROTTLE_NAME   = "pref_jmri__throttle_name";
 
     public static final String PREF_CONDUCTOR__CONTROL_EMERGENCY_STOP = "pref_conductor__control_emergency_stop";
+    public static final String PREF_CONDUCTOR__START_MAP_VIEW = "pref_conductor__start_with_map_view";
     public static final String PREF_CONDUCTOR__MONITOR_MOTION_SENSOR = "pref_conductor__monitor_motion_sensor";
 
     public static final String PREF_DEV__SIMUL_MOTION_SENSOR = "pref_dev__simul_motion_sensor";
@@ -172,6 +173,10 @@ public class AppPrefsValues extends BasePrefsValues {
 
     public boolean getConductor_ControlEmergencyStop() {
         return mPrefs.getBoolean(PREF_CONDUCTOR__CONTROL_EMERGENCY_STOP, true);
+    }
+
+    public boolean getConductor_StartMapView() {
+        return mPrefs.getBoolean(PREF_CONDUCTOR__START_MAP_VIEW, false);
     }
 
     public boolean getConductor_MonitorMotionSensor() {

@@ -141,7 +141,7 @@ public class MainActivity extends FragmentActivity {
         mPager = (ViewPager) findViewById(R.id.pager);
         mPagerAdapter = new RtacFragmentAdapter(getSupportFragmentManager());
         mPager.setAdapter(mPagerAdapter);
-        mPager.setCurrentItem(0);
+        mPager.setCurrentItem(mAppPrefsValues.getConductor_StartMapView() ? 1 : 0);
     }
 
     @Override
@@ -274,12 +274,9 @@ public class MainActivity extends FragmentActivity {
         b.setTitle("Disconnect from server?");
         b.setMessage("Do you want to disconnect from the server?");
         b.setNegativeButton("Cancel", null);
-        b.setPositiveButton("Disconnect", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                terminateService();
-                MainActivity.this.finish();
-            }
+        b.setPositiveButton("Disconnect", (dialog, which) -> {
+            terminateService();
+            MainActivity.this.finish();
         });
         b.show();
     }

@@ -1,12 +1,18 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-
     <CheckBoxPreference
             android:key="pref_conductor__control_emergency_stop"
             android:title="Control Emergency Stop"
             android:summaryOff="Off: Android client cannot control Emergency Stop"
             android:summaryOn="On: Android client can control Emergency Stop (default)"
             android:defaultValue="true" />
+
+    <CheckBoxPreference
+            android:key="pref_conductor__start_with_map_view"
+            android:title="Start App on Map View"
+            android:summaryOff="Off: App displays information view at startup (default)"
+            android:summaryOn="On: App displays map view at startup"
+            android:defaultValue="false" />
 
     <CheckBoxPreference
             android:key="pref_conductor__monitor_motion_sensor"
