@@ -54,7 +54,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private StatusWindow2 mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
-    private final ZeroConf mZeroConf = new ZeroConf();
+    private final ZeroConfController mZeroConf = new ZeroConfController();
+    private final KVServerController mKVController = new KVServerController();
     private final StringBuilder mStatus = new StringBuilder();
     private final StringBuilder mLoadError = new StringBuilder();
     private final AtomicBoolean mKeepRunning = new AtomicBoolean(true);
@@ -124,9 +125,10 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         String eventLogFilename = mEventLogger.start(null);
         log("Event log: " + eventLogFilename);
 
+        mKVController.start(mLogger, mKeyValueServer);
+        mZeroConf.start(mLogger, scriptFile);
         openWindow();
         onWindowReload();
-        mZeroConf.start(mLogger, scriptFile);
 
         return true;
     }
@@ -236,6 +238,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         mJsonSender.sendEvent("conductor", null, "off");
         sendEvent("Stop");
         mZeroConf.stop();
+        mKVController.stop();
 
         mKeepRunning.set(false);
 

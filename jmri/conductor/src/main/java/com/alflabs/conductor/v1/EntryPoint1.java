@@ -155,7 +155,7 @@ public class EntryPoint1 implements IEntryPoint {
     private void startZeroconfAdvertising(String name) {
         mJmDNSLatch = new CountDownLatch(1);
         try {
-            mLogger.d(TAG, "Starting ZeroConf");
+            mLogger.d(TAG, "Starting ZeroConfController");
 
             Map<String, String> props = new TreeMap<>();
             props.put("origin", "conductor");
@@ -171,7 +171,7 @@ public class EntryPoint1 implements IEntryPoint {
                     gotIpv4 = true;
                 }
                 if (gotIpv4 && address instanceof Inet6Address) {
-                    mLogger.d(TAG, "Skip ZeroConf on " + address + " (already got an IPv4 before).");
+                    mLogger.d(TAG, "Skip ZeroConfController on " + address + " (already got an IPv4 before).");
                     continue;
                 }
                 ServiceInfo info = ServiceInfo.create(
@@ -184,12 +184,12 @@ public class EntryPoint1 implements IEntryPoint {
 
                 JmDNS jmDns = JmDNS.create(address);
                 jmDns.registerService(info);
-                mLogger.d(TAG, "Started ZeroConf on " + jmDns.getInetAddress());
+                mLogger.d(TAG, "Started ZeroConfController on " + jmDns.getInetAddress());
                 mJmDnsList.add(jmDns);
             }
         } catch (IOException e) {
             // Ignore. continue.
-            mLogger.d(TAG, "ZeroConf not enabled: ");
+            mLogger.d(TAG, "ZeroConfController not enabled: ");
             LogException.logException(mLogger, TAG, e);
         } finally {
             mJmDNSLatch.countDown();
@@ -202,20 +202,20 @@ public class EntryPoint1 implements IEntryPoint {
         mLogger.d(TAG, "KV Server stopping, port " + Constants.KV_SERVER_PORT);
         if (mJmDNSLatch != null) {
             try {
-                mLogger.d(TAG, "Waiting for ZeroConf");
+                mLogger.d(TAG, "Waiting for ZeroConfController");
                 mJmDNSLatch.await(1, TimeUnit.MINUTES);
             } catch (InterruptedException ignore) {}
         }
 
         for (JmDNS jmDns : mJmDnsList) {
             try {
-                mLogger.d(TAG, "Teardown ZeroConf on " + jmDns.getInetAddress());
+                mLogger.d(TAG, "Teardown ZeroConfController on " + jmDns.getInetAddress());
             } catch (IOException ignore) {}
             jmDns.unregisterAllServices();
             try {
                 jmDns.close();
             } catch (IOException e) {
-                mLogger.d(TAG, "Teardown ZeroConf exception: " + e);
+                mLogger.d(TAG, "Teardown ZeroConfController exception: " + e);
             }
         }
 
