@@ -157,6 +157,7 @@ public class MainActivity extends FragmentActivity {
         super.onResume();
         bindServerService();
         hideNavigationBar();
+        setupEstopFragment();
         mMotionSensorMixin.onResume();
     }
 
@@ -183,6 +184,11 @@ public class MainActivity extends FragmentActivity {
         if (DEBUG) Log.d(TAG, "onDestroy");
         mMotionSensorMixin.onDestroy();
         super.onDestroy();
+    }
+
+    private void setupEstopFragment() {
+        findViewById(R.id.estop_fragment).setVisibility(
+                mAppPrefsValues.getConductor_ControlEmergencyStop() ? View.VISIBLE : View.GONE);
     }
 
     private void setupActionBar() {
