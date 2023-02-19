@@ -679,10 +679,10 @@ SP-Sound-Stopped ->
 #
 # Route order: BLParked BLStation BLTunnel BLReverse
 
-Throttle BL = 3566
+Throttle BL = 204
 
-Int BL-Speed = 8
-Int BL-Speed-Station = 6
+Int BL-Speed = 6
+Int BL-Speed-Station = 4
 
 Enum BL-Train = BL
 
@@ -734,7 +734,7 @@ BL-State == Error ->
 
 # --- BL State: Wait
 
-Timer BL-Timer-Wait = 600  # 300=5 minutes -- 420=7 minutes -- 120=2 minutes
+Timer BL-Timer-Wait = 300  # 300=5 minutes -- 420=7 minutes -- 120=2 minutes
 Timer BL-Timer-WaitSoundOff = 5
 
 BL-State == Wait ->
