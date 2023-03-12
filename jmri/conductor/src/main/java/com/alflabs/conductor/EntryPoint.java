@@ -20,20 +20,56 @@ package com.alflabs.conductor;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.v1.EntryPoint1;
+import com.alflabs.conductor.v2.EntryPoint2;
 
 /** Interface controlled by Conductor.py */
-public class EntryPoint implements IEntryPoint {
-    private static final String TAG = EntryPoint.class.getSimpleName();
+public class EntryPoint implements IEntryPoint2 {
+    private static final String TAG = EntryPoint2.class.getSimpleName();
 
-    private final IEntryPoint mImplementation = new EntryPoint1();
+    private IEntryPoint mImplementation;
 
     /**
      * Invoked when the JMRI automation is being setup, from the Jython script.
+     *
+     * Version defaults to 1, or to a valid CONDUCTOR_VERSION environment value.
      *
      * @return True to start the automation, false if there's a problem and it should not start.
      */
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
+        int version = 1;
+        try {
+            String vers = System.getenv("CONDUCTOR_VERSION");
+            if (vers != null) {
+                version = Integer.parseInt(vers);
+            }
+        } catch (SecurityException ignore) {}
+        return setup(version, jmriProvider, scriptPath);
+    }
+
+    /**
+     * Invoked when the JMRI automation is being setup, from the Jython script.
+     *
+     * Valid version numbers are either 1 or 2.
+     *
+     * @return True to start the automation, false if there's a problem and it should not start.
+     */
+    @Override
+    public boolean setup(int version, IJmriProvider jmriProvider, String scriptPath) {
+        if (mImplementation != null) {
+            throw new IllegalStateException("Conductor.setup() has already been called");
+        }
+        switch (version) {
+        case 1:
+            mImplementation = new EntryPoint1();
+            break;
+        case 2:
+            mImplementation = new EntryPoint2();
+            break;
+        default:
+            throw new IllegalStateException("CONDUCTOR_VERSION should be 1 or 2.");
+        }
+        System.out.println("Conductor setup for v" + version);
         return mImplementation.setup(jmriProvider, scriptPath);
     }
 
