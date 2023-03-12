@@ -18,6 +18,7 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+CONDUCTOR_VERSION = 1
 
 import sys
 print "Jython Path:", sys.path      # debug
@@ -258,7 +259,7 @@ class Automation(AbstractAutomaton):
         print "[Conductor] Automation SETUP"
         self._provider = JmriProvider(self)
         self._entry = ConductorEntryPoint()
-        if self._entry.setup(self._provider, "events.txt"):
+        if self._entry.setup(CONDUCTOR_VERSION, self._provider, "events.txt"):
             print "[Conductor] Automation START"
             self.start()
 
