@@ -18,7 +18,6 @@
 
 package com.alflabs.conductor.v1;
 
-import com.alflabs.conductor.EntryPoint;
 import com.alflabs.conductor.jmri.FakeJmriProvider;
 import com.alflabs.conductor.v1.simulator.Simulator;
 import com.alflabs.utils.ILogger;
@@ -57,7 +56,7 @@ public class DevEntryPoint1 {
                 return new Simulator(logger, mClock);
             }
         };
-        String filePath = "src/test/resources/v2/script_v34_8736+1840+BL.txt";
+        String filePath = "src/test/resources/v2/script_v53_testing.txt";
         boolean parsed = entryPoint.setup(jmriProvider, filePath);
         assertThat(parsed).isTrue();
         if (parsed) {

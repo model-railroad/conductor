@@ -77,6 +77,7 @@ jar {
 
 // Build a "fat" jar with all the dependencies. C.f. http://stackoverflow.com/questions/4871656
 task fatJar(type: Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest.from jar.manifest
     classifier = "all"
     from {
