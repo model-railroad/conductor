@@ -18,7 +18,6 @@
 
 package com.alflabs.conductor.v2;
 
-import autovalue.shaded.org.apache.commons.lang.exception.ExceptionUtils;
 import com.alflabs.annotations.Null;
 import com.alflabs.conductor.IEntryPoint;
 import com.alflabs.conductor.jmri.IJmriProvider;
@@ -42,6 +41,8 @@ import javax.inject.Inject;
 import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -187,7 +188,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 handle();
             } catch (Exception e) {
                 log("Simul Handle Thread - Exception (ignored): "
-                        + ExceptionUtils.getStackTrace(e));
+                        + _getStackTrace(e));
             }
         }
         log("Simul Handle Thread - End");
@@ -227,7 +228,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 }
             }
         } catch (Exception e) {
-            log("StatusWindow2 Failed: " + ExceptionUtils.getStackTrace(e));
+            log("StatusWindow2 Failed: " + _getStackTrace(e));
             mWin = null;
         }
     }
@@ -319,9 +320,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             LogException.logException(mLogger, TAG, e);
 
             mLoadError.setLength(0);
-            mLoadError.append(e).append('\n').append(ExceptionUtils.getStackTrace(e));
+            mLoadError.append(e).append('\n').append(_getStackTrace(e));
             if (mWin == null) {
-                log("Parsing Exception: " + ExceptionUtils.getStackTrace(e));
+                log("Parsing Exception: " + _getStackTrace(e));
             }
         }
 
@@ -462,5 +463,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                     adapter.getBlocks(),
                     adapter.getTurnouts()
         ));
+    }
+
+    private static String _getStackTrace(Throwable throwable) {
+        if (throwable == null) {
+            return "";
+        }
+        StringWriter sw = new StringWriter();
+        throwable.printStackTrace(new PrintWriter(sw, true));
+        return sw.toString();
     }
 }
