@@ -25,10 +25,9 @@ import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +39,6 @@ import java.util.List;
  * This throttle object keeps track of its state (speed, light/sound state) and only
  * uses its internal state to when providing values. JMRI is only used as a setter.
  */
-@AutoFactory(allowSubclasses = true)
 public class Throttle implements IExecEngine {
     private static final String TAG = Throttle.class.getSimpleName();
 
@@ -86,14 +84,14 @@ public class Throttle implements IExecEngine {
     }
 
     /** Creates a new throttle for one or more DCC addresses. */
-    @Inject
+    @AssistedInject
     public Throttle(
-            List<Integer> dccAddresses,
-            @Provided IClock clock,
-            @Provided ILogger logger,
-            @Provided IJmriProvider jmriProvider,
-            @Provided IKeyValue keyValue,
-            @Provided EventLogger eventLogger) {
+            @Assisted List<Integer> dccAddresses,
+            IClock clock,
+            ILogger logger,
+            IJmriProvider jmriProvider,
+            IKeyValue keyValue,
+            EventLogger eventLogger) {
         mClock = clock;
         mLogger = logger;
         mJmriProvider = jmriProvider;

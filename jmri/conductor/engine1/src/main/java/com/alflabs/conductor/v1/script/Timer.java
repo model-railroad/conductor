@@ -21,8 +21,8 @@ package com.alflabs.conductor.v1.script;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 
 /**
  * A timer defined by a script.
@@ -31,7 +31,6 @@ import com.google.auto.factory.Provided;
  * A timer is active once it has reached its expiration time and remains active until it
  * is either restart or ended.
  */
-@AutoFactory(allowSubclasses = true)
 public class Timer implements IConditional, IResettable {
     private static final String TAG = Timer.class.getSimpleName();
 
@@ -54,11 +53,12 @@ public class Timer implements IConditional, IResettable {
         END
     }
 
-    public Timer(int durationSec,
-                 String timerName,
-                 @Provided IClock clock,
-                 @Provided ILogger logger,
-                 @Provided EventLogger eventLogger) {
+    @AssistedInject
+    public Timer(@Assisted int durationSec,
+                 @Assisted String timerName,
+                 IClock clock,
+                 ILogger logger,
+                 EventLogger eventLogger) {
         mDurationSec = durationSec;
         mTimerName = timerName;
         mClock = clock;

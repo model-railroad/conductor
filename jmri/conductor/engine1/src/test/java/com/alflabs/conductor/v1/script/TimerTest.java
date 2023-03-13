@@ -44,10 +44,10 @@ public class TimerTest {
     public void setUp() throws Exception {
         mNow = new FakeClock(100*1000);
 
-        TimerFactory factory = new TimerFactory(
+        TimerFactory factory = new TimerFactory_Impl(new Timer_Factory(
                 InstanceFactory.create(mNow),
                 InstanceFactory.create(mLogger),
-                InstanceFactory.create(mEventLogger));
+                InstanceFactory.create(mEventLogger)));
         mTimer = factory.create(42, "timer");
     }
 

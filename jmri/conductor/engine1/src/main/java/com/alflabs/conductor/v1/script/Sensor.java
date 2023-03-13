@@ -18,21 +18,20 @@
 
 package com.alflabs.conductor.v1.script;
 
-import com.alflabs.conductor.util.EventLogger;
-import com.alflabs.manifest.Constants;
-import com.alflabs.manifest.Prefix;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
+import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
+import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.Prefix;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 
 /**
  * A sensor defined by a script.
  * <p/>
  * The actual JMRI sensor is only assigned via the {@link #onExecStart()} method.
  */
-@AutoFactory(allowSubclasses = true)
 public class Sensor implements IConditional, IExecEngine {
 
     private final String mJmriName;
@@ -46,12 +45,13 @@ public class Sensor implements IConditional, IExecEngine {
     private boolean mLastActive;
 
     /** Creates a new sensor for the given JMRI system name. */
+    @AssistedInject
     public Sensor(
-            String jmriName,
-            String scriptName,
-            @Provided IJmriProvider jmriProvider,
-            @Provided IKeyValue keyValue,
-            @Provided EventLogger eventLogger) {
+            @Assisted("jmriName") String jmriName,
+            @Assisted("scriptName") String scriptName,
+            IJmriProvider jmriProvider,
+            IKeyValue keyValue,
+            EventLogger eventLogger) {
         mJmriName = jmriName;
         mKeyName = Prefix.Sensor + scriptName;
         mJmriProvider = jmriProvider;

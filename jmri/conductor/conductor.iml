@@ -12,14 +12,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <excludeFolder url="file://$MODULE_DIR$/.gradle" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/build/classes" />
-      <excludeFolder url="file://$MODULE_DIR$/build/dependency-cache" />
-      <excludeFolder url="file://$MODULE_DIR$/build/libs" />
-      <excludeFolder url="file://$MODULE_DIR$/build/reports" />
-      <excludeFolder url="file://$MODULE_DIR$/build/resources" />
-      <excludeFolder url="file://$MODULE_DIR$/build/test-results" />
-      <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/out" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -31,10 +23,9 @@
     <orderEntry type="module" module-name="conductor.LibManifest" />
     <orderEntry type="module" module-name="conductor.LibUtilsJava" />
     <orderEntry type="library" name="Gradle: com.google.truth:truth:1.1.3" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:guava:30.1.1-android" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.auto.factory:auto-factory:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.auto:auto-common:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:guava:30.1.1-jre" level="project" />
     <orderEntry type="library" name="Gradle: com.intellij:forms_rt:7.0.3" level="project" />
     <orderEntry type="library" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.6.7.1" level="project" />
     <orderEntry type="library" name="Gradle: org.jmdns:jmdns:3.5.3" level="project" />
@@ -83,32 +74,17 @@
     <orderEntry type="library" name="Gradle: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.auto.service:auto-service-annotations:1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.squareup:javapoet:1.13.0" level="project" />
     <orderEntry type="library" name="Gradle: asm:asm-tree:3.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:failureaccess:1.0.1" level="project" />
-    <orderEntry type="library" name="Gradle: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
-    <orderEntry type="library" name="Gradle: org.checkerframework:checker-compat-qual:2.5.5" level="project" />
     <orderEntry type="library" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" name="Gradle: org.apache.ant:ant:1.10.9" level="project" />
     <orderEntry type="library" name="Gradle: com.github.javaparser:javaparser-core:3.18.0" level="project" />
     <orderEntry type="library" name="Gradle: org.junit.jupiter:junit-jupiter-api:5.7.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.jdt:org.eclipse.jdt.core:3.10.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:failureaccess:1.0.1" level="project" />
+    <orderEntry type="library" name="Gradle: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
     <orderEntry type="library" name="Gradle: asm:asm:3.0" level="project" />
     <orderEntry type="library" name="Gradle: org.opentest4j:opentest4j:1.2.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.resources:3.7.100" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.expressions:3.4.300" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.runtime:3.7.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.filesystem:1.3.100" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.text:org.eclipse.text:3.5.101" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.osgi:org.eclipse.osgi:3.7.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.jobs:3.5.100" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.contenttype:3.4.100" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.registry:3.5.101" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.preferences:3.4.1" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.common:3.6.0" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.app:1.3.100" level="project" />
-    <orderEntry type="library" name="Gradle: org.eclipse.core:org.eclipse.core.commands:3.6.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jsr223:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jvm-host:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10" level="project" />

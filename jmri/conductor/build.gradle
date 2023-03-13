@@ -56,9 +56,6 @@ dependencies {
     annotationProcessor     "com.google.dagger:dagger-compiler:$vers_dagger"
     testAnnotationProcessor "com.google.dagger:dagger-compiler:$vers_dagger"
 
-    implementation      "com.google.auto.factory:auto-factory:$vers_autofactory"
-    annotationProcessor "com.google.auto.factory:auto-factory:$vers_autofactory"
-
     testImplementation testFixtures(project(":common"))
     testImplementation testFixtures(project(":engine1"))
     testImplementation "junit:junit:$vers_junit"

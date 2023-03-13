@@ -56,9 +56,9 @@ public class TurnoutTest {
 
         when(mJmriProvider.getTurnout("jmriName")).thenReturn(mJmriTurnout);
 
-        TurnoutFactory factory = new TurnoutFactory(
+        TurnoutFactory factory = new TurnoutFactory_Impl(new Turnout_Factory(
                 InstanceFactory.create(mJmriProvider),
-                InstanceFactory.create(mKeyValue));
+                InstanceFactory.create(mKeyValue)));
         mTurnout = factory.create("jmriName", "scriptName");
 
         mTurnout.onExecStart();

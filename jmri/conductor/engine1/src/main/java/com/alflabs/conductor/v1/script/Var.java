@@ -22,10 +22,7 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.rx.ISubscriber;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
 
-@AutoFactory(allowSubclasses = true)
 public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, IExportable, IImportable, IResettable {
 
     private final String mKeyName;
@@ -39,9 +36,9 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
     private boolean mExported;
     private ISubscriber<String> mImportSubscriber;
 
-    public Var(int intValue,
-               String varName,
-               @Provided IKeyValue keyValue) {
+    public Var(/*@Assisted*/ int intValue,
+               /*@Assisted*/ String varName,
+               IKeyValue keyValue) {
         mInitialStringValue = null;
         mInitialIntValue = intValue;
         mIntValueSupplier = null;
@@ -50,9 +47,9 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
         mKeyValue = keyValue;
     }
 
-    public Var(IIntValue intValueSupplier,
-               String varName,
-               @Provided IKeyValue keyValue) {
+    public Var(/*@Assisted*/ IIntValue intValueSupplier,
+               /*@Assisted*/ String varName,
+               IKeyValue keyValue) {
         mIntValueSupplier = intValueSupplier;
         mInitialStringValue = null;
         int intValue = intValueSupplier.getAsInt();
@@ -62,9 +59,9 @@ public class Var implements IConditional, IIntValue, IStringValue, IExecEngine, 
         mKeyValue = keyValue;
     }
 
-    public Var(String stringValue,
-               String scriptName,
-               @Provided IKeyValue keyValue) {
+    public Var(/*@Assisted*/ String stringValue,
+               /*@Assisted*/ String scriptName,
+               IKeyValue keyValue) {
         mInitialStringValue = stringValue;
         mInitialIntValue = 0;
         mIntValueSupplier = null;

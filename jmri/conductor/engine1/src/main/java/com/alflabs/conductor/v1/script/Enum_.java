@@ -22,8 +22,8 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Prefix;
 import com.alflabs.rx.ISubscriber;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-@AutoFactory(allowSubclasses = true, className = "EnumFactory")
 public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExportable, IImportable, IResettable {
 
     private final String mKeyName;
@@ -44,10 +43,11 @@ public class Enum_ implements IStringFunction, IStringValue, IExecEngine, IExpor
     private boolean mExported;
     private ISubscriber<String> mImportSubscriber;
 
-    public Enum_(Collection<String> values,
-                 String enumName,
-                 @Provided IKeyValue keyValue,
-                 @Provided EventLogger eventLogger) {
+    @AssistedInject
+    public Enum_(@Assisted Collection<String> values,
+                 @Assisted String enumName,
+                 IKeyValue keyValue,
+                 EventLogger eventLogger) {
         mEventLogger = eventLogger;
         mValues.addAll(values.stream().map(String::toLowerCase).collect(Collectors.toList()));
         mValue = mValues.get(0);

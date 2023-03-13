@@ -73,12 +73,12 @@ public class ThrottleTest {
         mClock = new MockClock();
         when(mJmriProvider.getThrottle(42)).thenReturn(mJmriThrottle);
 
-        ThrottleFactory factory = new ThrottleFactory(
+        ThrottleFactory factory = new ThrottleFactory_Impl(new Throttle_Factory(
                 InstanceFactory.create(mClock),
                 InstanceFactory.create(mLogger),
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue),
-                InstanceFactory.create(mEventLogger));
+                InstanceFactory.create(mEventLogger)));
         mThrottle = factory.create(Collections.singletonList(42));
         assertThat(mThrottle.getDccAddressesAsString()).isEqualTo("42");
         when(mJmriThrottle.getDccAddress()).thenReturn(42);

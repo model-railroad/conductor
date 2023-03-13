@@ -27,6 +27,8 @@
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/kotlin" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kapt/test" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/build/generated/source/kaptKotlin/test" isTestSource="true" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/kotlin" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/kotlin" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../../engine2k/src/test/resources" type="java-test-resource" />
@@ -83,10 +85,9 @@
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.6.10" level="project" />
     <orderEntry type="library" name="Gradle: javax.inject:javax.inject:1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.truth:truth:1.1.3" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.guava:guava:30.1.1-android" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.factory:auto-factory:1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto:auto-common:1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.guava:guava:30.1.1-jre" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jsr223:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.6.10" level="project" />
@@ -101,33 +102,18 @@
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.value:auto-value-annotations:1.8.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.errorprone:error_prone_annotations:2.7.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.ow2.asm:asm:9.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.auto.service:auto-service-annotations:1.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: com.squareup:javapoet:1.13.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.kotlin:kotlin-daemon-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: org.jetbrains.intellij.deps:trove4j:1.0.20181211" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: net.java.dev.jna:jna:5.6.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: asm:asm-tree:3.0" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.guava:failureaccess:1.0.1" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.code.findbugs:jsr305:3.0.2" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.checkerframework:checker-compat-qual:2.5.5" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: com.google.j2objc:j2objc-annotations:1.3" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.jdt:org.eclipse.jdt.core:3.10.0" level="project" />
     <orderEntry type="library" scope="RUNTIME" name="Gradle: asm:asm:3.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.resources:3.7.100" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.expressions:3.4.300" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.runtime:3.7.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.filesystem:1.3.100" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.text:org.eclipse.text:3.5.101" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.osgi:org.eclipse.osgi:3.7.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.jobs:3.5.100" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.contenttype:3.4.100" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.registry:3.5.101" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.preferences:3.4.1" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.common:3.6.0" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.app:1.3.100" level="project" />
-    <orderEntry type="library" scope="RUNTIME" name="Gradle: org.eclipse.core:org.eclipse.core.commands:3.6.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.truth:truth:1.1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.google.guava:guava:30.1.1-android" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.13.2" level="project" />
@@ -146,9 +132,9 @@
     <orderEntry type="library" scope="TEST" name="Gradle: net.bytebuddy:byte-buddy:1.9.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: net.bytebuddy:byte-buddy-agent:1.9.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.objenesis:objenesis:2.6" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.factory:auto-factory:1.0-beta5" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto:auto-common:0.6" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.googlejavaformat:google-java-format:1.1" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.factory:auto-factory:1.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto:auto-common:1.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.guava:guava:30.1.1-jre" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-jsr223:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable:1.6.10" level="project" />
@@ -158,26 +144,12 @@
     <orderEntry type="library" scope="TEST" name="Gradle: asm:asm-commons:3.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: com.jgoodies:forms:1.1-preview" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: jdom:jdom:1.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.value:auto-value:1.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javapoet:1.7.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.google.auto.service:auto-service-annotations:1.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javapoet:1.13.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.kotlin:kotlin-daemon-embeddable:1.6.10" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.jetbrains.intellij.deps:trove4j:1.0.20181211" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: net.java.dev.jna:jna:5.6.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: asm:asm-tree:3.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.jdt:org.eclipse.jdt.core:3.10.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: asm:asm:3.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.resources:3.7.100" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.expressions:3.4.300" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.runtime:3.7.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.filesystem:1.3.100" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.text:org.eclipse.text:3.5.101" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.osgi:org.eclipse.osgi:3.7.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.jobs:3.5.100" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.contenttype:3.4.100" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.registry:3.5.101" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.preferences:3.4.1" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.common:3.6.0" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.equinox:org.eclipse.equinox.app:1.3.100" level="project" />
-    <orderEntry type="library" scope="TEST" name="Gradle: org.eclipse.core:org.eclipse.core.commands:3.6.0" level="project" />
   </component>
 </module>

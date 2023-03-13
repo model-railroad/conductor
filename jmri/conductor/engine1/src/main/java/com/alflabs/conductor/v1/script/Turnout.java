@@ -18,15 +18,13 @@
 
 package com.alflabs.conductor.v1.script;
 
-import com.alflabs.manifest.Constants;
-import com.alflabs.manifest.Prefix;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriTurnout;
 import com.alflabs.kv.IKeyValue;
-import com.google.auto.factory.AutoFactory;
-import com.google.auto.factory.Provided;
-
-import javax.inject.Inject;
+import com.alflabs.manifest.Constants;
+import com.alflabs.manifest.Prefix;
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 
 /**
  * A turnout defined by a script.
@@ -39,7 +37,6 @@ import javax.inject.Inject;
  * When used as a conditional, a turnout is true in its "normal" state and false
  * in reverse.
  */
-@AutoFactory(allowSubclasses = true)
 public class Turnout implements IConditional, IExecEngine {
 
     private final String mJmriName;
@@ -60,12 +57,12 @@ public class Turnout implements IConditional, IExecEngine {
     }
 
     /** Creates a new turnout for the given JMRI system name. */
-    @Inject
+    @AssistedInject
     public Turnout(
-            String jmriName,
-            String scriptName,
-            @Provided IJmriProvider jmriProvider,
-            @Provided IKeyValue keyValue) {
+            @Assisted("jmriName") String jmriName,
+            @Assisted("scriptName") String scriptName,
+            IJmriProvider jmriProvider,
+            IKeyValue keyValue) {
         mJmriName = jmriName;
         mKeyName = Prefix.Turnout + scriptName;
         mJmriProvider = jmriProvider;

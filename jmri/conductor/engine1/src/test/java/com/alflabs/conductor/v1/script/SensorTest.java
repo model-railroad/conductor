@@ -56,10 +56,10 @@ public class SensorTest {
         when(mJmriProvider.getSensor("jmriName")).thenReturn(mJmriSensor);
         when(mJmriSensor.isActive()).thenReturn(false);
 
-        SensorFactory factory = new SensorFactory(
+        SensorFactory factory = new SensorFactory_Impl(new Sensor_Factory(
                 InstanceFactory.create(mJmriProvider),
                 InstanceFactory.create(mKeyValue),
-                InstanceFactory.create(mEventLogger));
+                InstanceFactory.create(mEventLogger)));
         mSensor = factory.create("jmriName", "scriptName");
         mSensor.setOnChangedListener(mOnChangeRunnable);
 

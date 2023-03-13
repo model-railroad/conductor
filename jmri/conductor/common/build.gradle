@@ -42,9 +42,6 @@ dependencies {
     testAnnotationProcessor         "com.google.dagger:dagger-compiler:$vers_dagger"
     testFixturesAnnotationProcessor "com.google.dagger:dagger-compiler:$vers_dagger"
 
-    implementation      "com.google.auto.factory:auto-factory:$vers_autofactory"
-    annotationProcessor "com.google.auto.factory:auto-factory:$vers_autofactory"
-
     testImplementation "junit:junit:$vers_junit"
     testImplementation "com.google.truth:truth:$vers_truth"
     testImplementation "org.mockito:mockito-core:$vers_mockito"
