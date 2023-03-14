@@ -74,12 +74,24 @@ jar {
 
 // Build a "fat" jar with all the dependencies. C.f. http://stackoverflow.com/questions/4871656
 task fatJar(type: Jar) {
+    // Somehow fatJar lacks a dependsOn ":engine1:jar". Instead of adding just that one,
+    // ensure we have a dependency on all subprojects' jars.
+    subprojects.forEach { dependsOn ":${it.name}:jar" }
+
+    doFirst {
+        println "@@ fatJar: Packaging ${configurations.default.size()} libraries"
+        configurations.default.collect {
+            if (it.name.contains("SNAPSHOT")) { println "@@ fatJar: packaging " + it.name }
+        }
+    }
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest.from jar.manifest
     classifier = "all"
     from {
+        // Should we be using configurations.default or configurations.runtimeClasspath?
+        // They seemed the same when examining their content.
         configurations.default.collect {
-            // println "fatJar: packaging " + it.name
             it.isDirectory() ? it : zipTree(it)
         }
     } {
@@ -93,4 +105,3 @@ task fatJar(type: Jar) {
 artifacts {
     archives fatJar
 }
-
