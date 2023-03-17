@@ -89,6 +89,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         log("Setup");
 
         File scriptFile = new File(scriptPath);
+        boolean scriptExists = scriptFile.exists();
         String mode = guessEngineMode(scriptFile);
 
         if ("legacy".equals(mode)) {
@@ -120,6 +121,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             return false;
         }
         log("Engine mode: " + mode);
+        log("Script: " + scriptPath + " " + (scriptExists ? "exists" : "DOES NOT EXIST"));
 
         mAdapter.get().setScriptFile(scriptFile);
 

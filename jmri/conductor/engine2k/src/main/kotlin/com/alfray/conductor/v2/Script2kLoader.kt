@@ -35,6 +35,7 @@ import kotlin.script.experimental.api.ScriptDiagnostic
 import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.api.onFailure
 import kotlin.script.experimental.api.valueOrNull
+import kotlin.script.experimental.host.FileScriptSource
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
@@ -56,13 +57,34 @@ class Script2kLoader @Inject constructor(
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
         status = Status.Loading
-        val extension = if (!scriptName.endsWith(".conductor.kts")) ".conductor.kts" else ""
-        // Note: JAR resource paths always use /, not File.separator.
-        val scriptPath = "v2/script/$scriptName$extension"
-        val scriptUrl = Resources.getResource(scriptPath)!!
-        logger.d(TAG, "Loading script from ${scriptUrl.path}")
-        val source = UrlScriptSource(scriptUrl)
-        scriptSource.scriptInfo = Script2kSourceInfo(scriptName, File(scriptPath), source)
+
+        // Try the argument as a file path.
+        var scriptFile = File(scriptName)
+        var isFile = scriptFile.exists()
+        if (!isFile) {
+            // Maybe it lacks the extension?
+            if (!scriptName.endsWith(".conductor.kts")) {
+                scriptFile = File(scriptName + ".conductor.kts")
+                isFile = scriptFile.exists()
+            }
+        }
+
+        val source: SourceCode
+        if (isFile) {
+            // Load the file we just found as-is.
+            source = FileScriptSource(scriptFile)
+        } else {
+            // Try to load it as a resource
+            val extension = if (!scriptName.endsWith(".conductor.kts")) ".conductor.kts" else ""
+            // Note: JAR resource paths always use /, not File.separator.
+            val scriptPath = "v2/script/$scriptName$extension"
+            scriptFile = File(scriptPath)
+            val scriptUrl = Resources.getResource(scriptPath)!!
+            logger.d(TAG, "Loading script from ${scriptUrl.path}")
+            source = UrlScriptSource(scriptUrl)
+        }
+
+        scriptSource.scriptInfo = Script2kSourceInfo(source.name ?: scriptName, scriptFile, source)
         result = loadScript(source)
         status = Status.Loaded
     }
