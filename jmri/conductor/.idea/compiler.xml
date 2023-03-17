@@ -34,10 +34,6 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.j2objc/j2objc-annotations/1.3/ba035118bc8bac37d7eff77700720999acd9986d/j2objc-annotations-1.3.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-common/1.5.32/8befc4a20c17094a148f1409c1bac163bc3ca630/kotlin-stdlib-common-1.5.32.jar" />
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.auto.factory/auto-factory/1.0/ce09bf4d4c36338825bede62f69b374a8468ba68/auto-factory-1.0.jar" />
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.auto/auto-common/1.0/41d5dbfadf17625071d3f4a8b7f7a6d70dcd3c8f/auto-common-1.0.jar" />
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.auto.value/auto-value-annotations/1.8/1a11966217fbd004d27f05f6d9681ff114865563/auto-value-annotations-1.8.jar" />
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.auto.service/auto-service-annotations/1.0/c628bf87e8b708c707aa523033d90fb0eb2d6495/auto-service-annotations-1.0.jar" />
         </processorPath>
         <module name="conductor" />
         <module name="conductor.common" />
