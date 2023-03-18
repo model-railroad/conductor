@@ -355,6 +355,8 @@ class StatusWindow2 {
 
     // Fill SVG using svgDocument (as text).
     // If svgDocument is null or empty, rely only on mapUrl.
+    // Note: the mapUrl is only used as a string below, however we use java.net.URI
+    // to force callers to provide a valid URI.
     void displaySvgMap(String svgDocument, URI mapUrl) {
         mSwingBuilder.doLater {
             mModifSvgQueue.clear()

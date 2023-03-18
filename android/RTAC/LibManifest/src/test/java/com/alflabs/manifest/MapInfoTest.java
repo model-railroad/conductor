@@ -21,7 +21,10 @@ package com.alflabs.manifest;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
+
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class MapInfoTest {
     @Before
@@ -34,9 +37,29 @@ public class MapInfoTest {
         assertThat(m1.getName()).isEqualTo("Map Name");
         assertThat(m1.getUri()).isEqualTo("uri/path/svg");
         assertThat(m1.getSvg()).isEqualTo("svg content");
+        assertThat(m1.toURI().toString()).isEqualTo("uri/path/svg");
+
 
         MapInfo m2 = new MapInfo("Map Name", "svg content", "uri/path/svg");
         assertThat(m1.equals(m2)).isTrue();
         assertThat(m1.hashCode()).isEqualTo(m2.hashCode());
+        assertThat(m2.toURI().toString()).isEqualTo("uri/path/svg");
+    }
+
+    @Test
+    public void testWindowsPath() throws Exception {
+        MapInfo m1 = new MapInfo("Map Name", "svg content", "\\\\temp\\windows\\path\\my map.svg");
+        assertThat(m1.getName()).isEqualTo("Map Name");
+        assertThat(m1.getUri()).isEqualTo("\\\\temp\\windows\\path\\my map.svg");
+        assertThat(m1.getSvg()).isEqualTo("svg content");
+
+        // This fails because the space is not properly URL encoded:
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> {
+            URI ignore = URI.create(m1.getUri());
+        });
+        assertThat(e.getMessage()).contains("Illegal character in path at index");
+
+        // This is the proper way to get the URI for the map.
+        assertThat(m1.toURI().toString()).isEqualTo("//temp/windows/path/my%20map.svg");
     }
 }

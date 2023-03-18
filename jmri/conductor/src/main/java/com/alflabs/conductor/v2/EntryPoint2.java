@@ -337,10 +337,9 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             adapter.getScriptFile().ifPresent(scriptFile -> {
                 adapter.getLoadedMapName().ifPresent(mapInfo -> {
                     String svgName = mapInfo.getName();
-                    URI svgUri = URI.create(mapInfo.getUri());
-
-                    log("Loading map '" + svgName + "' from : " + svgUri);
                     try {
+                        URI svgUri = mapInfo.toURI();
+                        log("Loading map '" + svgName + "' from : " + svgUri);
                         mWin.displaySvgMap(mapInfo.getSvg(), svgUri);
                     } catch (Exception e) {
                         log("Failed to load map '" + svgName + "' : " + e);

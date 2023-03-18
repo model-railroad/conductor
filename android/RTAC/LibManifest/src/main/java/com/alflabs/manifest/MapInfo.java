@@ -21,6 +21,9 @@ package com.alflabs.manifest;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Information on one Map served by Conductor.
  * <p/>
@@ -31,6 +34,14 @@ public class MapInfo {
     private String svg;      // field name exported to JSON
     private String uri;      // field name exported to JSON
 
+    /**
+     * Creates a MapInfo with the given map name, and map SVG _content_ string.
+     *
+     * The URI needs to be sanitized to make it compatible with java.net.URI:
+     * Window-path separator (\) is automatically converted to a URL-path separator (/),
+     * and other characters escaped as needed. This is done by the toURI() method, whilst
+     * the getUri() method returns the underlying non-sanitized version.
+     */
     @JsonCreator
     public MapInfo(
             @JsonProperty("name") String name,
@@ -49,6 +60,8 @@ public class MapInfo {
         return svg;
     }
 
+    /** Returns the raw underlying URI. It may not be fully properly encoded.
+     * Compare with toURI(). */
     public String getUri() {
         return uri;
     }
@@ -60,6 +73,14 @@ public class MapInfo {
                 ", uri='" + uri + '\'' +
                 ", svg='" + svg + '\'' +
                 '}';
+    }
+
+    public URI toURI() throws URISyntaxException {
+        final String scheme = null;
+        final String host = null;
+        final String path = uri.replaceAll("\\\\", "/");
+        final String fragment = null;
+        return new URI(scheme, host, path, fragment);
     }
 
     @Override
