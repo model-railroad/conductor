@@ -18,7 +18,9 @@
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-CONDUCTOR_VERSION = 1
+CONDUCTOR_VERSION = 2
+CONDUCTOR_EVENTS = "events.txt"    # for v1
+# CONDUCTOR_EVENTS = "/home/fireman/bitbucket/automation/jmri/conductor/engine2k/src/main/resources/v2/script/events.conductor.kts"         # for v2
 
 import sys
 print "Jython Path:", sys.path      # debug
@@ -47,7 +49,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._provider = provider
         # Note that JMRI NceThrottle.java ignores setSpeedStepMode (see setSpeed below for details).
         if self._throttle is not None:
-            self._throttle.setSpeedStepMode(self._throttle.SpeedStepMode128)
+            self._throttle.setSpeedStepMode(jmri.SpeedStepMode.NMRA_DCC_128)
         # How many times to repeat commands.
         self._repeat = range(0, 1)
 
@@ -259,7 +261,7 @@ class Automation(AbstractAutomaton):
         print "[Conductor] Automation SETUP"
         self._provider = JmriProvider(self)
         self._entry = ConductorEntryPoint()
-        if self._entry.setup(CONDUCTOR_VERSION, self._provider, "events.txt"):
+        if self._entry.setup(CONDUCTOR_VERSION, self._provider, CONDUCTOR_EVENTS):
             print "[Conductor] Automation START"
             self.start()
 
