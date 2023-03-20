@@ -27,6 +27,8 @@ import com.alfray.conductor.v2.script.ExecEngine2k
 import com.alfray.conductor.v2.utils.ConductorExecException
 import com.google.common.io.Resources
 import java.io.File
+import java.util.jar.Attributes
+import java.util.jar.JarFile
 import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultValue
@@ -57,6 +59,8 @@ class Script2kLoader @Inject constructor(
     @Suppress("UnstableApiUsage")
     fun loadScriptFromFile(scriptName: String) {
         status = Status.Loading
+
+        updateScriptClasspath()
 
         logger.d(TAG, "Java   Runtime Version: " + System.getProperty("java.version"))
         logger.d(TAG, "Kotlin Runtime Version: " + KotlinVersion.CURRENT)
@@ -91,6 +95,30 @@ class Script2kLoader @Inject constructor(
         scriptSource.scriptInfo = Script2kSourceInfo(source.name ?: scriptName, scriptFile, source)
         result = loadScript(source)
         status = Status.Loaded
+    }
+
+    private fun updateScriptClasspath() {
+        // Kotlin Scripting ClassPath is missing when executed from a FatJAR.
+        // https://youtrack.jetbrains.com/issue/KT-21443
+        // Get the JAR path and add it to kotlin.script.classpath, along with
+        // any JAR Manifest Class-Path.
+        val path = this::class.java.protectionDomain.codeSource.location.path
+        logger.d(TAG, "JAR Path = $path")
+        try {
+            val jar = JarFile(path)
+            val manifest = jar.manifest
+            val mainAttr = manifest.mainAttributes
+            val classPaths = mutableListOf<String>()
+            if (mainAttr.containsKey(Attributes.Name.CLASS_PATH)) {
+                val manifestCP = mainAttr[Attributes.Name.CLASS_PATH] as String
+                val sepCP = System.getProperty("path.separator")
+                classPaths.add(manifestCP.replace(" ", sepCP))
+            }
+            classPaths.add(path)
+            System.setProperty("kotlin.script.classpath", classPaths.joinToString(":"))
+        } catch (e: Exception) {
+            logger.d(TAG, "Failed to parse JAR ClassPath", e)
+        }
     }
 
     fun loadScriptFromText(scriptName: String = "local", scriptText: String) {
