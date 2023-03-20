@@ -80,7 +80,7 @@ class StatusWindow2 {
         mSwingBuilder.registerBeanFactory("svgCanvas", JSVGCanvas)
         mSwingBuilder.edt {
             mFrame = frame(title: "Conductor v2",
-                    preferredSize: new Dimension(1000, 500),
+                    preferredSize: new Dimension(1200, 700),
                     minimumSize: new Dimension(300, 300),
                     // locationRelativeTo: null,
                     pack: true,
