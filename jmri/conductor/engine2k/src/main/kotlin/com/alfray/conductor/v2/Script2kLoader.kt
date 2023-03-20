@@ -58,13 +58,17 @@ class Script2kLoader @Inject constructor(
     fun loadScriptFromFile(scriptName: String) {
         status = Status.Loading
 
+        logger.d(TAG, "Java   Runtime Version: " + System.getProperty("java.version"))
+        logger.d(TAG, "Kotlin Runtime Version: " + KotlinVersion.CURRENT)
+        logger.d(TAG, "Kotlin Script Classpath: " + System.getProperty("kotlin.script.classpath"))
+
         // Try the argument as a file path.
         var scriptFile = File(scriptName)
         var isFile = scriptFile.exists()
         if (!isFile) {
             // Maybe it lacks the extension?
             if (!scriptName.endsWith(".conductor.kts")) {
-                scriptFile = File(scriptName + ".conductor.kts")
+                scriptFile = File("$scriptName.conductor.kts")
                 isFile = scriptFile.exists()
             }
         }

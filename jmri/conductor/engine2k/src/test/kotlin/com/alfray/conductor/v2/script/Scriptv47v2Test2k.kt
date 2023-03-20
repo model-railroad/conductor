@@ -20,8 +20,6 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
-import com.alfray.conductor.v2.script.impl.RouteSequence
-import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
