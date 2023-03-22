@@ -22,6 +22,7 @@ import com.alflabs.conductor.jmri.IJmriSensor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.random.Random
 
 /** Creates a new sensor for the given JMRI system name. */
 @AssistedFactory
@@ -35,13 +36,25 @@ interface ISimulSensorFactory {
 class SimulSensor @AssistedInject constructor(
     @Assisted val systemName: String
 ) : IJmriSensor {
-    private var _active : Boolean = false
+    private var _active = false
+    private var _randomize = 0.0
+
+    fun setRandomize(randomThreshold: Double) {
+        _randomize = randomThreshold
+    }
 
     override fun isActive(): Boolean {
-        return _active
+        var active = _active
+        if (active && _randomize > 0 && Random.nextDouble() < _randomize) {
+            active = false
+        }
+        return active
     }
 
     override fun setActive(active: Boolean) {
+        if (!active) {
+            _randomize = 0.0
+        }
         _active = active
     }
 }

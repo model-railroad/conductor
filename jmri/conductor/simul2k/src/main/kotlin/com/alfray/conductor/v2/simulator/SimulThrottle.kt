@@ -144,12 +144,17 @@ class SimulThrottle @AssistedInject constructor(
     private fun changeBlock(newBlock: SimulRouteBlock?) {
         val oldBlock = block
         if (newBlock != oldBlock) {
-            oldBlock?.let {
-                jmriProvider.getSensor(it.systemName)?.isActive = false
+            oldBlock?.let { b ->
+                jmriProvider.getSensor(b.systemName)?.isActive = false
             }
-            newBlock?.let {
-                jmriProvider.getSensor(it.systemName)?.isActive = true
-                if (it.reversal) {
+            newBlock?.let { b ->
+                jmriProvider.getSensor(b.systemName)?.let { s ->
+                    s.isActive = true
+                    // Simulate a flaky "blinking" active block.
+                    s as SimulSensor
+                    s.setRandomize(0.01)
+                }
+                if (b.reversal) {
                     graphForward = !graphForward
                 }
             }
