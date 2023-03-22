@@ -60,10 +60,11 @@ internal class Block @AssistedInject constructor(
     private var _active = false
     private var lastActive = false
     private val keyName = "${Prefix.Block}$systemName"
+    /** The cached active property of the underlying sensor. Updated in [onExecHandle] only. */
     override val active: Boolean
         get() = condCache.cached(_active, keyName) // uses internal state, does NOT update from JMRI.
     /** Occupancy state of the block: empty, occupied, or trailing. */
-    var state = State.EMPTY
+    override var state = IBlock.State.EMPTY
         private set
 
     override fun not(): Boolean = !active
@@ -81,13 +82,7 @@ internal class Block @AssistedInject constructor(
 
     override fun defaultName(): String = systemName
 
-    enum class State {
-        EMPTY,
-        OCCUPIED,
-        TRAILING
-    }
-
-    fun changeState(newState: State) {
+    fun changeState(newState: IBlock.State) {
         state = newState
     }
 

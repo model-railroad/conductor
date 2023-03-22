@@ -18,7 +18,15 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface for a JMRI-backed block. */
+/**
+ * DSL script interface for a JMRI-backed block.
+ *
+ * A "block state" is either empty, occupied, or trailing.
+ *
+ * The "active" property is cached and updated from the underlying JMRI sensor only
+ * once per engine loop update for consistency. Script users should not rely on the "active"
+ * property, and focus on the "state" property instead.
+ */
 interface IBlock : IActive, IVarName {
     /** The JMRI system name of the sensor detecting this block's track occupation. */
     val systemName: String
@@ -28,4 +36,22 @@ interface IBlock : IActive, IVarName {
      * Can only be set once.
      */
     infix fun named(name: String) : IBlock
+
+    /** Occupancy state of the block. */
+    enum class State {
+        /** Block is empty. Underlying sensor should be inactive. */
+        EMPTY,
+
+        /** Block is known to be occupied. Underlying sensor is typically active,
+         * yet may temporarily register as inactive if flaky.  */
+        OCCUPIED,
+
+        /** Block is trailing. It was occupied and train has moved on to the next block.
+         * Underlying sensor is typically inactive, yet may temporary still be active
+         * during block movement transition. */
+        TRAILING
+    }
+
+    /** Occupancy state of the block: empty, occupied, or trailing. */
+    val state: State
 }

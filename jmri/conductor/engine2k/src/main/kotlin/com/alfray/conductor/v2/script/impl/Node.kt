@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.TAction
 
@@ -66,11 +67,11 @@ internal class Node(builder: NodeBuilder) : INode {
 
     /** Change the Node's block's state, and triggers the onEvent callbacks as appropriate
      * for the next execution. */
-    fun changeState(newState: Block.State) {
+    fun changeState(newState: IBlock.State) {
         block as Block
         val oldState = block.state
         if (oldState == newState) {
-            if (newState == Block.State.OCCUPIED) {
+            if (newState == IBlock.State.OCCUPIED) {
                 callWhileOccupied = actionWhileOccupied
             }
         } else {
@@ -80,14 +81,14 @@ internal class Node(builder: NodeBuilder) : INode {
             context.clearTimers()
 
             when (newState) {
-                Block.State.OCCUPIED -> {
+                IBlock.State.OCCUPIED -> {
                     callOnEnter = actionOnEnter
                     callWhileOccupied = actionWhileOccupied
                 }
-                Block.State.TRAILING -> {
+                IBlock.State.TRAILING -> {
                     callOnTrailing = actionOnTrailing
                 }
-                Block.State.EMPTY -> {
+                IBlock.State.EMPTY -> {
                     callOnEmpty = actionOnEmpty
                 }
             }
@@ -98,7 +99,7 @@ internal class Node(builder: NodeBuilder) : INode {
     /** If a Node's block's state is in OCCUPIED state, triggers its onEnter for next execution. */
     fun changeEnterState() {
         block as Block
-        if (block.state == Block.State.OCCUPIED) {
+        if (block.state == IBlock.State.OCCUPIED) {
             callOnEnter = actionOnEnter
             callWhileOccupied = actionWhileOccupied
         }

@@ -118,7 +118,7 @@ internal class RouteSequence(
         graph.nodes.forEach { node ->
             node as Node
             val b = node.block as Block
-            node.changeState(if (b.active) Block.State.OCCUPIED else Block.State.EMPTY)
+            node.changeState(if (b.active) IBlock.State.OCCUPIED else IBlock.State.EMPTY)
             if (b.active) {
                 if (b == currentBlock) {
                     currentBlockIsOccupied = b.active
@@ -190,12 +190,12 @@ internal class RouteSequence(
                 // Any trailing block becomes empty, current occupied becomes trailing.
 
                 graph.nodes
-                    .filter { (it.block as Block).state == Block.State.TRAILING }
-                    .forEach { (it as Node).changeState(Block.State.EMPTY) }
+                    .filter { (it.block as Block).state == IBlock.State.TRAILING }
+                    .forEach { (it as Node).changeState(IBlock.State.EMPTY) }
 
                 val enterNode = outgoingNodesActive.first() as Node
-                node.changeState(Block.State.TRAILING)
-                enterNode.changeState(Block.State.OCCUPIED)
+                node.changeState(IBlock.State.TRAILING)
+                enterNode.changeState(IBlock.State.OCCUPIED)
                 currentNode = enterNode
             }
         }
