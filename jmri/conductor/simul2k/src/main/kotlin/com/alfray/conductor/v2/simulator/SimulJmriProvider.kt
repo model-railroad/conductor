@@ -1,3 +1,21 @@
+/*
+ * Project: Conductor
+ * Copyright (C) 2022 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.FakeJmriProvider
@@ -54,7 +72,11 @@ class SimulJmriProvider @Inject constructor(
             .forEach { it.updateNodeTimers(sumTimersSec) }
     }
 
-    /** Sets the route definition for a given DCC throttle. */
+    /**
+     * Sets the route definition for a given DCC throttle.
+     *
+     * Once a throttle is active and has a graph, the simulated throttle updates the blocks' states.
+     */
     override fun setRoute(dccAddress: Int, graph: SimulRouteGraph) {
         this.d(TAG, "[Throttle $dccAddress] Set route $graph")
         val t = getThrottle(dccAddress) as SimulThrottle

@@ -39,12 +39,12 @@ class SimulThrottleTest : Simul2kTestBase() {
         assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isTrue()
 
-        clock.add(throttle.blockMaxMs.toLong())
+        clock.add(throttle.blockMaxMS.toLong())
         simul2k.onExecHandle()
         assertThat(throttle.block).isEqualTo(b2)
         assertThat(throttle.graphForward).isFalse()
 
-        clock.add(throttle.blockMaxMs.toLong())
+        clock.add(throttle.blockMaxMS.toLong())
         simul2k.onExecHandle()
         assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isFalse()

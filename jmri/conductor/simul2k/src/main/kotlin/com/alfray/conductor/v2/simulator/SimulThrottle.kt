@@ -1,3 +1,21 @@
+/*
+ * Project: Conductor
+ * Copyright (C) 2022 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriProvider
@@ -15,6 +33,15 @@ interface ISimulThrottleFactory {
     fun create(dccAddress: Int) : SimulThrottle
 }
 
+/**
+ * Simulated throttle.
+ *
+ * This "drives" the simulator.
+ * Once a route has an active throttle and a graph, the simulated throttle updates the blocks'
+ * states. A rough timing is computed for each block to determine how long to wait before moving
+ * to the next predicted block.
+ *
+ */
 class SimulThrottle @AssistedInject constructor(
     private val logger: ILogger,
     private val clock: IClock,
@@ -39,7 +66,7 @@ class SimulThrottle @AssistedInject constructor(
      * This is a dynamic property that uses a base 5-second time + any extra timer duration
      * from the current block.
      */
-    internal val blockMaxMs: Int
+    internal val blockMaxMS: Int
         get() {
             var sec = 5
             block?.let { sec += it.extraTimersSec }
@@ -153,7 +180,7 @@ class SimulThrottle @AssistedInject constructor(
                 blockMS += nowTS - lastTS
                 lastTS = nowTS
 
-                if (blockMS >= blockMaxMs) {
+                if (blockMS >= blockMaxMS) {
                     // change blocks
                     graph?.whereTo(b, graphForward)?.let { newBlock -> changeBlock(newBlock) }
                 }
@@ -171,7 +198,7 @@ class SimulThrottle @AssistedInject constructor(
             } else {
                 sb.append(String.format(Locale.US,
                     " for %.1f / %.1f s",
-                    blockMS / 1000.0, blockMaxMs / 1000.0))
+                    blockMS / 1000.0, blockMaxMS / 1000.0))
             }
 
             graph?.whereTo(b, graphForward)?.let { nb ->
