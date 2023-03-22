@@ -188,6 +188,11 @@ public class Engine1Adapter implements IEngineAdapter {
                             public boolean isActive() {
                                 return cond.isActive();
                             }
+
+                            @Override
+                            public Optional<BlockState> getBlockState() {
+                                return Optional.of(isActive() ? BlockState.BLOCK_OCCUPIED : BlockState.BLOCK_EMPTY);
+                            }
                         });
                     }));
         return list;
@@ -208,7 +213,8 @@ public class Engine1Adapter implements IEngineAdapter {
                         @Override
                         public boolean isActive() {
                             return cond.isActive();
-                        }});
+                        }
+                    });
                 }));
         return list;
     }

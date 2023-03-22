@@ -20,9 +20,22 @@ package com.alflabs.conductor.v2;
 
 import com.alflabs.annotations.NonNull;
 
+import java.util.Optional;
+
 public interface IActivableDisplayAdapter {
     @NonNull
     String getName();
 
     boolean isActive();
+
+    @NonNull
+    default Optional<BlockState> getBlockState() {
+        return Optional.empty();
+    }
+
+    enum BlockState {
+        BLOCK_EMPTY,
+        BLOCK_OCCUPIED,
+        BLOCK_TRAILING
+    }
 }

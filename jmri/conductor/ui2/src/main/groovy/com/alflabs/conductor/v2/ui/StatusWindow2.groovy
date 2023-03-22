@@ -324,7 +324,7 @@ class StatusWindow2 {
     void addBlock(IActivableDisplayAdapter adapter) {
         Runnable updater = { ->
             String name = "S-" + adapter.name
-            setBlockColor(name, adapter.active)
+            setBlockColor(name, adapter.active, adapter.blockState)
         }
         updater.run()
         mUpdaters.add(updater)
@@ -434,7 +434,10 @@ class StatusWindow2 {
         }
     }
 
-    void setBlockColor(String id, boolean active) {
+    void setBlockColor(
+            String id,
+            boolean active,
+            Optional<IActivableDisplayAdapter.BlockState> blockState) {
         modifySvg {
             SVGDocument doc = mSvgCanvas.getSVGDocument()
             Element elem = doc?.getElementById(id)
@@ -454,6 +457,18 @@ class StatusWindow2 {
                     }
                     //    println "_original_stroke $id = " + original.getClass().getSimpleName() + " " + original
                     def rgb = active ? "red" : original
+                    if (blockState.present) {
+                        switch (blockState.get()) {
+                            case IActivableDisplayAdapter.BlockState.BLOCK_EMPTY:
+                                break
+                            case IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED:
+                                rgb = active ? "red" : "orange"
+                                break
+                            case IActivableDisplayAdapter.BlockState.BLOCK_TRAILING:
+                                rgb = "orange"
+                                break
+                        }
+                    }
                     if (rgb != null) {
                         style.setProperty("stroke", rgb, priority)
                     }

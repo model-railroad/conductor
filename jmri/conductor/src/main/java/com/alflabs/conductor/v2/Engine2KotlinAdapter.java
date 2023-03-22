@@ -228,6 +228,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                             public void setActive(boolean isActive) {
                                 sensor.active(isActive);
                             }
+
+                            @Override
+                            public Optional<BlockState> getBlockState() {
+                                return Optional.empty();
+                            }
                         })));
         return list;
     }
@@ -246,6 +251,16 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                             @Override
                             public boolean isActive() {
                                 return block.getActive();
+                            }
+
+                            @Override
+                            public Optional<BlockState> getBlockState() {
+                                switch (block.getState()) {
+                                    case EMPTY: return Optional.of(BlockState.BLOCK_EMPTY);
+                                    case OCCUPIED: return Optional.of(BlockState.BLOCK_OCCUPIED);
+                                    case TRAILING: return Optional.of(BlockState.BLOCK_TRAILING);
+                                }
+                                throw new IllegalStateException("Missing Block State");
                             }
                         })));
         return list;
