@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.Delay
@@ -56,6 +57,7 @@ import javax.inject.Inject
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
+    private val clock: IClock,
     private val logger: ILogger,
     private val factory: Factory,
     private val keyValue: IKeyValue,
@@ -143,7 +145,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {
-        val b = ActiveRouteBuilder(logger)
+        val b = ActiveRouteBuilder(clock, logger)
         b.activeRouteSpecification()
         val a = b.create(keyValue, simulCallback)
         activeRoutes.add(a)

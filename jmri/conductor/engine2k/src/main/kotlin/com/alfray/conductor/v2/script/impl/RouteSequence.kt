@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
@@ -61,6 +62,7 @@ import java.util.Locale
  */
 internal class RouteSequence(
     override val owner: IActiveRoute,
+    private val clock: IClock,
     logger: ILogger,
     builder: RouteSequenceBuilder
 ) : RouteBase(logger, owner, builder), IRouteSequence, IRouteManager {

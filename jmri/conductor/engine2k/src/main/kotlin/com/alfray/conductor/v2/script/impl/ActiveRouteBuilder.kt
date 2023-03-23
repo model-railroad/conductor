@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
@@ -27,7 +28,10 @@ import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBuilder {
+internal class ActiveRouteBuilder(
+    private val clock: IClock,
+    private val logger: ILogger
+) : IActiveRouteBuilder {
     private val TAG = javaClass.simpleName
     var actionOnError: TAction? = null
     override lateinit var name: String
@@ -52,6 +56,6 @@ internal class ActiveRouteBuilder(private val logger: ILogger) : IActiveRouteBui
             // Sets the default for the active route.state to be "Idle".
             status = { "Idle" }
         }
-        return ActiveRoute(logger, keyValue, simulCallback, this)
+        return ActiveRoute(clock, logger, keyValue, simulCallback, this)
     }
 }

@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Prefix
 import com.alflabs.manifest.RouteInfo
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
@@ -31,7 +32,6 @@ import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
-import com.alfray.conductor.v2.simulator.SimulRouteGraph
 import com.alfray.conductor.v2.utils.assertOrThrow
 import java.util.Locale
 
@@ -56,7 +56,8 @@ import java.util.Locale
  * after which the route's onRecover callback is used instead of the normal processing.
  */
 internal class ActiveRoute(
-    private var logger: ILogger,
+    private val clock: IClock,
+    private val logger: ILogger,
     private val keyValue: IKeyValue,
     private val simulCallback: ISimulCallback?,
     builder: ActiveRouteBuilder
@@ -175,7 +176,7 @@ internal class ActiveRoute(
     }
 
     override fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute {
-        val builder = RouteSequenceBuilder(this, logger)
+        val builder = RouteSequenceBuilder(this, clock, logger)
         builder.routeSequenceSpecification()
         return add(builder.create())
     }

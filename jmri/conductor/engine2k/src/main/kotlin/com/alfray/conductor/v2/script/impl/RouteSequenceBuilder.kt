@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IActiveRoute
 import com.alfray.conductor.v2.script.dsl.IBlock
@@ -29,6 +30,7 @@ import com.alfray.conductor.v2.script.dsl.IThrottle
 
 internal class RouteSequenceBuilder(
     owner: IActiveRoute,
+    private val clock: IClock,
     logger: ILogger,
 ) : RouteBaseBuilder(owner, logger), IRouteSequenceBuilder {
     private val TAG = javaClass.simpleName
@@ -45,5 +47,5 @@ internal class RouteSequenceBuilder(
         return b.create()
     }
 
-    fun create() : IRouteSequence = RouteSequence(owner, logger, this)
+    fun create() : IRouteSequence = RouteSequence(owner, clock, logger, this)
 }
