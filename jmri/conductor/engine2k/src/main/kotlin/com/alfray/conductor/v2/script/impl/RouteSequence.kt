@@ -49,7 +49,7 @@ import java.util.Locale
  * active route' reportError() method. This triggers the ActiveRoute's onError callback once,
  * after which the route's onRecover callback is used instead of the normal processing.
  *
- * The onActivated callback can use call start_node() to change the starting node for the route.
+ * The onActivated callback can call start_node() to change the starting node for the route.
  * The starting node is used and validated during the activated-to-active transition. At that
  * point the route also verifies that the starting node is actually an occupied block, and that
  * there are no other occupied blocks on the route.

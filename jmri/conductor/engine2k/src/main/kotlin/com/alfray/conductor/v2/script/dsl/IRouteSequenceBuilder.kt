@@ -20,11 +20,18 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface to build an [IRouteSequence]. */
 interface IRouteSequenceBuilder : IRouteBaseBuilder {
+    /** The active route owning this sequence. Cannot be null, but could be an idle route. */
     val route: IActiveRoute
+    /** The throttle controlled by this sequence. Cannot be null. */
     var throttle: IThrottle
+    /** Max time in seconds that a running train can take to cross an active block. */
     var timeout: Int
+    /** The non-empty non-null list of nodes for this sequence. */
     var sequence: List<INode>
+    /** The possible-empty non-null alternate branches for this sequence. */
     val branches: MutableList<List<INode>>
+
+    /** Creation method to create a new node to be added later to [sequence] or [branches]. */
     fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit) : INode
 }
 
