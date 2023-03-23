@@ -39,9 +39,13 @@ internal abstract class RouteBase(
         private set
 
     internal enum class State {
+        /** A route that is currently not being used (aka "inactive") */
         IDLE,
+        /** A route that is in the process of being activated. Will change to [ACTIVE] next. */
         ACTIVATED,
+        /** The currently active route. */
         ACTIVE,
+        /** A route that is in error/recovery mode. */
         ERROR
     }
 

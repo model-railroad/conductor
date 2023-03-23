@@ -70,10 +70,24 @@ internal class RouteSequence(
     override val throttle = builder.throttle
     override val sequence = builder.sequence
     private var startNode: INode? = null
+    private var blockStartMS = 0L
     val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
+
+    private fun timeoutExpired(): Boolean =
+        blockStartMS > 0 &&
+                timeout > 0 &&
+                ((clock.elapsedRealtime() - blockStartMS) > 1000L * timeout)
+
+    private fun clearTimeout() {
+        blockStartMS = 0
+    }
+
+    private fun startTimeout() {
+        blockStartMS = clock.elapsedRealtime()
+    }
 
     override fun toString(): String {
         owner as ActiveRoute
@@ -111,6 +125,7 @@ internal class RouteSequence(
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
+        startTimeout()
 
         // Set every block to its initial state of either occupied or empty.
         val currentNode_ = currentNode as Node
@@ -178,8 +193,14 @@ internal class RouteSequence(
                 // Case A: Train still on same block. Current block active, no other active.
                 // TODO later add a timer if the current node "flickers" and is temporarily off.
                 // TODO this will also cover the case where both blocks are temporarily off when moving.
-                assertOrError(stillCurrentActive) {
-                    "ERROR $this current block suddenly became non-active. TBD average/use timer for that."
+                if (!stillCurrentActive) {
+                    val deltaMS = if (blockStartMS == 0L) 0L else (clock.elapsedRealtime() - blockStartMS)
+                    val expired = timeoutExpired()
+                    logger.d("@@", "@@ DEBUG isActive: $stillCurrentActive // expired: $expired // timerStart: $blockStartMS // delta: $deltaMS // timeout: $timeout secs"
+                    )
+                }
+                assertOrError(stillCurrentActive || !timeoutExpired()) {
+                    "ERROR $this current block suddenly became non-active after $timeout seconds."
                 }
             } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
@@ -199,6 +220,23 @@ internal class RouteSequence(
                 node.changeState(IBlock.State.TRAILING)
                 enterNode.changeState(IBlock.State.OCCUPIED)
                 currentNode = enterNode
+                clearTimeout()
+            }
+        }
+
+        // Handle current block timeout
+        if (currentNode == null) {
+            // Ignore timeout if we have no current block or if the train is stopped.
+            clearTimeout()
+        } else if (throttle.stopped) {
+            clearTimeout()
+        } else {
+            // We have a moving train on an active node.
+            if (blockStartMS == 0L) {
+                startTimeout()
+            }
+            assertOrError(!timeoutExpired()) {
+                "ERROR $this current block timeout expired after $timeout seconds."
             }
         }
     }
@@ -219,6 +257,7 @@ internal class RouteSequence(
                 }
             }
             else -> {
+                clearTimeout()
                 super.collectActions(execActions)
             }
         }
