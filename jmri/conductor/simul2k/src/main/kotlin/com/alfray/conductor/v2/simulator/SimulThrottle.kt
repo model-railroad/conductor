@@ -23,15 +23,9 @@ import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.Locale
-
-/** Creates a new throttle for the given JMRI DCC Address. */
-@AssistedFactory
-interface ISimulThrottleFactory {
-    fun create(dccAddress: Int) : SimulThrottle
-}
+import kotlin.math.min
 
 /**
  * Simulated throttle.
@@ -49,6 +43,8 @@ class SimulThrottle @AssistedInject constructor(
     @Assisted val dccAddress_: Int
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
+    /** The route timeout, in seconds. 0 to deactive. */
+    var routeTimeout: Int = 0
     /** The expected block graph for that throttle. */
     private var graph: SimulRouteGraph? = null
     /** The block simulating the current engine location for that throttle. */
@@ -65,11 +61,13 @@ class SimulThrottle @AssistedInject constructor(
      * Max time to spend on this block before moving to the next one.
      * This is a dynamic property that uses a base 5-second time + any extra timer duration
      * from the current block.
+     * If the route has a defined timeout, the block time cannot be longer than the given timeout.
      */
     internal val blockMaxMS: Int
         get() {
             var sec = 5
             block?.let { sec += it.extraTimersSec }
+            if (routeTimeout > 1) sec = min(sec, routeTimeout - 1)
             return sec * 1000
         }
 

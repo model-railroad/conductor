@@ -18,27 +18,10 @@
 
 package com.alfray.conductor.v2.simulator
 
-import com.alflabs.conductor.jmri.IJmriTurnout
-import com.alflabs.utils.ILogger
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedInject
+import dagger.assisted.AssistedFactory
 
-/**
- * Simulated turnout. This simply mirrors the programmatic state set using [setTurnout].
- */
-class SimulTurnout @AssistedInject constructor(
-    private val logger: ILogger,
-    @Assisted val systemName: String
-) : IJmriTurnout {
-    private val TAG = javaClass.simpleName
-    private var _normal = true
-
-    override fun isNormal(): Boolean {
-        return _normal
-    }
-
-    override fun setTurnout(normal: Boolean) {
-        _normal = normal
-        logger.d(TAG, String.format("[%s] Turnout: %s", systemName, if (normal) "Normal" else "Reverse"))
-    }
+/** Creates a new sensor for the given JMRI system name. */
+@AssistedFactory
+interface ISimulSensorFactory {
+    fun create(systemName: String) : SimulSensor
 }

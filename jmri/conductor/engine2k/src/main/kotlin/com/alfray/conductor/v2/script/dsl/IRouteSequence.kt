@@ -30,6 +30,10 @@ interface IRouteSequence : IRoute {
     /** The [INode] main sequence provided to the Route Sequence builder. */
     val sequence: List<INode>
 
+    /** Max time in seconds that a running train can take to cross an active block.
+     * Timeout becomes inactive if set to zero. */
+    val timeout: Int
+
     /** Internal Converts the route graph into a Simulator route graph. */
     fun toSimulGraph(): SimulRouteGraph
     // TODO IRouteSequence.toSimulGraph should not be exposed in the DSL.

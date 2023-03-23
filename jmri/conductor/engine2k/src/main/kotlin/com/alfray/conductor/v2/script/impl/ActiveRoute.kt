@@ -140,7 +140,7 @@ internal class ActiveRoute(
         simulCallback?.let {
             if (route is RouteSequence) {
                 val simulGraph = route.toSimulGraph()
-                simulCallback.setRoute(route.throttle.dccAddress, simulGraph)
+                simulCallback.setRoute(route.throttle.dccAddress, route.timeout, simulGraph)
             }
         }
     }

@@ -20,15 +20,8 @@ package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriSensor
 import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlin.random.Random
-
-/** Creates a new sensor for the given JMRI system name. */
-@AssistedFactory
-interface ISimulSensorFactory {
-    fun create(systemName: String) : SimulSensor
-}
 
 /**
  * Simulated sensor. This simply mirrors the programmatic state set using [setActive].

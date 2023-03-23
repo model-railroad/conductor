@@ -71,7 +71,7 @@ internal class RouteSequence(
     override val sequence = builder.sequence
     private var startNode: INode? = null
     private var blockStartMS = 0L
-    val timeout = builder.timeout
+    override val timeout = builder.timeout
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set

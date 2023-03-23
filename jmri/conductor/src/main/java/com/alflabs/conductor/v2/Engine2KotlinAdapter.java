@@ -169,7 +169,10 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                         .ifPresent(route -> {
                 IRouteSequence routeSequence = (IRouteSequence) route;
                 SimulRouteGraph graph = routeSequence.toSimulGraph();
-                routeManager.setRoute(routeSequence.getThrottle().getDccAddress(), graph);
+                routeManager.setRoute(
+                        routeSequence.getThrottle().getDccAddress(),
+                        routeSequence.getTimeout(),
+                        graph);
         }));
     }
 
