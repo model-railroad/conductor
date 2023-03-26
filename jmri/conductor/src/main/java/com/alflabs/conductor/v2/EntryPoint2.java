@@ -361,6 +361,14 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     @Override
     public void onWindowSvgLoaded() {
+        log("onWindowSvgLoaded");
+        StatusWindow2 win = mWin;
+        if (win == null) return;
+        if (!mIsSimulation) {
+            win.enterKioskMode();
+        } else {
+            log("Simulation: Skip Kiosk Mode.");
+        }
 
     }
 

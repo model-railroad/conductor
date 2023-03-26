@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+//file:noinspection GrMethodMayBeStatic
 package com.alflabs.conductor.v2.ui
 
 import com.alflabs.conductor.v2.IActivableDisplayAdapter
@@ -63,11 +64,14 @@ class StatusWindow2 {
     def JTextField mScriptNameField
     def JTextArea mLogField
     def JScrollPane mLogScroller
+    def JScrollPane mSimuScroller
     def JTextArea mLogSimul
+    def JPanel mTopPanel
     def JPanel mThrottlePanel
     def JPanel mSensorPanel
     def JSVGCanvas mSvgCanvas
     def JButton mPauseButton
+    def JCheckBox mKioskCheck
     private def mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
@@ -94,10 +98,11 @@ class StatusWindow2 {
                 final def wx = wsvg + wlog + wmid
                 final def hthl = 1
                 final def hsen = 1
-                final def hsvg = hthl + hsen
+                final def hbtn = 1
+                final def hsvg = hthl + hsen + hbtn
                 final def hy = 1 + hsvg + 1
                 // Top
-                panel(constraints: gbc(gridx:0, gridy: 0,
+                mTopPanel = panel(constraints: gbc(gridx:0, gridy: 0,
                         gridwidth: wx, gridheight: 1,
                         fill: HORIZONTAL, insets: inset)) {
                     gridBagLayout()
@@ -123,7 +128,7 @@ class StatusWindow2 {
 
                 // Below Map
                 // Bottom Simulator Log
-                scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_AS_NEEDED,
+                mSimuScroller = scrollPane(verticalScrollBarPolicy: VERTICAL_SCROLLBAR_AS_NEEDED,
                         horizontalScrollBarPolicy: HORIZONTAL_SCROLLBAR_AS_NEEDED,
                         constraints: gbc(gridx: 0, gridy: hsvg + 1,
                                 gridwidth: wsvg + 1, gridheight: 1,
@@ -152,6 +157,14 @@ class StatusWindow2 {
                         insets: inset, weightx: 0, weighty: 1)) {
                     boxLayout(axis: BoxLayout.Y_AXIS)
                     checkBox(text: "No JMRI Sensor", selected: false)
+                }
+                panel(constraints: gbc(gridx: wsvg, gridy: 1 + hthl + hsen,
+                        gridwidth: 1, gridheight: hbtn,
+                        fill: VERTICAL, anchor: PAGE_END,
+                        insets: inset, weightx: 0, weighty: 0)) {
+                    boxLayout(axis: BoxLayout.Y_AXIS)
+                    mKioskCheck = checkBox(text: "Kiosk Mode", selected: false,
+                            actionPerformed: { evt -> onKioskChanged() })
                 }
 
                 // Side Log
@@ -184,6 +197,28 @@ class StatusWindow2 {
     void onQuit() {
         mFrame.dispose()
         mWindowCallback.onQuit();
+    }
+
+    void onKioskChanged() {
+        def isKiosk = mKioskCheck.selected
+        if (isKiosk) {
+            mTopPanel.visible = false
+            mSimuScroller.visible = false
+            mLogScroller.visible = false
+            mFrame.setExtendedState(mFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH)
+        } else {
+            mTopPanel.visible = true
+            mSimuScroller.visible = true
+            mLogScroller.visible = true
+            mFrame.setExtendedState(mFrame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH)
+        }
+    }
+
+    void enterKioskMode() {
+        mSwingBuilder.doLater {
+            mKioskCheck.selected = true
+            onKioskChanged()
+        }
     }
 
     void updatePause(boolean isPaused) {
