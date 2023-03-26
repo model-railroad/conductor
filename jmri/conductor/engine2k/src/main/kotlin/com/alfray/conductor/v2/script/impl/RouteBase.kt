@@ -52,19 +52,23 @@ internal abstract class RouteBase(
 
     /** The state of this route, as managed by the [IActiveRoute] implementation. */
     var state = State.IDLE
-        set(value) {
-            if (field != value) {
-                if (field == State.ACTIVATED && value == State.ACTIVE) {
-                    // keep ACTIVATED timers when going to the ACTIVE state.
-                } else {
-                    // Clear all context timers.
-                    context.clearTimers()
-                }
-                // Update state
-                field = value
-                logger.d(TAG, "$this is now $state")
+        private set
+
+    /** Internal setter to change the state of this route. */
+    open fun changeState(newState: State) {
+        val oldState = state
+        if (oldState != newState) {
+            if (oldState == State.ACTIVATED && newState == State.ACTIVE) {
+                // keep ACTIVATED timers when going to the ACTIVE state.
+            } else {
+                // Clear all context timers.
+                context.clearTimers()
             }
+            // Update state
+            state = newState
+            logger.d(TAG, "$this is now $state")
         }
+    }
 
     /**
      * Internal utility that routes implementations can use to set the route in error mode.
@@ -104,7 +108,7 @@ internal abstract class RouteBase(
                     execActions.add(ExecAction(context, it))
                 }
                 execActions.add(ExecAction(context) {
-                    state = State.ACTIVE
+                    changeState(State.ACTIVE)
                 })
             }
             State.ACTIVE -> {

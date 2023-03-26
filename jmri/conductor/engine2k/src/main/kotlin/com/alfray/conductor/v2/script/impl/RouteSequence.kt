@@ -116,11 +116,21 @@ internal class RouteSequence(
     override fun toSimulGraph(): SimulRouteGraph = graph.toSimulGraph()
 
     /** Called from ExecEngine2's onExecStart to initialize and validate the state of the route. */
-    @Deprecated("Not useful for RouteSequence?")
-    override fun initRoute() {
+    override fun initRouteManager() {
     }
 
-    private fun onRouteActivated() {
+    override fun changeState(newState: State) {
+        super.changeState(newState)
+
+        if (newState == State.ACTIVATED) {
+            onRouteSequenceActivated();
+        } else if (newState == State.IDLE) {
+            onRouteSequenceIdle()
+        }
+    }
+
+    /** Called by [changeState] when this route sequence becomes activated. */
+    private fun onRouteSequenceActivated() {
         // Set or reset the initial start node.
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
@@ -160,6 +170,19 @@ internal class RouteSequence(
         currentNode_.changeEnterState()
     }
 
+    /** Called by [changeState] when this route sequence ends and becomes idle. */
+    private fun onRouteSequenceIdle() {
+        // Remove any trailing blocks. We don't need them as they will not be
+        // updated by this route manager anymore.
+        graph.nodes.forEach { node ->
+            node as Node
+            val b = node.block as Block
+            if (b.state == IBlock.State.TRAILING) {
+                node.changeState(IBlock.State.EMPTY)
+            }
+        }
+    }
+
     /** Invoked by the ExecEngine2 loop _before_ collecting all the actions to evaluate. */
     override fun manageRoute() {
         // Expected block change behavior:
@@ -191,14 +214,6 @@ internal class RouteSequence(
 
             if (outgoingNodesActive.isEmpty()) {
                 // Case A: Train still on same block. Current block active, no other active.
-                // TODO later add a timer if the current node "flickers" and is temporarily off.
-                // TODO this will also cover the case where both blocks are temporarily off when moving.
-                if (!stillCurrentActive) {
-                    val deltaMS = if (blockStartMS == 0L) 0L else (clock.elapsedRealtime() - blockStartMS)
-                    val expired = timeoutExpired()
-                    logger.d("@@", "@@ DEBUG isActive: $stillCurrentActive // expired: $expired // timerStart: $blockStartMS // delta: $deltaMS // timeout: $timeout secs"
-                    )
-                }
                 assertOrError(stillCurrentActive || !timeoutExpired()) {
                     "ERROR $this current block suddenly became non-active after $timeout seconds."
                 }
@@ -246,9 +261,6 @@ internal class RouteSequence(
         when (state) {
             State.ACTIVATED -> {
                 super.collectActions(execActions)
-                execActions.add(ExecAction(context) {
-                    onRouteActivated()
-                })
             }
             State.ACTIVE -> {
                 currentNode?.let {

@@ -19,6 +19,8 @@ Features of RTAC:
   goes in emergency stop, either tablet can be used to reset the system
   with some clear indication on screen of what to do.
 
+Our target hardware runs Android 5.1 a.k.a. API 22 (Lollipop MR1).
+
 Both tablets are synchronized so that the display is the same on both
 and either can be used to trigger the emergency stop or reset the
 automation.

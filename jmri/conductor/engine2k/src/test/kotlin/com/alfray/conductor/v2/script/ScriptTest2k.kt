@@ -565,7 +565,7 @@ class ScriptTest2k : ScriptTest2kBase() {
             .toList()
         assertThat(kv).containsExactly(
             "M/maps={\"mapInfos\":[]}",
-            "R/pa\$counter=1",
+            "R/pa\$counter=0",
             "R/pa\$status=My Idle Route",
             "R/pa\$throttle=0",
             "R/pa\$toggle=OFF",

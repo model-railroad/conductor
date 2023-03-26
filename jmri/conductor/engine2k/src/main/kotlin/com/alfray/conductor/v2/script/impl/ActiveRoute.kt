@@ -131,11 +131,15 @@ internal class ActiveRoute(
         }
 
         _active?.let {
-            it.state = RouteBase.State.IDLE
+            // If a new route is being activated:
+            //      --> the old route goes to IDLE, new route goes to ACTIVATED.
+            // If the same route is being re-activated:
+            //      --> it goes from current state (IDLE, ERROR, ACTIVE) to ACTIVATED below.
+            it.changeState(RouteBase.State.IDLE)
         }
 
         _active = route as RouteBase
-        _active?.state = RouteBase.State.ACTIVATED
+        _active?.changeState(RouteBase.State.ACTIVATED)
 
         simulCallback?.let {
             if (route is RouteSequence) {
@@ -151,10 +155,10 @@ internal class ActiveRoute(
             logger.d(TAG, "Active Route $name: $route reports error $isError")
             if (isError) {
                 callOnError = actionOnError
-                route.state = RouteBase.State.ERROR
+                route.changeState(RouteBase.State.ERROR)
             } else {
                 callOnError = null
-                route.state = RouteBase.State.ACTIVATED
+                route.changeState(RouteBase.State.ACTIVATED)
             }
         } else {
             logger.d(TAG, "Active Route $name: Ignore non-active $route reports error $isError")
@@ -187,15 +191,14 @@ internal class ActiveRoute(
         }
         _routes.forEach {
             it as RouteBase
-            it.state = RouteBase.State.IDLE
+            it.changeState(RouteBase.State.IDLE)
         }
         if (_active == null) {
             activate(_routes.first())
         }
         val route = _active
         if (route is IRouteManager) {
-            // TODO not useful for RouteSequence... remove?
-            route.initRoute()
+            route.initRouteManager()
         }
     }
 

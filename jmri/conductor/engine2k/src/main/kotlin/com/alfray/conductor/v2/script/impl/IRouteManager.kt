@@ -23,8 +23,7 @@ interface IRouteManager {
     /**
      * Called from ExecEngine2's onExecStart to initialize and validate the state of the route.
      */
-    @Deprecated("Not useful for RouteSequence?")
-    fun initRoute()
+    fun initRouteManager()
 
     /**
      * Called at the start of each ExecEngine2 loop to manage the route.
