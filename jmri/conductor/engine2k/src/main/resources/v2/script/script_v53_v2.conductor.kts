@@ -183,16 +183,16 @@ on { !ML_Toggle } then {
 
 
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger"
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\\nPassenger"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\n\nPassenger\n\nLeaving in 1 minute"
+    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\\nPassenger\\nLeaving in 1 minute"
 }
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight"
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\\nFreight"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\n\nFreight\n\nLeaving in 1 minute"
+    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
 }
 
 // --------------------
@@ -412,7 +412,7 @@ val Passenger_Route = ML_Route.sequence {
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
+        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\\nPassenger"
         json_event {
             key1 = "Depart"
             key2 = "Passenger"
@@ -602,7 +602,7 @@ val Freight_Route = ML_Route.sequence {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\n\nFreight"
+        exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\\nFreight"
         json_event {
             key1 = "Depart"
             key2 = "Freight"
