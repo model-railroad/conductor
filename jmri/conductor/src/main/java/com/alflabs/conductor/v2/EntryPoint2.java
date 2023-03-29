@@ -292,6 +292,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowReload() {
         log("onWindowReload");
 
+        mPaused.set(true);
         mWin.clearUpdates();
 
         if (!mAdapter.isPresent()) {
@@ -330,6 +331,8 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         registerUiThrottles();
         registerUiConditionals();
+
+        mPaused.set(false);
     }
 
     private void loadMap() {

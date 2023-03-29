@@ -110,7 +110,7 @@ class StatusWindow2 {
                             constraints: gbc(gridx: 0, gridy: 0,
                                     gridwidth: wx-wbtn, fill: HORIZONTAL, insets: inset, weightx: 1))
                     button(text: "Reload", constraints: gbc(gridx: wx-wbtn, gridy: 0, insets: inset, weightx: 0),
-                            actionPerformed: { evt -> windowCallback.onWindowReload() })
+                            actionPerformed: { evt -> onReload() })
                     mPauseButton =
                         button(text: "Pause", constraints: gbc(gridx: wx-wbtn+1, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowPause() })
@@ -197,6 +197,19 @@ class StatusWindow2 {
     void onQuit() {
         mFrame.dispose()
         mWindowCallback.onQuit();
+    }
+
+    void onReload() {
+        clearUpdates()
+        clearSvgMap()
+        registerThrottles(Collections.emptyList())
+        registerActivables(
+                /* sensors= */ Collections.emptyList(),
+                /* blocks= */ Collections.emptyList(),
+                /* turnouts= */ Collections.emptyList())
+        mSwingBuilder.doLater {
+            mWindowCallback.onWindowReload()
+        }
     }
 
     void onKioskChanged() {
@@ -388,12 +401,29 @@ class StatusWindow2 {
         }
     }
 
+    void clearSvgMap() {
+        mSvgCanvas.stopThenRun {
+            mModifSvgQueue.clear()
+            mBlockColorMap.clear()
+
+            def emptySvg = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 50 50" />"""
+
+            String parser = XMLResourceDescriptor.getXMLParserClassName()
+            SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser)
+            SVGDocument document = factory.createSVGDocument(
+                    "empty", // informational only
+                    new ByteArrayInputStream(emptySvg.getBytes("UTF-8")))
+            mSvgCanvas.setSVGDocument(document)
+        }
+    }
+
     // Fill SVG using svgDocument (as text).
     // If svgDocument is null or empty, rely only on mapUrl.
     // Note: the mapUrl is only used as a string below, however we use java.net.URI
     // to force callers to provide a valid URI.
     void displaySvgMap(String svgDocument, URI mapUrl) {
-        mSwingBuilder.doLater {
+        mSvgCanvas.stopThenRun {
             mModifSvgQueue.clear()
             mBlockColorMap.clear()
             // Per documentation in JSVGComponentListener, this is invoked from a background thread.
@@ -401,6 +431,7 @@ class StatusWindow2 {
                 @Override
                 void gvtRenderingCompleted(GVTTreeRendererEvent e) {
                     mSvgCanvas.removeGVTTreeRendererListener(mOnRenderCompleted)
+                    mOnRenderCompleted = null
                     mWindowCallback.onWindowSvgLoaded()
                     mFrame.pack()
 

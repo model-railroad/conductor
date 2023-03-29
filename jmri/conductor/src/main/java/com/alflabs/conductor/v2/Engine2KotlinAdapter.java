@@ -128,7 +128,15 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         long nowMs = mClock.elapsedRealtime();
         boolean wasRunning = mScript2kContext.getScript2kComponent().isPresent();
 
-        // TBD Release any resources from current script component as needed.
+        if (wasRunning) {
+            // TBD Release any resources from current script component as needed.
+            //
+            // The current mScript2kContext implementation (IScript2kComponent, Script2kLoader,
+            // and ConductorScriptHost) does not need any specific shutdown beside on reset() call.
+            // Factories and instances just get garbage-collected when a new mScript2kContext
+            // createComponent() is called below.
+        }
+
         mScript2kContext.reset();
         mSimul2kComponent.ifPresent(simul ->
                 simul.getSimul2k().onReload());
