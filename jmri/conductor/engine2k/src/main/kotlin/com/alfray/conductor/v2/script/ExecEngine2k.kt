@@ -30,7 +30,7 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.Script2kErrors
 import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
-import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.ActiveRoute
 import com.alfray.conductor.v2.script.impl.After
@@ -38,7 +38,7 @@ import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
 import com.alfray.conductor.v2.script.impl.RouteSequence
-import com.alfray.conductor.v2.script.impl.Rule
+import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.Throttle
@@ -193,7 +193,7 @@ class ExecEngine2k @Inject internal constructor(
         activatedActions.clear()
 
         // Collect all rules with an active condition that have not been executed yet.
-        conductor.rules.forEach { collectRuleAction(it) }
+        conductor.rules.forEach { collectOnRuleAction(it) }
 
         // Add rules from any currently active route, in order.
         conductor.activeRoutes.forEach { a ->
@@ -202,8 +202,9 @@ class ExecEngine2k @Inject internal constructor(
         }
 
         // Process all after timers
-        conductor.afterTimersContexts.forEach { c ->
-            c.afterTimers.forEach { collectAfterAction(c, it) }
+        // Note: on-delay timers are evaluated via collectOnRuleAction()
+        conductor.contextTimers.forEach { c ->
+            c.evalAfterTimers(this::collectAfterAction)
         }
 
         // Execute all actions in the order they are queued.
@@ -223,8 +224,8 @@ class ExecEngine2k @Inject internal constructor(
         condCache.unfreeze()
     }
 
-    private fun collectRuleAction(r: IRule) {
-        val rule = r as Rule
+    private fun collectOnRuleAction(r: IOnRule) {
+        val rule = r as OnRule
         val active: Boolean
         try {
             active = rule.evaluateCondition()
@@ -233,7 +234,7 @@ class ExecEngine2k @Inject internal constructor(
             return
         }
 
-        // Rules only get executed once when activated and until
+        // Non-delay Rules only get executed once when activated and until
         // the condition is cleared and activated again.
         val action: ExecAction
         try {
@@ -254,11 +255,9 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun collectAfterAction(context: ExecContext, after: After) {
-        after.start(logger, factory)
-        if (!after.invoked && after.active) {
-            after.invoked = true
-            activatedActions.add(ExecAction(context, after.collectAction()))
-
+        val action = after.eval(logger, factory)
+        action?.let {
+            activatedActions.add(ExecAction(context, action))
         }
     }
 

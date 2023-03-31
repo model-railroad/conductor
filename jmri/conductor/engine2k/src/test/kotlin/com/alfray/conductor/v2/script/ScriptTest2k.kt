@@ -867,7 +867,7 @@ class ScriptTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(1)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 0, numStarted = 0, numActive = 0, durationSec = 0))
 
         val train1 = conductorImpl.throttles[1001]!!
@@ -878,37 +878,37 @@ class ScriptTest2k : ScriptTest2kBase() {
         sensor1.active(true)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(1.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 0, numActive = 0, durationSec = 9))
 
         clock.add(1 * 1000)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(1.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 1, numActive = 0, durationSec = 9))
 
         clock.add(2 * 1000)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(2.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 2, numActive = 1, durationSec = 9))
 
         clock.add(3 * 1000)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(3.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 2, durationSec = 9))
 
         clock.add(4 * 1000)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(4.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 3, durationSec = 9))
 
         clock.add(5 * 1000)
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(4.speed)
-        assertThat(conductorImpl.sumAfterTimers()).isEqualTo(
+        assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 3, durationSec = 9))
     }
 }

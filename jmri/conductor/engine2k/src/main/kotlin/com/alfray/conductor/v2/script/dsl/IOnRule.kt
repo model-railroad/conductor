@@ -19,6 +19,6 @@
 package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface for a condition 'on..then' rule. */
-interface IRule {
+interface IOnRule {
     infix fun then(action: TAction)
 }

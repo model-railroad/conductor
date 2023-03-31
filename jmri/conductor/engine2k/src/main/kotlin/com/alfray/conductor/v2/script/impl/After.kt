@@ -28,7 +28,7 @@ import com.alfray.conductor.v2.utils.assertOrThrow
 internal class After(
     val delay: Delay,
     private val parent: After? = null,
-    private val registerAfter: (After) -> Unit,
+    private val registerTimer: (After) -> Unit,
 ) : IAfter {
     private val TAG = javaClass.simpleName
     private var action: TAction? = null
@@ -46,24 +46,26 @@ internal class After(
         get() = delay.seconds
 
     override fun then(action: TAction) : IThenAfter {
-        // We only "register" this After timer when the "when" clause is parsed.
-        registerAfter(this)
+        // We only "register" this After timer when the "then" clause is parsed.
+        registerTimer(this)
 
         val parent = this
         this.action = action
         return object : IThenAfter {
             override fun and_after(delay: Delay): IAfter {
-                val after = After(delay, parent, registerAfter)
+                val after = After(delay, parent, registerTimer)
                 thenAfter = after
                 return after
             }
         }
     }
 
-    fun start(logger: ILogger, factory: Factory) {
+    fun eval(logger: ILogger, factory: Factory): TAction? {
+        // If there's no timer, start it when possible.
         if (timer == null) {
+            // If there's a parent, only continue once it's active.
             if (parent != null && !parent.active) {
-                return
+                return null
             }
             logger.assertOrThrow(TAG, action != null) {
                 "ERROR missing 'then {...}' for 'after' or 'and_after' instruction."
@@ -71,8 +73,14 @@ internal class After(
             timer = factory.createTimer(delay)
             timer?.start()
         }
-    }
 
-    fun collectAction(): TAction = action!!
+        // If we have a timer, return the action only once when it becomes active.
+        if (!invoked && active) {
+            invoked = true
+            return action!!
+        }
+
+        return null
+    }
 }
 

@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.script.impl.After
+import com.alfray.conductor.v2.script.impl.OnDelayRule
 
 
 /**
@@ -30,7 +31,7 @@ import com.alfray.conductor.v2.script.impl.After
  */
 internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
     private val afterTimers_ = mutableListOf<After>()
-    val afterTimers: List<After> = afterTimers_
+    private val onDelayTimers_ = mutableListOf<OnDelayRule>()
 
     enum class Reason {
         LOAD_SCRIPT,
@@ -41,7 +42,13 @@ internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
         NODE,
     }
 
+    fun evalAfterTimers(collectAfterAction: (context: ExecContext, after: After) -> Unit) {
+        // Note: on-delay timers are evaluated via ExecEngine2.collectOnRuleAction()
+        afterTimers_.forEach { collectAfterAction(this, it) }
+    }
+
     fun clearTimers() {
+        onDelayTimers_.clear()
         afterTimers_.clear()
     }
 
@@ -49,13 +56,17 @@ internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
         afterTimers_.add(after)
     }
 
+    fun addTimer(on: OnDelayRule) {
+        onDelayTimers_.add(on)
+    }
+
     /** Returns a summary representation of the timers' activity for log purposes:
      *  Count: num timers, num started timer, num active timers, duration of all timers. */
     fun countTimers(): CountTimers {
-        val t = afterTimers_.size
-        val s = afterTimers_.count { it.started }
-        val a = afterTimers_.count { it.active }
-        val d = afterTimers_.sumOf { it.durationSec }
+        val t = afterTimers_.size + onDelayTimers_.size
+        val s = afterTimers_.count { it.started }       + onDelayTimers_.count { it.started }
+        val a = afterTimers_.count { it.active }        + onDelayTimers_.count { it.active }
+        val d = afterTimers_.sumOf { it.durationSec }   + onDelayTimers_.sumOf { it.durationSec }
         return CountTimers(t, s, a, d)
     }
 

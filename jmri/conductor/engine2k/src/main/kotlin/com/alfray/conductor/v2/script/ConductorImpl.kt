@@ -32,7 +32,7 @@ import com.alfray.conductor.v2.script.dsl.IConductor
 import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
 import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
-import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.ISvgMap
 import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
@@ -49,7 +49,8 @@ import com.alfray.conductor.v2.script.impl.GaPageBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
-import com.alfray.conductor.v2.script.impl.Rule
+import com.alfray.conductor.v2.script.impl.OnDelayRule
+import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
@@ -71,7 +72,7 @@ class ConductorImpl @Inject internal constructor(
     val throttles = mutableMapOf<Int, IThrottle>()
     val svgMaps = mutableMapOf<String, ISvgMap>()
     val timers = mutableListOf<ITimer>()
-    val rules = mutableListOf<IRule>()
+    val rules = mutableListOf<IOnRule>()
     val activeRoutes = mutableListOf<IActiveRoute>()
     var lastGaPage: GaPage? = null
         private set
@@ -79,7 +80,7 @@ class ConductorImpl @Inject internal constructor(
         private set
     var lastJsonEvent: JsonEvent? = null
         private set
-    internal val afterTimersContexts = mutableSetOf<ExecContext>()
+    internal val contextTimers = mutableSetOf<ExecContext>()
     private var simulCallback: ISimulCallback? = null
 
     override fun sensor(systemName: String): ISensor {
@@ -115,11 +116,22 @@ class ConductorImpl @Inject internal constructor(
         return m
     }
 
-    override fun on(condition: () -> Any): IRule {
+    override fun on(condition: () -> Any): IOnRule {
         currentContext.assertInScriptLoader(TAG) {
             "ERROR: on..then rule must be defined at the top global level."
         }
-        val rule = Rule(condition)
+        val rule = OnRule(condition)
+        rules.add(rule)
+        return rule
+    }
+
+    override fun on(delay: Delay, condition: () -> Any): IOnRule {
+        val context = currentContext.assertInScriptLoader(TAG) {
+            "ERROR: on..then rule must be defined at the top global level."
+        }
+        val rule = OnDelayRule(condition, delay, factory) { onTimer ->
+            context.addTimer(onTimer)
+        }
         rules.add(rule)
         return rule
     }
@@ -128,10 +140,10 @@ class ConductorImpl @Inject internal constructor(
         val context = currentContext.assertNotInScriptLoader(TAG) {
             "ERROR: after..then action must be defined in an event callback."
         }
-        val after = After(delay) { t ->
-            // The "After" timer only gets recorded when the "when" clause is parsed.
-            context.addTimer(t)
-            afterTimersContexts.add(context)
+        val after = After(delay) { afterTimer ->
+            // The "After" timer only gets recorded when the "then" clause is parsed.
+            context.addTimer(afterTimer)
+            contextTimers.add(context)
 
             if (context.reason == ExecContext.Reason.NODE
                 && context.parent is Node) {
@@ -181,9 +193,9 @@ class ConductorImpl @Inject internal constructor(
     }
 
     /** Internal helper to check state of registered after timers, for tests & debugging. */
-    internal fun sumAfterTimers() : ExecContext.CountTimers {
+    internal fun debugSumAfterTimers() : ExecContext.CountTimers {
         val ct = ExecContext.CountTimers(0, 0, 0, 0)
-        afterTimersContexts.forEach { ct.add(it.countTimers()) }
+        contextTimers.forEach { ct.add(it.countTimers()) }
         return ct
     }
 

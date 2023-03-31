@@ -62,7 +62,7 @@ val T330        = turnout("NT330")
 val T370        = turnout("NT370")
 val T450        = turnout("NT450")  // SW8 - Bridgeport
 val T504        = turnout("NT504")
-val T410        = turnout("NT410")  // DS64 - Sultan
+val T140        = turnout("NT140")  // DS64 - Sultan
 val T150        = turnout("NT150")  // DS64 - Mainline to Sultan
 val T151        = turnout("NT151")  // DS64 - Mainline to Napa Yard
 val T160        = turnout("NT160")  // DS64 - to Richmond Yard
@@ -83,6 +83,19 @@ exportedVars.JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
 
 exportedVars.GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 exportedVars.GA_URL = "http://consist.alfray.com/train/"
+
+
+
+// -----------------
+// DS64 Turnouts
+// -----------------
+//
+// These turnouts need to be reset to mainline when the layout starts.
+
+listOf(T450, T140, T150, T151, T160).forEachIndexed { i, t ->
+    on((10 + i).seconds) { true } then { t.reverse() }
+    on((15 + i).seconds) { true } then { t.normal()  }
+}
 
 
 // -----------------

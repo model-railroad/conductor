@@ -21,12 +21,12 @@ package com.alfray.conductor.v2.script.impl
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IActive
-import com.alfray.conductor.v2.script.dsl.IRule
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.utils.ConductorExecException
 
-internal class Rule(private val condition: TCondition) : IRule {
+internal open class OnRule(private val condition: TCondition) : IOnRule {
     private var action: TAction? = null
     private val context = ExecContext(ExecContext.Reason.ON_RULE)
 
@@ -34,7 +34,7 @@ internal class Rule(private val condition: TCondition) : IRule {
         this.action = action
     }
 
-    fun evaluateCondition() : Boolean {
+    open fun evaluateCondition() : Boolean {
         val result = condition.invoke()
         val cond : Boolean =
             when (result) {
@@ -45,7 +45,7 @@ internal class Rule(private val condition: TCondition) : IRule {
         return cond
     }
 
-    fun getAction() : ExecAction {
+    open fun getAction() : ExecAction {
         return action
             ?.let { ExecAction(context, it) }
             ?: throw ConductorExecException(
