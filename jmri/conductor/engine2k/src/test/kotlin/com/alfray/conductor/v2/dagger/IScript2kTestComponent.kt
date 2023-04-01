@@ -19,7 +19,7 @@ package com.alfray.conductor.v2.dagger
 
 import com.alfray.conductor.v2.script.CondCacheTest
 import com.alfray.conductor.v2.script.ScriptTest2k
-import com.alfray.conductor.v2.script.Scriptv45v2Test2k
+import com.alfray.conductor.v2.script.ScriptTest2Test2k
 import com.alfray.conductor.v2.script.Scriptv47v2Test2k
 import com.alfray.conductor.v2.script.Scriptv53v2Test2k
 import com.alfray.conductor.v2.script.dsl.ExportedVarsTest
@@ -37,7 +37,7 @@ interface IScript2kTestComponent: IScript2kComponent {
     fun inject(condCacheTest: CondCacheTest)
     fun inject(routeGraphTest: RouteGraphTest)
     fun inject(exportedVarsTest: ExportedVarsTest)
-    fun inject(scriptv45v2Test2k: Scriptv45v2Test2k)
+    fun inject(scriptTest2Test2K: ScriptTest2Test2k)
     fun inject(scriptv47v2Test2k: Scriptv47v2Test2k)
     fun inject(scriptv53v2Test2k: Scriptv53v2Test2k)
 

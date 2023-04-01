@@ -26,7 +26,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-class Scriptv45v2Test2k : ScriptTest2kBase() {
+class ScriptTest2Test2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
 
@@ -44,7 +44,7 @@ class Scriptv45v2Test2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v45_v2")
+        loadScriptFromFile("script_test2")
         assertResultNoError()
 
         assertThat(conductorImpl.blocks.keys).containsExactly(

@@ -82,13 +82,13 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testSampleV2() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
     }
 
     @Test
     fun testVariables() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.blocks.keys).containsExactly("NS768", "NS769")
@@ -113,7 +113,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testVarSensor() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.sensors).containsKey("NS829")
@@ -129,7 +129,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testVarBlock() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.blocks).containsKey("NS768")
@@ -155,7 +155,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testVarTurnout() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.turnouts).containsKey("NT311")
@@ -180,7 +180,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testVarThrottle() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
         currentContext.changeContext(testContext)
 
@@ -259,7 +259,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testVarTimer() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
@@ -283,7 +283,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testMapInfo() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.svgMaps).containsExactly(
@@ -294,7 +294,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testGaPage() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.lastGaPage).isEqualTo(
@@ -308,7 +308,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testGaEvent() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.lastGaEvent).isEqualTo(
@@ -323,7 +323,7 @@ class ScriptTest2k : ScriptTest2kBase() {
 
     @Test
     fun testJsonEvent() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertResultNoError()
 
         assertThat(conductorImpl.lastJsonEvent).isEqualTo(

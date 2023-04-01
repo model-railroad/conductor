@@ -83,7 +83,7 @@ public class ScriptTest2 {
 
     @Test
     public void testVarBlock() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mBinding.getVariables()).containsKey("B310");
         assertThat(mBinding.getVariables()).containsKey("B311");
@@ -100,7 +100,7 @@ public class ScriptTest2 {
 
     @Test
     public void testVarSensor() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mBinding.getVariables()).containsKey("Toggle");
         assertThat(mBinding.getVariable("Toggle")).isInstanceOf(Sensor.class);
@@ -115,7 +115,7 @@ public class ScriptTest2 {
 
     @Test
     public void testVarTurnout() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mBinding.getVariables()).containsKey("T311");
         assertThat(mBinding.getVariable("T311")).isInstanceOf(Turnout.class);
@@ -130,7 +130,7 @@ public class ScriptTest2 {
 
     @Test
     public void testVarThrottle() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mBinding.getVariables()).containsKey("Train1");
         assertThat(mBinding.getVariable("Train1")).isInstanceOf(Throttle.class);
@@ -143,7 +143,7 @@ public class ScriptTest2 {
 
     @Test
     public void testVarTimer() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mBinding.getVariables()).containsKey("MyTimer1");
         assertThat(mBinding.getVariable("MyTimer1")).isInstanceOf(Timer.class);
@@ -159,7 +159,7 @@ public class ScriptTest2 {
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
     public void testVariables() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         // Check that no global variable is null (which typically indicates a getter method
         // lacks a return statement).
@@ -198,7 +198,7 @@ public class ScriptTest2 {
     @Test
     @SuppressWarnings("unchecked")
     public void testMapInfo() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
 
         assertThat(mScript.maps()).containsExactly(
                 "Mainline",
@@ -389,7 +389,7 @@ public class ScriptTest2 {
 
     @Test
     public void testRouteSequence_OnActivate() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
         Throttle train1 = mScript.throttleByName("Train1").get();
 
         assertThat(mScript.routes()).containsKey("Route1");
@@ -414,7 +414,7 @@ public class ScriptTest2 {
 
     @Test
     public void testRouteSequence_Nodes() throws Exception {
-        loadScriptFromFile("sample_v2");
+        loadScriptFromFile("script_test1");
         Throttle train1 = mScript.throttleByName("Train1").get();
 
         SequenceInfo seqInfo =

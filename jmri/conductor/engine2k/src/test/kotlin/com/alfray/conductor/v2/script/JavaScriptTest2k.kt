@@ -58,7 +58,7 @@ class JavaScriptTest2k {
     @Ignore
     @Test
     fun testLoadScriptAndEval() {
-        loadScriptFromFile("sample_v2")
+        loadScriptFromFile("script_test1")
         assertThat(conductorImpl).isNotNull()
     }
 
