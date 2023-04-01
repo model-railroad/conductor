@@ -77,7 +77,7 @@ exportedVars.JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
 // GA Tracking
 
 exportedVars.GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
-exportedVars.GA_URL = "http://consist.alfray.com/train/"
+val GA_URL = "http://consist.alfray.com/train/"
 
 // -----------------
 // Motion
@@ -634,7 +634,7 @@ on { PA_Train == EPA_Train.Freight
 on { PA_State == EPA_State.Shuttle } then {
     PA_Start_Counter += 1
     ga_page {
-        url = exportedVars.GA_URL
+        url = GA_URL
         path = PA_Train.name
         user = PA_Start_Counter.toString()
     }

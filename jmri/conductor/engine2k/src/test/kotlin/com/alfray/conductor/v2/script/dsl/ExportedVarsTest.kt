@@ -38,8 +38,7 @@ class ExportedVarsTest: ScriptTest2kBase() {
     fun testExported() {
         exportedVars.Conductor_Time = 1234
         exportedVars.JSON_URL = "json://url"    // not exported
-        exportedVars.GA_URL = "ga://url"        // not exported
-        exportedVars.GA_Tracking_Id = "AB-cdEF"
+        exportedVars.GA_Tracking_Id = "AB-cdEF" // exported by Analytics, not Vars.
         exportedVars.RTAC_PSA_Text = "Automation Running"
         exportedVars.RTAC_Motion = true
 
@@ -50,7 +49,6 @@ class ExportedVarsTest: ScriptTest2kBase() {
             .map { "$it=" + keyValue.getValue(it) }
             .toList()
         assertThat(kv).containsExactly(
-            "V/\$ga-id\$=AB-cdEF",
             "V/conductor-time=1234",
             "V/rtac-motion=ON",
             "V/rtac-psa-text=Automation Running",

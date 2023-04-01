@@ -139,7 +139,6 @@ class Scriptv45v2Test2k : ScriptTest2kBase() {
             "T/NT330=N",
             "T/NT370=N",
             "T/NT504=N",
-            "V/\$ga-id\$=@~/bin/JMRI/rtac_ga_tracking_id.txt",
             "V/rtac-psa-text={c:red}Automation Stopped",
         )
     }

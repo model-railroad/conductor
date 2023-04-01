@@ -82,7 +82,7 @@ exportedVars.JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
 // GA Tracking
 
 exportedVars.GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
-exportedVars.GA_URL = "http://consist.alfray.com/train/"
+val GA_URL = "http://consist.alfray.com/train/"
 
 
 
@@ -380,7 +380,7 @@ on { ML_State == EML_State.Ready && !ML_Toggle } then {
 fun ML_Fn_Send_Start_GaEvent() {
     ML_Start_Counter += 1
     ga_page {
-        url = exportedVars.GA_URL
+        url = GA_URL
         path = ML_Train.name
         user = ML_Start_Counter.toString()
     }

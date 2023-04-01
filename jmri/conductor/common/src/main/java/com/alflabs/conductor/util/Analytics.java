@@ -19,6 +19,7 @@
 package com.alflabs.conductor.util;
 
 import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.manifest.Constants;
 import com.alflabs.utils.FileOps;
@@ -118,7 +119,7 @@ public class Analytics extends ThreadLoop {
         }
         // Use "#" as a comment and only take the first thing before, if any.
         idOrFile = idOrFile.replaceAll("[#\n\r].*", "");
-        // GA Id format is "UA-Numbers-1" so accept only letters, numbers, hyphen. Ignore the rest.
+        // GA ID format is "UA-Numbers-1" so accept only letters, numbers, hyphen. Ignore the rest.
         idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
 
         mAnalyticsId = idOrFile;
@@ -126,6 +127,7 @@ public class Analytics extends ThreadLoop {
         mLogger.d(TAG, "Tracking ID: " + mAnalyticsId);
     }
 
+    @Null
     public String getAnalyticsId() {
         return mAnalyticsId;
     }

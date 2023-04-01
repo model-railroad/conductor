@@ -18,6 +18,8 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.util.Analytics
+import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
@@ -61,6 +63,8 @@ class ConductorImpl @Inject internal constructor(
     private val clock: IClock,
     private val logger: ILogger,
     private val factory: Factory,
+    private val analytics: Analytics,
+    private val jsonSender: JsonSender,
     private val keyValue: IKeyValue,
     override val exportedVars: ExportedVars,
     private val currentContext: CurrentContext,
@@ -168,7 +172,7 @@ class ConductorImpl @Inject internal constructor(
         val builder = GaPageBuilder()
         builder.gaPageSpecification()
         val pg = builder.create()
-        // TODO send page
+        analytics.sendPage(pg.url, pg.path, pg.user)
         lastGaPage = pg
     }
 
@@ -176,7 +180,7 @@ class ConductorImpl @Inject internal constructor(
         val builder = GaEventBuilder()
         builder.gaEventSpecification()
         val ev = builder.create()
-        // TODO send event
+        analytics.sendEvent(ev.category, ev.action, ev.label, ev.user)
         lastGaEvent = ev
     }
 
@@ -184,7 +188,7 @@ class ConductorImpl @Inject internal constructor(
         val builder = JsonEventBuilder()
         builder.jsonEventSpecification()
         val ev = builder.create()
-        // TODO send event
+        jsonSender.sendEvent(ev.key1, ev.key2, ev.value)
         lastJsonEvent = ev
     }
 

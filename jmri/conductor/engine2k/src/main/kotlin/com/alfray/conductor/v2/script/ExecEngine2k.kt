@@ -18,7 +18,9 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.util.Analytics
 import com.alflabs.conductor.util.FrequencyMeasurer
+import com.alflabs.conductor.util.JsonSender
 import com.alflabs.conductor.util.RateLimiter
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
@@ -46,6 +48,7 @@ import com.alfray.conductor.v2.script.impl.Turnout
 import com.alfray.conductor.v2.utils.BooleanCache
 import com.fasterxml.jackson.core.JsonProcessingException
 import java.io.IOException
+import java.lang.Exception
 import javax.inject.Inject
 
 @Script2kScope
@@ -57,6 +60,8 @@ class ExecEngine2k @Inject internal constructor(
     private val fileOps: FileOps,
     private val keyValue: IKeyValue,
     private val condCache: CondCache,
+    private val analytics: Analytics,
+    private val jsonSender: JsonSender,
     private val eStopHandler: EStopHandler,
     private val scriptSource: Script2kSource,
     private val scriptErrors: Script2kErrors,
@@ -73,6 +78,7 @@ class ExecEngine2k @Inject internal constructor(
     private val globalRuleContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     override fun onExecStart() {
+        initFromExportedVars()
         conductor.blocks.forEach { (_, block) -> (block as Block).onExecStart() }
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
@@ -82,6 +88,11 @@ class ExecEngine2k @Inject internal constructor(
         reset()
         exportMaps()
         exportRoutes()
+    }
+
+    private fun initFromExportedVars() {
+        configureAnalyticsId()
+        configureJsonSenderUrl()
     }
 
     private fun exportMaps() {
@@ -267,6 +278,40 @@ class ExecEngine2k @Inject internal constructor(
 
     fun getMaxFrequency(): Float {
         return handleFrequency.maxFrequency
+    }
+
+    /** Configure the JSON Sender URL from ExportedVars. */
+    private fun configureJsonSenderUrl() {
+        var error: String? = null
+        val urlOrFile = conductor.exportedVars.JSON_URL
+        try {
+            jsonSender.setJsonUrl(urlOrFile)
+        } catch (e: Exception) {
+            error = "Failed to read '$urlOrFile', $e"
+        }
+        if (jsonSender.jsonUrl == null) {
+            error = "exportedVars.JSON_URL must be defined before the first json_event call."
+        }
+        error?.let {
+            logger.d(TAG, "JSON_URL: $error")
+        }
+    }
+
+    /** Configure the Analytics ID from ExportedVars. */
+    private fun configureAnalyticsId() {
+        var error: String? = null
+        val idOrFile = conductor.exportedVars.GA_Tracking_Id
+        try {
+            analytics.analyticsId = idOrFile
+        } catch (e: Exception) {
+            error = "Failed to read '$idOrFile', $e"
+        }
+        if (analytics.analyticsId == null) {
+            error = "exportedVars.GA_Tracking_Id must be defined before the first ga_page/ga_event call."
+        }
+        error?.let {
+            logger.d(TAG, "GA_Tracking_Id: $error")
+        }
     }
 }
 

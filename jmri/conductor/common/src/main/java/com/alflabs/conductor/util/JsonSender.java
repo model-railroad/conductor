@@ -71,7 +71,7 @@ public class JsonSender implements Runnable {
     private final AtomicReference<String> mLatestJson = new AtomicReference<>();
 
     private long mRetryDelay;
-    private HttpUrl mJsonUrl;
+    @Null private HttpUrl mJsonUrl;
 
     @Inject
     public JsonSender(ILogger logger,
@@ -129,6 +129,7 @@ public class JsonSender implements Runnable {
         }
     }
 
+    @Null
     public HttpUrl getJsonUrl() {
         return mJsonUrl;
     }

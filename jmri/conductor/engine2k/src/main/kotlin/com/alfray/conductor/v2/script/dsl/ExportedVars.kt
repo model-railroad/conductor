@@ -39,10 +39,6 @@ class ExportedVars @Inject internal constructor(
      * GA Events are not sent until this is defined. */
     var GA_Tracking_Id: String = ""
 
-    /** Site URL for the GA server. Written by the script.
-     * GA Events are not sent until this is defined. */
-    var GA_URL: String = ""
-
     /** Announcement text sent to the remote RTAC tablet android software.
      * Written by the script. Sent via the KV Server. */
     var RTAC_PSA_Text: String = ""
@@ -57,8 +53,6 @@ class ExportedVars @Inject internal constructor(
             if (RTAC_Motion) Constants.On else Constants.Off,
             true /*broadcast*/)
         keyValue.putValue(Constants.RtacPsaText, RTAC_PSA_Text, true /*broadcast*/)
-        if (GA_Tracking_Id.isNotBlank()) {
-            keyValue.putValue(Constants.GAId, GA_Tracking_Id, true /*broadcast*/)
-        }
+        // GA_Tracking_Id is exported by Analytics.setAnalyticsId(); we don't need to do it here.
     }
 }
