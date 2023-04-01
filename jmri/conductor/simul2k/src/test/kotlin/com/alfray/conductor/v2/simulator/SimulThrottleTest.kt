@@ -21,11 +21,12 @@ class SimulThrottleTest : Simul2kTestBase() {
     fun testThrottleProgression() {
         val graph = createGraph2()
         val (b1, b2) = graph.blocks
+        val routeTimeout = 60
 
         assertThat(graph.toString())
             .isEqualTo("(start={B1}, blocks=[{B1}, <B2>], edges=[{B1}=>><B2>=<>{B1}])")
 
-        simul2k.setRoute(dccAddress, graph)
+        simul2k.setRoute(dccAddress, routeTimeout, graph)
 
         assertThat(throttle.block).isEqualTo(b1)
         assertThat(throttle.graphForward).isTrue()

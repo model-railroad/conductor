@@ -19,8 +19,7 @@
 #
 
 CONDUCTOR_VERSION = 2
-CONDUCTOR_EVENTS = "events.txt"    # for v1
-# CONDUCTOR_EVENTS = "/home/fireman/bitbucket/automation/jmri/conductor/engine2k/src/main/resources/v2/script/events.conductor.kts"         # for v2
+CONDUCTOR_EVENTS = "events.txt"
 
 import sys
 print "Jython Path:", sys.path      # debug
