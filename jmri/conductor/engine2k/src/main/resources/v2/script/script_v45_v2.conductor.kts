@@ -173,7 +173,7 @@ val PA_Route = activeRoute {
             user = "Staff"
         }
         exportedVars.RTAC_PSA_Text = "{b:red}{c:white}Automation ERROR" ;
-        estop()
+        eStop()
     }
 }
 

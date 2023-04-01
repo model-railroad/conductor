@@ -63,9 +63,10 @@ class ConductorImpl @Inject internal constructor(
     private val clock: IClock,
     private val logger: ILogger,
     private val factory: Factory,
+    private val keyValue: IKeyValue,
     private val analytics: Analytics,
     private val jsonSender: JsonSender,
-    private val keyValue: IKeyValue,
+    private val eStopHandler: EStopHandler,
     override val exportedVars: ExportedVars,
     private val currentContext: CurrentContext,
 ) : IConductor {
@@ -192,8 +193,9 @@ class ConductorImpl @Inject internal constructor(
         lastJsonEvent = ev
     }
 
-    override fun estop() {
-        logger.d(TAG, "@@ TODO estop() is not yet implemented")
+    override fun eStop() {
+        logger.d(TAG, "ESTOP activated by script. All routes execution stopped until reset.")
+        eStopHandler.activateEStop()
     }
 
     /** Internal helper to check state of registered after timers, for tests & debugging. */

@@ -911,4 +911,36 @@ class ScriptTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 3, numStarted = 3, numActive = 3, durationSec = 9))
     }
+
+    @Test
+    fun testEStop() {
+        loadScriptFromText(scriptText =
+        """
+        val Train = throttle(1001)
+        val S01 = sensor("S01")
+        on { !S01 } then { Train.forward(1.speed) }
+        on {  S01 } then { eStop() }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(2)
+
+        val train1 = conductorImpl.throttles[1001]!!
+        val sensor1  = conductorImpl.sensors["S01"]!!
+
+        assertThat(train1.speed).isEqualTo(0.speed)
+        assertThat(sensor1.active).isFalse()
+        assertThat(keyValue.getValue("V/\$estop-state\$")).isEqualTo("NORMAL")
+
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(1.speed)
+        assertThat(keyValue.getValue("V/\$estop-state\$")).isEqualTo("NORMAL")
+
+        sensor1.active(true)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(train1.speed).isEqualTo(0.speed)
+        assertThat(keyValue.getValue("V/\$estop-state\$")).isEqualTo("ACTIVE")
+    }
 }

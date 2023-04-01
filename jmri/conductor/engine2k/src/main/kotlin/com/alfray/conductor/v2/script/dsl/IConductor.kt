@@ -62,7 +62,7 @@ interface IConductor {
     fun after(delay: Delay): IAfter
 
     /** Sends an emergency E-STOP to the DCC controller. */
-    fun estop()
+    fun eStop()
 
     /** Creates a new ActiveRoute to select between multiple routes. */
     fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute

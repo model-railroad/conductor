@@ -185,7 +185,12 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun eStopAllThrottles() {
-        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).eStop() }
+        currentContext.changeContext(globalRuleContext)
+        try {
+            conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).eStop() }
+        } finally {
+            currentContext.resetContext()
+        }
     }
 
     private fun reset() {
