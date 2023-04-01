@@ -169,7 +169,7 @@ class ConductorImpl @Inject internal constructor(
         return a
     }
 
-    override fun ga_page(gaPageSpecification: IGaPageBuilder.() -> Unit) {
+    override fun gaPage(gaPageSpecification: IGaPageBuilder.() -> Unit) {
         val builder = GaPageBuilder()
         builder.gaPageSpecification()
         val pg = builder.create()
@@ -177,7 +177,7 @@ class ConductorImpl @Inject internal constructor(
         lastGaPage = pg
     }
 
-    override fun ga_event(gaEventSpecification: IGaEventBuilder.() -> Unit) {
+    override fun gaEvent(gaEventSpecification: IGaEventBuilder.() -> Unit) {
         val builder = GaEventBuilder()
         builder.gaEventSpecification()
         val ev = builder.create()
@@ -185,7 +185,7 @@ class ConductorImpl @Inject internal constructor(
         lastGaEvent = ev
     }
 
-    override fun json_event(jsonEventSpecification: IJsonEventBuilder.() -> Unit) {
+    override fun jsonEvent(jsonEventSpecification: IJsonEventBuilder.() -> Unit) {
         val builder = JsonEventBuilder()
         builder.jsonEventSpecification()
         val ev = builder.create()

@@ -107,7 +107,7 @@ var AIU_Motion_Counter = 0
 on { AIU_Motion } then {
     exportedVars.RTAC_Motion = On
     AIU_Motion_Counter += 1
-    ga_event {
+    gaEvent {
         category = "Motion"
         action = "Start"
         label = "AIU"
@@ -117,7 +117,7 @@ on { AIU_Motion } then {
 
 on { !AIU_Motion } then {
     exportedVars.RTAC_Motion = Off
-    ga_event {
+    gaEvent {
         category = "Motion"
         action = "Stop"
         label = "AIU"
@@ -156,26 +156,26 @@ on { !ML_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
 // ---------------------
 
 on { ML_Toggle  } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "On"
         label = "Passenger"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Passenger"
         value = "On"
     }
 }
 on { !ML_Toggle } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Off"
         label = "Passenger"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Passenger"
         value = "Off"
@@ -324,7 +324,7 @@ val ML_Route = activeRoute {
         FR.stop()
         PA_sound(Off) ; PA.light(Off) ; PA_bell(Off)
         FR_sound(Off) ; FR.light(Off) ; FR_bell(Off) ; FR_marker(Off)
-        ga_event {
+        gaEvent {
             category = "Automation"
             action = "Error"
             label = "Passenger"
@@ -379,12 +379,12 @@ on { ML_State == EML_State.Ready && !ML_Toggle } then {
 
 fun ML_Fn_Send_Start_GaEvent() {
     ML_Start_Counter += 1
-    ga_page {
+    gaPage {
         url = GA_URL
         path = ML_Train.name
         user = ML_Start_Counter.toString()
     }
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Start"
         label = ML_Train.name
@@ -426,7 +426,7 @@ val Passenger_Route = ML_Route.sequence {
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
         exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\\nPassenger"
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Passenger"
         }
@@ -567,7 +567,7 @@ val Passenger_Route = ML_Route.sequence {
                 PA.horn()
                 PA_bell(Off)
             } and_after (AM_Timer_Down_Station_Lights_Off) then {
-                ga_event {
+                gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = ML_Train.name
@@ -616,7 +616,7 @@ val Freight_Route = ML_Route.sequence {
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
         exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\\nFreight"
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Freight"
         }
@@ -703,7 +703,7 @@ val Freight_Route = ML_Route.sequence {
             } and_after (SP_Sound_Stopped) then {
                 FR_sound(Off)
                 PA_sound(On)
-                ga_event {
+                gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = ML_Train.name
@@ -763,7 +763,7 @@ fun ML_Fn_Try_Recover_Route() {
 
         val names = PA_names.plus(FR_names).map { it.name }.distinct()
         exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track $names"
-        ga_event {
+        gaEvent {
             category = "Automation"
             action = "Warning"
             label = "Passenger"
@@ -1018,26 +1018,26 @@ on { !BL_Toggle } then {
 }
 
 on { BL_Toggle.active } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "On"
         label = "Branchline"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Branchline"
         value = "On"
     }
 }
 on { !BL_Toggle } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Off"
         label = "Branchline"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Branchline"
         value = "Off"
@@ -1082,7 +1082,7 @@ val BL_Route = activeRoute {
         BL.repeat(1.seconds)
         BL.stop()
         BL_sound(Off)
-        ga_event {
+        gaEvent {
             category = "Automation"
             action = "Error"
             label = "Branchline"
@@ -1125,7 +1125,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
             BL.forward(BL_Speed_Station)
         }
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Branchline"
         }

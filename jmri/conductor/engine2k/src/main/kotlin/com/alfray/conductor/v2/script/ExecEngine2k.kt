@@ -295,7 +295,7 @@ class ExecEngine2k @Inject internal constructor(
             error = "Failed to read '$urlOrFile', $e"
         }
         if (jsonSender.jsonUrl == null) {
-            error = "exportedVars.JSON_URL must be defined before the first json_event call."
+            error = "exportedVars.JSON_URL must be defined before the first jsonEvent call."
         }
         error?.let {
             logger.d(TAG, "JSON_URL: $error")
@@ -312,7 +312,7 @@ class ExecEngine2k @Inject internal constructor(
             error = "Failed to read '$idOrFile', $e"
         }
         if (analytics.analyticsId == null) {
-            error = "exportedVars.GA_Tracking_Id must be defined before the first ga_page/ga_event call."
+            error = "exportedVars.GA_Tracking_Id must be defined before the first gaPage/gaEvent call."
         }
         error?.let {
             logger.d(TAG, "GA_Tracking_Id: $error")

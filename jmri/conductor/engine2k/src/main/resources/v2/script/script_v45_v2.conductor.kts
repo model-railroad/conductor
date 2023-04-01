@@ -88,7 +88,7 @@ var AIU_Motion_Counter = 0
 on { AIU_Motion } then {
     exportedVars.RTAC_Motion = On
     AIU_Motion_Counter += 1
-    ga_event {
+    gaEvent {
         category = "Motion"
         action = "Start"
         label = "AIU"
@@ -98,7 +98,7 @@ on { AIU_Motion } then {
 
 on { !AIU_Motion } then {
     exportedVars.RTAC_Motion = Off
-    ga_event {
+    gaEvent {
         category = "Motion"
         action = "Stop"
         label = "AIU"
@@ -166,7 +166,7 @@ val PA_Route = activeRoute {
         SP.stop()
         AM.sound(Off) ; AM.light(Off) ; AM.f1(Off)
         SP.sound(Off) ; SP.light(Off) ; SP.f1(Off) ; SP.f5(Off)
-        ga_event {
+        gaEvent {
             category = "Automation"
             action = "Error"
             label = "Passenger"
@@ -217,7 +217,7 @@ val Passenger_Route = PA_Route.sequence {
 
     onActivate {
         exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\n\nPassenger"
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Passenger"
         }
@@ -373,7 +373,7 @@ val Passenger_Route = PA_Route.sequence {
                 AM.horn()
                 AM.f1(Off)
             } and_after (AM_Timer_Down_Station_Lights_Off) then {
-                ga_event {
+                gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = PA_Train.name
@@ -424,7 +424,7 @@ val Freight_Route = PA_Route.sequence {
 
     onActivate {
         exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\n\nFreight"
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Freight"
         }
@@ -520,7 +520,7 @@ val Freight_Route = PA_Route.sequence {
             } and_after(SP_Sound_Stopped) then {
                 SP.sound(Off)
                 AM.sound(On)
-                ga_event {
+                gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = PA_Train.name
@@ -574,26 +574,26 @@ on { !PA_Toggle } then {
 }
 
 on { PA_Toggle  } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "On"
         label = "Passenger"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Passenger"
         value = "On"
     }
 }
 on { !PA_Toggle } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Off"
         label = "Passenger"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Passenger"
         value = "Off"
@@ -633,12 +633,12 @@ on { PA_Train == EPA_Train.Freight
 
 on { PA_State == EPA_State.Shuttle } then {
     PA_Start_Counter += 1
-    ga_page {
+    gaPage {
         url = GA_URL
         path = PA_Train.name
         user = PA_Start_Counter.toString()
     }
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Start"
         label = PA_Train.name
@@ -692,26 +692,26 @@ var BL_State = EBL_State.Start
 var BL_Start_Counter = 0
 
 on { BL_Toggle.active } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "On"
         label = "Branchline"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Branchline"
         value = "On"
     }
 }
 on { !BL_Toggle } then {
-    ga_event {
+    gaEvent {
         category = "Automation"
         action = "Off"
         label = "Branchline"
         user = "Staff"
     }
-    json_event {
+    jsonEvent {
         key1 = "Toggle"
         key2 = "Branchline"
         value = "Off"
@@ -728,7 +728,7 @@ val BL_Route = activeRoute {
         BL.repeat(1.seconds)
         BL.stop()
         BL.sound(Off)
-        ga_event {
+        gaEvent {
             category = "Automation"
             action = "Error"
             label = "Branchline"
@@ -765,7 +765,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
             BL.forward(BL_Speed)
         }
-        json_event {
+        jsonEvent {
             key1 = "Depart"
             key2 = "Branchline"
         }

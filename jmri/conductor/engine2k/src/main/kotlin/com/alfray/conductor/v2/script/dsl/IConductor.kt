@@ -69,13 +69,13 @@ interface IConductor {
 
     /** Sends a GA Page statistic.
      * No-op till GA ID & URL are defined. */
-    fun ga_page(gaPageSpecification: IGaPageBuilder.() -> Unit)
+    fun gaPage(gaPageSpecification: IGaPageBuilder.() -> Unit)
 
     /** Sends a GA Event statistic.
      * No-op till GA ID & URL are defined. */
-    fun ga_event(gaEventSpecification: IGaEventBuilder.() -> Unit)
+    fun gaEvent(gaEventSpecification: IGaEventBuilder.() -> Unit)
 
     /** Sends a JSON status.
      * No-op till the JSON URL is defined. */
-    fun json_event(jsonEventSpecification: IJsonEventBuilder.() -> Unit)
+    fun jsonEvent(jsonEventSpecification: IJsonEventBuilder.() -> Unit)
 }

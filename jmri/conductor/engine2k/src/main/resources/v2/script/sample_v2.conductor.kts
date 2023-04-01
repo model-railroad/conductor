@@ -144,20 +144,20 @@ on { MyTimer2 } then {
 }
 // Events Logging
 
-ga_page {
+gaPage {
     url = "TheUrl"
     path = "SomePath"
     user = "SomeValue"
 }
 
-ga_event {
+gaEvent {
     category = "Motion"
     action = "Stop"
     label = "AIU"
     user = "AIU-Motion-Counter"
 }
 
-json_event {
+jsonEvent {
     key1 = "Depart"
     key2 = "Passenger"
     value = "value"
