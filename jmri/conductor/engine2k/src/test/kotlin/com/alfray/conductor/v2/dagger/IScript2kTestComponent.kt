@@ -18,10 +18,9 @@
 package com.alfray.conductor.v2.dagger
 
 import com.alfray.conductor.v2.script.CondCacheTest
-import com.alfray.conductor.v2.script.ScriptTest2k
+import com.alfray.conductor.v2.script.ScriptDslTest2k
 import com.alfray.conductor.v2.script.ScriptTest2Test2k
-import com.alfray.conductor.v2.script.Scriptv47v2Test2k
-import com.alfray.conductor.v2.script.Scriptv53v2Test2k
+import com.alfray.conductor.v2.script.ValidateScriptsSyntax2k
 import com.alfray.conductor.v2.script.dsl.ExportedVarsTest
 import com.alfray.conductor.v2.script.impl.RouteGraphTest
 import com.alfray.conductor.v2.script.impl.ThrottleTest
@@ -32,14 +31,13 @@ import dagger.Subcomponent
 @Subcomponent
 interface IScript2kTestComponent: IScript2kComponent {
     fun inject(timerTest: TimerTest)
-    fun inject(scriptTest2k: ScriptTest2k)
+    fun inject(scriptDslTest2K: ScriptDslTest2k)
     fun inject(throttleTest: ThrottleTest)
     fun inject(condCacheTest: CondCacheTest)
     fun inject(routeGraphTest: RouteGraphTest)
     fun inject(exportedVarsTest: ExportedVarsTest)
     fun inject(scriptTest2Test2K: ScriptTest2Test2k)
-    fun inject(scriptv47v2Test2k: Scriptv47v2Test2k)
-    fun inject(scriptv53v2Test2k: Scriptv53v2Test2k)
+    fun inject(validateScriptsSyntax2K: ValidateScriptsSyntax2k)
 
     @Subcomponent.Factory
     interface Factory {

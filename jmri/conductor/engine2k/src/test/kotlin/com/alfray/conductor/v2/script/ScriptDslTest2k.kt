@@ -40,7 +40,8 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-class ScriptTest2k : ScriptTest2kBase() {
+/** Tests most features of the Conductor 2 DSL scripting engine. */
+class ScriptDslTest2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
     @Inject internal lateinit var currentContext: CurrentContext

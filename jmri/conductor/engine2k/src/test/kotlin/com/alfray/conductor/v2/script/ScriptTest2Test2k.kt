@@ -26,6 +26,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
+/** Tests using script_test2.conductor.kts file. */
 class ScriptTest2Test2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue

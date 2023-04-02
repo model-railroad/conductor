@@ -29,7 +29,14 @@ import kotlin.script.experimental.api.SourceCode
 // - https://github.com/JetBrains/kotlin/blob/master/compiler/cli/cli-common/src/org/jetbrains/kotlin/cli/common/repl/KotlinJsr223JvmScriptEngineBase.kt
 // - https://github.com/JetBrains/kotlin/blob/master/compiler/cli/cli-common/src/org/jetbrains/kotlin/cli/common/repl/ReplState.kt
 
-class JavaScriptEval {
+
+/**
+ * Script eval using the javax [ScriptEngineManager].
+ * This was a prototype.
+ * Doing so indirectly accesses the Kotlin Scripting Host using the JSR 233 API.
+ */
+@Deprecated("Use ConductorScriptHost directly instead.")
+class Jsr233ScriptEval {
     fun eval(source: SourceCode) : IConductor {
         val manager = ScriptEngineManager()
         val engine = manager.getEngineByExtension("kts")

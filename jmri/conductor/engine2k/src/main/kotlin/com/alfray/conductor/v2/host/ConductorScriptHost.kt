@@ -28,6 +28,7 @@ import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.api.constructorArgs
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 
+/** Script eval using the kotlin.script.experimental [BasicJvmScriptingHost]. */
 @Script2kScope
 internal class ConductorScriptHost @Inject constructor() {
     private val scriptingHost = BasicJvmScriptingHost()

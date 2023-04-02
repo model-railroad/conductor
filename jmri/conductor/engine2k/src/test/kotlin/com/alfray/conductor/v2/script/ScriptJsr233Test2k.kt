@@ -18,7 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
-import com.alfray.conductor.v2.host.JavaScriptEval
+import com.alfray.conductor.v2.host.Jsr233ScriptEval
 import com.alfray.conductor.v2.script.dsl.IConductor
 import com.google.common.io.Resources
 import com.google.common.truth.Truth.assertThat
@@ -29,8 +29,14 @@ import kotlin.script.experimental.api.SourceCode
 import kotlin.script.experimental.host.StringScriptSource
 import kotlin.script.experimental.host.UrlScriptSource
 
-class JavaScriptTest2k {
-    private val scriptEval = JavaScriptEval()
+/**
+ * Prototype testing the use of [Jsr233ScriptEval] to load, parse, and exec a kts script.
+ * Doing so indirectly accesses the Kotlin Scripting Host using the JSR 233 API.
+ * This has been deprecated in favor of using ConductorScriptHost instead; see [ScriptTest2kBase].
+ * This test uses script_test1.conductor.kts.
+ */
+class ScriptJsr233Test2k {
+    private val scriptEval = Jsr233ScriptEval()
     private lateinit var conductorImpl: ConductorImpl
 
     @Before

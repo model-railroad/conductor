@@ -31,6 +31,8 @@ import javax.inject.Inject
 import kotlin.script.experimental.api.EvaluationResult
 import kotlin.script.experimental.api.ResultWithDiagnostics
 
+/** Base for script-based unit tests, loading script (from files or strings)
+ * using the regular [Script2kLoader]. */
 open class ScriptTest2kBase {
     protected val logger = StringLogger(/* useSysOut */ true)
     protected val jmriProvider = FakeJmriProvider(logger)

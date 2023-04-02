@@ -24,7 +24,12 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-class Scriptv53v2Test2k : ScriptTest2kBase() {
+/**
+ * Tests the syntax of the various script_vNN_v2.conductor.kts files.
+ * No behavior is actually tested.
+ * When adding a new script file, simply add a test here to validate the syntax upfront.
+ */
+class ValidateScriptsSyntax2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
 
@@ -35,6 +40,15 @@ class Scriptv53v2Test2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "Map 1.svg"))
+    }
+
+    @Test
+    fun testScript47() {
+        fileOps.writeBytes(
+            "<svg/>".toByteArray(Charsets.UTF_8),
+            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
+        loadScriptFromFile("script_v47_v2")
+        assertResultNoError()
     }
 
     @Test
