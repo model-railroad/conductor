@@ -20,7 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.INodeBuilder
@@ -29,12 +29,12 @@ import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 
 internal class RouteSequenceBuilder(
-    owner: IActiveRoute,
+    owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
 ) : RouteBaseBuilder(owner, logger), IRouteSequenceBuilder {
     private val TAG = javaClass.simpleName
-    override val route: IActiveRoute
+    override val route: IRoutesContainer
         get() = owner
     override lateinit var throttle: IThrottle
     override var timeout = 60

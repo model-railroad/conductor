@@ -166,7 +166,7 @@ jsonEvent {
 enum class EPA_State { Idle, Running, Wait }
 var PA_State = EPA_State.Idle
 
-val PA_Route = activeRoute {
+val PA_Route = routes {
     name = "PA"
     toggle = Toggle
     status = { PA_State.toString() }

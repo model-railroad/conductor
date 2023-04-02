@@ -26,8 +26,8 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
-import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
+import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
@@ -41,7 +41,7 @@ import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
-import com.alfray.conductor.v2.script.impl.ActiveRouteBuilder
+import com.alfray.conductor.v2.script.impl.RoutesContainerBuilder
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.GaEvent
@@ -78,7 +78,7 @@ class ConductorImpl @Inject internal constructor(
     val svgMaps = mutableMapOf<String, ISvgMap>()
     val timers = mutableListOf<ITimer>()
     val rules = mutableListOf<IOnRule>()
-    val activeRoutes = mutableListOf<IActiveRoute>()
+    val routesContainers = mutableListOf<IRoutesContainer>()
     var lastGaPage: GaPage? = null
         private set
     var lastGaEvent: GaEvent? = null
@@ -161,11 +161,11 @@ class ConductorImpl @Inject internal constructor(
         return after
     }
 
-    override fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute {
-        val b = ActiveRouteBuilder(clock, logger)
-        b.activeRouteSpecification()
+    override fun routes(routesContainerSpecification: IRoutesContainerBuilder.() -> Unit): IRoutesContainer {
+        val b = RoutesContainerBuilder(clock, logger)
+        b.routesContainerSpecification()
         val a = b.create(keyValue, simulCallback)
-        activeRoutes.add(a)
+        routesContainers.add(a)
         return a
     }
 

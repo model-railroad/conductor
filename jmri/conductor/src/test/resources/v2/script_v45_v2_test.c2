@@ -386,7 +386,7 @@ Route Freight-Route {
     }
 }
 
-ActiveRoute PA-Route = PA-Idle-Route Passenger-Route Freight-Route
+RoutesContainer PA-Route = PA-Idle-Route Passenger-Route Freight-Route
 
 
 # --- PA State: Error
@@ -664,7 +664,7 @@ Route BL-StationToParked-Route {
     }
 }
 
-ActiveRoute BL-Route = BL-Idle-Route BL-Shuttle-Route BL-StationToParked-Route
+RoutesContainer BL-Route = BL-Idle-Route BL-Shuttle-Route BL-StationToParked-Route
 
 # --- BL State: Error
 

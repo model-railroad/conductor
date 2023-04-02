@@ -18,8 +18,8 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface for an active route. */
-interface IActiveRoute {
+/** DSL script interface for a list route, of which only one can be active at a time. */
+interface IRoutesContainer {
     /** The exported name of this route. Displayed on RTAC. */
     val name: String
 
@@ -32,7 +32,7 @@ interface IActiveRoute {
     /** The currently active route. */
     val active : IRoute
 
-    /** All the route choices for this active route. */
+    /** All the route choices for this routes' container. */
     val routes : List<IRoute>
 
     /** Activates this route, or resets & re-activates the current route. */

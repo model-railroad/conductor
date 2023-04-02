@@ -21,7 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
@@ -29,7 +29,7 @@ import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
     protected val logger: ILogger,
-    override val owner: IActiveRoute,
+    override val owner: IRoutesContainer,
     builder: RouteBaseBuilder
 ) : IRoute {
     private val TAG = javaClass.simpleName
@@ -50,7 +50,7 @@ internal abstract class RouteBase(
         ERROR
     }
 
-    /** The state of this route, as managed by the [IActiveRoute] implementation. */
+    /** The state of this route, as managed by the [IRoutesContainer] implementation. */
     var state = State.IDLE
         private set
 
@@ -78,11 +78,11 @@ internal abstract class RouteBase(
         if (!value) {
             val message = lazyMessage().toString()
             logger.d(TAG, message)
-            (owner as ActiveRoute).reportError(this, true)
+            (owner as RoutesContainer).reportError(this, true)
         }
     }
 
-    /** Invoked by script to activate this route in its active route owner. */
+    /** Invoked by script to activate this route in its routes container owner. */
     override fun activate() {
         owner.activate(this)
     }

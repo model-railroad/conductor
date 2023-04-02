@@ -34,7 +34,7 @@ import com.alfray.conductor.v2.dagger.Script2kContext;
 import com.alfray.conductor.v2.dagger.Script2kModule;
 import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine2k;
-import com.alfray.conductor.v2.script.dsl.IActiveRoute;
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer;
 import com.alfray.conductor.v2.script.dsl.IBlock;
 import com.alfray.conductor.v2.script.dsl.IRouteSequence;
 import com.alfray.conductor.v2.script.dsl.ISensor;
@@ -161,15 +161,15 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
 
         mSimul2kComponent.ifPresent(simul -> {
             Simul2k simul2k = simul.getSimul2k();
-            sendRoutesToSimulator(conductorImpl.getActiveRoutes(), simul2k);
+            sendRoutesToSimulator(conductorImpl.getRoutesContainers(), simul2k);
             simul2k.onExecStart();
         });
 
         return Pair.of(wasRunning, file);
     }
 
-    private void sendRoutesToSimulator(List<IActiveRoute> activeRoutes, Simul2k routeManager) {
-        activeRoutes.forEach(active ->
+    private void sendRoutesToSimulator(List<IRoutesContainer> routesContainers, Simul2k routeManager) {
+        routesContainers.forEach(active ->
                 active.getRoutes()
                         .stream()
                         .filter(r -> r instanceof IRouteSequence)
@@ -374,11 +374,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 engine.getActualFrequency(),
                 engine.getMaxFrequency()));
 
-        outStatus.append("\n--- [ ACTIVE ROUTES ] ---\n");
-        for (IActiveRoute activeRoute : script.getActiveRoutes()) {
-            outStatus.append(activeRoute.getName())
+        outStatus.append("\n--- [ ROUTES ] ---\n");
+        for (IRoutesContainer routesContainer : script.getRoutesContainers()) {
+            outStatus.append(routesContainer.getName())
                     .append(": ")
-                    .append(activeRoute.getLogStatus())
+                    .append(routesContainer.getLogStatus())
                     .append('\n');
         }
         appendNewLine(outStatus);

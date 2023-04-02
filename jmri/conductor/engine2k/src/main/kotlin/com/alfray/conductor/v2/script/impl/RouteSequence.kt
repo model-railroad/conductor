@@ -21,7 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
@@ -40,15 +40,15 @@ import java.util.Locale
  * allow the route to deviate from the main block sequence, e.g. for alternative routing or
  * for error handling.
  *
- * Routes have one state that matters to the active route:
+ * Routes have one state that matters to the routes' container:
  * - Idle: the route is not active and not being invoked by the script.
  * - Activated: the route has been activated. Its onActivated callback is called once.
  * - Active: the route is active and processing its normal behavior (e.g. sequence).
  * - Error: the route is in error. Its onRecover callback is called repeatedly.
  *
  * Routes are responsible for identifying their own error state. They do so by calling the
- * active route' reportError() method. This triggers the ActiveRoute's onError callback once,
- * after which the route's onRecover callback is used instead of the normal processing.
+ * routes' container reportError() method. This triggers the RoutesContainer's onError callback
+ * once, after which the route's onRecover callback is used instead of the normal processing.
  *
  * The onActivated callback can call start_node() to change the starting node for the route.
  * The starting node is used and validated during the activated-to-active transition. At that
@@ -61,7 +61,7 @@ import java.util.Locale
  * In the Active state, the route manager manages blocks and nodes.
  */
 internal class RouteSequence(
-    override val owner: IActiveRoute,
+    override val owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
     builder: RouteSequenceBuilder
@@ -90,7 +90,7 @@ internal class RouteSequence(
     }
 
     override fun toString(): String {
-        owner as ActiveRoute
+        owner as RoutesContainer
         val index = owner.routeIndex(this)
         val addr = throttle.dccAddress
         return String.format(Locale.US, "Route Sequence %s#%d (%04d)", owner.name, index, addr)

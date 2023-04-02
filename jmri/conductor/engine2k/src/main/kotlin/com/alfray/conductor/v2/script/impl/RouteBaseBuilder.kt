@@ -19,13 +19,13 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.ILogger
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRouteBaseBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal open class RouteBaseBuilder(
-    protected val owner: IActiveRoute,
+    protected val owner: IRoutesContainer,
     protected val logger: ILogger,
 ) : IRouteBaseBuilder {
     private val TAG = javaClass.simpleName

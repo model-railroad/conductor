@@ -34,7 +34,7 @@ import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
-import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.Factory
@@ -84,7 +84,7 @@ class ExecEngine2k @Inject internal constructor(
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
         // Routes must be started after all sensor objects.
-        conductor.activeRoutes.forEach { (it as ActiveRoute).onExecStart() }
+        conductor.routesContainers.forEach { (it as RoutesContainer).onExecStart() }
         reset()
         exportMaps()
         exportRoutes()
@@ -119,18 +119,18 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun exportRoutes() {
-        conductor.activeRoutes.forEach { ar ->
+        conductor.routesContainers.forEach { ar ->
             ar.routes.forEach {
                 if (it is RouteSequence) {
-                    logger.d(TAG, "Active Route [${ar.name}]: $it = ${it.graph}")
+                    logger.d(TAG, "Routes Container [${ar.name}]: $it = ${it.graph}")
                 } else {
-                    logger.d(TAG, "Active Route [${ar.name}]: $it")
+                    logger.d(TAG, "Routes Container [${ar.name}]: $it")
                 }
             }
         }
 
         val infos = RouteInfos(
-            conductor.activeRoutes.map { (it as ActiveRoute).routeInfo }.toTypedArray())
+            conductor.routesContainers.map { (it as RoutesContainer).routeInfo }.toTypedArray())
 
         try {
             keyValue.putValue(Constants.RoutesKey, infos.toJsonString(), true)
@@ -172,7 +172,7 @@ class ExecEngine2k @Inject internal constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecHandle() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecHandle() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecHandle() }
-        conductor.activeRoutes.forEach { (it as ActiveRoute).onExecHandle() }
+        conductor.routesContainers.forEach { (it as RoutesContainer).onExecHandle() }
     }
 
     private fun repeatSpeed() {
@@ -211,9 +211,9 @@ class ExecEngine2k @Inject internal constructor(
         // Collect all rules with an active condition that have not been executed yet.
         conductor.rules.forEach { collectOnRuleAction(it) }
 
-        // Add rules from any currently active route, in order.
-        conductor.activeRoutes.forEach { a ->
-            a as ActiveRoute
+        // Add rules from any currently routes container, in order.
+        conductor.routesContainers.forEach { a ->
+            a as RoutesContainer
             a.collectActions(activatedActions)
         }
 

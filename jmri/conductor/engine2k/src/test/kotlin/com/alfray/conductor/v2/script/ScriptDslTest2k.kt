@@ -23,7 +23,7 @@ import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.dsl.IRouteIdle
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
-import com.alfray.conductor.v2.script.impl.ActiveRoute
+import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.FBits
 import com.alfray.conductor.v2.script.impl.GaEvent
@@ -67,7 +67,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """
         Sensor1 = sensor("S01")
         val T1 = throttle 1001
-        val Routes = activeRoute
+        val Routes = routes
         """.trimIndent()
         )
         // TBD... can we make this error less cryptic?
@@ -76,8 +76,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             ERROR Unresolved reference: Sensor1 (local.conductor.kts:2:1)
             ERROR Function invocation 'throttle(...)' expected (local.conductor.kts:3:10)
             ERROR No value passed for parameter 'dccAddress' (local.conductor.kts:3:10)
-            ERROR Function invocation 'activeRoute(...)' expected (local.conductor.kts:4:14)
-            ERROR No value passed for parameter 'activeRouteSpecification' (local.conductor.kts:4:14)
+            ERROR Function invocation 'routes(...)' expected (local.conductor.kts:4:14)
+            ERROR No value passed for parameter 'routesContainerSpecification' (local.conductor.kts:4:14)
         """.trimIndent())
     }
 
@@ -539,7 +539,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         loadScriptFromText(scriptText =
         """
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
             status = { "My Idle Route" }
@@ -549,13 +549,13 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
-        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        assertThat(conductorImpl.routesContainers).hasSize(1)
 
-        val activeRoute = conductorImpl.activeRoutes[0]
-        val route = activeRoute.active
+        val routesContainer = conductorImpl.routesContainers[0]
+        val route = routesContainer.active
         assertThat(route).isInstanceOf(IRouteIdle::class.java)
         assertThat(route.toString()).isEqualTo("Route Idle PA#0")
-        assertThat(activeRoute.toString()).isEqualTo("ActiveRoute PA")
+        assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
         execEngine.onExecHandle()
@@ -586,7 +586,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """
         val Train1  = throttle(1001)
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
             status = { "My Idle Route" }
@@ -604,7 +604,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
-        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val train1 = conductorImpl.throttles[1001]!!
         assertThat(train1.speed).isEqualTo(0.speed)
@@ -624,7 +624,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         loadScriptFromText(scriptText =
         """
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }
@@ -645,7 +645,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Block1  = block("B01")
         val Block2  = block("B02")
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }
@@ -668,8 +668,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
         assertThat(conductorImpl.rules).hasSize(0)
 
-        assertThat(conductorImpl.activeRoutes).hasSize(1)
-        val ar = conductorImpl.activeRoutes[0] as ActiveRoute
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+        val ar = conductorImpl.routesContainers[0] as RoutesContainer
 
         assertThat(ar.routes).hasSize(2)
         assertThat(ar.routes[0]).isInstanceOf(RouteIdle::class.java)
@@ -688,7 +688,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
 
         assertThat(seq.toString()).isEqualTo("Route Sequence PA#1 (1001)")
-        assertThat(ar.toString()).isEqualTo("ActiveRoute PA")
+        assertThat(ar.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
         execEngine.onExecHandle()
@@ -725,7 +725,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Block3  = block("B03")
         val Block4  = block("B04")
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }
@@ -753,7 +753,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
         assertThat(conductorImpl.rules).hasSize(0)
 
-        val ar = conductorImpl.activeRoutes[0] as ActiveRoute
+        val ar = conductorImpl.routesContainers[0] as RoutesContainer
         val seq = ar.routes[1] as RouteSequence
 
         assertThat(seq.graph.toString()).isEqualTo(
@@ -769,7 +769,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Block1  = block("B01")
         val Block2  = block("B02")
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }
@@ -786,9 +786,9 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
         assertThat(conductorImpl.rules).hasSize(0)
-        assertThat(conductorImpl.activeRoutes).hasSize(1)
+        assertThat(conductorImpl.routesContainers).hasSize(1)
 
-        val route = conductorImpl.activeRoutes[0].active as RouteBase
+        val route = conductorImpl.routesContainers[0].active as RouteBase
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
         execEngine.onExecHandle()
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
@@ -805,7 +805,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }
@@ -829,7 +829,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Train1  = throttle(1001)
         val Block1  = block("B01")
         val Toggle = sensor("S01")
-        val Routes = activeRoute {
+        val Routes = routes {
             name = "PA"
             toggle = Toggle
         }

@@ -21,17 +21,17 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import com.alfray.conductor.v2.script.dsl.IActiveRoute
-import com.alfray.conductor.v2.script.dsl.IActiveRouteBuilder
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
+import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder
 import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal class ActiveRouteBuilder(
+internal class RoutesContainerBuilder(
     private val clock: IClock,
     private val logger: ILogger
-) : IActiveRouteBuilder {
+) : IRoutesContainerBuilder {
     private val TAG = javaClass.simpleName
     var actionOnError: TAction? = null
     override lateinit var name: String
@@ -40,22 +40,22 @@ internal class ActiveRouteBuilder(
 
     override fun onError(action: TAction) {
         logger.assertOrThrow(TAG, actionOnError == null) {
-            "ActiveRoute onError defined more than once"
+            "RoutesContainer onError defined more than once"
         }
         actionOnError = action
     }
 
-    fun create(keyValue: IKeyValue, simulCallback: ISimulCallback?): IActiveRoute {
+    fun create(keyValue: IKeyValue, simulCallback: ISimulCallback?): IRoutesContainer {
         logger.assertOrThrow(TAG, this::name.isInitialized) {
-            "ActiveRoute 'name' property has not been defined."
+            "RoutesContainer 'name' property has not been defined."
         }
         logger.assertOrThrow(TAG, this::toggle.isInitialized) {
-            "ActiveRoute $name 'toggle' property has not been defined."
+            "RoutesContainer $name 'toggle' property has not been defined."
         }
         if (!this::status.isInitialized) {
             // Sets the default for the active route.state to be "Idle".
             status = { "Idle" }
         }
-        return ActiveRoute(clock, logger, keyValue, simulCallback, this)
+        return RoutesContainer(clock, logger, keyValue, simulCallback, this)
     }
 }

@@ -309,9 +309,9 @@ on { PA.forward } then { PA.f5(On) }
 on { PA.reverse } then { PA.f5(On) }
 
 
-// --- Mainline Active Routes
+// --- Mainline Routes
 
-val ML_Route = activeRoute {
+val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
     status = { "$ML_State $ML_Train" }
@@ -1071,7 +1071,7 @@ if (bl_has_gyro) {
     }
 }
 
-val BL_Route = activeRoute {
+val BL_Route = routes {
     name = "Branchline"
     toggle = BL_Toggle
     status = { BL_State.toString() }

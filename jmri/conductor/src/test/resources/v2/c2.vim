@@ -27,7 +27,7 @@ syn keyword c1Keywords Map Enum Timer Int String Throttle
 syn keyword c1Keywords Start Stop Reset On Off
 syn keyword c1Keywords Forward Reverse Stopped Horn Sound Repeat ESTOP Normal
 syn keyword c1SpecialVars GA-Event RTAC-PSA-Text
-syn keyword c2Keywords Route ActiveRoute Function Block Enter Activate After Then
+syn keyword c2Keywords Route RoutesContainer Function Block Enter Activate After Then
 
 hi def link c1Symbols     Keyword
 hi def link c1Keywords     Keyword

@@ -286,7 +286,7 @@ fun ML_Fn_Release_Route() {
     T321.normal()
 }
 
-val ML_Route = activeRoute {
+val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
     status = { "$ML_State $ML_Train" }
@@ -1040,7 +1040,7 @@ on { BL.reverse } then {
     CAB.f4(Off)
 }
 
-val BL_Route = activeRoute {
+val BL_Route = routes {
     name = "Branchline"
     toggle = BL_Toggle
     status = { BL_State.toString() }

@@ -22,10 +22,10 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface for a generic abstract route. */
 interface IRoute {
-    /** The [IActiveRoute] containing this route. */
-    val owner: IActiveRoute
+    /** The [IRoutesContainer] containing this route. */
+    val owner: IRoutesContainer
 
-    /** Activates this route in its [IActiveRoute], or resets & re-activates the current route. */
+    /** Activates this route in its [IRoutesContainer], or resets & re-activates the current route. */
     fun activate()
 
     /**

@@ -64,8 +64,8 @@ interface IConductor {
     /** Sends an emergency E-STOP to the DCC controller. */
     fun eStop()
 
-    /** Creates a new ActiveRoute to select between multiple routes. */
-    fun activeRoute(activeRouteSpecification: IActiveRouteBuilder.() -> Unit): IActiveRoute
+    /** Creates a new RoutesContainer to select between multiple routes. */
+    fun routes(routesContainerSpecification: IRoutesContainerBuilder.() -> Unit): IRoutesContainer
 
     /** Sends a GA Page statistic.
      * No-op till GA ID & URL are defined. */

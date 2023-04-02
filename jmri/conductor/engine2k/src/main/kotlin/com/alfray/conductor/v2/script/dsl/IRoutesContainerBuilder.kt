@@ -18,8 +18,8 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** Interal DSL script interface to create a new [IActiveRoute]. */
-interface IActiveRouteBuilder {
+/** Interal DSL script interface to create a new [IRoutesContainer]. */
+interface IRoutesContainerBuilder {
     /**
      * The exported name of this route. Mandatory.
      * This name is displayed on the RTAC tablet display.

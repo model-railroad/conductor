@@ -59,11 +59,11 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
 
         assertThat(conductorImpl.rules.size).isAtLeast(1)
 
-        assertThat(conductorImpl.activeRoutes).hasSize(2)
+        assertThat(conductorImpl.routesContainers).hasSize(2)
 
         // --- PA route ---
-        val pa = conductorImpl.activeRoutes[0]
-        assertThat(pa.toString()).isEqualTo("ActiveRoute Mainline")
+        val pa = conductorImpl.routesContainers[0]
+        assertThat(pa.toString()).isEqualTo("RoutesContainer Mainline")
 
         assertThat(pa.routes).hasSize(3)
         assertThat(pa.routes[0].toString()).isEqualTo("Route Idle Mainline#0")
@@ -79,8 +79,8 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
             "[{B311}=>><B321>=<>{B311}],[<B321>->><B330>-<>{B321}-<>{B311}]")
 
         // --- BL route ---
-        val bl = conductorImpl.activeRoutes[1]
-        assertThat(bl.toString()).isEqualTo("ActiveRoute Branchline")
+        val bl = conductorImpl.routesContainers[1]
+        assertThat(bl.toString()).isEqualTo("RoutesContainer Branchline")
 
         assertThat(bl.routes).hasSize(2)
         assertThat(bl.routes[0].toString()).isEqualTo("Route Idle Branchline#0")

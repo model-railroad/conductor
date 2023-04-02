@@ -152,7 +152,7 @@ fun PA_Fn_Release_Route() {
     T321.normal()
 }
 
-val PA_Route = activeRoute {
+val PA_Route = routes {
     name = "Mainline"
     toggle = PA_Toggle
     status = { PA_State.toString() }
@@ -718,7 +718,7 @@ on { !BL_Toggle } then {
     }
 }
 
-val BL_Route = activeRoute {
+val BL_Route = routes {
     name = "Branchline"
     toggle = BL_Toggle
     status = { BL_State.toString() }
