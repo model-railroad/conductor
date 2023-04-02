@@ -22,7 +22,7 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IRouteIdle
+import com.alfray.conductor.v2.script.dsl.IIdleRoute
 
 /**
  * An idle route.
@@ -39,11 +39,11 @@ import com.alfray.conductor.v2.script.dsl.IRouteIdle
  * The base start_node() method does not apply to an idle route and will throw an exception
  * if used.
  */
-internal class RouteIdle(
+internal class IdleRoute(
     owner: IRoutesContainer,
     logger: ILogger,
-    builder: RouteIdleBuilder
-) : RouteBase(logger, owner, builder), IRouteIdle {
+    builder: IdleRouteBuilder
+) : RouteBase(logger, owner, builder), IIdleRoute {
     private val TAG = javaClass.simpleName
     private val actionOnIdle = builder.actionOnIdle
 
@@ -56,7 +56,7 @@ internal class RouteIdle(
     override fun toString(): String {
         owner as RoutesContainer
         val index = owner.routeIndex(this)
-        return "Route Idle ${owner.name}#$index"
+        return "IdleRoute ${owner.name}#$index"
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */

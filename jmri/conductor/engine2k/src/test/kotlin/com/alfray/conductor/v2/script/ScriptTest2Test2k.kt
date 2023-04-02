@@ -66,7 +66,7 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
         assertThat(pa.toString()).isEqualTo("RoutesContainer Mainline")
 
         assertThat(pa.routes).hasSize(3)
-        assertThat(pa.routes[0].toString()).isEqualTo("Route Idle Mainline#0")
+        assertThat(pa.routes[0].toString()).isEqualTo("IdleRoute Mainline#0")
         assertThat(pa.routes[1].toString()).isEqualTo("Route Sequence Mainline#1 (8749)")
         assertThat(pa.routes[2].toString()).isEqualTo("Route Sequence Mainline#2 (1072)")
 
@@ -83,7 +83,7 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
         assertThat(bl.toString()).isEqualTo("RoutesContainer Branchline")
 
         assertThat(bl.routes).hasSize(2)
-        assertThat(bl.routes[0].toString()).isEqualTo("Route Idle Branchline#0")
+        assertThat(bl.routes[0].toString()).isEqualTo("IdleRoute Branchline#0")
         assertThat(bl.routes[1].toString()).isEqualTo("Route Sequence Branchline#1 (0191)")
 
         val blRoute1 = bl.routes[1] as RouteSequence

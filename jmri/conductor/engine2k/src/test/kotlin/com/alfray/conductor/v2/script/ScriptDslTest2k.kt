@@ -20,7 +20,7 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
-import com.alfray.conductor.v2.script.dsl.IRouteIdle
+import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.RoutesContainer
@@ -30,7 +30,7 @@ import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteBase
-import com.alfray.conductor.v2.script.impl.RouteIdle
+import com.alfray.conductor.v2.script.impl.IdleRoute
 import com.alfray.conductor.v2.script.impl.RouteSequence
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
@@ -535,7 +535,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testRouteIdle() {
+    fun testIdleRoute() {
         loadScriptFromText(scriptText =
         """
         val Toggle = sensor("S01")
@@ -553,8 +553,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
         val routesContainer = conductorImpl.routesContainers[0]
         val route = routesContainer.active
-        assertThat(route).isInstanceOf(IRouteIdle::class.java)
-        assertThat(route.toString()).isEqualTo("Route Idle PA#0")
+        assertThat(route).isInstanceOf(IIdleRoute::class.java)
+        assertThat(route.toString()).isEqualTo("IdleRoute PA#0")
         assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
@@ -581,7 +581,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
 
     @Test
-    fun testRouteIdle_onIdle() {
+    fun testIdleRoute_onIdle() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -620,7 +620,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testRouteIdle_error() {
+    fun testIdleRoute_error() {
         loadScriptFromText(scriptText =
         """
         val Toggle = sensor("S01")
@@ -632,7 +632,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultHasError(
-            "ERROR No value passed for parameter 'routeIdleSpecification' (local.conductor.kts:7:30)")
+            "ERROR No value passed for parameter 'idleRouteSpecification' (local.conductor.kts:7:30)")
     }
 
     @Test
@@ -672,7 +672,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val ar = conductorImpl.routesContainers[0] as RoutesContainer
 
         assertThat(ar.routes).hasSize(2)
-        assertThat(ar.routes[0]).isInstanceOf(RouteIdle::class.java)
+        assertThat(ar.routes[0]).isInstanceOf(IdleRoute::class.java)
         assertThat(ar.routes[1]).isInstanceOf(RouteSequence::class.java)
         val seq = ar.routes[1] as RouteSequence
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)

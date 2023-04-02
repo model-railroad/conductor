@@ -24,7 +24,7 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
-import com.alfray.conductor.v2.script.dsl.IRouteIdle
+import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
@@ -99,7 +99,7 @@ internal abstract class RouteBase(
                 }
             }
             State.ACTIVATED -> {
-                if (this !is IRouteIdle) {
+                if (this !is IIdleRoute) {
                     // Count the number of route activations, except for idle routes
                     // since there's no "running" during an idle route.
                     activationCounter++

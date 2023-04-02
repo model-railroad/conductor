@@ -16,11 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("FunctionName")
+
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface to build an [IRouteIdle]. */
-interface IRouteIdleBuilder : IRouteBaseBuilder {
-    /** Callback called repeatedly when the route is idle. */
-    fun onIdle(action: TAction)
+/** DSL script interface for an idle route. */
+interface IIdleRoute : IRoute {
 }
-

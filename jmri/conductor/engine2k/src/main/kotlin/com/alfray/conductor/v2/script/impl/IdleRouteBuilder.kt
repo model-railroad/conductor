@@ -21,14 +21,14 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoute
-import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
+import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
-internal open class RouteIdleBuilder(
+internal open class IdleRouteBuilder(
     owner: IRoutesContainer,
     logger: ILogger,
-) : RouteBaseBuilder(owner as RoutesContainer, logger), IRouteIdleBuilder {
+) : RouteBaseBuilder(owner as RoutesContainer, logger), IIdleRouteBuilder {
     private val TAG = javaClass.simpleName
     var actionOnIdle: TAction? = null
 
@@ -39,5 +39,5 @@ internal open class RouteIdleBuilder(
         actionOnIdle = action
     }
 
-    fun create() : IRoute = RouteIdle(owner, logger, this)
+    fun create() : IRoute = IdleRoute(owner, logger, this)
 }

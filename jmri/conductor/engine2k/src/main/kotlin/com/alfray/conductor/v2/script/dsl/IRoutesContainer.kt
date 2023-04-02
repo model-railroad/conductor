@@ -42,7 +42,7 @@ interface IRoutesContainer {
     val error : Boolean
 
     /** Registers a new idle route. */
-    fun idle(routeIdleSpecification: IRouteIdleBuilder.() -> Unit): IRoute
+    fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute
 
     /** Registers a new sequence route. */
     fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute

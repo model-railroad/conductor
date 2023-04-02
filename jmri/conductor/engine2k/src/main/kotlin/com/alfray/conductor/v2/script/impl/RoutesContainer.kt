@@ -27,7 +27,7 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoute
-import com.alfray.conductor.v2.script.dsl.IRouteIdleBuilder
+import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
 import com.alfray.conductor.v2.script.dsl.IRouteSequence
 import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
@@ -173,9 +173,9 @@ internal class RoutesContainer(
         return route
     }
 
-    override fun idle(routeIdleSpecification: IRouteIdleBuilder.() -> Unit): IRoute {
-        val builder = RouteIdleBuilder(this, logger)
-        builder.routeIdleSpecification()
+    override fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute {
+        val builder = IdleRouteBuilder(this, logger)
+        builder.idleRouteSpecification()
         return add(builder.create())
     }
 
