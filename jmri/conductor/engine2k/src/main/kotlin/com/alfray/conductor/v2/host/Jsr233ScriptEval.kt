@@ -35,7 +35,6 @@ import kotlin.script.experimental.api.SourceCode
  * This was a prototype.
  * Doing so indirectly accesses the Kotlin Scripting Host using the JSR 233 API.
  */
-@Deprecated("Use ConductorScriptHost directly instead.")
 class Jsr233ScriptEval {
     fun eval(source: SourceCode) : IConductor {
         val manager = ScriptEngineManager()
