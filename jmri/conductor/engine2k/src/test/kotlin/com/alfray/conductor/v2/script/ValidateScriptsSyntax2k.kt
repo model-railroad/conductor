@@ -52,11 +52,20 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testScript53() {
+    fun testScript53_v2() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
         loadScriptFromFile("script_v53_v2")
+        assertResultNoError()
+    }
+
+    @Test
+    fun testScript53_v3() {
+        fileOps.writeBytes(
+            "<svg/>".toByteArray(Charsets.UTF_8),
+            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
+        loadScriptFromFile("script_v53_v3")
         assertResultNoError()
     }
 }
