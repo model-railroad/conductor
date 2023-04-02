@@ -31,7 +31,7 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class RouteSequenceTest {
+class SequenceRouteTest {
     private lateinit var blockFactory: Block_Factory
     private val jmriProvider = FakeJmriProvider()
     private val logger: ILogger = jmriProvider

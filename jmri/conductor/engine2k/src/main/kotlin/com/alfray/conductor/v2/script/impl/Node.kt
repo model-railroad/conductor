@@ -25,7 +25,7 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.TAction
 
 /**
- * Internal DSL script implementation for a route sequence node.
+ * Internal DSL script implementation for a sequence route node.
  *
  * Warning on node's equality: in some context "node equality" means strict object
  * reference equality, yet in some other contexts it is best understood as "underlying
@@ -46,7 +46,7 @@ internal class Node(builder: NodeBuilder) : INode {
      * A shuttle node is a "reversal" node where a shuttle stops and reverses direction.
      * In a "reversal node", the incoming node and the outgoing nodes point to the same
      * underlying block, even though the nodes themselves may be different.
-     * This attribute is computed by the RouteSequenceBuilder and can only figured out once
+     * This attribute is computed by the [SequenceRouteBuilder] and can only figure out once
      * we have the entire route mapped.
      */
     var reversal: Boolean? = null

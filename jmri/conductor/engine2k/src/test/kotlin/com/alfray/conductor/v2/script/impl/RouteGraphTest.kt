@@ -18,7 +18,6 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ScriptTest2kBase
 import com.alfray.conductor.v2.script.dsl.INode
 import com.google.common.truth.Truth.assertThat
@@ -26,7 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-/** Tests for [RouteGraph]. There's also some overlap coverage in [RouteSequenceTest]. */
+/** Tests for [RouteGraph]. There's also some overlap coverage in [SequenceRouteTest]. */
 class RouteGraphTest: ScriptTest2kBase() {
 
     @Inject internal lateinit var factory: Factory

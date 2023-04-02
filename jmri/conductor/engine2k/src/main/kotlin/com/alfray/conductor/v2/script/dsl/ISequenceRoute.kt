@@ -16,23 +16,25 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("FunctionName")
+
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface to build an [IRouteSequence]. */
-interface IRouteSequenceBuilder : IRouteBaseBuilder {
-    /** The routes container owning this sequence. Cannot be null, but could be an idle route. */
-    val route: IRoutesContainer
-    /** The throttle controlled by this sequence. Cannot be null. */
-    var throttle: IThrottle
+import com.alfray.conductor.v2.simulator.SimulRouteGraph
+
+/** DSL script interface for a sequence route. */
+interface ISequenceRoute : IRoute {
+    /** The [IThrottle] operating on this route. */
+    val throttle: IThrottle
+
+    /** The [INode] main sequence provided to the sequence route builder. */
+    val sequence: List<INode>
+
     /** Max time in seconds that a running train can take to cross an active block.
      * Timeout becomes inactive if set to zero. */
-    var timeout: Int
-    /** The non-empty non-null list of nodes for this sequence. */
-    var sequence: List<INode>
-    /** The possible-empty non-null alternate branches for this sequence. */
-    val branches: MutableList<List<INode>>
+    val timeout: Int
 
-    /** Creation method to create a new node to be added later to [sequence] or [branches]. */
-    fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit) : INode
+    /** Internal Converts the route graph into a Simulator route graph. */
+    fun toSimulGraph(): SimulRouteGraph
+    // TODO ISequenceRoute.toSimulGraph should not be exposed in the DSL.
 }
-

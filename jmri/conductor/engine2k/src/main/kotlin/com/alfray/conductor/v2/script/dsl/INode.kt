@@ -18,7 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** DSL script interface for a route sequence node. */
+/** DSL script interface for a sequence route node. */
 interface INode {
     val block : IBlock
 }

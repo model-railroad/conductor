@@ -727,8 +727,8 @@ fun ML_Fn_Try_Recover_Route() {
         return
     }
 
-    val PA_blocks = (Passenger_Route as IRouteSequence).sequence.map { it.block }.distinct()
-    val FR_blocks = (Freight_Route as IRouteSequence).sequence.map { it.block }.distinct()
+    val PA_blocks = (Passenger_Route as ISequenceRoute).sequence.map { it.block }.distinct()
+    val FR_blocks = (Freight_Route as ISequenceRoute).sequence.map { it.block }.distinct()
     val PA_start = PA_blocks.first().active
     val FR_start = FR_blocks.first().active
     val PA_occup = PA_blocks.subList(1, PA_blocks.size).count { it.active }

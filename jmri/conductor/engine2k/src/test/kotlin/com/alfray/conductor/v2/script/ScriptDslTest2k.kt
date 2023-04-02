@@ -31,7 +31,7 @@ import com.alfray.conductor.v2.script.impl.GaPage
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteBase
 import com.alfray.conductor.v2.script.impl.IdleRoute
-import com.alfray.conductor.v2.script.impl.RouteSequence
+import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
@@ -636,7 +636,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testRouteSequence() {
+    fun testSequenceRoute() {
         jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(
             scriptText =
@@ -673,8 +673,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
         assertThat(ar.routes).hasSize(2)
         assertThat(ar.routes[0]).isInstanceOf(IdleRoute::class.java)
-        assertThat(ar.routes[1]).isInstanceOf(RouteSequence::class.java)
-        val seq = ar.routes[1] as RouteSequence
+        assertThat(ar.routes[1]).isInstanceOf(SequenceRoute::class.java)
+        val seq = ar.routes[1] as SequenceRoute
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)
         assertThat(seq.timeout).isEqualTo(42)
         assertThat(seq.graph).isNotNull()
@@ -687,7 +687,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             "[{B01}=>><B02>=<>{B01}]"
         )
 
-        assertThat(seq.toString()).isEqualTo("Route Sequence PA#1 (1001)")
+        assertThat(seq.toString()).isEqualTo("SequenceRoute PA#1 (1001)")
         assertThat(ar.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
@@ -754,14 +754,14 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.rules).hasSize(0)
 
         val ar = conductorImpl.routesContainers[0] as RoutesContainer
-        val seq = ar.routes[1] as RouteSequence
+        val seq = ar.routes[1] as SequenceRoute
 
         assertThat(seq.graph.toString()).isEqualTo(
             "[{B01}=>><B02>=<>{B01}],[{B01}->>{B03}->>{B04}->>{B01}],[{B01}->>{B04}],[<B02>->>{B03}->>{B01}]")
     }
 
     @Test
-    fun testRouteSequence_OnRuleForbidden() {
+    fun testSequenceRoute_OnRuleForbidden() {
         jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(scriptText =
         """
@@ -799,7 +799,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testRouteSequence_AfterOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_AfterOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -823,7 +823,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testRouteSequence_TrainThrottleOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_TrainThrottleOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)

@@ -28,8 +28,8 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
-import com.alfray.conductor.v2.script.dsl.IRouteSequence
-import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
+import com.alfray.conductor.v2.script.dsl.ISequenceRoute
+import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
@@ -106,7 +106,7 @@ internal class RoutesContainer(
         val countTimers = context.countTimers()
         _active?.let { r ->
             countTimers.add(r.context.countTimers())
-            if (r is RouteSequence) {
+            if (r is SequenceRoute) {
                 r.currentNode?.let {
                     it as Node
                     countTimers.add(it.context.countTimers())
@@ -142,7 +142,7 @@ internal class RoutesContainer(
         _active?.changeState(RouteBase.State.ACTIVATED)
 
         simulCallback?.let {
-            if (route is RouteSequence) {
+            if (route is SequenceRoute) {
                 val simulGraph = route.toSimulGraph()
                 simulCallback.setRoute(route.throttle.dccAddress, route.timeout, simulGraph)
             }
@@ -179,9 +179,9 @@ internal class RoutesContainer(
         return add(builder.create())
     }
 
-    override fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute {
-        val builder = RouteSequenceBuilder(this, clock, logger)
-        builder.routeSequenceSpecification()
+    override fun sequence(sequenceRouteSpecification: ISequenceRouteBuilder.() -> Unit): IRoute {
+        val builder = SequenceRouteBuilder(this, clock, logger)
+        builder.sequenceRouteSpecification()
         return add(builder.create())
     }
 
@@ -244,7 +244,7 @@ internal class RoutesContainer(
 
         (toggle as Sensor).export(routeInfo.toggleKey)
 
-        if (route is IRouteSequence) {
+        if (route is ISequenceRoute) {
             (route.throttle as Throttle).export(routeInfo.throttleKey)
         } else {
             keyValue.putValue(routeInfo.throttleKey, "0", true /*broadcast*/)

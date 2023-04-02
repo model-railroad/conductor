@@ -24,15 +24,15 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.INodeBuilder
-import com.alfray.conductor.v2.script.dsl.IRouteSequence
-import com.alfray.conductor.v2.script.dsl.IRouteSequenceBuilder
+import com.alfray.conductor.v2.script.dsl.ISequenceRoute
+import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 
-internal class RouteSequenceBuilder(
+internal class SequenceRouteBuilder(
     owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
-) : RouteBaseBuilder(owner, logger), IRouteSequenceBuilder {
+) : RouteBaseBuilder(owner, logger), ISequenceRouteBuilder {
     private val TAG = javaClass.simpleName
     override val route: IRoutesContainer
         get() = owner
@@ -47,5 +47,5 @@ internal class RouteSequenceBuilder(
         return b.create()
     }
 
-    fun create() : IRouteSequence = RouteSequence(owner, clock, logger, this)
+    fun create() : ISequenceRoute = SequenceRoute(owner, clock, logger, this)
 }

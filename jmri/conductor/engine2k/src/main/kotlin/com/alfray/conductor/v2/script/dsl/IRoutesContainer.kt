@@ -45,7 +45,7 @@ interface IRoutesContainer {
     fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute
 
     /** Registers a new sequence route. */
-    fun sequence(routeSequenceSpecification: IRouteSequenceBuilder.() -> Unit): IRoute
+    fun sequence(sequenceRouteSpecification: ISequenceRouteBuilder.() -> Unit): IRoute
 
     /** Returns a string representation of the status of that route. */
     fun getLogStatus(): String

@@ -39,7 +39,7 @@ import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
-import com.alfray.conductor.v2.script.impl.RouteSequence
+import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.Sensor
 import com.alfray.conductor.v2.script.impl.SvgMap
@@ -121,7 +121,7 @@ class ExecEngine2k @Inject internal constructor(
     private fun exportRoutes() {
         conductor.routesContainers.forEach { ar ->
             ar.routes.forEach {
-                if (it is RouteSequence) {
+                if (it is SequenceRoute) {
                     logger.d(TAG, "RoutesContainer [${ar.name}]: $it = ${it.graph}")
                 } else {
                     logger.d(TAG, "RoutesContainer [${ar.name}]: $it")

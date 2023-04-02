@@ -35,7 +35,7 @@ internal class RouteGraphBuilder(private val logger: ILogger) {
     fun setSequence(sequence: List<INode>): RouteGraphBuilder {
         // It's fine for a sequence to contain a single node and no edges, but it cannot be empty.
         logger.assertOrThrow(TAG, sequence.isNotEmpty()) {
-            "A route sequence cannot be empty, it must have at least one node."
+            "A sequence route cannot be empty, it must have at least one node."
         }
 
         // The first node of the sequence is the default starting point of the graph.

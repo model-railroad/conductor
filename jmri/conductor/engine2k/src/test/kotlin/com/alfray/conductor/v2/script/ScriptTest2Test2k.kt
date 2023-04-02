@@ -20,7 +20,7 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
-import com.alfray.conductor.v2.script.impl.RouteSequence
+import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -67,14 +67,14 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
 
         assertThat(pa.routes).hasSize(3)
         assertThat(pa.routes[0].toString()).isEqualTo("IdleRoute Mainline#0")
-        assertThat(pa.routes[1].toString()).isEqualTo("Route Sequence Mainline#1 (8749)")
-        assertThat(pa.routes[2].toString()).isEqualTo("Route Sequence Mainline#2 (1072)")
+        assertThat(pa.routes[1].toString()).isEqualTo("SequenceRoute Mainline#1 (8749)")
+        assertThat(pa.routes[2].toString()).isEqualTo("SequenceRoute Mainline#2 (1072)")
 
-        val paRoute1 = pa.routes[1] as RouteSequence
+        val paRoute1 = pa.routes[1] as SequenceRoute
         assertThat(paRoute1.graph.toString()).isEqualTo(
             "[{B503b}=>>{B503a}=>>{B321}=>>{B330}=>>{B340}=>>{B360}=>><B370>=<>{B360}=<>{B340}=<>{B330}=<>{B321}=<>{B503a}=<>{B503b}]")
 
-        val paRoute2 = pa.routes[2] as RouteSequence
+        val paRoute2 = pa.routes[2] as SequenceRoute
         assertThat(paRoute2.graph.toString()).isEqualTo(
             "[{B311}=>><B321>=<>{B311}],[<B321>->><B330>-<>{B321}-<>{B311}]")
 
@@ -84,9 +84,9 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
 
         assertThat(bl.routes).hasSize(2)
         assertThat(bl.routes[0].toString()).isEqualTo("IdleRoute Branchline#0")
-        assertThat(bl.routes[1].toString()).isEqualTo("Route Sequence Branchline#1 (0191)")
+        assertThat(bl.routes[1].toString()).isEqualTo("SequenceRoute Branchline#1 (0191)")
 
-        val blRoute1 = bl.routes[1] as RouteSequence
+        val blRoute1 = bl.routes[1] as SequenceRoute
         assertThat(blRoute1.graph.toString()).isEqualTo(
             "[{BLParked}=>>{BLStation}=>>{BLTunnel}=>><BLReverse>=<>{BLTunnel}=<>{BLStation}=<>{BLParked}]")
 

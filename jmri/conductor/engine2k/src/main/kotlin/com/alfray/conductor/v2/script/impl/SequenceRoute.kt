@@ -24,7 +24,7 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IRouteSequence
+import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 import java.util.Locale
 
@@ -60,12 +60,12 @@ import java.util.Locale
  *
  * In the Active state, the route manager manages blocks and nodes.
  */
-internal class RouteSequence(
+internal class SequenceRoute(
     override val owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
-    builder: RouteSequenceBuilder
-) : RouteBase(logger, owner, builder), IRouteSequence, IRouteManager {
+    builder: SequenceRouteBuilder
+) : RouteBase(logger, owner, builder), ISequenceRoute, IRouteManager {
     private val TAG = javaClass.simpleName
     override val throttle = builder.throttle
     override val sequence = builder.sequence
@@ -93,7 +93,7 @@ internal class RouteSequence(
         owner as RoutesContainer
         val index = owner.routeIndex(this)
         val addr = throttle.dccAddress
-        return String.format(Locale.US, "Route Sequence %s#%d (%04d)", owner.name, index, addr)
+        return String.format(Locale.US, "SequenceRoute %s#%d (%04d)", owner.name, index, addr)
     }
 
     override fun start_node(node: INode) {
@@ -123,14 +123,14 @@ internal class RouteSequence(
         super.changeState(newState)
 
         if (newState == State.ACTIVATED) {
-            onRouteSequenceActivated();
+            onSequenceRouteActivated();
         } else if (newState == State.IDLE) {
-            onRouteSequenceIdle()
+            onSequenceRouteIdle()
         }
     }
 
-    /** Called by [changeState] when this route sequence becomes activated. */
-    private fun onRouteSequenceActivated() {
+    /** Called by [changeState] when this sequence route becomes activated. */
+    private fun onSequenceRouteActivated() {
         // Set or reset the initial start node.
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
@@ -170,8 +170,8 @@ internal class RouteSequence(
         currentNode_.changeEnterState()
     }
 
-    /** Called by [changeState] when this route sequence ends and becomes idle. */
-    private fun onRouteSequenceIdle() {
+    /** Called by [changeState] when this sequence route ends and becomes idle. */
+    private fun onSequenceRouteIdle() {
         // Remove any trailing blocks. We don't need them as they will not be
         // updated by this route manager anymore.
         graph.nodes.forEach { node ->

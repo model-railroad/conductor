@@ -36,7 +36,7 @@ import com.alfray.conductor.v2.script.ConductorImpl;
 import com.alfray.conductor.v2.script.ExecEngine2k;
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer;
 import com.alfray.conductor.v2.script.dsl.IBlock;
-import com.alfray.conductor.v2.script.dsl.IRouteSequence;
+import com.alfray.conductor.v2.script.dsl.ISequenceRoute;
 import com.alfray.conductor.v2.script.dsl.ISensor;
 import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
@@ -172,14 +172,14 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
         routesContainers.forEach(active ->
                 active.getRoutes()
                         .stream()
-                        .filter(r -> r instanceof IRouteSequence)
+                        .filter(r -> r instanceof ISequenceRoute)
                         .findFirst()
                         .ifPresent(route -> {
-                IRouteSequence routeSequence = (IRouteSequence) route;
-                SimulRouteGraph graph = routeSequence.toSimulGraph();
+                ISequenceRoute sequenceRoute = (ISequenceRoute) route;
+                SimulRouteGraph graph = sequenceRoute.toSimulGraph();
                 routeManager.setRoute(
-                        routeSequence.getThrottle().getDccAddress(),
-                        routeSequence.getTimeout(),
+                        sequenceRoute.getThrottle().getDccAddress(),
+                        sequenceRoute.getTimeout(),
                         graph);
         }));
     }
