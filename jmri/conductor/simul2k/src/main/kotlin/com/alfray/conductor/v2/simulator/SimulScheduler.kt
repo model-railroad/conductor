@@ -14,14 +14,27 @@ class SimulScheduler @Inject constructor(
     private val TAG = javaClass.simpleName
     private val functionsAt = mutableListOf<FunctionAt>()
 
-    fun scheduleAfter(millis: Int, function: () -> Unit) {
+    fun scheduleAfter(millis: Int, tag: Any, function: () -> Unit) {
         val nowMs = clock.elapsedRealtime()
         val timeMs = nowMs + millis
-        logger.get().d(TAG, "[schedule] after $millis --> TS $nowMs [$function]")
-        functionsAt.add(FunctionAt(timeMs, function))
+        logger.get().d(TAG, "[schedule] after $millis --> TS $nowMs [$tag]")
+        functionsAt.add(FunctionAt(timeMs, tag, function))
         functionsAt.sortBy { timeMs }
     }
 
+    fun forceExec(tag: Any) {
+        val nowMs = clock.elapsedRealtime()
+        functionsAt.removeAll {
+            val delta = nowMs - it.timeMs
+            if (it.tag == tag) {
+                logger.get().d(TAG, "[schedule] force +$delta ms --> TS $nowMs [${tag}]")
+                it.function.invoke()
+                return@removeAll true
+            } else {
+                return@removeAll false
+            }
+        }
+    }
 
     override fun onExecStart() {
         // no-op
@@ -32,7 +45,7 @@ class SimulScheduler @Inject constructor(
         functionsAt.removeAll {
             val delta = nowMs - it.timeMs
             if (delta >= 0) {
-                logger.get().d(TAG, "[schedule] invoke +$delta ms --> TS $nowMs [${it.function}]")
+                logger.get().d(TAG, "[schedule] invoke +$delta ms --> TS $nowMs [${it.tag}]")
                 it.function.invoke()
                 return@removeAll true
             } else {
@@ -41,5 +54,5 @@ class SimulScheduler @Inject constructor(
         }
     }
 
-    data class FunctionAt(val timeMs: Long, val function: () -> Unit)
+    data class FunctionAt(val timeMs: Long, val tag: Any, val function: () -> Unit)
 }

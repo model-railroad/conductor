@@ -147,14 +147,15 @@ class SimulThrottle @AssistedInject constructor(
             oldBlock?.let { b ->
                 val sensor = jmriProvider.getSensor(b.systemName)!!
                 val millis = delayTransitionMS(this._speed)
-                simulScheduler.scheduleAfter(millis) {
+                simulScheduler.scheduleAfter(millis, b) {
                     sensor.isActive = false
-                    logger.d(TAG, "[Throttle $dccAddress_] RESET block $sensor to false after $millis ms") // DEBUG
+                    logger.d(TAG, "[Throttle $dccAddress_] RESET block $b to false after $millis ms") // DEBUG
                 }
             }
             newBlock?.let { b ->
                 val sensor = jmriProvider.getSensor(b.systemName)!!
-                logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $sensor to true") // DEBUG
+                logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $b to true") // DEBUG
+                simulScheduler.forceExec(b)
                 sensor.isActive = true
                 // Simulate a flaky "blinking" active block.
                 sensor as SimulSensor
