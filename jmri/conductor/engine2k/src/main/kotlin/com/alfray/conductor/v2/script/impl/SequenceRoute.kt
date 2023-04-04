@@ -198,6 +198,11 @@ internal class SequenceRoute(
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
             val outgoingNodesActive = outgoingNodes.filter { it.block.active }
+            val trailingBlocksActive = graph.nodes
+                .asSequence()
+                .map { it.block }
+                .filter { it.state == IBlock.State.TRAILING }
+                .toSet()
 
             // Any other blocks other than current or outgoing cannot be active.
             // Note that we really want to match blocks here, not nodes.
@@ -207,6 +212,7 @@ internal class SequenceRoute(
                 .map { it.block }
                 .toSet()
                 .minus(node.block)
+                .minus(trailingBlocksActive)
                 .minus(outgoingNodes.map { it.block }.toSet())
             assertOrError(extraBlocksActive.isEmpty()) {
                 "ERROR $this has unexpected occupied blocks out of $node: $extraBlocksActive"
