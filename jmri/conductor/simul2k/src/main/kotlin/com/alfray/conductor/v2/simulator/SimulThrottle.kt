@@ -25,6 +25,7 @@ import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.Locale
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -40,6 +41,7 @@ class SimulThrottle @AssistedInject constructor(
     private val logger: ILogger,
     private val clock: IClock,
     private val jmriProvider: IJmriProvider,
+    private val simulScheduler: SimulScheduler,
     @Assisted val dccAddress_: Int
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
@@ -143,15 +145,20 @@ class SimulThrottle @AssistedInject constructor(
         val oldBlock = block
         if (newBlock != oldBlock) {
             oldBlock?.let { b ->
-                jmriProvider.getSensor(b.systemName)?.isActive = false
+                val sensor = jmriProvider.getSensor(b.systemName)!!
+                val millis = delayTransitionMS(this._speed)
+                simulScheduler.scheduleAfter(millis) {
+                    sensor.isActive = false
+                    logger.d(TAG, "[Throttle $dccAddress_] RESET block $sensor to false after $millis ms") // DEBUG
+                }
             }
             newBlock?.let { b ->
-                jmriProvider.getSensor(b.systemName)?.let { s ->
-                    s.isActive = true
-                    // Simulate a flaky "blinking" active block.
-                    s as SimulSensor
-                    s.setRandomize(0.01)
-                }
+                val sensor = jmriProvider.getSensor(b.systemName)!!
+                logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $sensor to true") // DEBUG
+                sensor.isActive = true
+                // Simulate a flaky "blinking" active block.
+                sensor as SimulSensor
+                sensor.setRandomize(0.01)
                 if (b.reversal) {
                     graphForward = !graphForward
                 }
@@ -165,6 +172,13 @@ class SimulThrottle @AssistedInject constructor(
                 block,
                 if (graphForward) "FWD" else "REV"))
         }
+    }
+
+    private fun delayTransitionMS(speed: Int): Int {
+        // Speed 1 --> 5 seconds
+        // Speed 10 --> 1 second
+        val secs: Double = 5.0 - 4 * max(0, speed - 1) / 9.0
+        return (1000.0 * min(5.0, max(1.0, secs))).toInt()
     }
 
     override fun onExecStart() {

@@ -22,17 +22,16 @@ import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.jmri.IJmriTurnout
-import com.alflabs.utils.IClock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 
 @Singleton
 class SimulJmriProvider @Inject constructor(
-    private val clock: IClock,
+    private val simulScheduler: SimulScheduler,
     private val simulSensorFactory: ISimulSensorFactory,
-    private val simulThrottleFactory: ISimulThrottleFactory,
     private val simulTurnoutFactory: ISimulTurnoutFactory,
+    private val simulThrottleFactory: ISimulThrottleFactory,
 ) : FakeJmriProvider(), IExecSimul, ISimulCallback {
     private val TAG = javaClass.simpleName
 
@@ -57,10 +56,12 @@ class SimulJmriProvider @Inject constructor(
     }
 
     override fun onExecStart() {
+        simulScheduler.onExecStart()
         mThrottles.values.forEach { (it as SimulThrottle).onExecStart() }
     }
 
     override fun onExecHandle() {
+        simulScheduler.onExecHandle()
         mThrottles.values.forEach { (it as SimulThrottle).onExecHandle() }
     }
 
