@@ -56,7 +56,7 @@ import static javax.swing.ScrollPaneConstants.*
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class StatusWindow2 {
-    private static final String TAG = "@@ Ui2: "
+    private static final String TAG = "Ui2"
     private def VERBOSE = true
     def IWindowCallback mWindowCallback
     def SwingBuilder mSwingBuilder
@@ -71,7 +71,9 @@ class StatusWindow2 {
     def JPanel mSensorPanel
     def JSVGCanvas mSvgCanvas
     def JButton mPauseButton
+    def JButton mQuitButton
     def JCheckBox mKioskCheck
+    private def mIsSimulation = true
     private def mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
@@ -84,7 +86,7 @@ class StatusWindow2 {
         mSwingBuilder.registerBeanFactory("svgCanvas", JSVGCanvas)
         mSwingBuilder.edt {
             mFrame = frame(title: "Conductor v2",
-                    preferredSize: new Dimension(1200, 680),
+                    preferredSize: new Dimension(1000, 500),
                     minimumSize: new Dimension(300, 300),
                     // locationRelativeTo: null,
                     pack: true,
@@ -114,8 +116,8 @@ class StatusWindow2 {
                     mPauseButton =
                         button(text: "Pause", constraints: gbc(gridx: wx-wbtn+1, gridy: 0, insets: inset, weightx: 0),
                             actionPerformed: { evt -> windowCallback.onWindowPause() })
-                    button(text: "Quit", constraints: gbc(gridx: wx-wbtn+2, gridy: 0, insets: inset, weightx: 0),
-                            actionPerformed: { evt -> onQuit() })
+                    mQuitButton = button(text: "Quit", constraints: gbc(gridx: wx-wbtn+2, gridy: 0, insets: inset, weightx: 0),
+                            actionPerformed: { evt -> onHideOrQuit() })
                 }
 
                 // Middle: SVG Map
@@ -196,7 +198,16 @@ class StatusWindow2 {
 
     void onQuit() {
         mFrame.dispose()
-        mWindowCallback.onQuit();
+        mWindowCallback.onQuit()
+    }
+
+    void onHideOrQuit() {
+        if (mIsSimulation) {
+            onQuit()
+        } else {
+            // Minimize the window
+            changeFrameState(/*rm*/ JFrame.MAXIMIZED_BOTH, /*add*/ JFrame.ICONIFIED)
+        }
     }
 
     void onReload() {
@@ -218,19 +229,39 @@ class StatusWindow2 {
             mTopPanel.visible = false
             mSimuScroller.visible = false
             mLogScroller.visible = false
-            mFrame.setExtendedState(mFrame.getExtendedState() | JFrame.MAXIMIZED_BOTH)
+            changeFrameState(/*rm*/ JFrame.ICONIFIED, /*add*/ JFrame.MAXIMIZED_BOTH)
+            mFrame.setAlwaysOnTop(true)
         } else {
             mTopPanel.visible = true
             mSimuScroller.visible = true
             mLogScroller.visible = true
-            mFrame.setExtendedState(mFrame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH)
+            onSimulationModeChanged()
+            changeFrameState(/*rm*/ JFrame.MAXIMIZED_BOTH, /*add*/ JFrame.NORMAL)
+            mFrame.setAlwaysOnTop(false)
         }
+    }
+
+    void onSimulationModeChanged() {
+        mSimuScroller.visible = mIsSimulation
+        mQuitButton.text = mIsSimulation ? "Quit" : "Hide"
+    }
+
+    void changeFrameState(int removeState, int addState) {
+        def state = (mFrame.getExtendedState() | addState) & ~removeState
+        mFrame.setExtendedState(state)
     }
 
     void enterKioskMode() {
         mSwingBuilder.doLater {
             mKioskCheck.selected = true
             onKioskChanged()
+        }
+    }
+
+    void setSimulationMode(boolean isSimulation) {
+        mIsSimulation = isSimulation
+        mSwingBuilder.doLater {
+            onSimulationModeChanged()
         }
     }
 
