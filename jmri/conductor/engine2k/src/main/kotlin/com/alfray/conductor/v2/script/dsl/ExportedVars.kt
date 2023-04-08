@@ -18,18 +18,29 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alfray.conductor.v2.dagger.Script2kScope
+import java.time.LocalTime
 import javax.inject.Inject
 
 /** Variables exchanged with the Conductor engine and exported via the KV Server. */
 @Script2kScope
 class ExportedVars @Inject internal constructor(
     private val keyValue: IKeyValue,
+    private val localDateTimeNow: ILocalDateTimeNowProvider,
 ) {
     /** Current time in HHMM format set by the conductor engine. Read-only. */
-    var Conductor_Time: Int = 0
+    val Conductor_Time: Int
+        get() {
+            // Note: This is the system time in the "default" timezone which is... well it depends.
+            // Many linux installs default to UTC, so that needs to be verified on deployment site.
+            val now: LocalTime = localDateTimeNow.now.toLocalTime()
+            val h = now.hour
+            val m = now.minute
+            return h * 100 + m
+        }
 
     /** URL to the JSON server. Written by the script.
      * The JSON server is inactive till this defined. */

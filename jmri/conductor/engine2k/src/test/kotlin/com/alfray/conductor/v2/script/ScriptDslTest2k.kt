@@ -573,7 +573,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             "R/routes={\"routeInfos\":[{\"name\":\"PA\",\"toggleKey\":\"R/pa\$toggle\",\"statusKey\":\"R/pa\$status\",\"counterKey\":\"R/pa\$counter\",\"throttleKey\":\"R/pa\$throttle\"}]}",
             "S/S01=OFF",
             "V/\$estop-state\$=NORMAL",
-            "V/conductor-time=0",
+            "V/conductor-time=1342",
             "V/rtac-motion=OFF",
             "V/rtac-psa-text=",
         ).inOrder()
@@ -709,7 +709,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             "S/B02=OFF",
             "S/S01=OFF",
             "V/\$estop-state\$=NORMAL",
-            "V/conductor-time=0",
+            "V/conductor-time=1342",
             "V/rtac-motion=OFF",
             "V/rtac-psa-text=",
         ).inOrder()
@@ -943,5 +943,33 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         execEngine.onExecHandle()
         assertThat(train1.speed).isEqualTo(0.speed)
         assertThat(keyValue.getValue("V/\$estop-state\$")).isEqualTo("ACTIVE")
+    }
+
+    @Test
+    fun testConductorTime() {
+        loadScriptFromText(scriptText =
+        """
+        val S01 = sensor("S01")
+        val End_Of_Day_HHMM = 1650
+        on { exportedVars.Conductor_Time == End_Of_Day_HHMM } then { S01.active(false) }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(conductorImpl.rules).hasSize(1)
+
+        val sensor1  = conductorImpl.sensors["S01"]!!
+        sensor1.active(true)
+
+        clock.setNow(164901999) // see FakeClockModule
+
+        execEngine.onExecHandle()
+        assertThat(sensor1.active).isTrue()
+        assertThat(keyValue.getValue("V/conductor-time")).isEqualTo("1649")
+
+        clock.setNow(165001999) // see FakeClockModule
+        execEngine.onExecHandle()
+        assertThat(sensor1.active).isFalse()
+        assertThat(keyValue.getValue("V/conductor-time")).isEqualTo("1650")
     }
 }

@@ -8,7 +8,6 @@ import org.junit.Test
 import javax.inject.Inject
 
 class ExportedVarsTest: ScriptTest2kBase() {
-
     @Inject lateinit var keyValue: IKeyValue
     @Inject lateinit var exportedVars: ExportedVars
 
@@ -28,7 +27,7 @@ class ExportedVarsTest: ScriptTest2kBase() {
             .toList()
         assertThat(kv).containsExactly(
             // "V/\$ga-id\$=", -- not exported when empty
-            "V/conductor-time=0",
+            "V/conductor-time=1342",
             "V/rtac-motion=OFF",
             "V/rtac-psa-text=",
         ).inOrder()
@@ -36,7 +35,7 @@ class ExportedVarsTest: ScriptTest2kBase() {
 
     @Test
     fun testExported() {
-        exportedVars.Conductor_Time = 1234
+        assertThat(exportedVars.Conductor_Time).isEqualTo(1342)
         exportedVars.JSON_URL = "json://url"    // not exported
         exportedVars.GA_Tracking_Id = "AB-cdEF" // exported by Analytics, not Vars.
         exportedVars.RTAC_PSA_Text = "Automation Running"
@@ -49,7 +48,7 @@ class ExportedVarsTest: ScriptTest2kBase() {
             .map { "$it=" + keyValue.getValue(it) }
             .toList()
         assertThat(kv).containsExactly(
-            "V/conductor-time=1234",
+            "V/conductor-time=1342",
             "V/rtac-motion=ON",
             "V/rtac-psa-text=Automation Running",
         ).inOrder()
