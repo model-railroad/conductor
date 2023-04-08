@@ -77,11 +77,11 @@ map {
 
 // JSON tracking
 
-exportedVars.JSON_URL = "@~/bin/JMRI/rtac_json_url.txt"
+exportedVars.jsonUrl = "@~/bin/JMRI/rtac_json_url.txt"
 
 // GA Tracking
 
-exportedVars.GA_Tracking_Id = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+exportedVars.gaTrackingId = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 val GA_URL = "http://consist.alfray.com/train/"
 
 
@@ -105,7 +105,7 @@ listOf(T450, T140, T150, T151, T160).forEachIndexed { i, t ->
 var AIU_Motion_Counter = 0
 
 on { AIU_Motion } then {
-    exportedVars.RTAC_Motion = On
+    exportedVars.rtacMotion = On
     AIU_Motion_Counter += 1
     gaEvent {
         category = "Motion"
@@ -116,7 +116,7 @@ on { AIU_Motion } then {
 }
 
 on { !AIU_Motion } then {
-    exportedVars.RTAC_Motion = Off
+    exportedVars.rtacMotion = Off
     gaEvent {
         category = "Motion"
         action = "Stop"
@@ -131,24 +131,24 @@ on { !AIU_Motion } then {
 
 val End_Of_Day_HHMM = 1650
 
-on { ML_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+on { ML_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     ML_Toggle.active(Off)
 }
 
-on { BL_Toggle.active && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
+on { BL_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     BL_Toggle.active(Off)
 }
 
 on { ML_Toggle } then {
-    exportedVars.RTAC_PSA_Text = "Automation Started"
+    exportedVars.rtacPsaText = "Automation Started"
 }
 
-on { !ML_Toggle && exportedVars.Conductor_Time == End_Of_Day_HHMM } then {
-    exportedVars.RTAC_PSA_Text = "{c:red}Automation Turned Off\nat 4:50 PM"
+on { !ML_Toggle && exportedVars.conductorTime == End_Of_Day_HHMM } then {
+    exportedVars.rtacPsaText = "{c:red}Automation Turned Off\nat 4:50 PM"
 }
 
-on { !ML_Toggle && exportedVars.Conductor_Time != End_Of_Day_HHMM } then {
-    exportedVars.RTAC_PSA_Text = "{c:red}Automation Stopped"
+on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+    exportedVars.rtacPsaText = "{c:red}Automation Stopped"
 }
 
 // ---------------------
@@ -196,16 +196,16 @@ on { !ML_Toggle } then {
 
 
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\\nPassenger"
+    exportedVars.rtacPsaText = "{c:blue}Next Train:\\nPassenger"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.RTAC_PSA_Text = "{c:blue}Next Train:\\nPassenger\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{c:blue}Next Train:\\nPassenger\\nLeaving in 1 minute"
 }
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\\nFreight"
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.RTAC_PSA_Text = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
 }
 
 // --------------------
@@ -330,7 +330,7 @@ val ML_Route = routes {
             label = "Passenger"
             user = "Staff"
         }
-        exportedVars.RTAC_PSA_Text = "{b:red}{c:white}Automation ERROR"
+        exportedVars.rtacPsaText = "{b:red}{c:white}Automation ERROR"
 
         ML_Fn_Try_Recover_Route()
     }
@@ -425,7 +425,7 @@ val Passenger_Route = ML_Route.sequence {
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.RTAC_PSA_Text = "{c:blue}Currently Running:\\nPassenger"
+        exportedVars.rtacPsaText = "{c:blue}Currently Running:\\nPassenger"
         jsonEvent {
             key1 = "Depart"
             key2 = "Passenger"
@@ -615,7 +615,7 @@ val Freight_Route = ML_Route.sequence {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.RTAC_PSA_Text = "{c:#FF008800}Currently Running:\\nFreight"
+        exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
         jsonEvent {
             key1 = "Depart"
             key2 = "Freight"
@@ -762,7 +762,7 @@ fun ML_Fn_Try_Recover_Route() {
         println("@@ ML Recovery: Track occupied (Passenger: $PA_names, Freight: $FR_names)")
 
         val names = PA_names.plus(FR_names).map { it.name }.distinct()
-        exportedVars.RTAC_PSA_Text = "{b:blue}{c:white}Automation Warning\nCheck Track $names"
+        exportedVars.rtacPsaText = "{b:blue}{c:white}Automation Warning\nCheck Track $names"
         gaEvent {
             category = "Automation"
             action = "Warning"

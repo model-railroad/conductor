@@ -951,7 +951,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """
         val S01 = sensor("S01")
         val End_Of_Day_HHMM = 1650
-        on { exportedVars.Conductor_Time == End_Of_Day_HHMM } then { S01.active(false) }
+        on { exportedVars.conductorTime == End_Of_Day_HHMM } then { S01.active(false) }
         """.trimIndent()
         )
         assertResultNoError()

@@ -35,11 +35,11 @@ class ExportedVarsTest: ScriptTest2kBase() {
 
     @Test
     fun testExported() {
-        assertThat(exportedVars.Conductor_Time).isEqualTo(1342)
-        exportedVars.JSON_URL = "json://url"    // not exported
-        exportedVars.GA_Tracking_Id = "AB-cdEF" // exported by Analytics, not Vars.
-        exportedVars.RTAC_PSA_Text = "Automation Running"
-        exportedVars.RTAC_Motion = true
+        assertThat(exportedVars.conductorTime).isEqualTo(1342)
+        exportedVars.jsonUrl = "json://url"    // not exported
+        exportedVars.gaTrackingId = "AB-cdEF" // exported by Analytics, not Vars.
+        exportedVars.rtacPsaText = "Automation Running"
+        exportedVars.rtacMotion = true
 
         exportedVars.export()
 

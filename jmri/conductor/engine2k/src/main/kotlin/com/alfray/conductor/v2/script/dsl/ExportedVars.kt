@@ -32,7 +32,7 @@ class ExportedVars @Inject internal constructor(
     private val localDateTimeNow: ILocalDateTimeNowProvider,
 ) {
     /** Current time in HHMM format set by the conductor engine. Read-only. */
-    val Conductor_Time: Int
+    val conductorTime: Int
         get() {
             // Note: This is the system time in the "default" timezone which is... well it depends.
             // Many linux installs default to UTC, so that needs to be verified on deployment site.
@@ -44,26 +44,26 @@ class ExportedVars @Inject internal constructor(
 
     /** URL to the JSON server. Written by the script.
      * The JSON server is inactive till this defined. */
-    var JSON_URL: String = ""
+    var jsonUrl: String = ""
 
     /** ID for the GA server. Written by the script.
      * GA Events are not sent until this is defined. */
-    var GA_Tracking_Id: String = ""
+    var gaTrackingId: String = ""
 
     /** Announcement text sent to the remote RTAC tablet android software.
      * Written by the script. Sent via the KV Server. */
-    var RTAC_PSA_Text: String = ""
+    var rtacPsaText: String = ""
 
     /** Motion indication sent to the remote RTAC tablet android software.
      * Written by the script. Sent via the KV Server. */
-    var RTAC_Motion: Boolean = false
+    var rtacMotion: Boolean = false
 
     internal fun export() {
-        keyValue.putValue(Constants.ConductorTime, Conductor_Time.toString(), true /*broadcast*/)
+        keyValue.putValue(Constants.ConductorTime, conductorTime.toString(), true /*broadcast*/)
         keyValue.putValue(Constants.RtacMotion,
-            if (RTAC_Motion) Constants.On else Constants.Off,
+            if (rtacMotion) Constants.On else Constants.Off,
             true /*broadcast*/)
-        keyValue.putValue(Constants.RtacPsaText, RTAC_PSA_Text, true /*broadcast*/)
-        // GA_Tracking_Id is exported by Analytics.setAnalyticsId(); we don't need to do it here.
+        keyValue.putValue(Constants.RtacPsaText, rtacPsaText, true /*broadcast*/)
+        // gaTrackingId is exported by Analytics.setAnalyticsId(); we don't need to do it here.
     }
 }

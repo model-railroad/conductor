@@ -288,34 +288,34 @@ class ExecEngine2k @Inject internal constructor(
     /** Configure the JSON Sender URL from ExportedVars. */
     private fun configureJsonSenderUrl() {
         var error: String? = null
-        val urlOrFile = conductor.exportedVars.JSON_URL
+        val urlOrFile = conductor.exportedVars.jsonUrl
         try {
             jsonSender.setJsonUrl(urlOrFile)
         } catch (e: Exception) {
             error = "Failed to read '$urlOrFile', $e"
         }
         if (jsonSender.jsonUrl == null) {
-            error = "exportedVars.JSON_URL must be defined before the first jsonEvent call."
+            error = "exportedVars.jsonUrl must be defined before the first jsonEvent call."
         }
         error?.let {
-            logger.d(TAG, "JSON_URL: $error")
+            logger.d(TAG, "jsonUrl: $error")
         }
     }
 
     /** Configure the Analytics ID from ExportedVars. */
     private fun configureAnalyticsId() {
         var error: String? = null
-        val idOrFile = conductor.exportedVars.GA_Tracking_Id
+        val idOrFile = conductor.exportedVars.gaTrackingId
         try {
             analytics.analyticsId = idOrFile
         } catch (e: Exception) {
             error = "Failed to read '$idOrFile', $e"
         }
         if (analytics.analyticsId == null) {
-            error = "exportedVars.GA_Tracking_Id must be defined before the first gaPage/gaEvent call."
+            error = "exportedVars.gaTrackingId must be defined before the first gaPage/gaEvent call."
         }
         error?.let {
-            logger.d(TAG, "GA_Tracking_Id: $error")
+            logger.d(TAG, "gaTrackingId: $error")
         }
     }
 }
