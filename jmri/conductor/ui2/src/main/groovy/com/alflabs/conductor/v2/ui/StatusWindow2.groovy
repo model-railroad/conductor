@@ -558,11 +558,9 @@ class StatusWindow2 {
                         switch (blockState.get()) {
                             case IActivableDisplayAdapter.BlockState.BLOCK_EMPTY:
                                 break
-                            case IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED:
-                                rgb = active ? "red" : "orange"
-                                break
+                            case IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED: // fallthrough
                             case IActivableDisplayAdapter.BlockState.BLOCK_TRAILING:
-                                rgb = "orange"
+                                rgb = active ? "red" : "orange"
                                 break
                         }
                     }
