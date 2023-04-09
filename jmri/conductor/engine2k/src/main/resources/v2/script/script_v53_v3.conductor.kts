@@ -73,6 +73,12 @@ val T160        = turnout("NT160")  // DS64 - to Richmond Yard
 map {
     name = "Mainline"
     svg  = "Map Mainline 1.svg"   // relative to script
+    displayOn = SvgMapTarget.Conductor
+}
+map {
+    name = "Mainline"
+    svg  = "Map Mainline 1.svg"   // relative to script
+    displayOn = SvgMapTarget.RTAC
 }
 
 // JSON tracking

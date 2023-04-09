@@ -40,6 +40,7 @@ import com.alfray.conductor.v2.script.dsl.ISequenceRoute;
 import com.alfray.conductor.v2.script.dsl.ISensor;
 import com.alfray.conductor.v2.script.dsl.ITimer;
 import com.alfray.conductor.v2.script.dsl.ITurnout;
+import com.alfray.conductor.v2.script.dsl.SvgMapTarget;
 import com.alfray.conductor.v2.script.impl.IExecEngine;
 import com.alfray.conductor.v2.script.dsl.ISvgMap;
 import com.alfray.conductor.v2.script.impl.SvgMap;
@@ -304,8 +305,12 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 c -> c.getScript2kLoader().getScriptSource().scriptDir()).orElse(null);
 
         if (script.isPresent()) {
-            Map<String, ISvgMap> svgMaps = script.get().getSvgMaps();
-            Optional<ISvgMap> svgMap = svgMaps.values().stream().findFirst();
+            List<ISvgMap> svgMaps = script.get().getSvgMaps();
+            Optional<ISvgMap> svgMap = svgMaps
+                    .stream()
+                    // Only Conductor maps are displayed here
+                    .filter(map -> map.getDisplayOn() == SvgMapTarget.Conductor)
+                    .findFirst();
             if (svgMap.isPresent()) {
                 try {
                     return Optional.of(((SvgMap) (svgMap.get())).toMapInfo(mFileOps, scriptDir));

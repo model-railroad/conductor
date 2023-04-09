@@ -75,7 +75,7 @@ class ConductorImpl @Inject internal constructor(
     val blocks = mutableMapOf<String, IBlock>()
     val turnouts = mutableMapOf<String, ITurnout>()
     val throttles = mutableMapOf<Int, IThrottle>()
-    val svgMaps = mutableMapOf<String, ISvgMap>()
+    val svgMaps = mutableListOf<ISvgMap>()
     val timers = mutableListOf<ITimer>()
     val rules = mutableListOf<IOnRule>()
     val routesContainers = mutableListOf<IRoutesContainer>()
@@ -114,10 +114,12 @@ class ConductorImpl @Inject internal constructor(
         val builder = SvgMapBuilder()
         builder.svgMapSpecification()
         val m = builder.create()
-        logger.assertOrThrow(TAG, !svgMaps.contains(m.name)) {
-            "SvgMap ERROR: Map name ${m.name} is already defined."
+        svgMaps.add(m)
+        // It's OK to have a map with the same name if it has a different display target.
+        logger.assertOrThrow(TAG,
+            svgMaps.count { it.name == m.name && it.displayOn == m.displayOn } == 1) {
+            "SvgMap ERROR: Map name ${m.name} is already defined with the same display target ${m.displayOn}."
         }
-        svgMaps[m.name] = m
         return m
     }
 

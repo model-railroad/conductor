@@ -33,6 +33,7 @@ import com.alfray.conductor.v2.Script2kErrors
 import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.SvgMapTarget
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.After
@@ -99,16 +100,18 @@ class ExecEngine2k @Inject internal constructor(
         val scriptDir = scriptSource.scriptDir()
         val infos =
             conductor.svgMaps
-                .map { (_, svgMap) ->
-                try {
-                    (svgMap as SvgMap).toMapInfo(fileOps, scriptDir)
-                } catch (e: IOException) {
-                    val error = "SvgMap[${svgMap.name}]: Failed to read file '${svgMap.svg}'."
-                    logger.d(TAG, error, e)
-                    scriptErrors.add(error)
-                    return@map null
+                // Only RTAC maps are exported.
+                .filter { it.displayOn == SvgMapTarget.RTAC }
+                .map { svgMap ->
+                    try {
+                        (svgMap as SvgMap).toMapInfo(fileOps, scriptDir)
+                    } catch (e: IOException) {
+                        val error = "SvgMap[${svgMap.name}]: Failed to read file '${svgMap.svg}'."
+                        logger.d(TAG, error, e)
+                        scriptErrors.add(error)
+                        return@map null
+                    }
                 }
-            }
         val maps = MapInfos(infos.filterNotNull().toTypedArray())
 
         try {

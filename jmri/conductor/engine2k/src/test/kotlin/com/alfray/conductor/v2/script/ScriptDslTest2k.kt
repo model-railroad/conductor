@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
+import com.alfray.conductor.v2.script.dsl.SvgMapTarget
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.RoutesContainer
@@ -288,8 +289,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertResultNoError()
 
         assertThat(conductorImpl.svgMaps).containsExactly(
-            "Mainline",
-            SvgMapBuilder("Mainline", "Map 1.svg").create()
+            SvgMapBuilder("Mainline", "Map 1.svg", SvgMapTarget.RTAC).create(),
+            SvgMapBuilder("Mainline", "Map 1.svg", SvgMapTarget.Conductor).create(),
         )
     }
 

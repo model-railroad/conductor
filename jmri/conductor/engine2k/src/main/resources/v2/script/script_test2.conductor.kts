@@ -68,6 +68,12 @@ val T504        = turnout("NT504")
 map {
     name = "Mainline"
     svg  = "Map Mainline 1.svg"   // relative to script
+    displayOn = SvgMapTarget.Conductor
+}
+map {
+    name = "Mainline"
+    svg  = "Map Mainline 1.svg"   // relative to script
+    displayOn = SvgMapTarget.RTAC
 }
 
 // JSON tracking

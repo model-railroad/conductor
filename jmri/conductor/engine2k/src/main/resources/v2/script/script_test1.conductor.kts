@@ -64,6 +64,12 @@ val Train2 = throttle(2001)
 map {
     name = "Mainline"
     svg  = "Map 1.svg"
+    displayOn = SvgMapTarget.Conductor
+}
+map {
+    name = "Mainline"
+    svg  = "Map 1.svg"
+    displayOn = SvgMapTarget.RTAC
 }
 
 // Functions
