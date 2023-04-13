@@ -68,7 +68,6 @@ internal class Node(builder: NodeBuilder) : INode {
     /** Change the Node's block's state, and triggers the onEvent callbacks as appropriate
      * for the next execution. */
     fun changeState(newState: IBlock.State) {
-        block as Block
         val oldState = block.state
         if (oldState == newState) {
             if (newState == IBlock.State.OCCUPIED) {
@@ -92,13 +91,15 @@ internal class Node(builder: NodeBuilder) : INode {
                     callOnEmpty = actionOnEmpty
                 }
             }
+
+            block as INodeBlock
             block.changeState(newState)
         }
     }
 
     /** If a Node's block's state is in OCCUPIED state, triggers its onEnter for next execution. */
     fun changeEnterState() {
-        block as Block
+        block as INodeBlock
         if (block.state == IBlock.State.OCCUPIED) {
             callOnEnter = actionOnEnter
             callWhileOccupied = actionWhileOccupied

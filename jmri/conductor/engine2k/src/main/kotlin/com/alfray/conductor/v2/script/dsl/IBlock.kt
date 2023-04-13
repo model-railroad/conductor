@@ -54,4 +54,11 @@ interface IBlock : IActive, IVarName {
 
     /** Occupancy state of the block: empty, occupied, or trailing. */
     val state: State
+
+    /**
+     * Changes the internal "virtual sensor" state of a virtual block.
+     * For JMRI-backed blocks, this is a no-op as the JMRI state prevails.
+     * This is only useful for virtual blocks to indicate whether they are virtually occupied.
+     */
+    fun active(isActive: Boolean)
 }

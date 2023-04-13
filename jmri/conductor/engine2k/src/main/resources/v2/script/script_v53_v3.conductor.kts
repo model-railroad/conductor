@@ -28,10 +28,11 @@ val Off = false
 
 // sensors
 
-val BLParked     = block ("NS752") named "BLParked"     // 48:1
-val BLStation    = block ("NS753") named "BLStation"    // 48:2
-val BLTunnel     = block ("NS754") named "BLTunnel"     // 48:3
-val BLReverse    = block ("NS755") named "BLReverse"    // 48:4
+val B801         = block ("NS752") named "BLParked"     // 48:1 -- B801
+val B820         = block ("NS753") named "BLStation"    // 48:2 -- B820
+val B830v = virtualBlock ("B830v") named "B830"
+val B850         = block ("NS754") named "BLTunnel"     // 48:3 -- B850
+val B860         = block ("NS755") named "BLReverse"    // 48:4 -- B860
 
 val B310         = block ("NS768") named "B310"         // 49:1
 val B311         = block ("NS769") named "B311"         // 49:2
@@ -1124,40 +1125,50 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_Station_Rev3 = 8.seconds
     val BL_Timer_Wait = 30.seconds  // 300=5 minutes -- change for debugging
 
-    fun doStart() {
-        BL_sound(On)
-        BL.horn()
-        BL_bell(On)
-        after (BL_Timer_Start_Delay) then {
-            BL_bell(Off)
+    val BLParked_fwd = node(B801) {
+        onEnter {
+            BL_sound(On)
             BL.horn()
-            BL.forward(BL_Speed_Station)
-        }
-        jsonEvent {
-            key1 = "Depart"
-            key2 = "Branchline"
-        }
-    }
-
-    val BLParked_fwd = node(BLParked) {
-        onEnter {
-            doStart()
-        }
-    }
-
-    val BLStation_fwd = node(BLStation) {
-        onEnter {
-            doStart()
+            BL_bell(On)
+            after (BL_Timer_Start_Delay) then {
+                BL_bell(Off)
+                BL.horn()
+                BL.forward(BL_Speed_Station)
+            }
+            jsonEvent {
+                key1 = "Depart"
+                key2 = "Branchline"
+            }
         }
     }
 
-    val BLTunnel_fwd = node(BLTunnel) {
+    val BLStation_fwd = node(B820) {
         onEnter {
+            after (5.seconds) then {
+                BL.forward(BL_Speed)
+            }
+        }
+        onTrailing {
+            // Activate the B830 virtual block
+            B830v.active(true)
+        }
+    }
+
+    val B830v_fwd = node(B830v) {
+        onEnter {
+        }
+    }
+
+    val BLTunnel_fwd = node(B850) {
+        onEnter {
+            // Deactivate the B830 virtual block
+            B830v.active(false)
+
             BL.horn()
         }
     }
 
-    val BLReverse_fwd = node(BLReverse) {
+    val BLReverse_fwd = node(B860) {
         onEnter {
             BL.horn()
             BL_bell(On)
@@ -1184,14 +1195,26 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLTunnel_rev = node(BLTunnel) {
+    val BLTunnel_rev = node(B850) {
         onEnter {
             BL.horn()
         }
+        onTrailing {
+            // Activate the B830 virtual block
+            B830v.active(true)
+        }
     }
 
-    val BLStation_rev = node(BLStation) {
+    val B830v_rev = node(B830v) {
         onEnter {
+        }
+    }
+
+    val BLStation_rev = node(B820) {
+        onEnter {
+            // Deactivate the B830 virtual block
+            B830v.active(false)
+
             BL_bell(On)
             T324.normal()
             BL.reverse(BL_Speed_Station)
@@ -1205,7 +1228,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLParked_rev = node(BLParked) {
+    val BLParked_rev = node(B801) {
         onEnter {
             // We went too far, but it's not a problem / not an error.
             BL.stop()
@@ -1224,9 +1247,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_State = EBL_State.Running
         BL_Start_Counter++
         // It's ok to start either from BLParked or BLStation
-        if (BLParked.active) {
+        if (B801.active) {
             BL_Route.active.start_node(BLParked_fwd)
-        } else if (!BLParked && BLStation.active) {
+        } else if (!B801 && B820.active) {
             BL_Route.active.start_node(BLStation_fwd)
         }
     }
@@ -1236,9 +1259,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         //--deactivated-- BL_Route.activate(BL_Recover_Route)
     }
 
-    sequence = listOf(BLParked_fwd, BLStation_fwd, BLTunnel_fwd,
+    sequence = listOf(BLParked_fwd, BLStation_fwd, B830v_fwd, BLTunnel_fwd,
         BLReverse_fwd,
-        BLTunnel_rev, BLStation_rev, BLParked_rev)
+        BLTunnel_rev, B830v_rev, BLStation_rev, BLParked_rev)
 
 }
 
@@ -1253,25 +1276,25 @@ val BL_Recover_Route = BL_Route.sequence {
         BL.reverse(BL_Speed_Station)
     }
 
-    val BLReverse_rev = node(BLReverse) {
+    val BLReverse_rev = node(B860) {
         onEnter {
             move()
         }
     }
 
-    val BLTunnel_rev = node(BLTunnel) {
+    val BLTunnel_rev = node(B850) {
         onEnter {
             move()
         }
     }
 
-    val BLStation_rev = node(BLStation) {
+    val BLStation_rev = node(B820) {
         onEnter {
             move()
         }
     }
 
-    val BLParked_rev = node(BLParked) {
+    val BLParked_rev = node(B801) {
         onEnter {
             BL.stop()
             after (5.seconds) then {
@@ -1285,13 +1308,13 @@ val BL_Recover_Route = BL_Route.sequence {
 
     onActivate {
         BL_State = EBL_State.Recover
-        if (BLReverse.active) {
+        if (B860.active) {
             BL_Route.active.start_node(BLReverse_rev)
-        } else if (BLTunnel.active) {
+        } else if (B850.active) {
             BL_Route.active.start_node(BLTunnel_rev)
-        } else if (BLStation.active) {
+        } else if (B820.active) {
             BL_Route.active.start_node(BLStation_rev)
-        } else if (BLParked.active) {
+        } else if (B801.active) {
             BL_Route.active.start_node(BLParked_rev)
         }
     }

@@ -34,6 +34,10 @@ interface IConductor {
      * Once registered, the same block object is reused for the same system name. */
     fun block(systemName: String): IBlock
 
+    /** Registers a new virtual block with the given system name.
+     * Once registered, the same virtual block object is reused for the same system name. */
+    fun virtualBlock(systemName: String): IBlock
+
     /** Registers a new turnout with the given system name.
      * Once registered, the same turnout object is reused for the same system name. */
     fun turnout(systemName: String): ITurnout

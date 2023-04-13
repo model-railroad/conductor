@@ -96,6 +96,10 @@ class ConductorImpl @Inject internal constructor(
         return blocks.computeIfAbsent(systemName) { factory.createBlock(it) }
     }
 
+    override fun virtualBlock(systemName: String): IBlock {
+        return blocks.computeIfAbsent(systemName) { factory.createVirtualBlock(it) }
+    }
+
     override fun turnout(systemName: String): ITurnout {
         return turnouts.computeIfAbsent(systemName) { factory.createTurnout(it) }
     }

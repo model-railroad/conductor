@@ -17,9 +17,6 @@
  */
 package com.alfray.conductor.v2.dagger
 
-import java.lang.annotation.Documented
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 import javax.inject.Scope
 
 /**
@@ -33,6 +30,6 @@ import javax.inject.Scope
  * There is no need for a "@ConductorScope", since that's what the basic @Singleton does.
  */
 @Scope
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
 annotation class Script2kScope

@@ -80,12 +80,12 @@ class ExecEngine2k @Inject internal constructor(
 
     override fun onExecStart() {
         initFromExportedVars()
-        conductor.blocks.forEach { (_, block) -> (block as Block).onExecStart() }
-        conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecStart() }
-        conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecStart() }
-        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecStart() }
+        conductor.blocks.forEach { (_, block) -> (block as IExecEngine).onExecStart() }
+        conductor.sensors.forEach { (_, sensor) -> (sensor as IExecEngine).onExecStart() }
+        conductor.turnouts.forEach { (_, turnout) -> (turnout as IExecEngine).onExecStart() }
+        conductor.throttles.forEach { (_, throttle) -> (throttle as IExecEngine).onExecStart() }
         // Routes must be started after all sensor objects.
-        conductor.routesContainers.forEach { (it as RoutesContainer).onExecStart() }
+        conductor.routesContainers.forEach { (it as IExecEngine).onExecStart() }
         reset()
         exportMaps()
         exportRoutes()
@@ -171,11 +171,11 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun propagateExecHandle() {
-        conductor.blocks.forEach { (_, block) -> (block as Block).onExecHandle() }
-        conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).onExecHandle() }
-        conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).onExecHandle() }
-        conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).onExecHandle() }
-        conductor.routesContainers.forEach { (it as RoutesContainer).onExecHandle() }
+        conductor.blocks.forEach { (_, block) -> (block as IExecEngine).onExecHandle() }
+        conductor.sensors.forEach { (_, sensor) -> (sensor as IExecEngine).onExecHandle() }
+        conductor.turnouts.forEach { (_, turnout) -> (turnout as IExecEngine).onExecHandle() }
+        conductor.throttles.forEach { (_, throttle) -> (throttle as IExecEngine).onExecHandle() }
+        conductor.routesContainers.forEach { (it as IExecEngine).onExecHandle() }
     }
 
     private fun repeatSpeed() {
@@ -198,10 +198,10 @@ class ExecEngine2k @Inject internal constructor(
 
     private fun reset() {
         // Make these objects resettable on a per-need basis.
-        // conductor.blocks.forEach { (_, block) -> (block as Block).reset() }
-        // conductor.sensors.forEach { (_, sensor) -> (sensor as Sensor).reset() }
-        // conductor.turnouts.forEach { (_, turnout) -> (turnout as Turnout).reset() }
-        // conductor.throttles.forEach { (_, throttle) -> (throttle as Throttle).reset() }
+        // conductor.blocks.forEach { (_, block) -> (block as IExecEngine).reset() }
+        // conductor.sensors.forEach { (_, sensor) -> (sensor as IExecEngine).reset() }
+        // conductor.turnouts.forEach { (_, turnout) -> (turnout as IExecEngine).reset() }
+        // conductor.throttles.forEach { (_, throttle) -> (throttle as IExecEngine).reset() }
         condCache.unfreeze()
         activatedActions.clear()
         eStopHandler.reset()

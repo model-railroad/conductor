@@ -37,7 +37,11 @@ import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.never
 
 class BlockTest {
-    private val jmriSensor = mock<IJmriSensor> { on { isActive } doReturn  false }
+    private val jmriSensor = object : IJmriSensor {
+        var _active = false
+        override fun isActive(): Boolean  = _active
+        override fun setActive(active: Boolean) { _active = active }
+    }
     private val jmriProvider = mock<IJmriProvider> { on { getSensor("jmriName") } doReturn jmriSensor }
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
@@ -61,7 +65,7 @@ class BlockTest {
 
     @Test
     fun testIsActive() {
-        jmriSensor.stub { on { isActive } doReturn true }
+        jmriSensor.isActive = true
         // the JMRI state is not reflected in the internal state until after onExecHandle
         assertThat(block.active).isFalse()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
@@ -71,7 +75,7 @@ class BlockTest {
         verify(keyValue).putValue("S/jmriName", "ON", true)
         reset(keyValue)
 
-        jmriSensor.stub { on { isActive } doReturn false }
+        jmriSensor.isActive = false
         assertThat(block.active).isTrue()
         verify(keyValue, never()).putValue(anyString(), anyString(), anyBoolean())
         block.onExecHandle()
@@ -85,16 +89,19 @@ class BlockTest {
         assertThat(block.name).isEqualTo("jmriName")
         assertThat(block.toString()).isEqualTo("{jmriName}")
 
-        block.active(true)
+        block.internalActive(true)
+        block.onExecHandle()
         assertThat(block.toString()).isEqualTo("<jmriName>")
 
-        block.active(false)
+        block.internalActive(false)
+        block.onExecHandle()
         block.named("Block-Name")
         assertThat(block.systemName).isEqualTo("jmriName")
         assertThat(block.name).isEqualTo("Block-Name")
         assertThat(block.toString()).isEqualTo("{Block-Name [jmriName]}")
 
-        block.active(true)
+        block.internalActive(true)
+        block.onExecHandle()
         assertThat(block.toString()).isEqualTo("<Block-Name [jmriName]>")
     }
 }

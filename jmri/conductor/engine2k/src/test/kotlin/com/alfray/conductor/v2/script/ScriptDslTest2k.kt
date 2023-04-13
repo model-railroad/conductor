@@ -142,7 +142,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(b1.systemName).isEqualTo("NS768")
         assertThat(b1.name).isEqualTo("NS768")
         assertThat(b1.active).isFalse()
-        b1.active(true)
+        b1.internalActive(true)
+        execEngine.onExecHandle()
 
         assertThat(b1.active).isTrue()
         assertThat(!b1).isFalse()

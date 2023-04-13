@@ -125,7 +125,7 @@ internal data class RouteGraph(
     fun toSimulGraph(): SimulRouteGraph {
         val sBlocks = nodes
             .distinctBy { n -> n.block.systemName }
-            .map { n -> (n.block as Block).toSimulRouteBlock((n as Node).reversal) }
+            .map { n -> (n.block as INodeBlock).toSimulRouteBlock((n as Node).reversal) }
         val sBlocksMap = mutableMapOf<String, SimulRouteBlock>()
         sBlocks.forEach { sBlocksMap[it.systemName] = it }
 

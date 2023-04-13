@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2023 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,18 +31,18 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 /**
- * A block matching an underlying JMRI sensor, as defined by a script.
+ * A virtual block matching, as defined by a script.
  * <p/>
- * The actual JMRI sensor is only assigned via the [onExecStart] method.
- * <p/>
- * The system name should be unique across all blocks (both real and virtual blocks) as it is used
+ * A virtual block is a block without any actual underlying JMRI sensor.
+ * A fake JMRI system name is provided by the script.
+ * This system name should be unique across all blocks (both real and virtual blocks) as it is used
  * to uniquely identify a block.
  * <p/>
- * Querying the active state returns the internal state and does NOT read from JMRI;
- * reading from JMRI is only done in [onExecHandle] to guarantee to be in sync with the exec loop.
+ * Querying the active state returns the internal state and does NOT read from JMRI.
+ * Setting the active state returns the internal state and does update JMRI.
  * <p/>
  * The main difference between a Block and a Sensor resides in the concept of an active block:
- * a block is active when its underlying physical sensor is active OR when a route manager
+ * a block is active when its underlying virtual sensor is active OR when a route manager
  * determines that a train must logically/virtually be occupying that block.
  * A block has 3 states: empty, occupied (sensor active), and trailing (sensor either active or not).
  * The state is computed by an external route manager which updates the block and any nodes that
@@ -52,7 +52,7 @@ import dagger.assisted.AssistedInject
  * The active state of the block is NOT used in equality. This ensures stability
  * when used as a map key.
  */
-internal class Block @AssistedInject constructor(
+internal class VirtualBlock @AssistedInject constructor(
     private val keyValue: IKeyValue,
     private val condCache: CondCache,
     private val eventLogger: EventLogger,
@@ -73,24 +73,13 @@ internal class Block @AssistedInject constructor(
     override fun not(): Boolean = !active
 
     /**
-     * Internally set the active block state. Useful for testing purposes. Not exposed to DSL.
-     * Note that the [active] method is a no-op for [Block] whereas this actually forces the
-     * underlying sensor's active state.
+     * Called by the DSL to mark the virtual block as occupied/active.
      * The internal state changed here will only be taken into account after the next call to
      * [onExecStart] or [onExecHandle].
      */
-    internal fun internalActive(isActive: Boolean) {
-        // Updates the internal state only.
+    override fun active(isActive: Boolean) {
         _active = isActive
         jmriSensor?.let { it.isActive = isActive }
-    }
-
-    /**
-     * Called by the DSL to mark a block as occupied/active.
-     * This is a no-op for JMRI-backed blocks.
-     */
-    override fun active(isActive: Boolean) {
-        // no-op
     }
 
     override fun named(name: String): IBlock {
@@ -107,7 +96,9 @@ internal class Block @AssistedInject constructor(
 
     /** Initializes the underlying JMRI sensor. */
     override fun onExecStart() {
-        jmriSensor = checkNotNull(jmriProvider.getSensor(systemName))
+        // With real JMRI, the sensor should remain null as the systemName should be virtual.
+        // With the simulator, a backing simul-sensor is created to exchange state with the simulator.
+        jmriSensor = jmriProvider.getSensor(systemName)
         // Start with an invalid state, to force an update in the first onExecHandle call.
         jmriSensor?.let { lastActive = !it.isActive }
         // Now check with JMRI and send the first eventLogger + keyValue events.

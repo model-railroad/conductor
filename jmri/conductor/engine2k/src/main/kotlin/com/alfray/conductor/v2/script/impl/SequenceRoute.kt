@@ -144,7 +144,7 @@ internal class SequenceRoute(
         val otherBlockOccupied = mutableSetOf<IBlock>()
         graph.nodes.forEach { node ->
             node as Node
-            val b = node.block as Block
+            val b = node.block
             node.changeState(if (b.active) IBlock.State.OCCUPIED else IBlock.State.EMPTY)
             if (b.active) {
                 if (b == currentBlock) {
@@ -176,7 +176,7 @@ internal class SequenceRoute(
         // updated by this route manager anymore.
         graph.nodes.forEach { node ->
             node as Node
-            val b = node.block as Block
+            val b = node.block
             if (b.state == IBlock.State.TRAILING) {
                 node.changeState(IBlock.State.EMPTY)
             }
@@ -194,7 +194,7 @@ internal class SequenceRoute(
 
         currentNode?.let { node ->
             node as Node
-            val block = node.block as Block
+            val block = node.block
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
             val outgoingNodesActive = outgoingNodes.filter { it.block.active }
@@ -234,7 +234,7 @@ internal class SequenceRoute(
                 // Any trailing block becomes empty, current occupied becomes trailing.
 
                 graph.nodes
-                    .filter { (it.block as Block).state == IBlock.State.TRAILING }
+                    .filter { (it.block as INodeBlock).state == IBlock.State.TRAILING }
                     .forEach { (it as Node).changeState(IBlock.State.EMPTY) }
 
                 val enterNode = outgoingNodesActive.first() as Node

@@ -62,13 +62,13 @@ class RouteGraphTest: ScriptTest2kBase() {
         val b1 = n1.block as Block
         val b2 = n2.block as Block
 
-        b1.active(true)
-        b2.active(false)
+        b1.internalActive(true)
+        b2.internalActive(false)
         assertThat(graph.start).isSameInstanceAs(n1)
         assertThat(graph.outgoing(n1)).containsExactly(n2)
 
-        b1.active(false)
-        b2.active(true)
+        b1.internalActive(false)
+        b2.internalActive(true)
         assertThat(graph.outgoing(n2)).containsExactly(n1)
     }
 
