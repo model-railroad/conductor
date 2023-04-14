@@ -26,11 +26,15 @@ import java.util.Optional
  */
 open class Script2kContext
 constructor(private val script2kCompFactory: IScript2kComponent.Factory?) {
+    var isSimulation = false
+        protected set
+
     var script2kComponent: Optional<IScript2kComponent> = Optional.empty()
         protected set
 
-    fun createComponent() : IScript2kComponent {
+    fun createComponent(isSimulation: Boolean) : IScript2kComponent {
         check(!script2kComponent.isPresent)
+        this.isSimulation = isSimulation
         val scriptComponent = script2kCompFactory!!.createComponent()
         script2kComponent = Optional.of(scriptComponent)
         return scriptComponent

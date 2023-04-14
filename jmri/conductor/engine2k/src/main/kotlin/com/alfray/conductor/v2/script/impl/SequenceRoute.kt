@@ -218,6 +218,21 @@ internal class SequenceRoute(
                 "ERROR $this has unexpected occupied blocks out of $node: $extraBlocksActive"
             }
 
+            // Virtual Blocks Management
+            if (!stillCurrentActive && outgoingNodesActive.isEmpty()) {
+                // Current block has become inactive and there's no active block.
+                if (outgoingNodes.size == 1) {
+                    val vblock = outgoingNodes.first().block
+                    if (vblock is VirtualBlock) {
+                        // If there's only one unambiguous outgoing virtual block,
+                        // activate the virtual block.
+                        logger.d(TAG, "Activate single virtual block ${node.block}")
+                        vblock.active(true)
+                    }
+                }
+            }
+
+            // All Blocks Management
             if (outgoingNodesActive.isEmpty()) {
                 // Case A: Train still on same block. Current block active, no other active.
                 assertOrError(stillCurrentActive || !timeoutExpired()) {
@@ -237,8 +252,15 @@ internal class SequenceRoute(
                     .filter { (it.block as INodeBlock).state == IBlock.State.TRAILING }
                     .forEach { (it as Node).changeState(IBlock.State.EMPTY) }
 
-                val enterNode = outgoingNodesActive.first() as Node
+                // Mark current block as trailing.
                 node.changeState(IBlock.State.TRAILING)
+                if (node.block is VirtualBlock) {
+                    logger.d(TAG, "Deactivate trailing virtual block ${node.block}")
+                    node.block.active(false)
+                }
+
+                // Mark the outgoing block as the new occupied block.
+                val enterNode = outgoingNodesActive.first() as Node
                 enterNode.changeState(IBlock.State.OCCUPIED)
                 currentNode = enterNode
                 clearTimeout()

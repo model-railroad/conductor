@@ -24,6 +24,7 @@ import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
+import com.alfray.conductor.v2.dagger.Script2kIsSimulation
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.simulator.SimulRouteBlock
@@ -57,6 +58,7 @@ internal class VirtualBlock @AssistedInject constructor(
     private val condCache: CondCache,
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
+    private val isSimulation: Script2kIsSimulation,
     @Assisted override val systemName: String
 ) : VarName(), IBlock, INodeBlock, IExecEngine {
     private var jmriSensor: IJmriSensor? = null
@@ -96,18 +98,24 @@ internal class VirtualBlock @AssistedInject constructor(
 
     /** Initializes the underlying JMRI sensor. */
     override fun onExecStart() {
-        // With real JMRI, the sensor should remain null as the systemName should be virtual.
-        // With the simulator, a backing simul-sensor is created to exchange state with the simulator.
-        jmriSensor = jmriProvider.getSensor(systemName)
-        // Start with an invalid state, to force an update in the first onExecHandle call.
-        jmriSensor?.let { lastActive = !it.isActive }
+        if (isSimulation.isSimulation) {
+            // With real JMRI, the sensor should remain null as the systemName should be virtual.
+            // With the simulator, a backing simul-sensor is created to exchange state with the simulator.
+            jmriSensor = jmriProvider.getSensor(systemName)
+            // Start with an invalid state, to force an update in the first onExecHandle call.
+            jmriSensor?.let { lastActive = !it.isActive }
+        } else {
+            // Start with an invalid state, to force an update in the first onExecHandle call.
+            lastActive = !_active
+        }
         // Now check with JMRI and send the first eventLogger + keyValue events.
         onExecHandle()
     }
 
     override fun onExecHandle() {
-        // Update the state from JMRI
+        // Update the state from the simulated sensor, if any.
         jmriSensor?.let { _active = it.isActive }
+
         if (_active != lastActive) {
             lastActive = _active
             val value = if (lastActive) Constants.On else Constants.Off

@@ -35,21 +35,17 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.SvgMapTarget
 import com.alfray.conductor.v2.script.dsl.TAction
-import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.After
-import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
-import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.OnRule
-import com.alfray.conductor.v2.script.impl.Sensor
+import com.alfray.conductor.v2.script.impl.RoutesContainer
+import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.Throttle
-import com.alfray.conductor.v2.script.impl.Turnout
 import com.alfray.conductor.v2.utils.BooleanCache
 import com.fasterxml.jackson.core.JsonProcessingException
 import java.io.IOException
-import java.lang.Exception
 import javax.inject.Inject
 
 @Script2kScope

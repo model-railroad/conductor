@@ -1148,10 +1148,6 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.forward(BL_Speed)
             }
         }
-        onTrailing {
-            // Activate the B830 virtual block
-            B830v.active(true)
-        }
     }
 
     val B830v_fwd = node(B830v) {
@@ -1161,9 +1157,6 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLTunnel_fwd = node(B850) {
         onEnter {
-            // Deactivate the B830 virtual block
-            B830v.active(false)
-
             BL.horn()
         }
     }
@@ -1199,10 +1192,6 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             BL.horn()
         }
-        onTrailing {
-            // Activate the B830 virtual block
-            B830v.active(true)
-        }
     }
 
     val B830v_rev = node(B830v) {
@@ -1212,9 +1201,6 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLStation_rev = node(B820) {
         onEnter {
-            // Deactivate the B830 virtual block
-            B830v.active(false)
-
             BL_bell(On)
             T324.normal()
             BL.reverse(BL_Speed_Station)
