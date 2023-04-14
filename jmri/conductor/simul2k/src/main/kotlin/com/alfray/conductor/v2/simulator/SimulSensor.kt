@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.simulator
 
 import com.alflabs.conductor.jmri.IJmriSensor
+import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlin.random.Random
@@ -27,8 +28,10 @@ import kotlin.random.Random
  * Simulated sensor. This simply mirrors the programmatic state set using [setActive].
  */
 class SimulSensor @AssistedInject constructor(
+    private val logger: ILogger,
     @Assisted val systemName: String
 ) : IJmriSensor {
+    private val TAG = javaClass.simpleName
     private var _active = false
     private var _randomize = 0.0
 
@@ -39,6 +42,7 @@ class SimulSensor @AssistedInject constructor(
     override fun isActive(): Boolean {
         var active = _active
         if (active && _randomize > 0 && Random.nextDouble() < _randomize) {
+            logger.d(TAG, "Flaky sensor $systemName is off")
             active = false
         }
         return active

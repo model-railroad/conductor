@@ -157,9 +157,6 @@ class SimulThrottle @AssistedInject constructor(
                 logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $b to true") // DEBUG
                 simulScheduler.forceExec(b)
                 sensor.isActive = true
-                // Simulate a flaky "blinking" active block.
-                sensor as SimulSensor
-                sensor.setRandomize(0.01)
                 if (b.reversal) {
                     graphForward = !graphForward
                 }
@@ -191,6 +188,9 @@ class SimulThrottle @AssistedInject constructor(
     override fun onExecHandle() {
         block?.let { b ->
             val nowTS = clock.elapsedRealtime()
+            val sensor = jmriProvider.getSensor(b.systemName)!! as SimulSensor
+            sensor.setRandomize(0.0)
+
             if (_speed == 0) {
                 lastTS = nowTS
                 blockMS = 0
@@ -201,6 +201,9 @@ class SimulThrottle @AssistedInject constructor(
                 if (blockMS >= blockMaxMS) {
                     // change blocks
                     graph?.whereTo(b, graphForward)?.let { newBlock -> changeBlock(newBlock) }
+                } else {
+                    // Simulate a flaky "blinking" active block only when the engine is moving.
+                    sensor.setRandomize(0.01)
                 }
             }
         }
