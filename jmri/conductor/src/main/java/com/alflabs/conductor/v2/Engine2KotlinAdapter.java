@@ -146,7 +146,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 .orElseThrow(() -> new IllegalArgumentException("Script2 File Not Defined"));
         log("Script2 Path: " + file.getPath());
 
-        IScript2kComponent script2kComponent = mScript2kContext.createComponent();
+        IScript2kComponent script2kComponent = mScript2kContext.createComponent(mSimul2kComponent.isPresent());
         Script2kLoader loader = script2kComponent.getScript2kLoader();
         ConductorImpl conductorImpl = loader.getConductorImpl();
         mSimul2kComponent.ifPresent(simul -> {

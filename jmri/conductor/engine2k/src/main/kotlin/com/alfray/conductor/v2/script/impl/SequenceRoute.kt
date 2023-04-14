@@ -226,8 +226,10 @@ internal class SequenceRoute(
                     if (vblock is VirtualBlock) {
                         // If there's only one unambiguous outgoing virtual block,
                         // activate the virtual block.
-                        logger.d(TAG, "Activate single virtual block ${node.block}")
+                        logger.d(TAG, "Virtual block activated $vblock")
                         vblock.active(true)
+                        // The virtual block state change only happens at the next onExecHandle.
+                        return@let
                     }
                 }
             }
@@ -255,7 +257,7 @@ internal class SequenceRoute(
                 // Mark current block as trailing.
                 node.changeState(IBlock.State.TRAILING)
                 if (node.block is VirtualBlock) {
-                    logger.d(TAG, "Deactivate trailing virtual block ${node.block}")
+                    logger.d(TAG, "Trailing Virtual Block deactivated ${node.block}")
                     node.block.active(false)
                 }
 
