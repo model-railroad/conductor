@@ -179,6 +179,7 @@ internal class SequenceRoute(
             val b = node.block
             if (b.state == IBlock.State.TRAILING) {
                 node.changeState(IBlock.State.EMPTY)
+                logger.d(TAG, "[idle] block $b becomes ${b.state}")
             }
         }
     }
@@ -252,10 +253,15 @@ internal class SequenceRoute(
 
                 graph.nodes
                     .filter { (it.block as INodeBlock).state == IBlock.State.TRAILING }
-                    .forEach { (it as Node).changeState(IBlock.State.EMPTY) }
+                    .forEach { n ->
+                        n as Node
+                        n.changeState(IBlock.State.EMPTY)
+                        logger.d(TAG, "trailing block ${n.block} becomes ${n.block.state}")
+                    }
 
                 // Mark current block as trailing.
                 node.changeState(IBlock.State.TRAILING)
+                logger.d(TAG, "current block ${node.block} becomes ${node.block.state}")
                 if (node.block is VirtualBlock) {
                     logger.d(TAG, "Trailing Virtual Block deactivated ${node.block}")
                     node.block.active(false)
@@ -264,6 +270,7 @@ internal class SequenceRoute(
                 // Mark the outgoing block as the new occupied block.
                 val enterNode = outgoingNodesActive.first() as Node
                 enterNode.changeState(IBlock.State.OCCUPIED)
+                logger.d(TAG, "enter block ${enterNode.block} becomes ${enterNode.block.state}")
                 currentNode = enterNode
                 clearTimeout()
             }

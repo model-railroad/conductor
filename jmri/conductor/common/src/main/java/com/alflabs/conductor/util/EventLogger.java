@@ -89,7 +89,10 @@ public class EventLogger {
     public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
         LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
         // Add an event (non blocking)
-        mEvents.add(new Event(now, type, name, value));
+        Event e = new Event(now, type, name, value);
+        mEvents.add(e);
+        // Conductor 2 DEBUG
+        mLogger.d(TAG, e.toString().trim());
     }
 
     /**
