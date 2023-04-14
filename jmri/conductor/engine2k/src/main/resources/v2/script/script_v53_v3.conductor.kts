@@ -1115,7 +1115,7 @@ BL_Idle_Route = BL_Route.idle {
 
 val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
-    timeout = 60 // 1 minute
+    timeout = 120 // 2 minutes
 
     val BL_Timer_Start_Delay = 5.seconds
     val BL_Timer_Bell_Delay = 2.seconds
@@ -1133,6 +1133,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             after (BL_Timer_Start_Delay) then {
                 BL_bell(Off)
                 BL.horn()
+                BL.light(On)
                 BL.forward(BL_Speed_Station)
             }
             jsonEvent {
@@ -1144,7 +1145,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLStation_fwd = node(B820) {
         onEnter {
-            after (5.seconds) then {
+            after (10.seconds) then {
                 BL.forward(BL_Speed)
             }
         }
@@ -1216,11 +1217,12 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLParked_rev = node(B801) {
         onEnter {
-            // We went too far, but it's not a problem / not an error.
-            BL.stop()
-            after (3.seconds) then {
+            after (2.seconds) then {
+                BL.stop()
+            } and_after (3.seconds) then {
                 BL_bell(Off)
             } and_after (2.seconds) then {
+                BL.light(Off)
                 BL_sound(Off)
                 BL_State = EBL_State.Wait
             } and_after (BL_Timer_Wait) then {
@@ -1242,7 +1244,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     onRecover {
         // TBD how do we ensure the automation is in Error mode?
-        //--deactivated-- BL_Route.activate(BL_Recover_Route)
+        BL_Route.activate(BL_Recover_Route)
     }
 
     sequence = listOf(BLParked_fwd, BLStation_fwd, B830v_fwd, BLTunnel_fwd,
@@ -1253,7 +1255,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
 val BL_Recover_Route = BL_Route.sequence {
     throttle = BL
-    timeout = 60 // 1 minute
+    timeout = 120 // 2 minutes
 
     fun move() {
         BL_bell(On)
@@ -1269,6 +1271,12 @@ val BL_Recover_Route = BL_Route.sequence {
     }
 
     val BLTunnel_rev = node(B850) {
+        onEnter {
+            move()
+        }
+    }
+
+    val B830v_rev = node(B830v) {
         onEnter {
             move()
         }
@@ -1312,7 +1320,7 @@ val BL_Recover_Route = BL_Route.sequence {
         }
     }
 
-    sequence = listOf(BLReverse_rev, BLTunnel_rev, BLStation_rev, BLParked_rev)
+    sequence = listOf(BLReverse_rev, BLTunnel_rev, B830v_rev, BLStation_rev, BLParked_rev)
 }
 
 
