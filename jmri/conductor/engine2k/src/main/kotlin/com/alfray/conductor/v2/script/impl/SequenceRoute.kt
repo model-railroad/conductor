@@ -198,7 +198,9 @@ internal class SequenceRoute(
             val block = node.block
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
-            val outgoingNodesActive = outgoingNodes.filter { it.block.active }
+            val outgoingNodesActive = outgoingNodes.filter {
+                it.block.active && it.block.state != IBlock.State.TRAILING
+            }
             val trailingBlocksActive = graph.nodes
                 .asSequence()
                 .map { it.block }
