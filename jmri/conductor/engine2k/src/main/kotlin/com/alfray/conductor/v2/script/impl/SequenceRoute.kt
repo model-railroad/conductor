@@ -222,7 +222,9 @@ internal class SequenceRoute(
             }
 
             // Virtual Blocks Management
-            if (!stillCurrentActive && outgoingNodesActive.isEmpty()) {
+            if (!stillCurrentActive
+                && outgoingNodesActive.isEmpty()
+                && trailingBlocksActive.isEmpty()) {
                 // Current block has become inactive and there's no active block.
                 if (outgoingNodes.size == 1) {
                     val vblock = outgoingNodes.first().block
