@@ -224,6 +224,7 @@ class StatusWindow2 {
         mSwingBuilder.doLater {
             mWindowCallback.onWindowReload()
         }
+        updatePause(false)
     }
 
     void onKioskChanged() {
