@@ -28,6 +28,7 @@ repositories {
 
 dependencies {
     implementation project(":common")
+    implementation project(":simul2k")
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
 

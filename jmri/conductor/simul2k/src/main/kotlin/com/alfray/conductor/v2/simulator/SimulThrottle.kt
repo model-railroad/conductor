@@ -203,7 +203,8 @@ class SimulThrottle @AssistedInject constructor(
                     graph?.whereTo(b, graphForward)?.let { newBlock -> changeBlock(newBlock) }
                 } else {
                     // Simulate a flaky "blinking" active block only when the engine is moving.
-                    sensor.setRandomize(0.01)
+                    jmriProvider as ISimulUiCallback
+                    sensor.setRandomize(if (jmriProvider.isFlaky) 0.01 else 0.0)
                 }
             }
         }

@@ -73,6 +73,7 @@ class StatusWindow2 {
     def JButton mPauseButton
     def JButton mQuitButton
     def JCheckBox mKioskCheck
+    def JCheckBox mFlakyCheck
     private def mIsSimulation = true
     private def mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
@@ -165,6 +166,8 @@ class StatusWindow2 {
                         fill: VERTICAL, anchor: PAGE_END,
                         insets: inset, weightx: 0, weighty: 0)) {
                     boxLayout(axis: BoxLayout.Y_AXIS)
+                    mFlakyCheck = checkBox(text: "Flaky", selected: false,
+                            actionPerformed: { evt -> onFlakyChanged() })
                     mKioskCheck = checkBox(text: "Kiosk Mode", selected: false,
                             actionPerformed: { evt -> onKioskChanged() })
                 }
@@ -241,8 +244,13 @@ class StatusWindow2 {
         }
     }
 
+    void onFlakyChanged() {
+        mWindowCallback.onFlaky(mFlakyCheck.selected)
+    }
+
     void onSimulationModeChanged() {
         mSimuScroller.visible = mIsSimulation
+        mFlakyCheck.visible = mIsSimulation
         mQuitButton.text = mIsSimulation ? "Quit" : "Hide"
     }
 

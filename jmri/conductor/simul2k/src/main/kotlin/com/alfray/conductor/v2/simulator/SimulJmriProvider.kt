@@ -32,8 +32,10 @@ class SimulJmriProvider @Inject constructor(
     private val simulSensorFactory: ISimulSensorFactory,
     private val simulTurnoutFactory: ISimulTurnoutFactory,
     private val simulThrottleFactory: ISimulThrottleFactory,
-) : FakeJmriProvider(), IExecSimul, ISimulCallback {
+) : FakeJmriProvider(), IExecSimul, ISimulCallback, ISimulUiCallback {
     private val TAG = javaClass.simpleName
+    override var isFlaky = false
+        private set
 
     fun clear() {
         mSensors.clear()
@@ -87,6 +89,10 @@ class SimulJmriProvider @Inject constructor(
 
     fun getUiLogOutput(): String {
         return mThrottles.values.map { (it as SimulThrottle).getUiLogOutput() }.joinToString("\n")
+    }
+
+    override fun setFlaky(flaky: Boolean) {
+        isFlaky = flaky
     }
 }
 

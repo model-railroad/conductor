@@ -32,6 +32,7 @@ import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alfray.conductor.v2.simulator.ISimulUiCallback;
 import com.alfray.conductor.v2.simulator.dagger.DaggerISimul2kComponent;
 import com.alfray.conductor.v2.simulator.dagger.ISimul2kComponent;
 import com.google.common.base.Charsets;
@@ -400,6 +401,16 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         if (!processed.get()) {
             mLogger.d(TAG, "SVG click on unknown element #" + itemId + " ignored.");
         }
+    }
+
+    @Override
+    public void onFlaky(boolean isFlaky) {
+        mSimul2kComponent.ifPresent(comp -> {
+            IJmriProvider jmri = comp.getJmriProvider();
+            if (jmri instanceof ISimulUiCallback) { // TODO make a better interface composition
+                ((ISimulUiCallback) jmri).setFlaky(isFlaky);
+            }
+        });
     }
 
     /** Executes on the Swing EDT thread. */

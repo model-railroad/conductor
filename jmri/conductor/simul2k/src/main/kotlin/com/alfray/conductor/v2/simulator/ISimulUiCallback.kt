@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2019 alf.labs gmail com,
+ * Copyright (C) 2023 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,13 +15,13 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.alflabs.conductor.v2.ui
 
-interface IWindowCallback {
-    void onQuit()
-    void onWindowReload()
-    void onWindowPause()
-    void onWindowSvgLoaded()
-    void onWindowSvgClick(String itemId)
-    void onFlaky(boolean isFlaky)
+package com.alfray.conductor.v2.simulator
+
+/** Callback provided to Ui2 to update the simulator based on UI options. */
+interface ISimulUiCallback {
+    val isFlaky: Boolean
+
+    /** Sets whether sensors are flaky. */
+    fun setFlaky(flaky: Boolean)
 }
