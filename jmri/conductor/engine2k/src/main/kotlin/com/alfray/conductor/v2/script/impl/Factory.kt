@@ -48,7 +48,7 @@ internal class Factory @Inject constructor(
         Block(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createVirtualBlock(systemName: String) : VirtualBlock =
-        VirtualBlock(keyValue, condCache, eventLogger, jmriProvider, isSimulation, systemName)
+        VirtualBlock(keyValue, condCache, eventLogger, systemName)
 
     internal fun createTurnout(systemName: String) : Turnout =
         Turnout(keyValue, condCache, jmriProvider, systemName)
