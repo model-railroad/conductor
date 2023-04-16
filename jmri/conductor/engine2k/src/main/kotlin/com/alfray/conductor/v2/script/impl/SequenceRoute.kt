@@ -67,6 +67,7 @@ internal class SequenceRoute(
     builder: SequenceRouteBuilder
 ) : RouteBase(logger, owner, builder), ISequenceRoute, IRouteManager {
     private val TAG = javaClass.simpleName
+    private var currentActiveBlocks = setOf<IBlock> ()
     override val throttle = builder.throttle
     override val sequence = builder.sequence
     private var startNode: INode? = null
@@ -193,47 +194,50 @@ internal class SequenceRoute(
         // Case C: Train moves to block 2 ⇒ block 2 sensor is active, block 1 keeps active.
         // Any block that becomes active which is not an outgoing node is a potential error.
 
+        val allActiveBlocks = graph.blocks.filterTo(mutableSetOf()) { it.active }
+        val newActiveBlocks = allActiveBlocks.intersect(currentActiveBlocks)
+        currentActiveBlocks = allActiveBlocks
+
         currentNode?.let { node ->
             node as Node
             val block = node.block
+
             val stillCurrentActive = block.active
             val outgoingNodes = graph.outgoing(node)
-            val outgoingNodesActive = outgoingNodes.filter {
-                it.block.active && it.block.state != IBlock.State.TRAILING
-            }
-            val trailingBlocksActive = graph.nodes
-                .asSequence()
-                .map { it.block }
+            // A suitable outgoing node can only be a *newly* active (transitioning from non-active
+            // to active) block.
+            val outgoingNodesActive = outgoingNodes.filter { newActiveBlocks.contains(it.block) }
+            val trailingBlocks = graph.blocks
                 .filter { it.state == IBlock.State.TRAILING }
                 .toSet()
 
-            // Any other blocks other than current or outgoing cannot be active.
+            // Any other blocks other than current, trailing, or outgoing cannot be active.
             // Note that we really want to match blocks here, not nodes.
-            val extraBlocksActive = graph.nodes
-                .asSequence()
-                .filter { it.block.active }
-                .map { it.block }
-                .toSet()
+            val extraBlocksActive = allActiveBlocks
                 .minus(node.block)
-                .minus(trailingBlocksActive)
+                .minus(trailingBlocks)
                 .minus(outgoingNodes.map { it.block }.toSet())
             assertOrError(extraBlocksActive.isEmpty()) {
                 "ERROR $this has unexpected occupied blocks out of $node: $extraBlocksActive"
             }
 
             // Virtual Blocks Management
-            if (!stillCurrentActive
-                && outgoingNodesActive.isEmpty()
-                && trailingBlocksActive.isEmpty()) {
-                // Current block has become inactive and there's no active block.
-                if (outgoingNodes.size == 1) {
-                    val vblock = outgoingNodes.first().block
-                    if (vblock is VirtualBlock) {
-                        // If there's only one unambiguous outgoing virtual block,
-                        // activate the virtual block.
+            // If the current block has become inactive, and the next block is virtual,
+            // can we activate it?
+            if (!stillCurrentActive && outgoingNodes.size == 1) {
+                val vblock = outgoingNodes.first().block
+                if (vblock is VirtualBlock) {
+                    // The single outgoing virtual block can become active if we do not have
+                    // any active blocks: not the current one, not any of the outgoing ones,
+                    // and not even the currently trailing one.
+                    if (outgoingNodesActive.isEmpty()
+                        && trailingBlocks.intersect(allActiveBlocks).isEmpty()) {
+                        // Since there's only one unambiguous outgoing virtual block, activate it.
                         logger.d(TAG, "Virtual block activated $vblock")
                         vblock.active(true)
                         // The virtual block state change only happens at the next onExecHandle.
+                        // We cannot continue below otherwise we'll trip on the
+                        // "outgoingNodesActive.isEmpty" check.
                         return@let
                     }
                 }
@@ -260,7 +264,7 @@ internal class SequenceRoute(
                     .forEach { n ->
                         n as Node
                         n.changeState(IBlock.State.EMPTY)
-                        logger.d(TAG, "trailing block ${n.block} becomes ${n.block.state}")
+                        logger.d(TAG, "trailing block $n becomes ${n.block.state}")
                     }
 
                 // Mark current block as trailing.

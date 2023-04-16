@@ -65,8 +65,14 @@ internal class Node(builder: NodeBuilder) : INode {
         }
     }
 
-    /** Change the Node's block's state, and triggers the onEvent callbacks as appropriate
-     * for the next execution. */
+    /**
+     * Change the Node's block's state, and triggers the onEvent callbacks as appropriate
+     * for the next execution.
+     *
+     * Note: even though eventually the underlying block's [changeState] is called, always call
+     * this method on the node itself to update the node's internal state, timers, and context at
+     * the same time.
+     */
     fun changeState(newState: IBlock.State) {
         val oldState = block.state
         if (oldState == newState) {

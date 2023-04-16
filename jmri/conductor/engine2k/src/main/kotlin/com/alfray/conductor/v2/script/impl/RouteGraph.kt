@@ -25,9 +25,14 @@ import com.alfray.conductor.v2.simulator.SimulRouteEdge
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 
 internal data class RouteGraph(
+    /** The first node of the main sequence is the de-facto starting point. */
     val start: INode,
+    /** All the nodes in the main sequence and all the optional branches. */
     val nodes: Set<INode>,
-    val edges: Map<IBlock, List<RouteEdge>>
+    /** All the route edges (node from -> node to), sorted by origin block. */
+    val edges: Map<IBlock, List<RouteEdge>>,
+    /** All the blocks used by all the nodes. */
+    val blocks: Set<IBlock> = nodes.map { it.block }.toSet(),
 ) {
     /**
      * Returns a flattened view of the graph by visiting all edges from main sequence
