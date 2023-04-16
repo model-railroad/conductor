@@ -1217,7 +1217,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLParked_rev = node(B801) {
         onEnter {
-            after (2.seconds) then {
+            after (5.seconds) then {
                 BL.stop()
             } and_after (3.seconds) then {
                 BL_bell(Off)
