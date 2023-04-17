@@ -195,7 +195,7 @@ internal class SequenceRoute(
         // Any block that becomes active which is not an outgoing node is a potential error.
 
         val allActiveBlocks = graph.blocks.filterTo(mutableSetOf()) { it.active }
-        val newActiveBlocks = allActiveBlocks.intersect(currentActiveBlocks)
+        val newActiveBlocks = allActiveBlocks.minus(currentActiveBlocks)
         currentActiveBlocks = allActiveBlocks
 
         currentNode?.let { node ->
@@ -206,7 +206,7 @@ internal class SequenceRoute(
             val outgoingNodes = graph.outgoing(node)
             // A suitable outgoing node can only be a *newly* active (transitioning from non-active
             // to active) block.
-            val outgoingNodesActive = outgoingNodes.filter { newActiveBlocks.contains(it.block) }
+            var outgoingNodesActive = outgoingNodes.filter { newActiveBlocks.contains(it.block) }
             val trailingBlocks = graph.blocks
                 .filter { it.state == IBlock.State.TRAILING }
                 .toSet()
@@ -235,10 +235,11 @@ internal class SequenceRoute(
                         // Since there's only one unambiguous outgoing virtual block, activate it.
                         logger.d(TAG, "Virtual block activated $vblock")
                         vblock.active(true)
-                        // The virtual block state change only happens at the next onExecHandle.
-                        // We cannot continue below otherwise we'll trip on the
-                        // "outgoingNodesActive.isEmpty" check.
-                        return@let
+//                        // The virtual block state change only happens at the next onExecHandle.
+//                        // We cannot continue below otherwise we'll trip on the
+//                        // "outgoingNodesActive.isEmpty" check.
+//                        return@let
+                        outgoingNodesActive = listOf(outgoingNodes.first())
                     }
                 }
             }
