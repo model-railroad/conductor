@@ -28,7 +28,8 @@ import kotlin.math.max
 data class SimulRouteBlock(
     val systemName: String,
     val name: String,
-    val reversal: Boolean
+    val virtual: Boolean,
+    val reversal: Boolean,
 ) {
     var extraTimersSec: Int = 0
         private set

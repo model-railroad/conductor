@@ -127,9 +127,9 @@ class SimulRouteGraphTest : Simul2kTestBase() {
 
     /** A simple graph with a simple A-B-A shuttle route with one reversal. */
     private fun createGraph3(): SimulRouteGraph {
-        val b1 = SimulRouteBlock("B1", "B1", reversal = false)
-        val b2 = SimulRouteBlock("B2", "B2", reversal = false)
-        val b3 = SimulRouteBlock("B3", "B3", reversal = true)
+        val b1 = SimulRouteBlock("B1", "B1", virtual = false, reversal = false)
+        val b2 = SimulRouteBlock("B2", "B2", virtual = false, reversal = false)
+        val b3 = SimulRouteBlock("B3", "B3", virtual = false, reversal = true)
         val edge12 = SimulRouteEdge(from = b1, to = b2, forward = true, isBranch = false)
         val edge23 = SimulRouteEdge(from = b2, to = b3, forward = true, isBranch = false)
         val edge32 = SimulRouteEdge(from = b3, to = b2, forward = false, isBranch = false)
@@ -150,10 +150,10 @@ class SimulRouteGraphTest : Simul2kTestBase() {
      * and an error branch in case one overshoots block B, e.g. A-B-C-B-A.
      */
     private fun createGraph3_branch1(): SimulRouteGraph {
-        val b1 = SimulRouteBlock("B1", "B1", reversal = false)
-        val b2 = SimulRouteBlock("B2", "B2", reversal = false)
-        val b3 = SimulRouteBlock("B3", "B3", reversal = true)
-        val b4 = SimulRouteBlock("B4", "B4", reversal = true)
+        val b1 = SimulRouteBlock("B1", "B1", virtual = false, reversal = false)
+        val b2 = SimulRouteBlock("B2", "B2", virtual = false, reversal = false)
+        val b3 = SimulRouteBlock("B3", "B3", virtual = false, reversal = true)
+        val b4 = SimulRouteBlock("B4", "B4", virtual = false, reversal = true)
         val edge12 = SimulRouteEdge(from = b1, to = b2, forward = true, isBranch = false)
         val edge23 = SimulRouteEdge(from = b2, to = b3, forward = true, isBranch = false)
         val edge32 = SimulRouteEdge(from = b3, to = b2, forward = false, isBranch = false)

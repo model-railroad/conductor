@@ -17,7 +17,7 @@ class SimulScheduler @Inject constructor(
     fun scheduleAfter(millis: Int, tag: Any, function: () -> Unit) {
         val nowMs = clock.elapsedRealtime()
         val timeMs = nowMs + millis
-        logger.get().d(TAG, "[schedule] after $millis --> TS $nowMs [$tag]")
+        logger.get().d(TAG, "Schedule after +$millis ms = TS $nowMs [$tag]")
         functionsAt.add(FunctionAt(timeMs, tag, function))
         functionsAt.sortBy { timeMs }
     }
@@ -27,7 +27,7 @@ class SimulScheduler @Inject constructor(
         functionsAt.removeAll {
             val delta = nowMs - it.timeMs
             if (it.tag == tag) {
-                logger.get().d(TAG, "[schedule] force +$delta ms --> TS $nowMs [${tag}]")
+                logger.get().d(TAG, "Exec force +$delta ms = TS $nowMs [${tag}]")
                 it.function.invoke()
                 return@removeAll true
             } else {
@@ -45,7 +45,7 @@ class SimulScheduler @Inject constructor(
         functionsAt.removeAll {
             val delta = nowMs - it.timeMs
             if (delta >= 0) {
-                logger.get().d(TAG, "[schedule] invoke +$delta ms --> TS $nowMs [${it.tag}]")
+                logger.get().d(TAG, "Exec invoke +$delta ms = TS $nowMs [${it.tag}]")
                 it.function.invoke()
                 return@removeAll true
             } else {

@@ -134,5 +134,5 @@ internal class VirtualBlock @AssistedInject constructor(
     }
 
     override fun toSimulRouteBlock(reversal: Boolean?): SimulRouteBlock =
-        SimulRouteBlock(systemName, name, reversal ?: false)
+        SimulRouteBlock(systemName, name, virtual = true, reversal ?: false)
 }

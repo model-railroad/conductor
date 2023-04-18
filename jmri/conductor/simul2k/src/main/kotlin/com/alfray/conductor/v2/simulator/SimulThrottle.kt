@@ -45,7 +45,7 @@ class SimulThrottle @AssistedInject constructor(
     @Assisted val dccAddress_: Int
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
-    /** The route timeout, in seconds. 0 to deactive. */
+    /** The route timeout, in seconds. 0 to deactivate. */
     var routeTimeout: Int = 0
     /** The expected block graph for that throttle. */
     private var graph: SimulRouteGraph? = null
@@ -144,31 +144,44 @@ class SimulThrottle @AssistedInject constructor(
     private fun changeBlock(newBlock: SimulRouteBlock?) {
         val oldBlock = block
         if (newBlock != oldBlock) {
-            oldBlock?.let { b ->
-                val sensor = jmriProvider.getSensor(b.systemName)!!
-                val millis = delayTransitionMS(this._speed)
-                simulScheduler.scheduleAfter(millis, b) {
-                    sensor.isActive = false
-                    logger.d(TAG, "[Throttle $dccAddress_] RESET block $b to false after $millis ms") // DEBUG
-                }
-            }
+            logger.d(TAG, String.format("[%04d] Move to block %s then %s",
+                dccAddress,
+                newBlock,
+                if (graphForward) "FWD" else "REV"))
+
             newBlock?.let { b ->
-                val sensor = jmriProvider.getSensor(b.systemName)!!
-                logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $b to true") // DEBUG
-                simulScheduler.forceExec(b)
-                sensor.isActive = true
+                if (!b.virtual) {
+                    logger.d(TAG, "[Throttle $dccAddress_] ACTIV block $b to true")
+                    val sensor = jmriProvider.getSensor(b.systemName)!!
+                    simulScheduler.forceExec(b)
+                    sensor.isActive = true
+                }
                 if (b.reversal) {
                     graphForward = !graphForward
+                }
+            }
+
+            oldBlock?.let { b ->
+                if (!b.virtual) {
+                    val sensor = jmriProvider.getSensor(b.systemName)!!
+                    val millis = delayTransitionMS(this._speed)
+                    simulScheduler.scheduleAfter(millis, b) {
+                        logger.d(
+                            TAG,
+                            "[Throttle $dccAddress_] RESET block $b to false after $millis ms")
+                        sensor.isActive = false
+                    }
                 }
             }
 
             block = newBlock
             blockMS = 0
             lastTS = clock.elapsedRealtime()
-            logger.d(TAG, String.format("[%04d] Move to block %s then %s",
+
+            logger.d(TAG, String.format("[%04d] Simulate time on block %s = %d ms",
                 dccAddress,
-                block,
-                if (graphForward) "FWD" else "REV"))
+                newBlock,
+                blockMaxMS))
         }
     }
 
@@ -188,8 +201,10 @@ class SimulThrottle @AssistedInject constructor(
     override fun onExecHandle() {
         block?.let { b ->
             val nowTS = clock.elapsedRealtime()
-            val sensor = jmriProvider.getSensor(b.systemName)!! as SimulSensor
-            sensor.setRandomize(0.0)
+            val sensor : SimulSensor? =
+                if (b.virtual) null
+                else (jmriProvider.getSensor(b.systemName)!! as SimulSensor)
+            sensor?.setRandomize(0.0)
 
             if (_speed == 0) {
                 lastTS = nowTS
@@ -204,7 +219,7 @@ class SimulThrottle @AssistedInject constructor(
                 } else {
                     // Simulate a flaky "blinking" active block only when the engine is moving.
                     jmriProvider as ISimulUiCallback
-                    sensor.setRandomize(if (jmriProvider.isFlaky) 0.01 else 0.0)
+                    sensor?.setRandomize(if (jmriProvider.isFlaky) 0.01 else 0.0)
                 }
             }
         }

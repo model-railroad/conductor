@@ -1153,6 +1153,10 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B830v_fwd = node(B830v) {
         onEnter {
+            BL.horn()
+            after (10.seconds) then {
+                BL.horn()
+            }
         }
     }
 
@@ -1197,6 +1201,10 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B830v_rev = node(B830v) {
         onEnter {
+            BL.horn()
+            after (10.seconds) then {
+                BL.horn()
+            }
         }
     }
 
