@@ -276,7 +276,7 @@ val PA = throttle(8330) named "PA"     // Full mainline route -- Passenger.
 val FR = throttle(1072) named "FR"     // Short mainline route -- Freight.
 
 fun PA_bell   (on: Boolean) { PA.f1(on)  }
-fun PA_sound  (on: Boolean) { PA.f8(!on) }
+fun PA_sound  (on: Boolean) { PA.f8(on) }
 fun PA_doppler(on: Boolean) { /* no-op on 8749 */ }
 fun FR_bell   (on: Boolean) { FR.f1(on)  }
 fun FR_sound  (on: Boolean) { FR.f8(!on) }
@@ -422,7 +422,7 @@ val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
     throttle = PA
-    timeout = 60 // 1 minute
+    timeout = 120
 
     onRecover {
         // no-op
@@ -612,7 +612,7 @@ val SP_Sound_Stopped    = 2.seconds
 
 val Freight_Route = ML_Route.sequence {
     throttle = FR
-    timeout = 60
+    timeout = 120
 
     onRecover {
         // no-op
@@ -1225,7 +1225,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BLParked_rev = node(B801) {
         onEnter {
-            after (5.seconds) then {
+            after (10.seconds) then {
                 BL.stop()
             } and_after (3.seconds) then {
                 BL_bell(Off)
