@@ -52,8 +52,8 @@ class SimulThrottleTest : Simul2kTestBase() {
     }
 
     private fun createGraph2(): SimulRouteGraph {
-        val b1 = SimulRouteBlock("B1", "B1", reversal = false)
-        val b2 = SimulRouteBlock("B2", "B2", reversal = true)
+        val b1 = SimulRouteBlock("B1", "B1", virtual = false, reversal = false)
+        val b2 = SimulRouteBlock("B2", "B2", virtual = false, reversal = true)
         val edge12 = SimulRouteEdge(from = b1, to = b2, forward = true, isBranch = false)
         val edge21 = SimulRouteEdge(from = b2, to = b1, forward = false, isBranch = false)
 
