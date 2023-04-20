@@ -61,13 +61,13 @@ class SimulThrottle @AssistedInject constructor(
     private var _speed: Int = 0
     /**
      * Max time to spend on this block before moving to the next one.
-     * This is a dynamic property that uses a base 5-second time + any extra timer duration
+     * This is a dynamic property that uses a base 6-second time + any extra timer duration
      * from the current block.
      * If the route has a defined timeout, the block time cannot be longer than the given timeout.
      */
     internal val blockMaxMS: Int
         get() {
-            var sec = 5
+            var sec = 6
             block?.let { sec += it.extraTimersSec }
             if (routeTimeout > 1) sec = min(sec, routeTimeout - 1)
             return sec * 1000
@@ -186,10 +186,12 @@ class SimulThrottle @AssistedInject constructor(
     }
 
     private fun delayTransitionMS(speed: Int): Int {
-        // Speed 1 --> 5 seconds
-        // Speed 10 --> 1 second
-        val secs: Double = 5.0 - 4 * max(0, speed - 1) / 9.0
-        return (1000.0 * min(5.0, max(1.0, secs))).toInt()
+        // Speed  1 --> 3   seconds
+        // Speed 10 --> 0.5 seconds
+        val maxSec = 3.0
+        val minSec = 0.5
+        val secs: Double = maxSec - (maxSec - minSec) * max(0.0, speed - minSec) / (10.0 - 1.0)
+        return (1000.0 * min(maxSec, max(minSec, secs))).toInt()
     }
 
     override fun onExecStart() {

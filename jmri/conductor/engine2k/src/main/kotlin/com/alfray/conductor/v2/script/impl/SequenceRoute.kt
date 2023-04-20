@@ -25,6 +25,7 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 import java.util.Locale
 
@@ -123,15 +124,29 @@ internal class SequenceRoute(
     override fun changeState(newState: State) {
         super.changeState(newState)
 
-        if (newState == State.ACTIVATED) {
-            onSequenceRouteActivated();
-        } else if (newState == State.IDLE) {
-            onSequenceRouteIdle()
+        when (newState) {
+            State.IDLE -> {
+                onSequenceRouteIdle()
+            }
+            State.ACTIVATED -> {
+                // no-op. postOnActivateAction() will be executed after [actionOnActivate].
+            }
+            State.ACTIVE -> {}
+            State.ERROR -> {}
         }
     }
 
-    /** Called by [changeState] when this sequence route becomes activated. */
-    private fun onSequenceRouteActivated() {
+    /**
+     * Called _after_ the route's [actionOnActivate] has completed,
+     * when this sequence route becomes activated.
+     *
+     * This gave the script a chance to change to startNode, thus at this point we can
+     * validate that the start node is both defined and occupied, and that no other block
+     * is occupied.
+     */
+    override fun postOnActivateAction() {
+        logger.d(TAG, "@@ DEBUG postOnActivateAction $this // start node is $currentNode")
+
         // Set or reset the initial start node.
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
@@ -156,18 +171,17 @@ internal class SequenceRoute(
             }
         }
 
-        // Validate that the initial start node is actually occupied.
+        // Validate the route's initial state.
+        // At the minimum, the initial start node should actually be occupied.
+        // We do not need to validate whether any other block is occupied as that is going
+        // to be done by the next [manageRoute] call to the manager.
         assertOrError(currentBlockIsOccupied) {
             "ERROR $this cannot start because start node $currentNode is not occupied."
         }
 
-        // Validate no other block is occupied.
-        assertOrError(otherBlockOccupied.isEmpty()) {
-            "ERROR $this cannot start because blocks are occupied: $otherBlockOccupied"
-        }
-
+        logger.d(TAG, "@@ DEBUG onSequenceRouteActivated schedule onEnter for $currentNode_")
         // Ensure that the onEnter callback of the currently occupied block is executed
-        // since activating a route is akin to entering the current block.
+        // since activating a route is akin to entering the current/starting block.
         currentNode_.changeEnterState()
     }
 
@@ -235,10 +249,6 @@ internal class SequenceRoute(
                         // Since there's only one unambiguous outgoing virtual block, activate it.
                         logger.d(TAG, "Virtual block activated $vblock")
                         vblock.active(true)
-//                        // The virtual block state change only happens at the next onExecHandle.
-//                        // We cannot continue below otherwise we'll trip on the
-//                        // "outgoingNodesActive.isEmpty" check.
-//                        return@let
                         outgoingNodesActive = listOf(outgoingNodes.first())
                     }
                 }

@@ -25,6 +25,7 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
@@ -104,11 +105,15 @@ internal abstract class RouteBase(
                     // since there's no "running" during an idle route.
                     activationCounter++
                 }
-                actionOnActivate?.let {
-                    execActions.add(ExecAction(context, it))
-                }
                 execActions.add(ExecAction(context) {
-                    changeState(State.ACTIVE)
+                    logger.d(TAG, "@@ ACTIVATED EXEC for $this")
+                    actionOnActivate?.invoke()
+                    postOnActivateAction()
+                    // actionOnActivate or postOnActivateAction may have set the route in ERROR.
+                    // Only move to ACTIVE state if the route is still in ACTIVATED state.
+                    if (state == State.ACTIVATED) {
+                        changeState(State.ACTIVE)
+                    }
                 })
             }
             State.ACTIVE -> {
@@ -119,6 +124,13 @@ internal abstract class RouteBase(
             }
         }
     }
+
+    /**
+     * Called _after_ the route's [actionOnActivate] has completed,
+     * when this sequence route becomes activated.
+     */
+    open fun postOnActivateAction() {}
+
 }
 
 

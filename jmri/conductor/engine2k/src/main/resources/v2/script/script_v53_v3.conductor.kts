@@ -1314,7 +1314,7 @@ val BL_Recover_Route = BL_Route.sequence {
         }
 
         whileOccupied {
-            if (!B801.active) {
+            if (!B820.active) {
                 BL.stop()
                 BL_bell(Off)
                 BL_sound(Off)
