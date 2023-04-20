@@ -26,6 +26,9 @@ interface IConductor {
     /** Variables exchanged with the Conductor engine and exported via the KV Server. */
     val exportedVars: ExportedVars
 
+    /** Logs a string to the console and the recorded log. */
+    fun log(message: String)
+
     /** Registers a new sensor with the given system name.
      * Once registered, the same sensor object is reused for the same system name. */
     fun sensor(systemName: String): ISensor

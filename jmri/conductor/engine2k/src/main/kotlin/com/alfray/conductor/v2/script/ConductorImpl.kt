@@ -88,6 +88,10 @@ class ConductorImpl @Inject internal constructor(
     internal val contextTimers = mutableSetOf<ExecContext>()
     private var simulCallback: ISimulCallback? = null
 
+    override fun log(message: String) {
+        logger.d("Script", message)
+    }
+
     override fun sensor(systemName: String): ISensor {
         return sensors.computeIfAbsent(systemName) { factory.createSensor(it) }
     }

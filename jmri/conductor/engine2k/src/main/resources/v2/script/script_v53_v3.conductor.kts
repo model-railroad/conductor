@@ -1327,6 +1327,7 @@ val BL_Recover_Route = BL_Route.sequence {
     }
 
     onActivate {
+        log("onActivate BL_Recover_Route")
         BL_State = EBL_State.Recover
         if (B860.active) {
             BL_Route.active.start_node(BLReverse_rev)
