@@ -52,7 +52,6 @@ internal class Node(builder: NodeBuilder) : INode {
     var reversal: Boolean? = null
 
     private var callOnEnter: TAction? = null
-    private var callWhileOccupied: TAction? = null
     private var callOnTrailing: TAction? = null
     private var callOnEmpty: TAction? = null
     val context = ExecContext(ExecContext.Reason.NODE, this)
@@ -76,9 +75,7 @@ internal class Node(builder: NodeBuilder) : INode {
     fun changeState(newState: IBlock.State) {
         val oldState = block.state
         if (oldState == newState) {
-            if (newState == IBlock.State.OCCUPIED) {
-                callWhileOccupied = actionWhileOccupied
-            }
+            // no-op
         } else {
             // Clear all context timers when changing state.
             // We do not clear timers when going from "Enter" to "Occupied" since they are
@@ -88,7 +85,6 @@ internal class Node(builder: NodeBuilder) : INode {
             when (newState) {
                 IBlock.State.OCCUPIED -> {
                     callOnEnter = actionOnEnter
-                    callWhileOccupied = actionWhileOccupied
                 }
                 IBlock.State.TRAILING -> {
                     callOnTrailing = actionOnTrailing
@@ -108,7 +104,6 @@ internal class Node(builder: NodeBuilder) : INode {
         block as INodeBlock
         if (block.state == IBlock.State.OCCUPIED) {
             callOnEnter = actionOnEnter
-            callWhileOccupied = actionWhileOccupied
         }
     }
 
@@ -117,9 +112,10 @@ internal class Node(builder: NodeBuilder) : INode {
             execActions.add(ExecAction(context, it))
             callOnEnter = null
         }
-        callWhileOccupied?.let {
-            execActions.add(ExecAction(context, it))
-            callWhileOccupied = null
+        actionWhileOccupied?.let {
+            if (block.state == IBlock.State.OCCUPIED) {
+                execActions.add(ExecAction(context, it))
+            }
         }
         callOnTrailing?.let {
             execActions.add(ExecAction(context, it))
