@@ -36,7 +36,7 @@ import com.alfray.conductor.v2.script.dsl.IIdleRoute
  * deal with the route error state, however since an idle route does nothing it is not
  * expected that it would ever enter error & recovery mode.
  *
- * The base start_node() method does not apply to an idle route and will throw an exception
+ * The base startNode() method does not apply to an idle route and will throw an exception
  * if used.
  */
 internal class IdleRoute(
@@ -47,9 +47,9 @@ internal class IdleRoute(
     private val TAG = javaClass.simpleName
     private val actionOnIdle = builder.actionOnIdle
 
-    override fun start_node(node: INode) {
+    override fun startNode(node: INode) {
         assertOrError(false) {
-            "No start_node to set in an idle route."
+            "No startNode to set in an idle route."
         }
     }
 

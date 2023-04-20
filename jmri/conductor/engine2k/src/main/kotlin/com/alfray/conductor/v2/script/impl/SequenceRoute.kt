@@ -50,7 +50,7 @@ import java.util.Locale
  * routes' container reportError() method. This triggers the RoutesContainer's onError callback
  * once, after which the route's onRecover callback is used instead of the normal processing.
  *
- * The onActivated callback can call start_node() to change the starting node for the route.
+ * The onActivated callback can call startNode() to change the starting node for the route.
  * The starting node is used and validated during the activated-to-active transition. At that
  * point the route also verifies that the starting node is actually an occupied block, and that
  * there are no other occupied blocks on the route.
@@ -97,9 +97,9 @@ internal class SequenceRoute(
         return String.format(Locale.US, "SequenceRoute %s#%d (%04d)", owner.name, index, addr)
     }
 
-    override fun start_node(node: INode) {
+    override fun startNode(node: INode) {
         assertOrError(graph.nodes.contains(node)) {
-            "ERROR start_node $node is not part of the route $this"
+            "ERROR startNode($node) is not part of the route $this"
         }
         startNode = node
     }

@@ -88,7 +88,7 @@ internal abstract class RouteBase(
     }
 
     /** Invoked by script to change the start_node during the onActivated callback. */
-    abstract override fun start_node(node: INode)
+    abstract override fun startNode(node: INode)
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
     open fun collectActions(execActions: MutableList<ExecAction>) {

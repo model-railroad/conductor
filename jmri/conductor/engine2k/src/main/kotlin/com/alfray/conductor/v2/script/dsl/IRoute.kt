@@ -34,5 +34,5 @@ interface IRoute {
      * Throws an error if the node is not part of the route.
      * Throws an error if called on a route without nodes such as an Idle Route.
      */
-    fun start_node(node: INode)
+    fun startNode(node: INode)
 }

@@ -870,19 +870,19 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Passenger
         if (B370.active) {
-            ML_Route.active.start_node(B370_rev)
+            ML_Route.active.startNode(B370_rev)
         } else if (B360.active) {
-            ML_Route.active.start_node(B360_rev)
+            ML_Route.active.startNode(B360_rev)
         } else if (B340.active) {
-            ML_Route.active.start_node(B340_rev)
+            ML_Route.active.startNode(B340_rev)
         } else if (B330.active) {
-            ML_Route.active.start_node(B330_rev)
+            ML_Route.active.startNode(B330_rev)
         } else if (B321.active) {
-            ML_Route.active.start_node(B321_rev)
+            ML_Route.active.startNode(B321_rev)
         } else if (B503a.active) {
-            ML_Route.active.start_node(B503a_rev)
+            ML_Route.active.startNode(B503a_rev)
         } else if (B503b.active) {
-            ML_Route.active.start_node(B503b_rev)
+            ML_Route.active.startNode(B503b_rev)
         }
     }
 
@@ -944,9 +944,9 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Freight
         if (B321.active) {
-            ML_Route.active.start_node(B321_rev)
+            ML_Route.active.startNode(B321_rev)
         } else if (B311.active) {
-            ML_Route.active.start_node(B311_rev)
+            ML_Route.active.startNode(B311_rev)
         }
     }
 
@@ -1330,16 +1330,16 @@ val BL_Recover_Route = BL_Route.sequence {
         log("onActivate BL_Recover_Route")
         BL_State = EBL_State.Recover
         if (B860.active) {
-            BL_Route.active.start_node(BLReverse_rev)
+            BL_Route.active.startNode(BLReverse_rev)
         } else if (B850.active) {
-            BL_Route.active.start_node(BLTunnel_rev)
+            BL_Route.active.startNode(BLTunnel_rev)
         } else if (B820.active) {
-            BL_Route.active.start_node(BLStation_rev)
+            BL_Route.active.startNode(BLStation_rev)
         } else if (B801.active) {
-            BL_Route.active.start_node(BLParked_rev)
+            BL_Route.active.startNode(BLParked_rev)
         } else {
             // If none of the sensors are active, assume the train is in the virtual block.
-            BL_Route.active.start_node(B830v_rev)
+            BL_Route.active.startNode(B830v_rev)
         }
     }
 

@@ -872,9 +872,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     onActivate {
         // It's ok to start either from BLParked or BLStation
         if (BLParked.active) {
-            BL_Route.active.start_node(BLParked_fwd)
+            BL_Route.active.startNode(BLParked_fwd)
         } else if (!BLParked && BLStation.active) {
-            BL_Route.active.start_node(BLStation_fwd)
+            BL_Route.active.startNode(BLStation_fwd)
         }
     }
 
