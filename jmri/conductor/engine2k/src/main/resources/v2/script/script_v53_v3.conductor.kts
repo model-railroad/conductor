@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-@file:Suppress("FunctionName", "LocalVariableName", "PropertyName", "ClassName")
+@file:Suppress("FunctionName", "LocalVariableName", "PropertyName", "ClassName", "UNUSED_PARAMETER")
 
 import com.alfray.conductor.v2.script.dsl.*
 
@@ -203,16 +203,16 @@ on { !ML_Toggle } then {
 
 
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.rtacPsaText = "{c:blue}Next Train:\\nPassenger"
+    exportedVars.rtacPsaText = "{c:blue}Next Train:\nPassenger"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.rtacPsaText = "{c:blue}Next Train:\\nPassenger\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{c:blue}Next Train:\nPassenger\nLeaving in 1 minute"
 }
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight"
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\nFreight"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\nFreight\nLeaving in 1 minute"
 }
 
 // --------------------
@@ -385,7 +385,7 @@ on { ML_State == EML_State.Ready && !ML_Toggle } then {
 }
 
 fun ML_Fn_Send_Start_GaEvent() {
-    ML_Start_Counter += 1
+    ML_Start_Counter++
     gaPage {
         url = GA_URL
         path = ML_Train.name
@@ -397,7 +397,6 @@ fun ML_Fn_Send_Start_GaEvent() {
         label = ML_Train.name
         user = ML_Start_Counter.toString()
     }
-    // reset_timers("PA", "AM", "SP") -- obsolete
 }
 
 val AM_Leaving_Speed        = 8.speed
@@ -432,7 +431,7 @@ val Passenger_Route = ML_Route.sequence {
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.rtacPsaText = "{c:blue}Currently Running:\\nPassenger"
+        exportedVars.rtacPsaText = "{c:blue}Currently Running:\nPassenger"
         jsonEvent {
             key1 = "Depart"
             key2 = "Passenger"
@@ -622,7 +621,7 @@ val Freight_Route = ML_Route.sequence {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Running
         ML_Fn_Send_Start_GaEvent()
-        exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
+        exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\nFreight"
         jsonEvent {
             key1 = "Depart"
             key2 = "Freight"
@@ -1012,6 +1011,21 @@ var BL_State = EBL_State.Ready
 
 var BL_Start_Counter = 0
 
+fun BL_Fn_Send_Start_GaEvent() {
+    BL_Start_Counter++
+    gaPage {
+        url = GA_URL
+        path = "BL"
+        user = ML_Start_Counter.toString()
+    }
+    gaEvent {
+        category = "Automation"
+        action = "Start"
+        label = "BL"
+        user = ML_Start_Counter.toString()
+    }
+    // reset_timers("PA", "AM", "SP") -- obsolete
+}
 
 on { BL_Toggle } then {
     BL.repeat(2.seconds)
@@ -1117,8 +1131,8 @@ val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
     timeout = 120 // 2 minutes
 
-    val BL_Timer_Start_Delay = 5.seconds
-    val BL_Timer_Bell_Delay = 2.seconds
+    val BL_Timer_Start_Delay = 8.seconds
+    val BL_Timer_Bell_Delay = 5.seconds
     val BL_Timer_RevStation_Stop = 4.seconds
     val BL_Timer_RevStation_Pause = 25.seconds
     val BL_Timer_Station_Stop = 6.seconds
@@ -1136,16 +1150,14 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.light(On)
                 BL.forward(BL_Speed_Station)
             }
-            jsonEvent {
-                key1 = "Depart"
-                key2 = "Branchline"
-            }
         }
     }
 
     val BLStation_fwd = node(B820) {
         onEnter {
-            after (10.seconds) then {
+            BL_bell(Off)
+            BL.forward(BL_Speed_Station)
+            after (38.seconds) then {
                 BL.forward(BL_Speed)
             }
         }
@@ -1154,7 +1166,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B830v_fwd = node(B830v) {
         onEnter {
             BL.horn()
-            after (10.seconds) then {
+
+            // Horn over Canyon bridge
+            after (26.seconds) then {
                 BL.horn()
             }
         }
@@ -1171,7 +1185,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
             BL_bell(On)
             after (BL_Timer_RevStation_Stop) then {
-                // Toggle Stop/Reverse/Stop to turn off the Reverse front light.
+                // Toggle Stop/Reverse/Stop to turn off the Reverse front light on RDC 10.
                 // Next event should still be the BLReverse Stopped one.
                 BL.stop()
                 BL.horn()
@@ -1202,7 +1216,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B830v_rev = node(B830v) {
         onEnter {
             BL.horn()
-            after (10.seconds) then {
+            after (36.seconds) then {
                 BL.horn()
             }
         }
@@ -1229,7 +1243,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.stop()
             } and_after (3.seconds) then {
                 BL_bell(Off)
-            } and_after (2.seconds) then {
+            } and_after (5.seconds) then {
                 BL.light(Off)
                 BL_sound(Off)
                 BL_State = EBL_State.Wait
@@ -1241,17 +1255,15 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     onActivate {
         BL_State = EBL_State.Running
-        BL_Start_Counter++
-        // It's ok to start either from BLParked or BLStation
-        if (B801.active) {
-            BL_Route.active.start_node(BLParked_fwd)
-        } else if (!B801 && B820.active) {
-            BL_Route.active.start_node(BLStation_fwd)
+
+        BL_Fn_Send_Start_GaEvent()
+        jsonEvent {
+            key1 = "Depart"
+            key2 = "Branchline"
         }
     }
 
     onRecover {
-        // TBD how do we ensure the automation is in Error mode?
         BL_Route.activate(BL_Recover_Route)
     }
 
@@ -1298,12 +1310,18 @@ val BL_Recover_Route = BL_Route.sequence {
 
     val BLParked_rev = node(B801) {
         onEnter {
-            BL.stop()
-            after (5.seconds) then {
+            move()
+        }
+
+        whileOccupied {
+            if (!B801.active) {
+                BL.stop()
                 BL_bell(Off)
                 BL_sound(Off)
-            } and_after (2.seconds) then {
-                BL_Route.activate(BL_Idle_Route)
+
+                after (2.seconds) then {
+                    BL_Route.activate(BL_Idle_Route)
+                }
             }
         }
     }
@@ -1318,6 +1336,9 @@ val BL_Recover_Route = BL_Route.sequence {
             BL_Route.active.start_node(BLStation_rev)
         } else if (B801.active) {
             BL_Route.active.start_node(BLParked_rev)
+        } else {
+            // If none of the sensors are active, assume the train is in the virtual block.
+            BL_Route.active.start_node(B830v_rev)
         }
     }
 
