@@ -533,7 +533,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B330_rev = node(B330) {
-        whileOccupied {
+        onEnter {
             after (AM_Timer_B330_Down_Speed) then {
                 PA.horn()
                 PA.reverse(AM_Sonora_Speed)
@@ -544,8 +544,6 @@ val Passenger_Route = ML_Route.sequence {
     val B321_rev = node(B321) {
         onEnter {
             AM_Fn_Acquire_Route()
-        }
-        whileOccupied {
             PA.reverse(AM_Full_Speed)
             // Doppler sound
             PA_doppler(On)
@@ -567,7 +565,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B503b_rev = node(B503b) {
-        whileOccupied {
+        onEnter {
             after (AM_Timer_B503b_Down_Stop) then {
                 PA.stop()
                 PA.horn()
@@ -629,7 +627,7 @@ val Freight_Route = ML_Route.sequence {
     }
 
     val B311_start = node(B311) {
-        whileOccupied {
+        onEnter {
             FR.light(On)
             FR_marker(On)
             FR_sound(On)
@@ -1314,7 +1312,7 @@ val BL_Recover_Route = BL_Route.sequence {
         }
 
         whileOccupied {
-            if (!B820.active) {
+            on { !B820.active } then {
                 BL.stop()
                 BL_bell(Off)
                 BL_sound(Off)
