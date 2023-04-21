@@ -54,7 +54,8 @@ internal class Node(builder: NodeBuilder) : INode {
     private var callOnEnter: TAction? = null
     private var callOnTrailing: TAction? = null
     private var callOnEmpty: TAction? = null
-    val context = ExecContext(ExecContext.Reason.NODE, this)
+    val eventContext = ExecContext(ExecContext.Reason.NODE_EVENT, this)
+    val whileContext = ExecContext(ExecContext.Reason.NODE_WHILE, this)
 
     override fun toString(): String {
         return if (reversal != null && reversal == true) {
@@ -80,7 +81,8 @@ internal class Node(builder: NodeBuilder) : INode {
             // Clear all context timers when changing state.
             // We do not clear timers when going from "Enter" to "Occupied" since they are
             // actually both represented by the same state "Occupied".
-            context.clearTimers()
+            eventContext.clearTimers()
+            whileContext.clearTimers()
 
             when (newState) {
                 IBlock.State.OCCUPIED -> {
@@ -109,20 +111,20 @@ internal class Node(builder: NodeBuilder) : INode {
 
     fun collectActions(execActions: MutableList<ExecAction>) {
         callOnEnter?.let {
-            execActions.add(ExecAction(context, it))
+            execActions.add(ExecAction(eventContext, it))
             callOnEnter = null
         }
         actionWhileOccupied?.let {
             if (block.state == IBlock.State.OCCUPIED) {
-                execActions.add(ExecAction(context, it))
+                execActions.add(ExecAction(whileContext, it))
             }
         }
         callOnTrailing?.let {
-            execActions.add(ExecAction(context, it))
+            execActions.add(ExecAction(eventContext, it))
             callOnTrailing = null
         }
         callOnEmpty?.let {
-            execActions.add(ExecAction(context, it))
+            execActions.add(ExecAction(eventContext, it))
             callOnEmpty = null
         }
     }

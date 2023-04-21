@@ -27,6 +27,8 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.CurrentContext
+import com.alfray.conductor.v2.script.ExecContext
+import com.alfray.conductor.v2.script.ExecContext.Reason
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IFBits
@@ -226,8 +228,13 @@ internal class Throttle @AssistedInject constructor(
     }
 
     private fun enforceContext() {
-        currentContext.assertNotInScriptLoader(TAG) {
-            "ERROR: throttle actions must be called in an event callback."
+        currentContext.assertHasReason(TAG, listOf(
+            Reason.GLOBAL_RULE,
+            Reason.ROUTE,
+            Reason.ON_RULE,
+            Reason.NODE_EVENT,
+            Reason.NODE_WHILE)) {
+            "ERROR: throttle actions must be called in an event or rule definition."
         }
     }
 }

@@ -435,7 +435,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultHasError(
-            "ERROR: after..then action must be defined in an event callback.")
+            "ERROR: after..then action must be defined in an event or rule definition.")
     }
 
     @Test
@@ -801,7 +801,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_AfterOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_TrainThrottleOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -821,11 +821,11 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultHasError(
-            "ERROR: throttle actions must be called in an event callback.")
+            "ERROR: throttle actions must be called in an event or rule definition.")
     }
 
     @Test
-    fun testSequenceRoute_TrainThrottleOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_AfterOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -847,7 +847,46 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultHasError(
-            "ERROR: after..then action must be defined in an event callback.")
+            "ERROR: after..then action must be defined in an event or rule definition.")
+    }
+
+    @Test
+    fun testSequenceRoute_AfterInWhileBlockForbidden() {
+        jmriProvider.getSensor("B01").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                whileOccupied {
+                    after (2.seconds) then {
+                        Train1.forward(5.speed)
+                    }
+                }
+            }
+            sequence = listOf(block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.rules).hasSize(0)
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        execEngine.onExecHandle()
+
+        assertThat(logger.string)
+            .contains("ERROR: after..then action must be defined in an event or rule definition.")
     }
 
     @Test

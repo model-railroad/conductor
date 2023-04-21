@@ -37,9 +37,10 @@ internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
         LOAD_SCRIPT,
         GLOBAL_RULE,
         ON_RULE,
-        ACTIVE_ROUTE,
+        ROUTE_CONTAINER,
         ROUTE,
-        NODE,
+        NODE_EVENT,
+        NODE_WHILE,
     }
 
     fun evalAfterTimers(collectAfterAction: (context: ExecContext, after: After) -> Unit) {

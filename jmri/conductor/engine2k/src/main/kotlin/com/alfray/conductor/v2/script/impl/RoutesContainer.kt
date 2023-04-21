@@ -70,7 +70,7 @@ internal class RoutesContainer(
     private var callOnError: TAction? = null
     private var _active: RouteBase? = null
     private val _routes = mutableListOf<IRoute>()
-    private val context = ExecContext(ExecContext.Reason.ACTIVE_ROUTE)
+    private val context = ExecContext(ExecContext.Reason.ROUTE_CONTAINER)
     var routeInfo: RouteInfo = createRouteInfo()
         private set
 
@@ -109,7 +109,7 @@ internal class RoutesContainer(
             if (r is SequenceRoute) {
                 r.currentNode?.let {
                     it as Node
-                    countTimers.add(it.context.countTimers())
+                    countTimers.add(it.eventContext.countTimers())
                 }
             }
         }

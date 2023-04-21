@@ -38,23 +38,27 @@ internal class CurrentContext @Inject internal constructor(
         current = null
     }
 
-    /** Asserts that the current context is not null and __is not__ the script-loader context.
+    /** Asserts that the current context is not null and is not the unexpected reason
      * Return the non-null context. */
-    fun assertNotInScriptLoader(tag: String, lazyMessage: () -> Any): ExecContext {
+    fun assertNotHasReason(tag: String, unexpected: ExecContext.Reason, lazyMessage: () -> Any): ExecContext {
         logger.assertOrThrow(
             tag,
-            current != null && current !== scriptLoaderContext,
-            lazyMessage)
+            current != null && current!!.reason != unexpected
+        ) {
+            "${lazyMessage.invoke()} (Was ${current?.reason?.name})"
+        }
         return current!!
     }
 
-    /** Asserts that the current context is not null and __is__ the script-loader context.
+    /** Asserts that the current context is not null and is the expected reason.
      * Return the non-null context. */
-    fun assertInScriptLoader(tag: String, lazyMessage: () -> Any): ExecContext {
+    fun assertHasReason(tag: String, expected: List<ExecContext.Reason>, lazyMessage: () -> Any): ExecContext {
         logger.assertOrThrow(
             tag,
-            current != null && current === scriptLoaderContext,
-            lazyMessage)
+            current != null && expected.contains(current!!.reason)
+            ) {
+            "${lazyMessage.invoke()} (Was ${current?.reason?.name})"
+        }
         return current!!
     }
 }

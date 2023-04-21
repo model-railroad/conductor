@@ -24,6 +24,7 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
+import com.alfray.conductor.v2.script.ExecContext.Reason
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
@@ -132,7 +133,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun on(condition: () -> Any): IOnRule {
-        currentContext.assertInScriptLoader(TAG) {
+        currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT)) {
             "ERROR: on..then rule must be defined at the top global level."
         }
         val rule = OnRule(condition)
@@ -141,7 +142,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun on(delay: Delay, condition: () -> Any): IOnRule {
-        val context = currentContext.assertInScriptLoader(TAG) {
+        val context = currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT)) {
             "ERROR: on..then rule must be defined at the top global level."
         }
         val rule = OnDelayRule(condition, delay, factory) { onTimer ->
@@ -152,15 +153,15 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun after(delay: Delay): IAfter {
-        val context = currentContext.assertNotInScriptLoader(TAG) {
-            "ERROR: after..then action must be defined in an event callback."
+        val context = currentContext.assertHasReason(TAG, listOf(Reason.ON_RULE, Reason.NODE_EVENT)) {
+            "ERROR: after..then action must be defined in an event or rule definition."
         }
         val after = After(delay) { afterTimer ->
             // The "After" timer only gets recorded when the "then" clause is parsed.
             context.addTimer(afterTimer)
             contextTimers.add(context)
 
-            if (context.reason == ExecContext.Reason.NODE
+            if (context.reason == Reason.NODE_EVENT
                 && context.parent is Node) {
                 simulCallback?.onBlockTimersChanged(
                     context.parent.block.systemName,
