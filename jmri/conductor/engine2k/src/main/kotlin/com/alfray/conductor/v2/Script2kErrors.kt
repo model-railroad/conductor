@@ -28,7 +28,10 @@ class Script2kErrors @Inject constructor() {
     val errors = mutableListOf<String>()
 
     fun add(error: String) {
-        errors.add(error)
+        // Only add each error once. TBD maybe add a counter if too many repeats?
+        if (!errors.contains(error)) {
+            errors.add(error)
+        }
     }
 }
 

@@ -356,8 +356,10 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                     .append(" errors\n");
 
             if (!errors.isEmpty()) {
-                status.append("\n--- [ LAST ERROR ] ---\n");
-                status.append(Joiner.on("\n").join(errors));
+                status.append("\n--- [ LAST ERROR ] ---\n\u2022");
+                status.append(Joiner.on("\n\u2022 ").join(errors))
+                        .append('\n')
+                        .append('\n');
             }
 
             try {

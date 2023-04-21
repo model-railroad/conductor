@@ -228,12 +228,7 @@ internal class Throttle @AssistedInject constructor(
     }
 
     private fun enforceContext() {
-        currentContext.assertHasReason(TAG, listOf(
-            Reason.GLOBAL_RULE,
-            Reason.ROUTE,
-            Reason.ON_RULE,
-            Reason.NODE_EVENT,
-            Reason.NODE_WHILE)) {
+        currentContext.assertNotHasReason(TAG, Reason.LOAD_SCRIPT) {
             "ERROR: throttle actions must be called in an event or rule definition."
         }
     }
