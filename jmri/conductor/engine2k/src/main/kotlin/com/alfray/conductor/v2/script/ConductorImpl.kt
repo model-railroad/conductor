@@ -135,7 +135,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun on(condition: TCondition): IOnRule {
         val context = currentContext.assertHasReason(TAG,
-            listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
+            listOf(Reason.LOAD_SCRIPT)) {
                 "ERROR: on..then rule must be defined at the top global level."
             }
 
@@ -148,7 +148,7 @@ class ConductorImpl @Inject internal constructor(
 
     override fun on(delay: Delay, condition: TCondition): IOnRule {
         val context =
-            currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
+            currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT)) {
                 "ERROR: on..then rule must be defined at the top global level."
             }
         val key = OnRuleKey(context, delay, condition)

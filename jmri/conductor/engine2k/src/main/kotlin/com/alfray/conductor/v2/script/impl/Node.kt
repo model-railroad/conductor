@@ -124,7 +124,8 @@ internal class Node(builder: NodeBuilder) : INode {
         actionWhileOccupied?.let {
             if (block.state == IBlock.State.OCCUPIED) {
                 execActions.add(ExecAction(whileContext, it))
-                whileContext.evalOnRules(collectOnRuleAction)
+                // TBD... for now we are forbidding onRules in a while context
+                // because there's no way to determine how unique they are.
             }
         }
         callOnTrailing?.let {

@@ -227,6 +227,7 @@ class ExecEngine2k @Inject internal constructor(
             currentContext.changeContext(context)
             // Remember that this action has been executed. collectRuleAction() will later omit
             // it unless the condition becomes false in between.
+            // TODO this wrong: owner's context actionExecCache vs invokeContext below.
             currentContext.current.actionExecCache.put(action, true)
             try {
                 action.invoke()

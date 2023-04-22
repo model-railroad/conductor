@@ -20,4 +20,11 @@ package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.script.dsl.TAction
 
-internal data class ExecAction(val context: ExecContext, val action: TAction)
+/**
+ * An action to be executed in a given context.
+ */
+internal data class ExecAction(
+    /** The context in which the action is to be invoked. */
+    val context: ExecContext,
+    /** The action to invoke. */
+    val action: TAction)
