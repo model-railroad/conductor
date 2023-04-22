@@ -264,7 +264,7 @@ On the RDC SP-10:
 >> Timings for NCE Momentum #3
 */
 
-enum class EML_State { Ready, Wait, Running, Recover }
+enum class EML_State { Ready, Wait, Run, Recover, Error }
 enum class EML_Train { Passenger, Freight, }
 
 var ML_State = EML_State.Ready
@@ -332,7 +332,7 @@ val ML_Route = routes {
         gaEvent {
             category = "Automation"
             action = "Error"
-            label = "Passenger"
+            label = "Mainline"
             user = "Staff"
         }
         exportedVars.rtacPsaText = "{b:red}{c:white}Automation ERROR"
@@ -357,10 +357,18 @@ ML_Idle_Route = ML_Route.idle {
     onIdle {
         if (ML_Toggle.active && AIU_Motion.active && PA.stopped && FR.stopped) {
             when (ML_Train) {
-                EML_Train.Passenger -> ML_Route.activate(Passenger_Route)
-                EML_Train.Freight -> ML_Route.activate(Freight_Route)
+                EML_Train.Passenger -> Passenger_Route.activate()
+                EML_Train.Freight -> Freight_Route.activate()
             }
         }
+    }
+}
+
+val ML_Error_Route = ML_Route.idle {
+    onActivate {
+        ML_State = EML_State.Error
+        PA.stop()
+        FR.stop()
     }
 }
 
@@ -427,7 +435,7 @@ val Passenger_Route = ML_Route.sequence {
 
     onActivate {
         ML_Train = EML_Train.Passenger
-        ML_State = EML_State.Running
+        ML_State = EML_State.Run
         ML_Fn_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:blue}Currently Running:\\nPassenger"
         jsonEvent {
@@ -578,7 +586,7 @@ val Passenger_Route = ML_Route.sequence {
                 ML_Train = EML_Train.Freight
                 ML_State = EML_State.Wait
             } and_after (ML_Timer_Wait) then {
-                route.activate(ML_Idle_Route)
+                ML_Idle_Route.activate()
             }
         }
     }
@@ -615,7 +623,7 @@ val Freight_Route = ML_Route.sequence {
 
     onActivate {
         ML_Train = EML_Train.Freight
-        ML_State = EML_State.Running
+        ML_State = EML_State.Run
         ML_Fn_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
         jsonEvent {
@@ -714,7 +722,7 @@ val Freight_Route = ML_Route.sequence {
                 ML_Train = EML_Train.Passenger
                 ML_State = EML_State.Wait
             } and_after (ML_Timer_Wait) then {
-                route.activate(ML_Idle_Route)
+                ML_Idle_Route.activate()
             }
         }
     }
@@ -725,7 +733,7 @@ val Freight_Route = ML_Route.sequence {
 
 fun ML_Fn_Try_Recover_Route() {
     if (!ML_Toggle) {
-        ML_Route.activate(ML_Idle_Route)
+        ML_Idle_Route.activate()
         return
     }
 
@@ -743,14 +751,14 @@ fun ML_Fn_Try_Recover_Route() {
         // PA train is not at start but there's one block occupied, so let's assume it's
         // our train and try to recover that PA train.
         log("[ML Recovery] Recover Passenger")
-        // --deactivated-- ML_Route.activate(ML_Recover_Passenger_Route)
+        ML_Recover_Passenger_Route.activate()
 
     } else if (PA_start && !FR_start && FR_occup == 1) {
         // PA train is accounted for, where expected.
         // FR train is not at start but there's one block occupied, so let's assume it's
         // our train and try to recover that FR train.
         log("[ML Recovery] Recover Freight")
-        // --deactivated-- ML_Route.activate(ML_Recover_Freight_Route)
+        ML_Recover_Freight_Route.activate()
 
     } else if (FR_start && !PA_start && FR_occup == 0) {
         // FR train is accounted for, where expected.
@@ -759,7 +767,7 @@ fun ML_Fn_Try_Recover_Route() {
         // In that case we can still run the FR route because it's a subset of the large route
         // and we verified the route is not occupied.
         log("[ML Recovery] Ignore Passenger, Activate Freight")
-        ML_Route.activate(Freight_Route)
+        Freight_Route.activate()
 
     } else if (PA_total > 1 || FR_total > 1) {
         // We have more than one block occupied per route. This is not recoverable
@@ -776,15 +784,11 @@ fun ML_Fn_Try_Recover_Route() {
             label = "Passenger"
             user = "Staff"
         }
-        // TBD how do we ensure the automation is in Error mode?
-        // TODO create a specific ML_Error_Route that does nothing but print error and don't run.
-        ML_Route.activate(ML_Idle_Route)
+        ML_Error_Route.activate()
 
     } else {
         log("[ML Recovery] Unknown situation. Cannot recover.")
-        // TBD how do we ensure the automation is in Error mode?
-        // TODO create a specific ML_Error_Route that does nothing but print error and don't run.
-        ML_Route.activate(ML_Idle_Route)
+        ML_Error_Route.activate()
     }
 }
 
@@ -891,10 +895,8 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
 
     onError {
         // We cannot recover from an error during the recover route.
-        if (ML_Toggle.active) {
-            PA.stop()
-            ML_Idle_Route.activate()
-        }
+        PA.stop()
+        ML_Error_Route.activate()
     }
 
     sequence = listOf(
@@ -955,10 +957,8 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
 
     onError {
         // We cannot recover from an error during the recover route.
-        if (ML_Toggle.active) {
-            FR.stop()
-            ML_Idle_Route.activate()
-        }
+        FR.stop()
+        ML_Error_Route.activate()
     }
 
     sequence = listOf(B321_rev, B311_rev)
@@ -1008,7 +1008,7 @@ fun BL_gyro (on: Boolean) { /*BL.f5(on)*/ }
 val BL_Speed = 6.speed
 val BL_Speed_Station = 4.speed
 
-enum class EBL_State { Ready, Wait, Running, Recover }
+enum class EBL_State { Ready, Wait, Run, Recover, Error }
 
 var BL_State = EBL_State.Ready
 
@@ -1124,8 +1124,14 @@ BL_Idle_Route = BL_Route.idle {
 
     onIdle {
         if (BL_Toggle.active && AIU_Motion.active) {
-            BL_Route.activate(BL_Shuttle_Route)
+            BL_Shuttle_Route.activate()
         }
+    }
+}
+
+val BL_Error_Route = BL_Route.idle {
+    onActivate {
+        BL_State = EBL_State.Error
     }
 }
 
@@ -1250,13 +1256,13 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL_sound(Off)
                 BL_State = EBL_State.Wait
             } and_after (BL_Timer_Wait) then {
-                BL_Route.activate(BL_Idle_Route)
+                BL_Idle_Route.activate()
             }
         }
     }
 
     onActivate {
-        BL_State = EBL_State.Running
+        BL_State = EBL_State.Run
 
         BL_Fn_Send_Start_GaEvent()
         jsonEvent {
@@ -1266,7 +1272,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     onError {
-        BL_Route.activate(BL_Recover_Route)
+        BL_Recover_Route.activate()
     }
 
     sequence = listOf(BLParked_fwd, BLStation_fwd, B830v_fwd, BLTunnel_fwd,
@@ -1320,7 +1326,7 @@ val BL_Recover_Route = BL_Route.sequence {
                 BL.stop()
                 BL_bell(Off)
                 BL_sound(Off)
-                BL_Route.activate(BL_Idle_Route)
+                BL_Idle_Route.activate()
             }
         }
     }
@@ -1343,9 +1349,8 @@ val BL_Recover_Route = BL_Route.sequence {
 
     onError {
         // We cannot recover from an error during the recover route.
-        if (BL_Toggle.active) {
-            BL.stop()
-        }
+        BL.stop()
+        BL_Error_Route.activate()
     }
 
     sequence = listOf(BLReverse_rev, BLTunnel_rev, B830v_rev, BLStation_rev, BLParked_rev)
