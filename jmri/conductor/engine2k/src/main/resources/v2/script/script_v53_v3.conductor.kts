@@ -195,8 +195,8 @@ on { ML_Toggle } then {
 }
 
 on { !ML_Toggle } then {
-    PA.repeat(2.seconds)
-    FR.repeat(2.seconds)
+    PA.repeat(0.seconds)
+    FR.repeat(0.seconds)
     PA_bell(Off)
     FR_bell(Off)
 }
@@ -325,8 +325,6 @@ val ML_Route = routes {
 
     onError {
         // The current route will trigger the corresponding ML_Recover_Route.
-        PA.repeat(1.seconds)
-        FR.repeat(1.seconds)
         PA.stop()
         FR.stop()
         PA_sound(Off) ; PA.light(Off) ; PA_bell(Off)
@@ -1100,7 +1098,6 @@ val BL_Route = routes {
     onError {
         // --- BL State: Error
         // The current route will trigger the corresponding BL_Recover_Route.
-        BL.repeat(1.seconds)
         BL.stop()
         BL_sound(Off)
         gaEvent {
