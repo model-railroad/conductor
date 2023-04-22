@@ -20,9 +20,11 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
+import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
+import com.alfray.conductor.v2.script.dsl.IOnRule
 
 /**
  * An idle route.
@@ -60,7 +62,10 @@ internal class IdleRoute(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    override fun collectActions(execActions: MutableList<ExecAction>) {
+    override fun collectActions(
+        execActions: MutableList<ExecAction>,
+        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
+    ) {
         when (state) {
             State.ACTIVE -> {
                 actionOnIdle?.let {
@@ -68,7 +73,7 @@ internal class IdleRoute(
                 }
             }
             else -> {
-                super.collectActions(execActions)
+                super.collectActions(execActions, collectOnRuleAction)
             }
         }
     }

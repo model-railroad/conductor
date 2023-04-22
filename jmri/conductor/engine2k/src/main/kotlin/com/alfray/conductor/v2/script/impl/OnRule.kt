@@ -20,13 +20,14 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
+import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IActive
 import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.utils.ConductorExecException
 
-internal open class OnRule(private val condition: TCondition) : IOnRule {
+internal open class OnRule(val key: OnRuleKey) : IOnRule {
     private var action: TAction? = null
     private val context = ExecContext(ExecContext.Reason.ON_RULE)
 
@@ -35,7 +36,7 @@ internal open class OnRule(private val condition: TCondition) : IOnRule {
     }
 
     open fun evaluateCondition() : Boolean {
-        val result = condition.invoke()
+        val result = key.condition.invoke()
         val cond : Boolean =
             when (result) {
                 is Boolean -> result
@@ -54,5 +55,31 @@ internal open class OnRule(private val condition: TCondition) : IOnRule {
 
     fun clearTimers() {
         context.clearTimers()
+    }
+}
+
+/** Key to differentiate two instances of OnRule. */
+internal data class OnRuleKey(
+    val context: ExecContext,
+    val delay: Delay?,
+    val condition: TCondition,
+) {
+    /** Equals using strict object identity for all data fields. */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as OnRuleKey
+
+        if (context !== other.context) return false
+        if (condition !== other.condition) return false
+        return delay === other.delay
+    }
+
+    override fun hashCode(): Int {
+        var result = context.hashCode()
+        result = 31 * result + condition.hashCode()
+        result = 31 * result + (delay?.hashCode() ?: 0)
+        return result
     }
 }

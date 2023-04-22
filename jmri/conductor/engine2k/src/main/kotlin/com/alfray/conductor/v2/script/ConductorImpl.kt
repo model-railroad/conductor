@@ -42,6 +42,7 @@ import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
+import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.script.impl.RoutesContainerBuilder
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
@@ -54,6 +55,7 @@ import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
 import com.alfray.conductor.v2.script.impl.OnDelayRule
 import com.alfray.conductor.v2.script.impl.OnRule
+import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
@@ -78,7 +80,6 @@ class ConductorImpl @Inject internal constructor(
     val throttles = mutableMapOf<Int, IThrottle>()
     val svgMaps = mutableListOf<ISvgMap>()
     val timers = mutableListOf<ITimer>()
-    val rules = mutableListOf<IOnRule>()
     val routesContainers = mutableListOf<IRoutesContainer>()
     var lastGaPage: GaPage? = null
         private set
@@ -132,23 +133,30 @@ class ConductorImpl @Inject internal constructor(
         return m
     }
 
-    override fun on(condition: () -> Any): IOnRule {
-        currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
-            "ERROR: on..then rule must be defined at the top global level."
+    override fun on(condition: TCondition): IOnRule {
+        val context = currentContext.assertHasReason(TAG,
+            listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
+                "ERROR: on..then rule must be defined at the top global level."
+            }
+
+        val key = OnRuleKey(context, delay = null, condition)
+        val rule = context.addRule(key) {
+            OnRule(key)
         }
-        val rule = OnRule(condition)
-        rules.add(rule)
         return rule
     }
 
-    override fun on(delay: Delay, condition: () -> Any): IOnRule {
-        val context = currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
-            "ERROR: on..then rule must be defined at the top global level."
+    override fun on(delay: Delay, condition: TCondition): IOnRule {
+        val context =
+            currentContext.assertHasReason(TAG, listOf(Reason.LOAD_SCRIPT, Reason.NODE_WHILE)) {
+                "ERROR: on..then rule must be defined at the top global level."
+            }
+        val key = OnRuleKey(context, delay, condition)
+        val rule = context.addRule(key) {
+            OnDelayRule(key, factory) { onTimer ->
+                context.addTimer(onTimer)
+            }
         }
-        val rule = OnDelayRule(condition, delay, factory) { onTimer ->
-            context.addTimer(onTimer)
-        }
-        rules.add(rule)
         return rule
     }
 

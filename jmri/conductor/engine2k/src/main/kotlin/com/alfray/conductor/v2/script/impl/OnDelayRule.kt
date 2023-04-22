@@ -18,16 +18,13 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.TAction
-import com.alfray.conductor.v2.script.dsl.TCondition
 
 internal class OnDelayRule(
-    condition: TCondition,
-    private val delay: Delay,
+    key: OnRuleKey,
     private val factory: Factory,
     private val registerTimer: (OnDelayRule) -> Unit,
-) : OnRule(condition) {
+) : OnRule(key) {
     private var timer: Timer? = null
 
     internal val active: Boolean
@@ -37,7 +34,7 @@ internal class OnDelayRule(
         get() = timer?.started ?: false
 
     internal val durationSec: Int
-        get() = delay.seconds
+        get() = key.delay!!.seconds
 
     override fun then(action: TAction) {
         super.then(action)
@@ -47,7 +44,7 @@ internal class OnDelayRule(
     override fun evaluateCondition() : Boolean {
         // If there's no timer, start it when possible.
         if (timer == null) {
-            timer = factory.createTimer(delay)
+            timer = factory.createTimer(key.delay!!)
             timer?.start()
             return false
         }

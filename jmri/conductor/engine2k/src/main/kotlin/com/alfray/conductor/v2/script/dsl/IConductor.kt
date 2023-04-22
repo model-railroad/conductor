@@ -63,7 +63,7 @@ interface IConductor {
      * The condition is only evaluated after the delay has expired.
      * The timer starts immediately when the engine starts (after parsing is finished).
      * Can only be used at the top level / global scope. */
-    fun on(delay: Delay, condition: () -> Any): IOnRule
+    fun on(delay: Delay, condition: TCondition): IOnRule
 
     /** Creates a new delayed rule active after the specified delay. */
     fun after(delay: Delay): IAfter

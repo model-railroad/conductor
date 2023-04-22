@@ -25,7 +25,7 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
-import com.alfray.conductor.v2.script.dsl.TAction
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
@@ -92,7 +92,10 @@ internal abstract class RouteBase(
     abstract override fun startNode(node: INode)
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    open fun collectActions(execActions: MutableList<ExecAction>) {
+    open fun collectActions(
+        execActions: MutableList<ExecAction>,
+        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
+    ) {
         when (state) {
             State.ERROR -> {
                 actionOnRecover?.let {

@@ -34,7 +34,6 @@ import com.alfray.conductor.v2.Script2kSource
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.SvgMapTarget
-import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.IExecEngine
@@ -43,7 +42,6 @@ import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.SvgMap
 import com.alfray.conductor.v2.script.impl.Throttle
-import com.alfray.conductor.v2.utils.BooleanCache
 import com.fasterxml.jackson.core.JsonProcessingException
 import java.io.IOException
 import javax.inject.Inject
@@ -71,7 +69,6 @@ class ExecEngine2k @Inject internal constructor(
     private val handleFrequency = FrequencyMeasurer(clock)
     private val handleRateLimiter = RateLimiter(30.0f, clock)
     private val activatedActions = mutableListOf<ExecAction>()
-    private val actionExecCache = BooleanCache<TAction>()
     private val globalRuleContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     override fun onExecStart() {
@@ -208,12 +205,15 @@ class ExecEngine2k @Inject internal constructor(
         activatedActions.clear()
 
         // Collect all rules with an active condition that have not been executed yet.
-        conductor.rules.forEach { collectOnRuleAction(it) }
+        currentContext.changeContext(globalRuleContext)
+        globalRuleContext.evalOnRules(this::collectOnRuleAction)
+        currentContext.resetContext()
+        currentContext.scriptLoaderContext.evalOnRules(this::collectOnRuleAction)
 
         // Add rules from any currently routes container, in order.
         conductor.routesContainers.forEach { a ->
             a as RoutesContainer
-            a.collectActions(activatedActions)
+            a.collectActions(activatedActions, this::collectOnRuleAction)
         }
 
         // Process all after timers
@@ -227,7 +227,7 @@ class ExecEngine2k @Inject internal constructor(
             currentContext.changeContext(context)
             // Remember that this action has been executed. collectRuleAction() will later omit
             // it unless the condition becomes false in between.
-            actionExecCache.put(action, true)
+            currentContext.current.actionExecCache.put(action, true)
             try {
                 action.invoke()
             } catch (t: Throwable) {
@@ -240,7 +240,7 @@ class ExecEngine2k @Inject internal constructor(
         condCache.unfreeze()
     }
 
-    private fun collectOnRuleAction(r: IOnRule) {
+    private fun collectOnRuleAction(context: ExecContext, r: IOnRule) {
         val rule = r as OnRule
         val active: Boolean
         try {
@@ -261,12 +261,12 @@ class ExecEngine2k @Inject internal constructor(
         }
 
         if (active) {
-            if (!actionExecCache.get(action.action)) {
+            if (!context.actionExecCache.get(action.action)) {
                 activatedActions.add(action)
             }
         } else {
             rule.clearTimers()
-            actionExecCache.remove(action.action)
+            context.actionExecCache.remove(action.action)
         }
     }
 

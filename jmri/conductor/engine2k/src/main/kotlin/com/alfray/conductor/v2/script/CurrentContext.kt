@@ -27,15 +27,17 @@ import javax.inject.Inject
 internal class CurrentContext @Inject internal constructor(
     private val logger: ILogger
 ) {
+    private var current_: ExecContext? = null
+
     val scriptLoaderContext = ExecContext(ExecContext.Reason.LOAD_SCRIPT)
-    private var current: ExecContext? = null
+    val current = current_ ?: scriptLoaderContext
 
     fun changeContext(context: ExecContext) {
-        current = context
+        current_ = context
     }
 
     fun resetContext() {
-        current = null
+        current_ = null
     }
 
     /** Asserts that the current context is not null and is not the unexpected reason
@@ -43,11 +45,11 @@ internal class CurrentContext @Inject internal constructor(
     fun assertNotHasReason(tag: String, unexpected: ExecContext.Reason, lazyMessage: () -> Any): ExecContext {
         logger.assertOrThrow(
             tag,
-            current != null && current!!.reason != unexpected
+            current_ != null && current_!!.reason != unexpected
         ) {
-            "${lazyMessage.invoke()} (Was ${current?.reason?.name})"
+            "${lazyMessage.invoke()} (Was ${current_?.reason?.name})"
         }
-        return current!!
+        return current_!!
     }
 
     /** Asserts that the current context is not null and is the expected reason.
@@ -55,10 +57,10 @@ internal class CurrentContext @Inject internal constructor(
     fun assertHasReason(tag: String, expected: List<ExecContext.Reason>, lazyMessage: () -> Any): ExecContext {
         logger.assertOrThrow(
             tag,
-            current != null && expected.contains(current!!.reason)
+            current_ != null && expected.contains(current_!!.reason)
             ) {
-            "${lazyMessage.invoke()} (Was ${current?.reason?.name})"
+            "${lazyMessage.invoke()} (Was ${current_?.reason?.name})"
         }
-        return current!!
+        return current_!!
     }
 }

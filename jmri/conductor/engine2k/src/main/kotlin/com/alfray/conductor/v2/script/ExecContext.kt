@@ -18,8 +18,13 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.OnDelayRule
+import com.alfray.conductor.v2.script.impl.OnRule
+import com.alfray.conductor.v2.script.impl.OnRuleKey
+import com.alfray.conductor.v2.utils.BooleanCache
 
 
 /**
@@ -32,6 +37,8 @@ import com.alfray.conductor.v2.script.impl.OnDelayRule
 internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
     private val afterTimers_ = mutableListOf<After>()
     private val onDelayTimers_ = mutableListOf<OnDelayRule>()
+    private val onRules_ = mutableListOf<OnRule>()
+    val actionExecCache = BooleanCache<TAction>()
 
     enum class Reason {
         LOAD_SCRIPT,
@@ -59,6 +66,25 @@ internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
 
     fun addTimer(on: OnDelayRule) {
         onDelayTimers_.add(on)
+    }
+
+    fun addRule(key: OnRuleKey, ruleFactory: () -> OnRule) : OnRule {
+        val existing = onRules_.firstOrNull { it.key.equals(key) }
+        if (existing != null) {
+            return existing
+        }
+
+        val rule = ruleFactory.invoke()
+        onRules_.add(rule)
+        return rule
+    }
+
+    fun clearRules() {
+        onRules_.clear()
+    }
+
+    fun evalOnRules(collectAction: (context: ExecContext, rule: IOnRule) -> Unit) {
+        onRules_.forEach { collectAction(this, it) }
     }
 
     /** Returns a summary representation of the timers' activity for log purposes:

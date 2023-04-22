@@ -78,7 +78,6 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val route = conductorImpl.routesContainers[0].active as SequenceRoute

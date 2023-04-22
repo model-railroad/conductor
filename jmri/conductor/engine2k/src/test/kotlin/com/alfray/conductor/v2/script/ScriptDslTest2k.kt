@@ -350,8 +350,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
 
-        assertThat(conductorImpl.rules).hasSize(2)
-
         val s1 = conductorImpl.sensors["S1"]!!
         val t1 = conductorImpl.turnouts["T1"]!!
         assertThat(t1.normal).isTrue()
@@ -363,6 +361,58 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         s1.active(true)
         execEngine.onExecHandle()
         assertThat(t1.normal).isTrue()
+    }
+
+    @Test
+    fun testOnRules_multipleSameConditions() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S1")
+        val T1 = throttle(1001)
+        val T2 = throttle(1002)
+        val T3 = throttle(1003)
+        var n = 1
+        on { !S1 } then { T1.reverse(n++.speed) }
+        on { !S1 } then { T2.reverse(n++.speed) }
+        on { !S1 } then { T3.reverse(n++.speed) }
+        on {  S1 } then { T1.forward(n++.speed) }
+        on {  S1 } then { T2.forward(n++.speed) }
+        on {  S1 } then { T3.forward(n++.speed) }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        val s1 = conductorImpl.sensors["S1"]!!
+        val t1 = conductorImpl.throttles[1001]!!
+        val t2 = conductorImpl.throttles[1002]!!
+        val t3 = conductorImpl.throttles[1003]!!
+        assertThat(t1.speed).isEqualTo(0.speed)
+        assertThat(t2.speed).isEqualTo(0.speed)
+        assertThat(t3.speed).isEqualTo(0.speed)
+
+        s1.active(false)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(t1.speed).isEqualTo((-1).speed)
+        assertThat(t2.speed).isEqualTo((-2).speed)
+        assertThat(t3.speed).isEqualTo((-3).speed)
+
+        s1.active(true)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(t1.speed).isEqualTo(4.speed)
+        assertThat(t2.speed).isEqualTo(5.speed)
+        assertThat(t3.speed).isEqualTo(6.speed)
+
+        s1.active(false)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(t1.speed).isEqualTo((-7).speed)
+        assertThat(t2.speed).isEqualTo((-8).speed)
+        assertThat(t3.speed).isEqualTo((-9).speed)
     }
 
     @Test
@@ -378,7 +428,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(1)
 
         val turnout1 = conductorImpl.turnouts["T1"]!!
         val sensor1  = conductorImpl.sensors["S1"]!!
@@ -404,7 +453,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(1)
 
         val turnout1 = conductorImpl.turnouts["T1"]!!
         val sensor1  = conductorImpl.sensors["S1"]!!
@@ -451,8 +499,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
 
-        assertThat(conductorImpl.rules).hasSize(2)
-
         val turnout1 = conductorImpl.turnouts["NT1"]!!
         val sensor1  = conductorImpl.sensors["S01"]!!
 
@@ -490,8 +536,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-
-        assertThat(conductorImpl.rules).hasSize(8)
 
         val train1 = conductorImpl.throttles[1001]!!
         val train2 = conductorImpl.throttles[1002]!!
@@ -550,7 +594,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val routesContainer = conductorImpl.routesContainers[0]
@@ -605,7 +648,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val train1 = conductorImpl.throttles[1001]!!
@@ -667,8 +709,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-
-        assertThat(conductorImpl.rules).hasSize(0)
 
         assertThat(conductorImpl.routesContainers).hasSize(1)
         val ar = conductorImpl.routesContainers[0] as RoutesContainer
@@ -753,8 +793,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
 
-        assertThat(conductorImpl.rules).hasSize(0)
-
         val ar = conductorImpl.routesContainers[0] as RoutesContainer
         val seq = ar.routes[1] as SequenceRoute
 
@@ -787,7 +825,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val route = conductorImpl.routesContainers[0].active as RouteBase
@@ -876,7 +913,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(0)
         assertThat(conductorImpl.routesContainers).hasSize(1)
 
         val route = conductorImpl.routesContainers[0].active as RouteBase
@@ -908,7 +944,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-        assertThat(conductorImpl.rules).hasSize(1)
         assertThat(conductorImpl.debugSumAfterTimers()).isEqualTo(
             ExecContext.CountTimers(numTimers = 0, numStarted = 0, numActive = 0, durationSec = 0))
 
@@ -966,8 +1001,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         )
         assertResultNoError()
 
-        assertThat(conductorImpl.rules).hasSize(2)
-
         val train1 = conductorImpl.throttles[1001]!!
         val sensor1  = conductorImpl.sensors["S01"]!!
 
@@ -996,8 +1029,6 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultNoError()
-
-        assertThat(conductorImpl.rules).hasSize(1)
 
         val sensor1  = conductorImpl.sensors["S01"]!!
         sensor1.active(true)

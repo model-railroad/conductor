@@ -22,6 +22,7 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 
 /**
@@ -82,7 +83,9 @@ internal class Node(builder: NodeBuilder) : INode {
             // We do not clear timers when going from "Enter" to "Occupied" since they are
             // actually both represented by the same state "Occupied".
             eventContext.clearTimers()
+            eventContext.clearRules()
             whileContext.clearTimers()
+            whileContext.clearRules()
 
             when (newState) {
                 IBlock.State.OCCUPIED -> {
@@ -109,22 +112,29 @@ internal class Node(builder: NodeBuilder) : INode {
         }
     }
 
-    fun collectActions(execActions: MutableList<ExecAction>) {
+    fun collectActions(
+        execActions: MutableList<ExecAction>,
+        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
+    ) {
         callOnEnter?.let {
             execActions.add(ExecAction(eventContext, it))
+            eventContext.evalOnRules(collectOnRuleAction)
             callOnEnter = null
         }
         actionWhileOccupied?.let {
             if (block.state == IBlock.State.OCCUPIED) {
                 execActions.add(ExecAction(whileContext, it))
+                whileContext.evalOnRules(collectOnRuleAction)
             }
         }
         callOnTrailing?.let {
             execActions.add(ExecAction(eventContext, it))
+            eventContext.evalOnRules(collectOnRuleAction)
             callOnTrailing = null
         }
         callOnEmpty?.let {
             execActions.add(ExecAction(eventContext, it))
+            eventContext.evalOnRules(collectOnRuleAction)
             callOnEmpty = null
         }
     }

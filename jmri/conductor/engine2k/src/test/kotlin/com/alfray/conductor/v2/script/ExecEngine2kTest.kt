@@ -43,7 +43,6 @@ class ExecEngine2kTest : ScriptTest2kBase() {
         )
         assertResultNoError()
 
-        assertThat(conductorImpl.rules).hasSize(1)
         val t = conductorImpl.throttles[1001]!!
         val s = conductorImpl.sensors["S01"]!!
 

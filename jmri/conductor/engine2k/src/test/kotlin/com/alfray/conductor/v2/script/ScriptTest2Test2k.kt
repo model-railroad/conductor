@@ -57,8 +57,6 @@ class ScriptTest2Test2k : ScriptTest2kBase() {
         assertThat(conductorImpl.throttles.keys).containsExactly(
             8749, 1072, 191)
 
-        assertThat(conductorImpl.rules.size).isAtLeast(1)
-
         assertThat(conductorImpl.routesContainers).hasSize(2)
 
         // --- PA route ---

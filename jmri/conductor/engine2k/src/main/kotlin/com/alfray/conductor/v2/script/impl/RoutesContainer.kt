@@ -28,6 +28,7 @@ import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
+import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
@@ -212,13 +213,18 @@ internal class RoutesContainer(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    fun collectActions(execActions: MutableList<ExecAction>) {
+    fun collectActions(
+        execActions: MutableList<ExecAction>,
+        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
+    ) {
         callOnError?.let {
             execActions.add(ExecAction(context, it))
             callOnError = null
         }
 
-        _active?.collectActions(execActions)
+        context.evalOnRules(collectOnRuleAction)
+
+        _active?.collectActions(execActions, collectOnRuleAction)
     }
 
     private fun createRouteInfo(): RouteInfo {
