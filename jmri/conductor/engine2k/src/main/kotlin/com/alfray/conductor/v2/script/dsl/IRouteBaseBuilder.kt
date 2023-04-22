@@ -23,7 +23,7 @@ interface IRouteBaseBuilder {
     /** Callback when a route is being activated. Called once after activation. */
     fun onActivate(action: TAction)
 
-    /** Callback called repeatedly when a route is in error. */
-    fun onRecover(action: TAction)
+    /** Callback called once when a route becomes in error. */
+    fun onError(action: TAction)
 }
 

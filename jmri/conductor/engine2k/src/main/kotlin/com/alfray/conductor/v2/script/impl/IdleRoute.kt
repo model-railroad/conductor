@@ -34,7 +34,7 @@ import com.alfray.conductor.v2.script.dsl.IOnRule
  *
  * An idle route has an onActivated callback invoked when the route is first invoked.
  *
- * The idle route also inherits the base behavior of having an onRecover callback to
+ * The idle route also inherits the base behavior of having an onError callback to
  * deal with the route error state, however since an idle route does nothing it is not
  * expected that it would ever enter error & recovery mode.
  *

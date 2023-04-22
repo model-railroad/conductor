@@ -26,6 +26,7 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
@@ -35,7 +36,8 @@ internal abstract class RouteBase(
 ) : IRoute {
     private val TAG = javaClass.simpleName
     private val actionOnActivate = builder.actionOnActivate
-    private val actionOnRecover = builder.actionOnRecover
+    private val actionOnError = builder.actionOnError
+    private var callOnError: TAction? = null
     val context = ExecContext(ExecContext.Reason.ROUTE)
     var activationCounter = 0
         private set
@@ -61,6 +63,9 @@ internal abstract class RouteBase(
         if (oldState != newState) {
             if (oldState == State.ACTIVATED && newState == State.ACTIVE) {
                 // keep ACTIVATED timers when going to the ACTIVE state.
+            } else if (newState == State.ERROR) {
+                callOnError = actionOnError
+                context.clearTimers()
             } else {
                 // Clear all context timers.
                 context.clearTimers()
@@ -98,8 +103,9 @@ internal abstract class RouteBase(
     ) {
         when (state) {
             State.ERROR -> {
-                actionOnRecover?.let {
+                callOnError?.let {
                     execActions.add(ExecAction(context, it))
+                    callOnError = null
                 }
             }
             State.ACTIVATED -> {

@@ -423,7 +423,7 @@ val Passenger_Route = ML_Route.sequence {
     throttle = PA
     timeout = 60 // 1 minute
 
-    onRecover {
+    onError {
         // no-op
     }
 
@@ -613,7 +613,7 @@ val Freight_Route = ML_Route.sequence {
     throttle = FR
     timeout = 60
 
-    onRecover {
+    onError {
         // no-op
     }
 
@@ -884,7 +884,7 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
         }
     }
 
-    onRecover {
+    onError {
         // We cannot recover from an error during the recover route.
         if (ML_Toggle.active) {
             PA.stop()
@@ -948,7 +948,7 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
         }
     }
 
-    onRecover {
+    onError {
         // We cannot recover from an error during the recover route.
         if (ML_Toggle.active) {
             FR.stop()
@@ -1229,7 +1229,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    onRecover {
+    onError {
         BL_Route.activate(BL_Recover_Route)
     }
 
@@ -1293,7 +1293,7 @@ val BL_Recover_Route = BL_Route.sequence {
         }
     }
 
-    onRecover {
+    onError {
         // We cannot recover from an error during the recover route.
         if (BL_Toggle.active) {
             BL.stop()

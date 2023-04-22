@@ -878,7 +878,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    onRecover {
+    onError {
         // Try to bring it backwards to the station
         BL.reverse(BL_Speed_Station)
         BL.f1(On)

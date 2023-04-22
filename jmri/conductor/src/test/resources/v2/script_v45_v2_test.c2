@@ -528,7 +528,7 @@ Route BL-Shuttle-Route {
         !BLParked & BLStation -> Self.Block = BLStation
     }
 
-    Function OnRecover -> {
+    Function onError -> {
         # Try to bring it backwards to the station
         BL Reverse = BL-Speed-Station ;
         BL F1 = 1 ;

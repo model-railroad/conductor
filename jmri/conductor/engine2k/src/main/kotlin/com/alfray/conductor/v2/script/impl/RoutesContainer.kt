@@ -50,11 +50,11 @@ import java.util.Locale
  * - Idle: the route is not active and not being invoked by the script.
  * - Activated: the route has been activated. Its onActivated callback is called once.
  * - Active: the route is active and processing its normal behavior (e.g. sequence).
- * - Error: the route is in error. Its onRecover callback is called repeatedly.
+ * - Error: the route is in error.
  *
  * Routes are responsible for identifying their own error state. They do so by calling the
- * routes container [reportError] method. This triggers the RoutesContainer's onError callback once,
- * after which the route's onRecover callback is used instead of the normal processing.
+ * routes container [reportError] method. This triggers the current Route's onError callback once
+ * followed by calling the RoutesContainer's onError callback once.
  */
 internal class RoutesContainer(
     private val clock: IClock,
@@ -217,14 +217,14 @@ internal class RoutesContainer(
         execActions: MutableList<ExecAction>,
         collectOnRuleAction: (ExecContext, IOnRule) -> Unit
     ) {
+        context.evalOnRules(collectOnRuleAction)
+
+        _active?.collectActions(execActions, collectOnRuleAction)
+
         callOnError?.let {
             execActions.add(ExecAction(context, it))
             callOnError = null
         }
-
-        context.evalOnRules(collectOnRuleAction)
-
-        _active?.collectActions(execActions, collectOnRuleAction)
     }
 
     private fun createRouteInfo(): RouteInfo {

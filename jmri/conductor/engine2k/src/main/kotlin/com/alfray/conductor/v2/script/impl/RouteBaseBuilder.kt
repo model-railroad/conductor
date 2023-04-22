@@ -30,7 +30,7 @@ internal open class RouteBaseBuilder(
 ) : IRouteBaseBuilder {
     private val TAG = javaClass.simpleName
     var actionOnActivate: TAction? = null
-    var actionOnRecover: TAction? = null
+    var actionOnError: TAction? = null
 
     override fun onActivate(action: TAction) {
         logger.assertOrThrow(TAG, actionOnActivate == null) {
@@ -39,10 +39,10 @@ internal open class RouteBaseBuilder(
         actionOnActivate = action
     }
 
-    override fun onRecover(action: TAction) {
-        logger.assertOrThrow(TAG, actionOnRecover == null) {
-            "Route onRecover defined more than once"
+    override fun onError(action: TAction) {
+        logger.assertOrThrow(TAG, actionOnError == null) {
+            "Route onError defined more than once"
         }
-        actionOnRecover = action
+        actionOnError = action
     }
 }

@@ -46,11 +46,11 @@ import java.util.Locale
  * - Idle: the route is not active and not being invoked by the script.
  * - Activated: the route has been activated. Its onActivated callback is called once.
  * - Active: the route is active and processing its normal behavior (e.g. sequence).
- * - Error: the route is in error. Its onRecover callback is called repeatedly.
+ * - Error: the route is in error.
  *
  * Routes are responsible for identifying their own error state. They do so by calling the
- * routes' container reportError() method. This triggers the RoutesContainer's onError callback
- * once, after which the route's onRecover callback is used instead of the normal processing.
+ * routes' container reportError() method. This triggers the current Route's onError callback once
+ *  * followed by calling the RoutesContainer's onError callback once.
  *
  * The onActivated callback can call startNode() to change the starting node for the route.
  * The starting node is used and validated during the activated-to-active transition. At that
