@@ -97,10 +97,7 @@ internal abstract class RouteBase(
     abstract override fun startNode(node: INode)
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    open fun collectActions(
-        execActions: MutableList<ExecAction>,
-        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
-    ) {
+    open fun collectActions(execActions: MutableList<ExecAction>) {
         when (state) {
             State.ERROR -> {
                 callOnError?.let {

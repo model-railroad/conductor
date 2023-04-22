@@ -62,10 +62,7 @@ internal class IdleRoute(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    override fun collectActions(
-        execActions: MutableList<ExecAction>,
-        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
-    ) {
+    override fun collectActions(execActions: MutableList<ExecAction>) {
         when (state) {
             State.ACTIVE -> {
                 actionOnIdle?.let {
@@ -73,7 +70,7 @@ internal class IdleRoute(
                 }
             }
             else -> {
-                super.collectActions(execActions, collectOnRuleAction)
+                super.collectActions(execActions)
             }
         }
     }

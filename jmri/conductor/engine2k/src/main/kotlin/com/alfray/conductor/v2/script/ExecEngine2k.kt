@@ -213,7 +213,7 @@ class ExecEngine2k @Inject internal constructor(
         // Add rules from any currently routes container, in order.
         conductor.routesContainers.forEach { a ->
             a as RoutesContainer
-            a.collectActions(activatedActions, this::collectOnRuleAction)
+            a.collectActions(activatedActions)
         }
 
         // Process all after timers

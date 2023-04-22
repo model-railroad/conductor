@@ -314,23 +314,20 @@ internal class SequenceRoute(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    override fun collectActions(
-        execActions: MutableList<ExecAction>,
-        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
-    ) {
+    override fun collectActions(execActions: MutableList<ExecAction>) {
         when (state) {
             State.ACTIVATED -> {
-                super.collectActions(execActions, collectOnRuleAction)
+                super.collectActions(execActions)
             }
             State.ACTIVE -> {
                 currentNode?.let {
                     it as Node
-                    it.collectActions(execActions, collectOnRuleAction)
+                    it.collectActions(execActions)
                 }
             }
             else -> {
                 clearTimeout()
-                super.collectActions(execActions, collectOnRuleAction)
+                super.collectActions(execActions)
             }
         }
     }

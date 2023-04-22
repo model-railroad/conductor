@@ -213,13 +213,10 @@ internal class RoutesContainer(
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */
-    fun collectActions(
-        execActions: MutableList<ExecAction>,
-        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
-    ) {
-        context.evalOnRules(collectOnRuleAction)
+    fun collectActions(execActions: MutableList<ExecAction>) {
+        // context.evalOnRules is ignored since onRules can only appear at top level.
 
-        _active?.collectActions(execActions, collectOnRuleAction)
+        _active?.collectActions(execActions)
 
         callOnError?.let {
             execActions.add(ExecAction(context, it))

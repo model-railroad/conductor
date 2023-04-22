@@ -112,13 +112,11 @@ internal class Node(builder: NodeBuilder) : INode {
         }
     }
 
-    fun collectActions(
-        execActions: MutableList<ExecAction>,
-        collectOnRuleAction: (ExecContext, IOnRule) -> Unit
-    ) {
+    fun collectActions(execActions: MutableList<ExecAction>) {
+        // context.evalOnRules is ignored since onRules can only appear at top level.
+
         callOnEnter?.let {
             execActions.add(ExecAction(eventContext, it))
-            eventContext.evalOnRules(collectOnRuleAction)
             callOnEnter = null
         }
         actionWhileOccupied?.let {
@@ -130,12 +128,10 @@ internal class Node(builder: NodeBuilder) : INode {
         }
         callOnTrailing?.let {
             execActions.add(ExecAction(eventContext, it))
-            eventContext.evalOnRules(collectOnRuleAction)
             callOnTrailing = null
         }
         callOnEmpty?.let {
             execActions.add(ExecAction(eventContext, it))
-            eventContext.evalOnRules(collectOnRuleAction)
             callOnEmpty = null
         }
     }
