@@ -111,7 +111,6 @@ internal abstract class RouteBase(
                     activationCounter++
                 }
                 execActions.add(ExecAction(context, context) {
-                    logger.d(TAG, "@@ ACTIVATED EXEC for $this")
                     actionOnActivate?.invoke()
                     postOnActivateAction()
                     // actionOnActivate or postOnActivateAction may have set the route in ERROR.

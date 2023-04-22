@@ -144,8 +144,6 @@ internal class SequenceRoute(
      * is occupied.
      */
     override fun postOnActivateAction() {
-        logger.d(TAG, "@@ DEBUG postOnActivateAction $this // start node is $currentNode")
-
         // Set or reset the initial start node.
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
@@ -178,7 +176,6 @@ internal class SequenceRoute(
             "ERROR $this cannot start because start node $currentNode is not occupied."
         }
 
-        logger.d(TAG, "@@ DEBUG onSequenceRouteActivated schedule onEnter for $currentNode_")
         // Ensure that the onEnter callback of the currently occupied block is executed
         // since activating a route is akin to entering the current/starting block.
         currentNode_.changeEnterState()

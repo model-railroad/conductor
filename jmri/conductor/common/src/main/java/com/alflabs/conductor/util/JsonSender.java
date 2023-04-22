@@ -226,7 +226,6 @@ public class JsonSender implements Runnable {
             response = client.newCall(request).execute();
             mLogger.d(TAG, "JSON Sender: HTTP Response " + response);
             if (response != null) {
-                // DEBUG: mLogger.d(TAG, "JSON Sender: @@ Response: " + response.body().string());
                 if (response.isSuccessful()) {
                     return;
                 }

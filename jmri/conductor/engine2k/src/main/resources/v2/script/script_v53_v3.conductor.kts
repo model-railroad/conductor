@@ -740,28 +740,33 @@ fun ML_Fn_Try_Recover_Route() {
 
     if (!PA_start && FR_start && PA_occup == 1) {
         // FR train is accounted for, where expected.
-        // PA train is likely somewhere on its route... try to recover that one.
-        println("@@ ML Recovery: Recover Passenger")
+        // PA train is not at start but there's one block occupied, so let's assume it's
+        // our train and try to recover that PA train.
+        log("[ML Recovery] Recover Passenger")
         // --deactivated-- ML_Route.activate(ML_Recover_Passenger_Route)
 
     } else if (PA_start && !FR_start && FR_occup == 1) {
         // PA train is accounted for, where expected.
-        // FR train is likely somewhere on its route... try to recover that one.
-        println("@@ ML Recovery: Recover Freight")
+        // FR train is not at start but there's one block occupied, so let's assume it's
+        // our train and try to recover that FR train.
+        log("[ML Recovery] Recover Freight")
         // --deactivated-- ML_Route.activate(ML_Recover_Freight_Route)
 
-    } else if (!PA_start && FR_start && PA_occup == 0) {
-        // PA train is either missing or on a dead block.
-        // In that case we can still run the FR route because it's a subset of the large route.
-        println("@@ ML Recovery: Ignore Passenger, Activate Freight")
+    } else if (FR_start && !PA_start && FR_occup == 0) {
+        // FR train is accounted for, where expected.
+        // PA train is either missing or on a dead block (otherwise the first recovery test
+        // above would have matched).
+        // In that case we can still run the FR route because it's a subset of the large route
+        // and we verified the route is not occupied.
+        log("[ML Recovery] Ignore Passenger, Activate Freight")
         ML_Route.activate(Freight_Route)
 
     } else if (PA_total > 1 || FR_total > 1) {
-        // We have more than one block occupied on the route. This is not recoverable
+        // We have more than one block occupied per route. This is not recoverable
         // but that's a case special enough we can ask for the track to be cleared.
         val PA_names = PA_blocks.filter { it.active }
         val FR_names = FR_blocks.filter { it.active }
-        println("@@ ML Recovery: Track occupied (Passenger: $PA_names, Freight: $FR_names)")
+        log("[ML Recovery] Track occupied (Passenger: $PA_names, Freight: $FR_names)")
 
         val names = PA_names.plus(FR_names).map { it.name }.distinct()
         exportedVars.rtacPsaText = "{b:blue}{c:white}Automation Warning\\nCheck Track $names"
@@ -772,11 +777,13 @@ fun ML_Fn_Try_Recover_Route() {
             user = "Staff"
         }
         // TBD how do we ensure the automation is in Error mode?
+        // TODO create a specific ML_Error_Route that does nothing but print error and don't run.
         ML_Route.activate(ML_Idle_Route)
 
     } else {
-        println("@@ ML Recovery: Unknown situation. Cannot recover.")
+        log("[ML Recovery] Unknown situation. Cannot recover.")
         // TBD how do we ensure the automation is in Error mode?
+        // TODO create a specific ML_Error_Route that does nothing but print error and don't run.
         ML_Route.activate(ML_Idle_Route)
     }
 }

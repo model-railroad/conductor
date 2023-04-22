@@ -79,9 +79,9 @@ task fatJar(type: Jar) {
     subprojects.forEach { dependsOn ":${it.name}:jar" }
 
     doFirst {
-        println "@@ fatJar: Packaging ${configurations.default.size()} libraries"
+        println "## fatJar: Packaging ${configurations.default.size()} libraries"
         configurations.default.collect {
-            if (it.name.contains("SNAPSHOT")) { println "@@ fatJar: packaging " + it.name }
+            if (it.name.contains("SNAPSHOT")) { println "## fatJar: adding " + it.name }
         }
     }
 
