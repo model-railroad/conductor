@@ -22,7 +22,6 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 
 /**
@@ -116,22 +115,22 @@ internal class Node(builder: NodeBuilder) : INode {
         // context.evalOnRules is ignored since onRules can only appear at top level.
 
         callOnEnter?.let {
-            execActions.add(ExecAction(eventContext, it))
+            execActions.add(ExecAction(eventContext, eventContext, it))
             callOnEnter = null
         }
         actionWhileOccupied?.let {
             if (block.state == IBlock.State.OCCUPIED) {
-                execActions.add(ExecAction(whileContext, it))
+                execActions.add(ExecAction(whileContext, whileContext, it))
                 // TBD... for now we are forbidding onRules in a while context
                 // because there's no way to determine how unique they are.
             }
         }
         callOnTrailing?.let {
-            execActions.add(ExecAction(eventContext, it))
+            execActions.add(ExecAction(eventContext, eventContext, it))
             callOnTrailing = null
         }
         callOnEmpty?.let {
-            execActions.add(ExecAction(eventContext, it))
+            execActions.add(ExecAction(eventContext, eventContext, it))
             callOnEmpty = null
         }
     }

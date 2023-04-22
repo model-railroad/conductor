@@ -21,11 +21,9 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
-import com.alfray.conductor.v2.script.ExecContext
-import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
-import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
 import java.util.Locale

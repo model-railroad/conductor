@@ -25,10 +25,9 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
-import com.alfray.conductor.v2.script.dsl.IRoutesContainer
-import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
-import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.IRoute
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
@@ -219,7 +218,7 @@ internal class RoutesContainer(
         _active?.collectActions(execActions)
 
         callOnError?.let {
-            execActions.add(ExecAction(context, it))
+            execActions.add(ExecAction(context, context, it))
             callOnError = null
         }
     }

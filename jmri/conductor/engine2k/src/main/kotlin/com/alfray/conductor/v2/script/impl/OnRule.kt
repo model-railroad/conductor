@@ -46,9 +46,9 @@ internal open class OnRule(val key: OnRuleKey) : IOnRule {
         return cond
     }
 
-    open fun getAction() : ExecAction {
+    open fun getAction(ownerContext: ExecContext) : ExecAction {
         return action
-            ?.let { ExecAction(context, it) }
+            ?.let { ExecAction(ownerContext, context, it) }
             ?: throw ConductorExecException(
                 "Undefined Rule Action ('on..then' statement missing the 'then' part).")
     }

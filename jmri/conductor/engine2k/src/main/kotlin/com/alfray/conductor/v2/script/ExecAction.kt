@@ -22,9 +22,23 @@ import com.alfray.conductor.v2.script.dsl.TAction
 
 /**
  * An action to be executed in a given context.
+ *
+ * An on-rule action has two contextes:
+ * ` <top level script context>
+ *   on { condition } then { <inner on-rule context> action } `
+ * - The "owner" context is where the on-rule was created, e.g. the top-level script.
+ *   This is used to cache actions to avoid repeating them twice.
+ * - The "invoke" context is the context in which the inner action is to be executed.
+ *   In this case an on-rule creates its own inner context.
+ *
+ * Inner structures (route callbacks, node callbacks) create their own context, in which
+ * case the owner context and the invoke context is the same. These are the cases where we
+ * cannot have any on-rules.
  */
 internal data class ExecAction(
+    /** The context where the action was created and is cached. */
+    val ownerContext: ExecContext,
     /** The context in which the action is to be invoked. */
-    val context: ExecContext,
+    val invokeContext: ExecContext,
     /** The action to invoke. */
     val action: TAction)

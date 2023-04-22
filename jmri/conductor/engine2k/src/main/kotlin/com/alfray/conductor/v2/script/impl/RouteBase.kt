@@ -25,7 +25,6 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
-import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 
@@ -101,7 +100,7 @@ internal abstract class RouteBase(
         when (state) {
             State.ERROR -> {
                 callOnError?.let {
-                    execActions.add(ExecAction(context, it))
+                    execActions.add(ExecAction(context, context, it))
                     callOnError = null
                 }
             }
@@ -111,7 +110,7 @@ internal abstract class RouteBase(
                     // since there's no "running" during an idle route.
                     activationCounter++
                 }
-                execActions.add(ExecAction(context) {
+                execActions.add(ExecAction(context, context) {
                     logger.d(TAG, "@@ ACTIVATED EXEC for $this")
                     actionOnActivate?.invoke()
                     postOnActivateAction()

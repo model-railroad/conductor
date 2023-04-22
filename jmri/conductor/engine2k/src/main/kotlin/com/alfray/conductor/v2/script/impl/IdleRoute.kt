@@ -20,11 +20,9 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
-import com.alfray.conductor.v2.script.ExecContext
-import com.alfray.conductor.v2.script.dsl.IRoutesContainer
-import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
-import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.INode
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 
 /**
  * An idle route.
@@ -66,7 +64,7 @@ internal class IdleRoute(
         when (state) {
             State.ACTIVE -> {
                 actionOnIdle?.let {
-                    execActions.add(ExecAction(context, it))
+                    execActions.add(ExecAction(context, context, it))
                 }
             }
             else -> {

@@ -211,9 +211,9 @@ class ExecEngine2k @Inject internal constructor(
         currentContext.scriptLoaderContext.evalOnRules(this::collectOnRuleAction)
 
         // Add rules from any currently routes container, in order.
-        conductor.routesContainers.forEach { a ->
-            a as RoutesContainer
-            a.collectActions(activatedActions)
+        conductor.routesContainers.forEach { container ->
+            container as RoutesContainer
+            container.collectActions(activatedActions)
         }
 
         // Process all after timers
@@ -223,13 +223,12 @@ class ExecEngine2k @Inject internal constructor(
         }
 
         // Execute all actions in the order they are queued.
-        for ((context, action) in activatedActions) {
-            currentContext.changeContext(context)
+        for ((ownerContext, invokeContext, action) in activatedActions) {
             // Remember that this action has been executed. collectRuleAction() will later omit
             // it unless the condition becomes false in between.
-            // TODO this wrong: owner's context actionExecCache vs invokeContext below.
-            currentContext.current.actionExecCache.put(action, true)
+            ownerContext.actionExecCache.put(action, true)
             try {
+                currentContext.changeContext(invokeContext)
                 action.invoke()
             } catch (t: Throwable) {
                 scriptErrors.add(t.toString())
@@ -241,7 +240,7 @@ class ExecEngine2k @Inject internal constructor(
         condCache.unfreeze()
     }
 
-    private fun collectOnRuleAction(context: ExecContext, r: IOnRule) {
+    private fun collectOnRuleAction(ownerContext: ExecContext, r: IOnRule) {
         val rule = r as OnRule
         val active: Boolean
         try {
@@ -255,26 +254,26 @@ class ExecEngine2k @Inject internal constructor(
         // the condition is cleared and activated again.
         val action: ExecAction
         try {
-            action = rule.getAction()
+            action = rule.getAction(ownerContext)
         } catch (t: Throwable) {
             logger.d(TAG, "Eval rule action failed", t)
             return
         }
 
         if (active) {
-            if (!context.actionExecCache.get(action.action)) {
+            if (!ownerContext.actionExecCache.get(action.action)) {
                 activatedActions.add(action)
             }
         } else {
             rule.clearTimers()
-            context.actionExecCache.remove(action.action)
+            ownerContext.actionExecCache.remove(action.action)
         }
     }
 
     private fun collectAfterAction(context: ExecContext, after: After) {
         val action = after.eval(logger, factory)
         action?.let {
-            activatedActions.add(ExecAction(context, action))
+            activatedActions.add(ExecAction(globalRuleContext, context, action))
         }
     }
 
