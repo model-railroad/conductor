@@ -115,7 +115,11 @@ internal class RoutesContainer(
         }
         sb.append(", ${countTimers.numTimers} timers")
         if (countTimers.numTimers > 0) {
-            sb.append(" (${countTimers.numStarted} started, ${countTimers.numActive} active, ${countTimers.durationSec} sec)")
+            val ns = countTimers.numStarted
+            val na = countTimers.numActive
+            val ds = countTimers.durationSec
+            val ls = countTimers.longestSec
+            sb.append(" ($ns started, $na active, $ls ~ $ds sec)")
         }
 
         return sb.toString()

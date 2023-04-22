@@ -25,6 +25,7 @@ import com.alfray.conductor.v2.script.impl.OnDelayRule
 import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.utils.BooleanCache
+import kotlin.math.max
 
 
 /**
@@ -88,26 +89,33 @@ internal open class ExecContext(val reason: Reason, val parent: Any? = null) {
     }
 
     /** Returns a summary representation of the timers' activity for log purposes:
-     *  Count: num timers, num started timer, num active timers, duration of all timers. */
+     *  Count: num timers, num started timer, num active timers, duration of all timers,
+     *  longest timer chain.
+     *  This is used for debug, to update the log view, and to drive the simulator. */
     fun countTimers(): CountTimers {
         val t = afterTimers_.size + onDelayTimers_.size
         val s = afterTimers_.count { it.started }       + onDelayTimers_.count { it.started }
         val a = afterTimers_.count { it.active }        + onDelayTimers_.count { it.active }
         val d = afterTimers_.sumOf { it.durationSec }   + onDelayTimers_.sumOf { it.durationSec }
-        return CountTimers(t, s, a, d)
+        val l = max(
+            afterTimers_.maxOfOrNull   { it.parentDurationSec } ?: 0,
+            onDelayTimers_.maxOfOrNull { it.durationSec } ?: 0)
+        return CountTimers(t, s, a, d, l)
     }
 
     data class CountTimers(
         var numTimers: Int,
         var numStarted: Int,
         var numActive: Int,
-        var durationSec: Int
+        var durationSec: Int,
+        var longestSec: Int = durationSec,
     ) {
         fun add(other: CountTimers): CountTimers {
             numTimers += other.numTimers
             numStarted += other.numStarted
             numActive += other.numActive
             durationSec += other.durationSec
+            longestSec = max(longestSec, other.longestSec)
             return this
         }
     }

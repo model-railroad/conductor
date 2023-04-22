@@ -173,7 +173,7 @@ class ConductorImpl @Inject internal constructor(
                 && context.parent is Node) {
                 simulCallback?.onBlockTimersChanged(
                     context.parent.block.systemName,
-                    context.countTimers().durationSec
+                    context.countTimers().longestSec
                 )
             }
         }

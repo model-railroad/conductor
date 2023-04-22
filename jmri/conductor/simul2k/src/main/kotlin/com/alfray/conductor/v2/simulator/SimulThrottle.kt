@@ -62,13 +62,19 @@ class SimulThrottle @AssistedInject constructor(
     /**
      * Max time to spend on this block before moving to the next one.
      * This is a dynamic property that uses a base 6-second time + any extra timer duration
-     * from the current block.
+     * from the current block, or a default 15 seconds if there are no timers.
      * If the route has a defined timeout, the block time cannot be longer than the given timeout.
      */
     internal val blockMaxMS: Int
         get() {
-            var sec = 6
+            var sec = 0
             block?.let { sec += it.extraTimersSec }
+            if (sec != 0) {
+                sec += 6
+            } else {
+                sec = 15
+            }
+
             if (routeTimeout > 1) sec = min(sec, routeTimeout - 1)
             return sec * 1000
         }

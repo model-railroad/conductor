@@ -45,6 +45,9 @@ internal class After(
     internal val durationSec: Int
         get() = delay.seconds
 
+    internal val parentDurationSec: Int
+        get() = delay.seconds + (parent?.parentDurationSec?:0)
+
     override fun then(action: TAction) : IThenAfter {
         // We only "register" this After timer when the "then" clause is parsed.
         registerTimer(this)
