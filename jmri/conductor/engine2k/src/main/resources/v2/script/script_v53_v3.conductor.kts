@@ -282,7 +282,7 @@ fun FR_bell   (on: Boolean) { FR.f1(on)  }
 fun FR_sound  (on: Boolean) { FR.f8(!on) }
 fun FR_marker (on: Boolean) { /* no-op on 1072 */ }
 
-fun AM_Fn_Acquire_Route() {
+fun ML_Passenger_Align_Turnouts() {
     T311.reverse()
     T320.normal()
     T321.normal()
@@ -293,7 +293,7 @@ fun AM_Fn_Acquire_Route() {
     T504.normal()
 }
 
-fun SP_Fn_Acquire_Route() {
+fun ML_Freight_Align_Turnouts() {
     T311.normal()
     T320.normal()
     T321.normal()
@@ -303,7 +303,7 @@ fun SP_Fn_Acquire_Route() {
     T504.normal()
 }
 
-fun ML_Fn_Release_Route() {
+fun ML_Release_Turnouts() {
     T311.normal()
     T320.normal()
     T321.normal()
@@ -321,7 +321,7 @@ on { PA.reverse } then { PA.f5(On) }
 val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
-    status = { "$ML_State $ML_Train" }
+    status = { "$ML_Train $ML_State" }
 
     onError {
         // The current route will trigger the corresponding ML_Recover_Route.
@@ -376,7 +376,7 @@ on { ML_State == EML_State.Ready && ML_Toggle.active } then {
     PA_sound(On);   PA.light(On)
     FR_sound(On);   FR.light(On)
     PA.stop();      FR.stop()
-    ML_Fn_Release_Route()
+    ML_Release_Turnouts()
 }
 
 val ML_Timer_Stop_Sound_Off = 10.seconds
@@ -387,10 +387,10 @@ on { ML_State == EML_State.Ready && !ML_Toggle } then {
         PA_sound(Off)
         FR_sound(Off)
     }
-    ML_Fn_Release_Route()
+    ML_Release_Turnouts()
 }
 
-fun ML_Fn_Send_Start_GaEvent() {
+fun ML_Send_Start_GaEvent() {
     ML_Start_Counter++
     gaPage {
         url = GA_URL
@@ -436,7 +436,7 @@ val Passenger_Route = ML_Route.sequence {
     onActivate {
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Run
-        ML_Fn_Send_Start_GaEvent()
+        ML_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:blue}Currently Running:\\nPassenger"
         jsonEvent {
             key1 = "Depart"
@@ -452,7 +452,7 @@ val Passenger_Route = ML_Route.sequence {
         onEnter {
             FR_sound(Off)
             PA.horn()
-            AM_Fn_Acquire_Route()
+            ML_Passenger_Align_Turnouts()
             PA_bell(On)
             after (AM_Delayed_Horn) then {
                 PA.horn()
@@ -549,7 +549,7 @@ val Passenger_Route = ML_Route.sequence {
 
     val B321_rev = node(B321) {
         onEnter {
-            AM_Fn_Acquire_Route()
+            ML_Passenger_Align_Turnouts()
             PA.reverse(AM_Full_Speed)
             // Doppler sound
             PA_doppler(On)
@@ -624,7 +624,7 @@ val Freight_Route = ML_Route.sequence {
     onActivate {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Run
-        ML_Fn_Send_Start_GaEvent()
+        ML_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
         jsonEvent {
             key1 = "Depart"
@@ -643,7 +643,7 @@ val Freight_Route = ML_Route.sequence {
                 FR.light(On)
                 FR_bell(Off)
                 FR.forward(SP_Forward_Speed)
-                SP_Fn_Acquire_Route()
+                ML_Freight_Align_Turnouts()
             } and_after (2.seconds) then {
                 FR.horn()
             }
@@ -835,7 +835,7 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
 
     val B321_rev = node(B321) {
         onEnter {
-            AM_Fn_Acquire_Route()
+            ML_Passenger_Align_Turnouts()
             move()
             PA.reverse(AM_Full_Speed)
             after (AM_Timer_B321_Down_Crossover) then {
@@ -876,6 +876,7 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
     onActivate {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Passenger
+        ML_Passenger_Align_Turnouts()
         if (B370.active) {
             ML_Route.active.startNode(B370_rev)
         } else if (B360.active) {
@@ -916,7 +917,7 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
 
     val B321_rev = node(B321) {
         onEnter {
-            SP_Fn_Acquire_Route()
+            ML_Freight_Align_Turnouts()
             move()
         }
     }
@@ -925,7 +926,7 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
         onEnter {
             // Note: this is the normal start block and is never
             // a recover block. We do not set any speed on purpose.
-            SP_Fn_Acquire_Route()
+            ML_Freight_Align_Turnouts()
             after (SP_Timer_Down_Slow) then {
                 FR_bell(On)
             } and_after (SP_Timer_Down_Stop) then {
@@ -948,6 +949,7 @@ val ML_Recover_Freight_Route = ML_Route.sequence {
     onActivate {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Freight
+        ML_Freight_Align_Turnouts()
         if (B321.active) {
             ML_Route.active.startNode(B321_rev)
         } else if (B311.active) {
@@ -1014,7 +1016,7 @@ var BL_State = EBL_State.Ready
 
 var BL_Start_Counter = 0
 
-fun BL_Fn_Send_Start_GaEvent() {
+fun BL_Send_Start_GaEvent() {
     BL_Start_Counter++
     gaPage {
         url = GA_URL
@@ -1264,7 +1266,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     onActivate {
         BL_State = EBL_State.Run
 
-        BL_Fn_Send_Start_GaEvent()
+        BL_Send_Start_GaEvent()
         jsonEvent {
             key1 = "Depart"
             key2 = "Branchline"

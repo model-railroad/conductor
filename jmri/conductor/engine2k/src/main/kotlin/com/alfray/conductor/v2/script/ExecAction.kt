@@ -27,7 +27,7 @@ import com.alfray.conductor.v2.script.dsl.TAction
  * ` <top level script context>
  *   on { condition } then { <inner on-rule context> action } `
  * - The "owner" context is where the on-rule was created, e.g. the top-level script.
- *   This is used to cache actions to avoid repeating them twice.
+ *   This is used to cache conditions to avoid repeating them twice.
  * - The "invoke" context is the context in which the inner action is to be executed.
  *   In this case an on-rule creates its own inner context.
  *
