@@ -337,10 +337,18 @@ class StatusWindow2 {
         StyledDocument doc = new DefaultStyledDocument(context)
 
         Style d = context.getStyle(StyleContext.DEFAULT_STYLE)
-        Style c = context.addStyle("c", d)
+        Style c = context.addStyle("center", d)
         c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER)
-        Style b = context.addStyle("b", c)
+        Style b = context.addStyle("bold", c)
         b.addAttribute(StyleConstants.Bold, true)
+        Style f = context.addStyle("fwd", c)
+        f.addAttribute(StyleConstants.Background, Color.GREEN)
+        Style r = context.addStyle("rev", c)
+        r.addAttribute(StyleConstants.Background, Color.ORANGE)
+        Style l = context.addStyle("light", b)
+        l.addAttribute(StyleConstants.Background, Color.YELLOW)
+        Style s = context.addStyle("sound", b)
+        s.addAttribute(StyleConstants.Background, Color.CYAN)
 
         wx.setDocument(doc)
 
@@ -351,24 +359,31 @@ class StatusWindow2 {
 
     private void updateThrottlePane(JTextComponent textPane, IThrottleDisplayAdapter throttleAdapter) {
         int speed = throttleAdapter.getSpeed()
+        boolean fwd = speed > 0
+        boolean rev = speed < 0
+        boolean light = throttleAdapter.isLight()
+        boolean sound = throttleAdapter.isSound()
 
-        String line1 = String.format("%s [%d] %s %d\n",
+        String line1 = String.format(" %s [%d] %s %d \n",
                 throttleAdapter.getName(),
                 throttleAdapter.getDccAddress(),
                 speed < 0 ? " << " : (speed == 0 ? " == " : " >> "),
                 speed)
 
-        String line2 = String.format("L%s S%s",
-                throttleAdapter.isLight() ? "+" : "-",
-                throttleAdapter.isSound() ? "+" : "-")
+        String line2 = String.format(" L%s ", light ? "+" : "-")
+        String line3 = String.format(" S%s ", sound ? "+" : "-")
 
         try {
             StyledDocument doc = (StyledDocument) textPane.getDocument()
             doc.remove(0, doc.getLength())
-            doc.insertString(0, line1, null)
-            doc.insertString(doc.getLength(), line2, doc.getStyle("b"))
+            doc.insertString(0, line1, doc.getStyle(
+                    fwd ? "fwd" : (rev ? "rev" : "center")))
+            doc.insertString(doc.getLength(), line2, doc.getStyle(
+                    light ? "light" : "center"))
+            doc.insertString(doc.getLength(), line3, doc.getStyle(
+                    sound ? "sound" : "center"))
             // everything is centered
-            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("c"), false /*replace*/)
+            doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("center"), false /*replace*/)
         } catch (BadLocationException e) {
             throw new RuntimeException(e)
         }
