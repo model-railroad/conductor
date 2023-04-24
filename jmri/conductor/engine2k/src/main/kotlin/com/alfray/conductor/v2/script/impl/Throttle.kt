@@ -27,7 +27,6 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.CurrentContext
-import com.alfray.conductor.v2.script.ExecContext
 import com.alfray.conductor.v2.script.ExecContext.Reason
 import com.alfray.conductor.v2.script.dsl.DccSpeed
 import com.alfray.conductor.v2.script.dsl.Delay
@@ -53,7 +52,8 @@ internal class Throttle @AssistedInject constructor(
     private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     private val currentContext: CurrentContext,
-    @Assisted override val dccAddress: Int
+    @Assisted override val dccAddress: Int,
+    @Assisted private val builder: ThrottleBuilder?,
 ) : VarName(), IThrottle, IExecEngine {
     private val TAG = javaClass.simpleName
     private var _speed = DccSpeed(0)
@@ -67,10 +67,6 @@ internal class Throttle @AssistedInject constructor(
     private val keyName = "${Prefix.DccThrottle}$dccAddress"
     private var _f = FBits(condCache, keyName)
 
-    private companion object {
-        val TAG: String = Throttle::class.java.simpleName
-    }
-
     /** The last speed set for this engine. */
     override val speed: DccSpeed
         get() = condCache.cachedSpeed(_speed, keyName)
@@ -80,6 +76,10 @@ internal class Throttle @AssistedInject constructor(
         get() = condCache.cached(_sound, keyName, "S")
     override val f: FBits
         get() = _f
+
+    init {
+        builder?.throttle = this
+    }
 
     override fun named(name: String): IThrottle {
         setNamed(name)
@@ -113,33 +113,56 @@ internal class Throttle @AssistedInject constructor(
     override fun horn() {
         enforceContext()
         try {
+            lastJmriTS = clock.elapsedRealtime()
             jmriThrottle?.horn()
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] horn exception: $e")
         }
-        lastJmriTS = clock.elapsedRealtime()
     }
 
     override fun light(on: Boolean) {
         enforceContext()
         _light = on
         try {
-            jmriThrottle?.setLight(_light)
+            if (builder?.actionOnLight != null) {
+                builder.actionOnLight!!.invoke(on)
+            } else {
+                lastJmriTS = clock.elapsedRealtime()
+                jmriThrottle?.setLight(_light)
+            }
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setLight exception: $e")
         }
-        lastJmriTS = clock.elapsedRealtime()
     }
 
     override fun sound(on: Boolean) {
         enforceContext()
         _sound = on
         try {
-            jmriThrottle?.setSound(_sound)
+            if (builder?.actionOnSound != null) {
+                builder.actionOnSound!!.invoke(on)
+            } else {
+                lastJmriTS = clock.elapsedRealtime()
+                jmriThrottle?.setSound(_sound)
+            }
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setSound exception: $e")
         }
-        lastJmriTS = clock.elapsedRealtime()
+    }
+
+    override fun bell(on: Boolean) {
+        enforceContext()
+        _sound = on
+        try {
+            if (builder?.actionOnBell != null) {
+                builder.actionOnBell!!.invoke(on)
+            } else {
+                lastJmriTS = clock.elapsedRealtime()
+                jmriThrottle?.setSound(_sound)
+            }
+        } catch (e: Throwable) {
+            logger.d(TAG, "[$dccAddress] setSound exception: $e")
+        }
     }
 
     /** Sets the repeat speed interval. Does nothing if <= 0. */
@@ -190,6 +213,7 @@ internal class Throttle @AssistedInject constructor(
                     speed.speed.toString()
                 )
             }
+            lastJmriTS = clock.elapsedRealtime()
             jmriThrottle?.setSpeed(speed.speed)
         } catch (e: Throwable) {
             logger.d(TAG, "[$dccAddress] setSpeed exception: $e")
@@ -200,7 +224,6 @@ internal class Throttle @AssistedInject constructor(
             logger.d(TAG, "[$dccAddress] getDccAddress exception: $e")
         }
 
-        lastJmriTS = clock.elapsedRealtime()
     }
 
     fun eStop() {

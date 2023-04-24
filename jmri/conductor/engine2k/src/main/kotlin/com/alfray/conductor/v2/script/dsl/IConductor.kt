@@ -49,6 +49,10 @@ interface IConductor {
      * Once registered, the same throttle object is reused for the same system name. */
     fun throttle(dccAddress: Int): IThrottle
 
+    /** Registers a new throttle with the given DCC Address.
+     * Once registered, the same throttle object is reused for the same system name. */
+    fun throttle(dccAddress: Int, throttleSpecification: IThrottleBuilder.() -> Unit): IThrottle
+
     /** Creates a new timer object with the given delay. */
     fun timer(delay: Delay): ITimer
 

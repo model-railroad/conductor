@@ -73,13 +73,11 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         // TBD... can we make this error less cryptic?
-        assertResultHasError("""
+        assertResultContainsError("""
             ERROR Property getter or setter expected (local.conductor.kts:3:19)
             ERROR Unresolved reference: Sensor1 (local.conductor.kts:2:1)
             ERROR Function invocation 'throttle(...)' expected (local.conductor.kts:3:10)
-            ERROR No value passed for parameter 'dccAddress' (local.conductor.kts:3:10)
-            ERROR Function invocation 'routes(...)' expected (local.conductor.kts:4:14)
-            ERROR No value passed for parameter 'routesContainerSpecification' (local.conductor.kts:4:14)
+            ERROR None of the following functions can be called with the arguments supplied: 
         """.trimIndent())
     }
 
@@ -237,6 +235,58 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(t.f1).isFalse()
         assertThat(t.f9).isTrue()
         assertThat((t.f as FBits).f).isEqualTo(0b01000000001)
+    }
+
+    @Test
+    fun testVarThrottle_WithBuilder() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S01")
+        val T1 = throttle(1001) {
+            onLight { b -> throttle.f10( b) }
+            onSound { b -> throttle.f18(!b) }
+            onBell  { throttle.f11(it) }
+        }
+        on {  S1 } then {
+            T1.light(true)            
+            T1.sound(true)            
+            T1.bell(true)            
+        }
+        on { !S1 } then {
+            T1.light(false)            
+            T1.sound(false)            
+            T1.bell(false)            
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val s1 = conductorImpl.sensors["S01"]!!
+
+        s1.active(false)
+        execEngine.onExecHandle()
+        assertThat(t1.light).isFalse()
+        assertThat(t1.sound).isFalse()
+        assertThat(t1.f10).isFalse()
+        assertThat(t1.f11).isFalse()
+        assertThat(t1.f18).isTrue()
+
+        s1.active(true)
+        execEngine.onExecHandle()
+        assertThat(t1.light).isTrue()
+        assertThat(t1.sound).isTrue()
+        assertThat(t1.f10).isTrue()
+        assertThat(t1.f11).isTrue()
+        assertThat(t1.f18).isFalse()
+
+        s1.active(false)
+        execEngine.onExecHandle()
+        assertThat(t1.light).isFalse()
+        assertThat(t1.sound).isFalse()
+        assertThat(t1.f10).isFalse()
+        assertThat(t1.f11).isFalse()
+        assertThat(t1.f18).isTrue()
     }
 
     @Test
@@ -483,7 +533,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         after (5.seconds) then { T1.reverse() }
         """.trimIndent()
         )
-        assertResultHasError(
+        assertResultContainsError(
             "ERROR: after..then action must be defined in an event or rule definition.")
     }
 
@@ -676,7 +726,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Route_Idle = Routes.idle()
         """.trimIndent()
         )
-        assertResultHasError(
+        assertResultContainsError(
             "ERROR No value passed for parameter 'idleRouteSpecification' (local.conductor.kts:7:30)")
     }
 
@@ -972,7 +1022,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         }
         """.trimIndent()
         )
-        assertResultHasError(
+        assertResultContainsError(
             "ERROR: throttle actions must be called in an event or rule definition.")
     }
 
@@ -998,7 +1048,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         }
         """.trimIndent()
         )
-        assertResultHasError(
+        assertResultContainsError(
             "ERROR: after..then action must be defined in an event or rule definition.")
     }
 

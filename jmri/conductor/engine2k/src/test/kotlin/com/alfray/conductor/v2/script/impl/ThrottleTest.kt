@@ -22,7 +22,9 @@ import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.ILogger
 import com.alflabs.utils.MockClock
+import com.alfray.conductor.v2.dagger.Script2kIsSimulation
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.CurrentContext
 import com.alfray.conductor.v2.script.ExecContext
@@ -43,6 +45,7 @@ import javax.inject.Inject
 
 class ThrottleTest : ScriptTest2kBase() {
     @Inject internal lateinit var currentContext: CurrentContext
+    @Inject internal lateinit var isSimulation: Script2kIsSimulation
     private val testContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
     private val mockThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
@@ -58,15 +61,17 @@ class ThrottleTest : ScriptTest2kBase() {
         createComponent()
         scriptComponent.inject(this)
 
-        val factory = Throttle_Factory(
-            InstanceFactory.create(mockClock),
-            InstanceFactory.create(logger),
-            InstanceFactory.create(keyValue),
-            InstanceFactory.create(condCache),
-            InstanceFactory.create(eventLogger),
-            InstanceFactory.create(mockProvider),
-            InstanceFactory.create(currentContext))
-        throttle = factory.get(42)
+        val factory = Factory(
+            mockClock,
+            logger,
+            keyValue,
+            condCache,
+            eventLogger,
+            mockProvider,
+            currentContext,
+            isSimulation
+        )
+        throttle = factory.createThrottle(42)
 
         assertThat(throttle.dccAddress).isEqualTo(42)
         currentContext.changeContext(testContext)

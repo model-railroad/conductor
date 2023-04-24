@@ -89,7 +89,7 @@ open class ScriptTest2kBase {
         assertThat(loader.getResultErrors().joinToString("\n")).isEmpty()
     }
 
-    fun assertResultHasError(expected: String) {
+    fun assertResultContainsError(expected: String) {
         assertThat(loader.getResultErrors().joinToString("\n")).contains(expected)
     }
 }

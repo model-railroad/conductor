@@ -53,8 +53,8 @@ internal class Factory @Inject constructor(
     internal fun createTurnout(systemName: String) : Turnout =
         Turnout(keyValue, condCache, jmriProvider, systemName)
 
-    internal fun createThrottle(dccAddress: Int) : Throttle =
-        Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, currentContext, dccAddress)
+    internal fun createThrottle(dccAddress: Int, builder: ThrottleBuilder? = null) : Throttle =
+        Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, currentContext, dccAddress, builder)
 
     internal fun createTimer(delay: Delay) : Timer =
         Timer(clock, logger, eventLogger, delay)

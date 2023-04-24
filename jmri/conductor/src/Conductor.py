@@ -1,4 +1,4 @@
-# Ralf Automation phase 0
+# Ralf Automation phase 2
 # vim: ai ts=4 sts=4 et sw=4 ft=python
 #
 # Project: Conductor
@@ -72,7 +72,11 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._throttle.setSpeedSetting(-1.)
 
     def setSpeed(self, speed28):
-        """In: int speed; Out: void"""
+        """In: int speed; Out: void
+
+        Speed is defined as -28 ... 0 ... 28. Forward is >= 0.
+        The speed setting is repeated twice, with a 250 ms delay in between.
+        """
 
         # From JMRI NceThrottle.java:
         # - The DccThrottle.setSpeedStepMode() is actually improperly used.
@@ -98,30 +102,41 @@ class JmriThrottleAdapter(IJmriThrottle):
         self._throttle.setSpeedSetting(absv28 / 28.)
 
     def setSound(self, on):
-        """In: boolean on; Out: void"""
+        """In: boolean on; Out: void
+
+        This implementation only toggles F8 has a MUTE option, which is the default for
+        Tsunami DCC decoders. There is a 100 ms delay after the action.
+        Conductor 2 Throttles can override onSound to change the behavior in script.
+        """
         print "[Conductor", self._address, "] Sound", on
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
-        if self._address == 537:
-            self._throttle.setF1(on)      # F1 true to enable sound on this LokSound decoder
-        elif self._address == 204 or self._address == 209 or self._address == 10:
-            self._throttle.setF8(on)          # F8 true to sound on these LokSelect decoders
-        else:
-            self._throttle.setF8(not on)  # F8 true to mute all others
+        self._throttle.setF8(not on)  # F8 true to mute all others
         self._provider.waitMsec(100)
 
     def setLight(self, on):
-        """In: boolean on; Out: void"""
+        """In: boolean on; Out: void
+
+        This implementation only toggles F0, which seems fairly universal among all DCC decoders.
+        There is a 100 ms delay after the action.
+        Conductor 2 Throttles can override onLight to change the behavior in script.
+        """
         print "[Conductor", self._address, "] Light", on
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
         for i in self.repeat():
             self._throttle.setF0(on)
+            self._provider.waitMsec(100)
 
     def horn(self):
-        """In: void; Out: void"""
+        """In: void; Out: void
+
+        This implementation only toggles F2, which seems fairly universal among all DCC decoders.
+        The horn action takes 500 ms, followed by a 200 ms delay.
+        Conductor 2 Throttles can override onLight to change the behavior in script.
+        """
         print "[Conductor", self._address, "] Horn"
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
@@ -277,7 +292,7 @@ class Automation(AbstractAutomaton):
 # create one of these
 a = Automation()
 
-# set the name, as a example of configuring it
+# set the name, as an example of configuring it
 a.setName("Conductor Automation")
 
 # and show the initial panel

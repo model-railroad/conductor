@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2023 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,17 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-typealias TCondition = () -> Any
-typealias TAction = () -> Unit
-typealias TBooleanAction = (Boolean) -> Unit
+/** Internal DSL script interface to provide callbacks for a new [IThrottle]. */
+interface IThrottleBuilder {
+    /** The throttle to use when implementation DCC functions changes. */
+    val throttle: IThrottle
+
+    /** Callback implementing [IThrottle.light]. The default implementation toggles F0. */
+    fun onLight(action: TBooleanAction)
+
+    /** Callback implementing [IThrottle.sound]. The default implementation toggles F8. */
+    fun onSound(action: TBooleanAction)
+
+    /** Callback implementing [IThrottle.bell]. The default implementation toggles F1. */
+    fun onBell(action: TBooleanAction)
+}

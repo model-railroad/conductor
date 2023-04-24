@@ -40,6 +40,7 @@ import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.ISvgMap
 import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
+import com.alfray.conductor.v2.script.dsl.IThrottleBuilder
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.dsl.TCondition
@@ -57,6 +58,7 @@ import com.alfray.conductor.v2.script.impl.OnDelayRule
 import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
+import com.alfray.conductor.v2.script.impl.ThrottleBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
@@ -118,6 +120,12 @@ class ConductorImpl @Inject internal constructor(
 
     override fun throttle(dccAddress: Int): IThrottle {
         return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it) }
+    }
+
+    override fun throttle(dccAddress: Int, throttleSpecification: IThrottleBuilder.() -> Unit): IThrottle {
+        val b = ThrottleBuilder(logger)
+        b.throttleSpecification()
+        return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it, b) }
     }
 
     override fun map(svgMapSpecification: ISvgMapBuilder.() -> Unit): ISvgMap {
