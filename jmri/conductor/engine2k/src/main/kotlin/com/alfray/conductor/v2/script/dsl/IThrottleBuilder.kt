@@ -23,6 +23,12 @@ interface IThrottleBuilder {
     /** The throttle to use when implementation DCC functions changes. */
     val throttle: IThrottle
 
+    /**
+     * Provides a script-defined name for this throttle that differs from the JMRI system name.
+     * Can only be set once.
+     */
+    var name : String?
+
     /** Callback implementing [IThrottle.light]. The default implementation toggles F0. */
     fun onLight(action: TBooleanAction)
 

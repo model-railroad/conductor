@@ -32,6 +32,7 @@ internal class ThrottleBuilder(
     var actionOnLight: TBooleanAction? = null
     var actionOnSound: TBooleanAction? = null
     var actionOnBell: TBooleanAction? = null
+    override var name: String? = null
 
     /** Callback implementing [IThrottle.light]. The default implementation toggles F0. */
     override fun onLight(action: TBooleanAction) {

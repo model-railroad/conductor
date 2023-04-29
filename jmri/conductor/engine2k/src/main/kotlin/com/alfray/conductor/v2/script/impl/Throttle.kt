@@ -79,6 +79,9 @@ internal class Throttle @AssistedInject constructor(
 
     init {
         builder?.throttle = this
+        builder?.name?.let {
+            named(builder.name!!)
+        }
     }
 
     override fun named(name: String): IThrottle {

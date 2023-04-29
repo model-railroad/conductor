@@ -253,9 +253,9 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             T1.bell(true)            
         }
         on { !S1 } then {
-            T1.light(false)            
-            T1.sound(false)            
-            T1.bell(false)            
+            T1.light(false)
+            T1.sound(false)
+            T1.bell(false)
         }
         """.trimIndent()
         )
@@ -263,6 +263,8 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
         val t1 = conductorImpl.throttles[1001]!!
         val s1 = conductorImpl.sensors["S01"]!!
+
+        assertThat(t1.name).isEqualTo("Throttle-1001")
 
         s1.active(false)
         execEngine.onExecHandle()
@@ -287,6 +289,43 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(t1.f10).isFalse()
         assertThat(t1.f11).isFalse()
         assertThat(t1.f18).isTrue()
+    }
+
+    @Test
+    fun testVarThrottle_WithBuilder_andNamed() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S01")
+        val T1 = throttle(1001) {
+            onLight { b -> throttle.f10( b) }
+            onSound { b -> throttle.f18(!b) }
+            onBell  { throttle.f11(it) }
+        } named "Throttle1"
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        val t1 = conductorImpl.throttles[1001]!!
+        assertThat(t1.name).isEqualTo("Throttle1")
+    }
+
+    @Test
+    fun testVarThrottle_WithBuilderName() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S01")
+        val T1 = throttle(1001) {
+            name = "Throttle1"
+            onLight { b -> throttle.f10( b) }
+            onSound { b -> throttle.f18(!b) }
+            onBell  { throttle.f11(it) }
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        val t1 = conductorImpl.throttles[1001]!!
+        assertThat(t1.name).isEqualTo("Throttle1")
     }
 
     @Test
