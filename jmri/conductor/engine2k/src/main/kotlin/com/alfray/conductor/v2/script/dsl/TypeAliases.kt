@@ -20,4 +20,4 @@ package com.alfray.conductor.v2.script.dsl
 
 typealias TCondition = () -> Any
 typealias TAction = () -> Unit
-typealias TBooleanAction = (Boolean) -> Unit
+typealias TBooleanAction = (on: Boolean) -> Unit

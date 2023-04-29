@@ -20,12 +20,12 @@ package com.alfray.conductor.v2.script.dsl
 
 /** Internal DSL script interface to provide callbacks for a new [IThrottle]. */
 interface IThrottleBuilder {
-    /** The throttle to use when implementation DCC functions changes. */
+    /** The throttle to use when implementing DCC functions changes in [onLight], [onSound], and [onBell]. */
     val throttle: IThrottle
 
     /**
      * Provides a script-defined name for this throttle that differs from the JMRI system name.
-     * Can only be set once.
+     * Can only be set once. Ignored if same twice to the same value.
      */
     var name : String?
 
