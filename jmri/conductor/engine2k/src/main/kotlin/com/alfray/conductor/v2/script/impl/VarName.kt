@@ -27,9 +27,11 @@ internal abstract class VarName : IVarName {
     override val name: String
         get() = _name.ifEmpty { this.defaultName() }
 
-    /** Sets the internal variable name. Can be set only once. */
+    /** Sets the internal variable name. Can be set only once. Ignored if set to the same name. */
     fun setNamed(name: String) {
-        check(_name.isEmpty())
+        check(_name.isEmpty() || _name == name) {
+            "Variable name already set to '$_name', cannot be changed to '$name'."
+        }
         _name = name
     }
 

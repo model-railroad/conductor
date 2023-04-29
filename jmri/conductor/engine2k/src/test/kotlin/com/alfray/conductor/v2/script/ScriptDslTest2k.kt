@@ -101,7 +101,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
 
 
     @Test
-    fun testDontLeakImplementationDetails_BaseVars() {
+    fun testDontLeakImplementationDetails_baseVars() {
         loadScriptFromText(scriptText =
         """
         val Sensor1 = sensor("S01")
@@ -238,7 +238,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testVarThrottle_WithBuilder() {
+    fun testVarThrottle_withBuilder() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S01")
@@ -292,7 +292,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testVarThrottle_WithBuilder_andNamed() {
+    fun testVarThrottle_withBuilder_andNamed() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S01")
@@ -310,7 +310,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testVarThrottle_WithBuilderName() {
+    fun testVarThrottle_withBuilderName() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S01")
@@ -329,7 +329,23 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testVarThrottle_Named() {
+    fun testVarThrottle_withBuilderName_andNamed_isError() {
+        loadScriptFromText(scriptText =
+        """
+        val S1 = sensor("S01")
+        val T1 = throttle(1001) {
+            name = "Throttle1"
+            onLight { b -> throttle.f10( b) }
+            onSound { b -> throttle.f18(!b) }
+            onBell  { throttle.f11(it) }
+        } named "Throttle2"
+        """.trimIndent()
+        )
+        assertResultContainsError("Variable name already set to 'Throttle1', cannot be changed to 'Throttle2'")
+    }
+
+    @Test
+    fun testVarThrottle_named() {
         loadScriptFromText(scriptText =
         """
         val T1 = throttle(1001)
@@ -348,6 +364,18 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.throttles[1001]!!.name).isEqualTo("Throttle-1001")
         assertThat(conductorImpl.throttles[1002]!!.name).isEqualTo("Engine#2")
         assertThat(conductorImpl.throttles[1003]!!.name).isEqualTo("My Throttle 3!")
+    }
+
+    @Test
+    fun testVarThrottle_named_isError() {
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val T2 = throttle(1002) named "T2" named "T2"
+        val T3 = throttle(1003) named "My Throttle 3!" named "T3"
+        """.trimIndent()
+        )
+        assertResultContainsError("Variable name already set to 'My Throttle 3!', cannot be changed to 'T3'")
     }
 
     @Test
@@ -506,7 +534,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testOnRules_CannotBeNested() {
+    fun testOnRules_cannotBeNested() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S1")
@@ -532,7 +560,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testOnRules_WithAfterThen() {
+    fun testOnRules_withAfterThen() {
         loadScriptFromText(scriptText =
         """
         val S1 = sensor("S1")
@@ -565,7 +593,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testAfterThen_NotAtTopLevel() {
+    fun testAfterThen_notAtTopLevel() {
         loadScriptFromText(scriptText =
         """
         val T1 = turnout("T1")
@@ -891,7 +919,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_OnRuleForbiddenInEvent() {
+    fun testSequenceRoute_onRuleForbiddenInEvent() {
         jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(scriptText =
         """
@@ -928,7 +956,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_OnRuleForbiddenInWhileOccupied() {
+    fun testSequenceRoute_onRuleForbiddenInWhileOccupied() {
         jmriProvider.getSensor("B01").isActive = true
         jmriProvider.getSensor("B02").isActive = false
         loadScriptFromText(scriptText =
@@ -981,7 +1009,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_IfConditionWhileOccupied() {
+    fun testSequenceRoute_ifConditionWhileOccupied() {
         jmriProvider.getSensor("B01").isActive = true
         jmriProvider.getSensor("B02").isActive = false
         loadScriptFromText(scriptText =
@@ -1042,7 +1070,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_TrainThrottleOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_trainThrottleOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -1066,7 +1094,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_AfterOutsideEventCallbackForbidden() {
+    fun testSequenceRoute_afterOutsideEventCallbackForbidden() {
         loadScriptFromText(scriptText =
         """
         val Train1  = throttle(1001)
@@ -1092,7 +1120,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testSequenceRoute_AfterInWhileBlockForbidden() {
+    fun testSequenceRoute_afterInWhileBlockForbidden() {
         jmriProvider.getSensor("B01").isActive = true
         loadScriptFromText(scriptText =
         """

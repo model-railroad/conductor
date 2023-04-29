@@ -48,7 +48,7 @@ interface IThrottle : IVarName {
 
     /**
      * Provides a script-defined name for this throttle that differs from the JMRI system name.
-     * Can only be set once.
+     * Can only be set once. Ignored if already set to the same value.
      */
     infix fun named(name: String) : IThrottle
 
