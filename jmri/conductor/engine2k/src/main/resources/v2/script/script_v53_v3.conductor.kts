@@ -581,10 +581,10 @@ val Passenger_Route = ML_Route.sequence {
             ML_Passenger_Align_Turnouts()
             PA.reverse(AM_Full_Speed)
             // Doppler sound
-            PA_doppler(On)
-            after (1.seconds) then {
-                PA_doppler(Off)
-            }
+            //PA_doppler(On)
+            //after (1.seconds) then {
+            //    PA_doppler(Off)
+            //}
             after (AM_Timer_B321_Down_Crossover) then {
                 PA.horn()
                 PA.bell(On)
@@ -1204,10 +1204,10 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
-    val BL_Timer_UpToSpeed = 34.seconds
+    val BL_Timer_UpToSpeed = 10.seconds
     val BL_Timer_CanyonHorn_Fwd = 23.seconds
-    val BL_Timer_CanyonHorn_Rev = 36.seconds
-    val BL_Timer_RevStation_Stop = 6.seconds
+    val BL_Timer_CanyonHorn_Rev = 41.seconds
+    val BL_Timer_RevStation_Stop = 8.seconds
     val BL_Timer_RevStation_Pause = 25.seconds
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
