@@ -270,7 +270,6 @@ enum class EML_Train { Passenger, Freight, }
 var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
 var ML_Start_Counter = 0
-val ML_Timer_Wait = 60.seconds  // 1 minute
 
 val PA = throttle(8330) {
     // Full mainline route -- Passenger.
@@ -322,6 +321,27 @@ on { PA.forward } then { PA.f5(On) }
 on { PA.reverse } then { PA.f5(On) }
 
 
+// --- Turns mainline engine sound off when automation is turned off
+
+on { ML_State == EML_State.Ready && ML_Toggle.active } then {
+    PA.sound(On);   PA.light(On)
+    FR.sound(On);   FR.light(On)
+    PA.stop();      FR.stop()
+    ML_Release_Turnouts()
+}
+
+val ML_Timer_Stop_Sound_Off = 10.seconds
+on { ML_State == EML_State.Ready && !ML_Toggle } then {
+    PA.light(Off);  FR.light(Off)
+    PA.stop();      FR.stop()
+    after(ML_Timer_Stop_Sound_Off) then {
+        PA.sound(Off)
+        FR.sound(Off)
+    }
+    ML_Release_Turnouts()
+}
+
+
 // --- Mainline Routes
 
 val ML_Route = routes {
@@ -349,6 +369,8 @@ val ML_Route = routes {
 
 var ML_Idle_Route: IRoute
 ML_Idle_Route = ML_Route.idle {
+    // The idle route is where we check whether a mainline train should start, and which one.
+
     onActivate {
         ML_State = EML_State.Ready
         PA.stop()
@@ -370,7 +392,23 @@ ML_Idle_Route = ML_Route.idle {
     }
 }
 
+val ML_Wait_Route = ML_Route.idle {
+    // The wait route creates the pause between two mainline train runs.
+
+    val ML_Timer_Wait = 60.seconds  // 1 minute
+
+    onActivate {
+        ML_State = EML_State.Wait
+
+        after (ML_Timer_Wait) then {
+            ML_Idle_Route.activate()
+        }
+    }
+}
+
 val ML_Error_Route = ML_Route.idle {
+    // The error route is used when we fail to recover from the recovery routes.
+
     onActivate {
         ML_State = EML_State.Error
         PA.stop()
@@ -378,24 +416,7 @@ val ML_Error_Route = ML_Route.idle {
     }
 }
 
-on { ML_State == EML_State.Ready && ML_Toggle.active } then {
-    PA.sound(On);   PA.light(On)
-    FR.sound(On);   FR.light(On)
-    PA.stop();      FR.stop()
-    ML_Release_Turnouts()
-}
-
-val ML_Timer_Stop_Sound_Off = 10.seconds
-on { ML_State == EML_State.Ready && !ML_Toggle } then {
-    PA.light(Off);  FR.light(Off)
-    PA.stop();      FR.stop()
-    after(ML_Timer_Stop_Sound_Off) then {
-        PA.sound(Off)
-        FR.sound(Off)
-    }
-    ML_Release_Turnouts()
-}
-
+// Helper method to send start GA event for both mainline routes.
 fun ML_Send_Start_GaEvent() {
     ML_Start_Counter++
     gaPage {
@@ -428,12 +449,14 @@ val AM_Timer_B370_Pause_Delay    = 30.seconds
 val AM_Timer_B360_Full_Reverse   = 12.seconds
 val AM_Timer_B330_Down_Speed     = 8.seconds
 val AM_Timer_B321_Down_Crossover = 35.seconds
-val AM_Timer_B503b_Down_Stop     = 22.seconds
+val AM_Timer_B503b_Down_Stop     = 17.seconds
 val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
+    // The mainline passenger route sequence.
+
     throttle = PA
-    timeout = 120
+    timeout = 120 // 2 minutes per block max
 
     onError {
         // no-op
@@ -590,9 +613,7 @@ val Passenger_Route = ML_Route.sequence {
                     user = ML_Start_Counter.toString()
                 }
                 ML_Train = EML_Train.Freight
-                ML_State = EML_State.Wait
-            } and_after (ML_Timer_Wait) then {
-                ML_Idle_Route.activate()
+                ML_Wait_Route.activate()
             }
         }
     }
@@ -620,8 +641,10 @@ val SP_Timer_Down_Off   = 20.seconds
 val SP_Sound_Stopped    = 2.seconds
 
 val Freight_Route = ML_Route.sequence {
+    // The mainline freight route sequence.
+
     throttle = FR
-    timeout = 120
+    timeout = 120 // 2 minutes per block max
 
     onError {
         // no-op
@@ -726,9 +749,7 @@ val Freight_Route = ML_Route.sequence {
                     user = ML_Start_Counter.toString()
                 }
                 ML_Train = EML_Train.Passenger
-                ML_State = EML_State.Wait
-            } and_after (ML_Timer_Wait) then {
-                ML_Idle_Route.activate()
+                ML_Wait_Route.activate()
             }
         }
     }
@@ -738,6 +759,12 @@ val Freight_Route = ML_Route.sequence {
 }
 
 fun ML_Fn_Try_Recover_Route() {
+    // Utility method that tries to see if mainline trains are at the correct position
+    // and evaluates whether it would be possible to recover them for typical scenarios.
+    // This will either activate the normal route (if all blocks look correct), or active
+    // the corresponding recovery routes, or as a last resort enter the non-recoverable
+    // ML_Error_Route.
+
     if (!ML_Toggle) {
         ML_Idle_Route.activate()
         return
@@ -799,8 +826,10 @@ fun ML_Fn_Try_Recover_Route() {
 }
 
 val ML_Recover_Passenger_Route = ML_Route.sequence {
+    // Recovery route for the passenger mainline train.
+
     throttle = PA
-    timeout = 60 // 1 minute
+    timeout = 120 // 2 minutes per block max
 
     fun move() {
         PA.bell(On)
@@ -911,8 +940,10 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
 }
 
 val ML_Recover_Freight_Route = ML_Route.sequence {
+    // Recovery route for the freight mainline train.
+
     throttle = FR
-    timeout = 60 // 1 minute
+    timeout = 120 // 2 minutes per block max
 
     fun move() {
         FR.bell(On)
@@ -1129,6 +1160,8 @@ val BL_Route = routes {
 
 var BL_Idle_Route: IRoute
 BL_Idle_Route = BL_Route.idle {
+    // The idle route is where we check whether a branchline train should start.
+
     onActivate {
         BL_State = EBL_State.Ready
     }
@@ -1140,23 +1173,44 @@ BL_Idle_Route = BL_Route.idle {
     }
 }
 
+val BL_Wait_Route = BL_Route.idle {
+    // The wait route creates the pause between two branchline train runs.
+
+    val BL_Timer_Wait = 300.seconds  // 300=5 minutes -- change for debugging
+
+    onActivate {
+        BL_State = EBL_State.Wait
+
+        after (BL_Timer_Wait) then {
+            BL_Idle_Route.activate()
+        }
+    }
+}
+
 val BL_Error_Route = BL_Route.idle {
+    // The error route is used when we cannot recover from an error during the recover route.
+
     onActivate {
         BL_State = EBL_State.Error
+        BL.stop()
     }
 }
 
 val BL_Shuttle_Route = BL_Route.sequence {
+    // The normal "shuttle sequence" for the branchline train.
+
     throttle = BL
-    timeout = 120 // 2 minutes
+    timeout = 120 // 2 minutes per block max
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
-    val BL_Timer_RevStation_Stop = 4.seconds
+    val BL_Timer_UpToSpeed = 34.seconds
+    val BL_Timer_CanyonHorn_Fwd = 23.seconds
+    val BL_Timer_CanyonHorn_Rev = 36.seconds
+    val BL_Timer_RevStation_Stop = 6.seconds
     val BL_Timer_RevStation_Pause = 25.seconds
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
-    val BL_Timer_Wait = 30.seconds  // 300=5 minutes -- change for debugging
 
     val BLParked_fwd = node(B801) {
         onEnter {
@@ -1176,7 +1230,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             BL.bell(Off)
             BL.forward(BL_Speed_Station)
-            after (38.seconds) then {
+            after (BL_Timer_UpToSpeed) then {
                 BL.forward(BL_Speed)
             }
         }
@@ -1187,7 +1241,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
 
             // Horn over Canyon bridge
-            after (26.seconds) then {
+            after (BL_Timer_CanyonHorn_Fwd) then {
                 BL.horn()
             }
         }
@@ -1235,7 +1289,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B830v_rev = node(B830v) {
         onEnter {
             BL.horn()
-            after (36.seconds) then {
+            after (BL_Timer_CanyonHorn_Rev) then {
                 BL.horn()
             }
         }
@@ -1265,9 +1319,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             } and_after (5.seconds) then {
                 BL.light(Off)
                 BL.sound(Off)
-                BL_State = EBL_State.Wait
-            } and_after (BL_Timer_Wait) then {
-                BL_Idle_Route.activate()
+                BL_Wait_Route.activate()
             }
         }
     }
@@ -1293,8 +1345,10 @@ val BL_Shuttle_Route = BL_Route.sequence {
 }
 
 val BL_Recover_Route = BL_Route.sequence {
+    // Recovery mechanism for the branchline train.
+
     throttle = BL
-    timeout = 120 // 2 minutes
+    timeout = 120 // 2 minutes per block max
 
     fun move() {
         BL.bell(On)
