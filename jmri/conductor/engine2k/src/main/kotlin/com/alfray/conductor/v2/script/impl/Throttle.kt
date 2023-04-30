@@ -155,7 +155,6 @@ internal class Throttle @AssistedInject constructor(
 
     override fun bell(on: Boolean) {
         enforceContext()
-        _sound = on
         try {
             if (builder?.actionOnBell != null) {
                 builder.actionOnBell!!.invoke(on)

@@ -169,7 +169,11 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun after(delay: Delay): IAfter {
-        val context = currentContext.assertHasReason(TAG, listOf(Reason.ON_RULE, Reason.NODE_EVENT)) {
+        val context = currentContext.assertHasReason(TAG,
+            listOf(
+                Reason.ROUTE,
+                Reason.ON_RULE,
+                Reason.NODE_EVENT)) {
             "ERROR: after..then action must be defined in an event or rule definition."
         }
         val after = After(delay) { afterTimer ->
