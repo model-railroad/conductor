@@ -463,6 +463,13 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     onActivate {
+        if (!B311.active) {
+            // If the Freight train is not on block B311, we don't know where it is,
+            // and we may collide with it. In this case enter error mode right away.
+            log("[ML Passenger] Freight missing in B311.")
+            ML_Fn_Try_Recover_Route()
+        }
+
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Run
         ML_Send_Start_GaEvent()
@@ -579,7 +586,7 @@ val Passenger_Route = ML_Route.sequence {
     val B321_rev = node(B321) {
         onEnter {
             ML_Passenger_Align_Turnouts()
-            PA.reverse(AM_Full_Speed)
+            PA.reverse(AM_Sonora_Speed)
             // Doppler sound
             //PA_doppler(On)
             //after (1.seconds) then {
@@ -772,12 +779,23 @@ fun ML_Fn_Try_Recover_Route() {
 
     val PA_blocks = (Passenger_Route as ISequenceRoute).sequence.map { it.block }.distinct()
     val FR_blocks = (Freight_Route as ISequenceRoute).sequence.map { it.block }.distinct()
+
+    // Some of these sensors do not register properly if we trains are not moving.
+    //    if (PA_blocks.count { it.active } == 0) { PA.reverse(1.speed) }
+    //    if (FR_blocks.count { it.active } == 0) { FR.reverse(1.speed) }
+    // This won't work because the block.active state won't change for this engine iteration.
+    // TBD use a timer and reschedule the test in 1 second.
+
     val PA_start = PA_blocks.first().active
     val FR_start = FR_blocks.first().active
     val PA_occup = PA_blocks.subList(1, PA_blocks.size).count { it.active }
     val FR_occup = FR_blocks.subList(1, FR_blocks.size).count { it.active }
     val PA_total = PA_blocks.count { it.active }
     val FR_total = FR_blocks.count { it.active }
+
+    log("[ML Recovery] PA start=$PA_start occup=$PA_occup total=$PA_total $PA_blocks")
+    log("[ML Recovery] FR start=$FR_start occup=$FR_occup total=$FR_total $FR_blocks")
+
 
     if (!PA_start && FR_start && PA_occup == 1) {
         // FR train is accounted for, where expected.
@@ -797,10 +815,17 @@ fun ML_Fn_Try_Recover_Route() {
         // FR train is accounted for, where expected.
         // PA train is either missing or on a dead block (otherwise the first recovery test
         // above would have matched).
-        // In that case we can still run the FR route because it's a subset of the large route
+        // In that case we can still run the FR route because it's a subset of the large route,
         // and we verified the route is not occupied.
         log("[ML Recovery] Ignore Passenger, Activate Freight")
         Freight_Route.activate()
+
+    } else if (PA_start && !FR_start && PA_occup == 0) {
+        // Similar to the previous case with the PA train present with the FR missing.
+        // If we can't find the FR train, it may be "dead" on B321 which is shared with
+        // the PA train, so we're not even trying to recover from that situation.
+        log("[ML Recovery] Freight not found. Cannot recover.")
+        ML_Error_Route.activate()
 
     } else if (PA_total > 1 || FR_total > 1) {
         // We have more than one block occupied per route. This is not recoverable
@@ -823,6 +848,9 @@ fun ML_Fn_Try_Recover_Route() {
         log("[ML Recovery] Unknown situation. Cannot recover.")
         ML_Error_Route.activate()
     }
+
+    PA.stop()
+    FR.stop()
 }
 
 val ML_Recover_Passenger_Route = ML_Route.sequence {
