@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
@@ -64,8 +65,9 @@ internal class SequenceRoute(
     override val owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
+    eventLogger: EventLogger,
     builder: SequenceRouteBuilder
-) : RouteBase(logger, owner, builder), ISequenceRoute, IRouteManager {
+) : RouteBase(logger, eventLogger, owner, builder), ISequenceRoute, IRouteManager {
     private val TAG = javaClass.simpleName
     private var currentActiveBlocks = setOf<IBlock> ()
     override val throttle = builder.throttle

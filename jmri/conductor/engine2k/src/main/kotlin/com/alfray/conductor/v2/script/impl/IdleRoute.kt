@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
@@ -42,8 +43,9 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 internal class IdleRoute(
     owner: IRoutesContainer,
     logger: ILogger,
+    eventLogger: EventLogger,
     builder: IdleRouteBuilder
-) : RouteBase(logger, owner, builder), IIdleRoute {
+) : RouteBase(logger, eventLogger, owner, builder), IIdleRoute {
     private val TAG = javaClass.simpleName
     private val actionOnIdle = builder.actionOnIdle
 

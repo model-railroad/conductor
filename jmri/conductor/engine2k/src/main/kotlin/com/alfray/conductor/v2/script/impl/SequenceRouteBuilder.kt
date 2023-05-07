@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
@@ -32,7 +33,8 @@ internal class SequenceRouteBuilder(
     owner: IRoutesContainer,
     private val clock: IClock,
     logger: ILogger,
-) : RouteBaseBuilder(owner, logger), ISequenceRouteBuilder {
+    eventLogger: EventLogger,
+) : RouteBaseBuilder(owner, logger, eventLogger), ISequenceRouteBuilder {
     private val TAG = javaClass.simpleName
     override val route: IRoutesContainer
         get() = owner
@@ -47,5 +49,5 @@ internal class SequenceRouteBuilder(
         return b.create()
     }
 
-    fun create() : ISequenceRoute = SequenceRoute(owner, clock, logger, this)
+    fun create() : ISequenceRoute = SequenceRoute(owner, clock, logger, eventLogger, this)
 }

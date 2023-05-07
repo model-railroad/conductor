@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.Analytics
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
@@ -71,6 +72,7 @@ class ConductorImpl @Inject internal constructor(
     private val keyValue: IKeyValue,
     private val analytics: Analytics,
     private val jsonSender: JsonSender,
+    private val eventLogger: EventLogger,
     private val eStopHandler: EStopHandler,
     override val exportedVars: ExportedVars,
     private val currentContext: CurrentContext,
@@ -193,7 +195,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun routes(routesContainerSpecification: IRoutesContainerBuilder.() -> Unit): IRoutesContainer {
-        val b = RoutesContainerBuilder(clock, logger)
+        val b = RoutesContainerBuilder(clock, logger, eventLogger)
         b.routesContainerSpecification()
         val a = b.create(keyValue, simulCallback)
         routesContainers.add(a)

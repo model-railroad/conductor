@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Prefix
 import com.alflabs.manifest.RouteInfo
@@ -59,6 +60,7 @@ internal class RoutesContainer(
     private val clock: IClock,
     private val logger: ILogger,
     private val keyValue: IKeyValue,
+    private val eventLogger: EventLogger,
     private val simulCallback: ISimulCallback?,
     builder: RoutesContainerBuilder
 ) : IRoutesContainer, IExecEngine {
@@ -178,13 +180,13 @@ internal class RoutesContainer(
     }
 
     override fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute {
-        val builder = IdleRouteBuilder(this, logger)
+        val builder = IdleRouteBuilder(this, logger, eventLogger)
         builder.idleRouteSpecification()
         return add(builder.create())
     }
 
     override fun sequence(sequenceRouteSpecification: ISequenceRouteBuilder.() -> Unit): IRoute {
-        val builder = SequenceRouteBuilder(this, clock, logger)
+        val builder = SequenceRouteBuilder(this, clock, logger, eventLogger)
         builder.sequenceRouteSpecification()
         return add(builder.create())
     }

@@ -68,6 +68,7 @@ public class EventLogger {
         // Sort alphabetically. Only the first letter is written in the log,
         Block,
         DccThrottle,
+        Route,
         Sensor,
         Timer,
         Turnout,            // Both Timer and Turnout are logged as T, yet are easily distinguished.

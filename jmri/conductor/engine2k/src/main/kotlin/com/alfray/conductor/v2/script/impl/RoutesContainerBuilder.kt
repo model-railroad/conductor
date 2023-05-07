@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
@@ -30,7 +31,8 @@ import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal class RoutesContainerBuilder(
     private val clock: IClock,
-    private val logger: ILogger
+    private val logger: ILogger,
+    private val eventLogger: EventLogger,
 ) : IRoutesContainerBuilder {
     private val TAG = javaClass.simpleName
     var actionOnError: TAction? = null
@@ -56,6 +58,6 @@ internal class RoutesContainerBuilder(
             // Sets the default for the active route.state to be "Idle".
             status = { "Idle" }
         }
-        return RoutesContainer(clock, logger, keyValue, simulCallback, this)
+        return RoutesContainer(clock, logger, keyValue, eventLogger, simulCallback, this)
     }
 }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
@@ -30,6 +31,7 @@ import com.alfray.conductor.v2.utils.assertOrThrow
 
 internal abstract class RouteBase(
     protected val logger: ILogger,
+    protected val eventLogger: EventLogger,
     override val owner: IRoutesContainer,
     builder: RouteBaseBuilder
 ) : IRoute {
@@ -71,7 +73,7 @@ internal abstract class RouteBase(
             }
             // Update state
             state = newState
-            logger.d(TAG, "$this is now $state")
+            eventLogger.logAsync(EventLogger.Type.Route, toString(), state.name)
         }
     }
 
