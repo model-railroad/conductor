@@ -51,7 +51,7 @@ internal class Factory @Inject constructor(
         VirtualBlock(keyValue, condCache, eventLogger, systemName)
 
     internal fun createTurnout(systemName: String) : Turnout =
-        Turnout(keyValue, condCache, jmriProvider, systemName)
+        Turnout(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createThrottle(dccAddress: Int, builder: ThrottleBuilder? = null) : Throttle =
         Throttle(clock, logger, keyValue, condCache, eventLogger, jmriProvider, currentContext, dccAddress, builder)

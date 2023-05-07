@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriTurnout
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alfray.conductor.v2.script.CondCache
 import com.google.common.truth.Truth.assertThat
@@ -28,6 +29,7 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.stub
 import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import dagger.internal.InstanceFactory
 import org.junit.Before
 import org.junit.Test
@@ -40,6 +42,7 @@ class TurnoutTest {
     private val jmriProvider =
         mock<IJmriProvider> { on { getTurnout("jmriName") } doReturn jmriTurnout }
     private val keyValue = mock<IKeyValue>()
+    private val eventLogger = mock<EventLogger>()
     private val condCache = CondCache()
     private lateinit var turnout: Turnout
 
@@ -48,6 +51,7 @@ class TurnoutTest {
         val factory = Turnout_Factory(
             InstanceFactory.create(keyValue),
             InstanceFactory.create(condCache),
+            InstanceFactory.create(eventLogger),
             InstanceFactory.create(jmriProvider)
         )
         turnout = factory.get("jmriName")
@@ -57,6 +61,7 @@ class TurnoutTest {
         reset(jmriTurnout)
         verify(jmriProvider).getTurnout("jmriName")
         verify(keyValue).putValue("T/jmriName", "N", true)
+        verifyNoMoreInteractions(eventLogger)
         reset(keyValue)
 
         assertThat(turnout.active).isTrue()
@@ -77,6 +82,7 @@ class TurnoutTest {
         turnout.onExecHandle()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "N", true)
+        verify(eventLogger).logAsync(EventLogger.Type.Turnout, "T/jmriName", "normal")
         assertThat(turnout.active).isTrue()
     }
 
@@ -95,6 +101,7 @@ class TurnoutTest {
         turnout.onExecHandle()
         verify(jmriTurnout).isNormal
         verify(keyValue).putValue("T/jmriName", "R", true)
+        verify(eventLogger).logAsync(EventLogger.Type.Turnout, "T/jmriName", "reverse")
         assertThat(turnout.active).isFalse()
     }
 }

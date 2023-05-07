@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriTurnout
+import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
@@ -43,6 +44,7 @@ import dagger.assisted.AssistedInject
 internal class Turnout @AssistedInject constructor(
     private val keyValue: IKeyValue,
     private val condCache: CondCache,
+    private val eventLogger: EventLogger,
     private val jmriProvider: IJmriProvider,
     @Assisted override val systemName: String
 ) : ITurnout, IExecEngine {
@@ -72,6 +74,7 @@ internal class Turnout @AssistedInject constructor(
     private fun setTurnout(normal: Boolean) {
         // Updates the internal state and the JMRI state.
         _normal = normal
+        eventLog(if (normal) "normal" else "reverse")
         jmriTurnout?.setTurnout(if (_normal) IJmriTurnout.NORMAL else IJmriTurnout.REVERSE)
     }
 
@@ -88,6 +91,13 @@ internal class Turnout @AssistedInject constructor(
             if (_normal) Constants.Normal else Constants.Reverse,
             true /*broadcast*/
         )
+    }
 
+    private fun eventLog(value: String) {
+        eventLogger.logAsync(
+            EventLogger.Type.Turnout,
+            keyName,
+            value
+        )
     }
 }
