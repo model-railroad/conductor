@@ -42,6 +42,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
+import javax.inject.Provider
 
 class ThrottleTest : ScriptTest2kBase() {
     @Inject internal lateinit var currentContext: CurrentContext
@@ -69,7 +70,9 @@ class ThrottleTest : ScriptTest2kBase() {
             eventLogger,
             mockProvider,
             currentContext,
-            isSimulation
+            isSimulation,
+            { mock<ThrottleBuilder>() },
+            { mock<RoutesContainerBuilder>() },
         )
         throttle = factory.createThrottle(42)
 

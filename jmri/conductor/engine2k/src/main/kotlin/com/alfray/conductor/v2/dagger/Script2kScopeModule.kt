@@ -17,16 +17,8 @@
  */
 package com.alfray.conductor.v2.dagger
 
-import com.alfray.conductor.v2.Script2kLoader
-import dagger.Subcomponent
+import dagger.Module
 
-@Script2kScope
-@Subcomponent(modules = [Script2kScopeModule::class])
-interface IScript2kComponent {
-    val script2kLoader: Script2kLoader
-
-    @Subcomponent.Factory
-    interface Factory {
-        fun createComponent(): IScript2kComponent
-    }
+@Module
+class Script2kScopeModule {
 }

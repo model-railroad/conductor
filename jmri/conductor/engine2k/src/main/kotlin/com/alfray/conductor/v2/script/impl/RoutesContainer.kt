@@ -34,6 +34,8 @@ import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.util.Locale
 
 
@@ -56,13 +58,14 @@ import java.util.Locale
  * routes container [reportError] method. This triggers the current Route's onError callback once
  * followed by calling the RoutesContainer's onError callback once.
  */
-internal class RoutesContainer(
-    private val clock: IClock,
-    private val logger: ILogger,
-    private val keyValue: IKeyValue,
-    private val eventLogger: EventLogger,
-    private val simulCallback: ISimulCallback?,
-    builder: RoutesContainerBuilder
+internal class RoutesContainer @AssistedInject constructor(
+        private val clock: IClock,
+        private val logger: ILogger,
+        private val factory: Factory,
+        private val keyValue: IKeyValue,
+        private val eventLogger: EventLogger,
+        @Assisted private val simulCallback: ISimulCallback?,
+        @Assisted builder: RoutesContainerBuilder,
 ) : IRoutesContainer, IExecEngine {
     private val TAG = javaClass.simpleName
     override val name = builder.name

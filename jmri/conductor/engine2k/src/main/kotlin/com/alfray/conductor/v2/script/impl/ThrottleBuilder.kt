@@ -23,8 +23,9 @@ import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.IThrottleBuilder
 import com.alfray.conductor.v2.script.dsl.TBooleanAction
 import com.alfray.conductor.v2.utils.assertOrThrow
+import javax.inject.Inject
 
-internal class ThrottleBuilder(
+internal class ThrottleBuilder @Inject constructor(
     private val logger: ILogger
 ) : IThrottleBuilder {
     private val TAG = javaClass.simpleName

@@ -18,9 +18,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
-import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder
@@ -28,11 +26,11 @@ import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
+import javax.inject.Inject
 
-internal class RoutesContainerBuilder(
-    private val clock: IClock,
+internal class RoutesContainerBuilder @Inject constructor(
     private val logger: ILogger,
-    private val eventLogger: EventLogger,
+    private val factory: Factory,
 ) : IRoutesContainerBuilder {
     private val TAG = javaClass.simpleName
     var actionOnError: TAction? = null
@@ -47,7 +45,7 @@ internal class RoutesContainerBuilder(
         actionOnError = action
     }
 
-    fun create(keyValue: IKeyValue, simulCallback: ISimulCallback?): IRoutesContainer {
+    fun create(simulCallback: ISimulCallback?): IRoutesContainer {
         logger.assertOrThrow(TAG, this::name.isInitialized) {
             "RoutesContainer 'name' property has not been defined."
         }
@@ -58,6 +56,6 @@ internal class RoutesContainerBuilder(
             // Sets the default for the active route.state to be "Idle".
             status = { "Idle" }
         }
-        return RoutesContainer(clock, logger, keyValue, eventLogger, simulCallback, this)
+        return factory.createRoutesContainer(simulCallback, this)
     }
 }

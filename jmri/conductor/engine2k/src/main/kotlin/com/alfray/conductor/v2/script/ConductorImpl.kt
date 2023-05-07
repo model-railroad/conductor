@@ -19,10 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.Analytics
-import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
-import com.alflabs.kv.IKeyValue
-import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.ExecContext.Reason
@@ -45,7 +42,6 @@ import com.alfray.conductor.v2.script.dsl.IThrottleBuilder
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.dsl.TCondition
-import com.alfray.conductor.v2.script.impl.RoutesContainerBuilder
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.GaEvent
@@ -59,23 +55,19 @@ import com.alfray.conductor.v2.script.impl.OnDelayRule
 import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
-import com.alfray.conductor.v2.script.impl.ThrottleBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
-    private val clock: IClock,
-    private val logger: ILogger,
-    private val factory: Factory,
-    private val keyValue: IKeyValue,
-    private val analytics: Analytics,
-    private val jsonSender: JsonSender,
-    private val eventLogger: EventLogger,
-    private val eStopHandler: EStopHandler,
-    override val exportedVars: ExportedVars,
-    private val currentContext: CurrentContext,
+        private val logger: ILogger,
+        private val factory: Factory,
+        private val analytics: Analytics,
+        private val jsonSender: JsonSender,
+        private val eStopHandler: EStopHandler,
+        override val exportedVars: ExportedVars,
+        private val currentContext: CurrentContext,
 ) : IConductor {
     private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
@@ -125,7 +117,7 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun throttle(dccAddress: Int, throttleSpecification: IThrottleBuilder.() -> Unit): IThrottle {
-        val b = ThrottleBuilder(logger)
+        val b = factory.createThrottleBuilder()
         b.throttleSpecification()
         return throttles.computeIfAbsent(dccAddress) { factory.createThrottle(it, b) }
     }
@@ -195,9 +187,9 @@ class ConductorImpl @Inject internal constructor(
     }
 
     override fun routes(routesContainerSpecification: IRoutesContainerBuilder.() -> Unit): IRoutesContainer {
-        val b = RoutesContainerBuilder(clock, logger, eventLogger)
+        val b = factory.createRoutesContainerBuilder()
         b.routesContainerSpecification()
-        val a = b.create(keyValue, simulCallback)
+        val a = b.create(simulCallback)
         routesContainers.add(a)
         return a
     }
