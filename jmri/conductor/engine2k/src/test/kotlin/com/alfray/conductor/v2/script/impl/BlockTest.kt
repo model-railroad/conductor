@@ -23,6 +23,7 @@ import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alfray.conductor.v2.script.CondCache
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
@@ -61,10 +62,12 @@ class BlockTest {
         verify(jmriProvider).getSensor("jmriName")
         verify(keyValue).putValue("S/jmriName", "OFF", true)
         reset(keyValue)
+        reset(eventLogger)
     }
 
     @Test
     fun testIsActive() {
+        block.named("Block-Name")
         jmriSensor.isActive = true
         // the JMRI state is not reflected in the internal state until after onExecHandle
         assertThat(block.active).isFalse()
@@ -73,6 +76,7 @@ class BlockTest {
         block.onExecHandle()
         assertThat(block.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
+        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName", "Block-Name ON")
         reset(keyValue)
 
         jmriSensor.isActive = false
@@ -81,6 +85,26 @@ class BlockTest {
         block.onExecHandle()
         assertThat(block.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
+        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName", "Block-Name OFF")
+    }
+
+    @Test
+    fun testChangeState() {
+        block.named("Block-Name")
+
+        // This first "changeState" doesn't change anything since the block stats EMPTY.
+        // Consequently, it does not generate a log event since no state actually changes.
+        block.changeState(IBlock.State.EMPTY)
+        verify(eventLogger, never()).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name ON")
+
+        block.changeState(IBlock.State.OCCUPIED)
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name OCCUPIED")
+
+        block.changeState(IBlock.State.TRAILING)
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name TRAILING")
+
+        block.changeState(IBlock.State.EMPTY)
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name EMPTY")
     }
 
     @Test

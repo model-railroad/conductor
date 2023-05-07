@@ -89,6 +89,9 @@ internal class VirtualBlock @AssistedInject constructor(
 
     /** Internal method used by a Node to change the Block occupancy state. */
     override fun changeState(newState: IBlock.State) {
+        if (state != newState) {
+            eventLogger.logAsync(EventLogger.Type.Block, keyName, "$name ${newState.name}")
+        }
         state = newState
     }
 

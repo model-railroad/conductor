@@ -63,12 +63,15 @@ public class EventLogger {
     /** The file being written. */
     private File mFile;
 
+    /** Logged type. The log uses the first letter of the Type name. */
     public enum Type {
+        // Sort alphabetically. Only the first letter is written in the log,
+        Block,
+        DccThrottle,
         Sensor,
-        Turnout,
-        Variable,
         Timer,
-        DccThrottle
+        Turnout,            // Both Timer and Turnout are logged as T, yet are easily distinguished.
+        Variable,
     }
 
     @Inject
@@ -86,9 +89,17 @@ public class EventLogger {
         return mLogger;
     }
 
+    /**
+     * Generates an async log event. The call time is recorded and printed in the log.
+     *
+     * @param type The type name. Only the first letter is printed.
+     * @param name The object name. Must be a non-empty string without any spaces.
+     * @param value The non-empty event value.
+     *              If value contains spaces, it is double-quoted in the written log entry.
+     */
     public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
         LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
-        // Add an event (non blocking)
+        // Add an event (non-blocking)
         Event e = new Event(now, type, name, value);
         mEvents.add(e);
         // Conductor 2 DEBUG
