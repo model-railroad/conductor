@@ -68,31 +68,37 @@ public class FakeJmriProvider implements IJmriProvider {
         return mThrottles.computeIfAbsent(dccAddress, key -> new IJmriThrottle() {
             @Override
             public void eStop() {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] E-Stop", dccAddress));
             }
 
             @Override
             public void setSpeed(int speed) {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] Speed: %d", dccAddress, speed));
             }
 
             @Override
             public void setSound(boolean on) {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] Sound: %s", dccAddress, on));
             }
 
             @Override
             public void setLight(boolean on) {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] Light: %s", dccAddress, on));
             }
 
             @Override
             public void horn() {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] Horn", dccAddress));
             }
 
             @Override
             public void triggerFunction(int function, boolean on) {
+                // Note: also logged in C2 event logger. Keep this for unit tests.
                 log(String.format("[%d] F%d: %s", dccAddress, function, on));
             }
 

@@ -105,6 +105,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun f(index: Int, on: Boolean) : IFBits {
         enforceContext()
+        eventLog("f${index}_" + (if (on) "on" else "off"))
         try {
             jmriThrottle?.triggerFunction(index, on)
         } catch (e: Throwable) {
@@ -115,6 +116,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun horn() {
         enforceContext()
+        eventLog("horn")
         try {
             lastJmriTS = clock.elapsedRealtime()
             jmriThrottle?.horn()
@@ -126,6 +128,7 @@ internal class Throttle @AssistedInject constructor(
     override fun light(on: Boolean) {
         enforceContext()
         _light = on
+        eventLog("light_" + (if (on) "on" else "off"))
         try {
             if (builder?.actionOnLight != null) {
                 builder.actionOnLight!!.invoke(on)
@@ -141,6 +144,7 @@ internal class Throttle @AssistedInject constructor(
     override fun sound(on: Boolean) {
         enforceContext()
         _sound = on
+        eventLog("sound_" + (if (on) "on" else "off"))
         try {
             if (builder?.actionOnSound != null) {
                 builder.actionOnSound!!.invoke(on)
@@ -155,6 +159,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun bell(on: Boolean) {
         enforceContext()
+        eventLog("bell_" + (if (on) "on" else "off"))
         try {
             if (builder?.actionOnBell != null) {
                 builder.actionOnBell!!.invoke(on)
@@ -209,11 +214,7 @@ internal class Throttle @AssistedInject constructor(
 
         try {
             if (speedChange) {
-                eventLogger.logAsync(
-                    EventLogger.Type.DccThrottle,
-                    dccAddress.toString(),
-                    speed.speed.toString()
-                )
+                eventLog(speed.speed.toString())
             }
             lastJmriTS = clock.elapsedRealtime()
             jmriThrottle?.setSpeed(speed.speed)
@@ -229,6 +230,8 @@ internal class Throttle @AssistedInject constructor(
     }
 
     fun eStop() {
+        eventLog("eStop")
+
         // Do a "soft" stop to speed 0. This also sets this object's state properly.
         setSpeed(DccSpeed(0))
 
@@ -256,6 +259,14 @@ internal class Throttle @AssistedInject constructor(
         currentContext.assertNotHasReason(TAG, Reason.LOAD_SCRIPT) {
             "ERROR: throttle actions must be called in an event or rule definition."
         }
+    }
+
+    private fun eventLog(value: String) {
+        eventLogger.logAsync(
+            EventLogger.Type.DccThrottle,
+            dccAddress.toString(),
+            value
+        )
     }
 }
 
