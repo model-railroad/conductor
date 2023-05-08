@@ -18,7 +18,6 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder

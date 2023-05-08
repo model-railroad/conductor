@@ -51,8 +51,6 @@ import com.alfray.conductor.v2.script.impl.GaPageBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
-import com.alfray.conductor.v2.script.impl.OnDelayRule
-import com.alfray.conductor.v2.script.impl.OnRule
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
@@ -143,7 +141,7 @@ class ConductorImpl @Inject internal constructor(
 
         val key = OnRuleKey(context, delay = null, condition)
         val rule = context.addRule(key) {
-            OnRule(key)
+            factory.createOnRule(key)
         }
         return rule
     }
@@ -155,7 +153,7 @@ class ConductorImpl @Inject internal constructor(
             }
         val key = OnRuleKey(context, delay, condition)
         val rule = context.addRule(key) {
-            OnDelayRule(key, factory) { onTimer ->
+            factory.createOnDelayRule(key) { onTimer ->
                 context.addTimer(onTimer)
             }
         }

@@ -18,19 +18,20 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.conductor.util.EventLogger
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IRoute
 import com.alfray.conductor.v2.script.dsl.IIdleRouteBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-internal open class IdleRouteBuilder(
-    owner: IRoutesContainer,
-    logger: ILogger,
-    eventLogger: EventLogger,
-) : RouteBaseBuilder(owner as RoutesContainer, logger, eventLogger), IIdleRouteBuilder {
+internal open class IdleRouteBuilder @AssistedInject constructor(
+        logger: ILogger,
+        private val factory: Factory,
+        @Assisted owner: IRoutesContainer,
+) : RouteBaseBuilder(owner as RoutesContainer, logger), IIdleRouteBuilder {
     private val TAG = javaClass.simpleName
     var actionOnIdle: TAction? = null
 
@@ -41,5 +42,5 @@ internal open class IdleRouteBuilder(
         actionOnIdle = action
     }
 
-    fun create() : IRoute = IdleRoute(owner, logger, eventLogger, this)
+    fun create() : IRoute = factory.createIdleRoute(owner, this)
 }

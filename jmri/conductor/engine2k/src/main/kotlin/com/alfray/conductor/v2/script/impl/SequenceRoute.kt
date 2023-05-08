@@ -27,6 +27,8 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.simulator.SimulRouteGraph
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import java.util.Locale
 
 /**
@@ -61,12 +63,13 @@ import java.util.Locale
  *
  * In the Active state, the route manager manages blocks and nodes.
  */
-internal class SequenceRoute(
-    override val owner: IRoutesContainer,
-    private val clock: IClock,
-    logger: ILogger,
-    eventLogger: EventLogger,
-    builder: SequenceRouteBuilder
+internal class SequenceRoute @AssistedInject constructor(
+        private val clock: IClock,
+        logger: ILogger,
+        private val factory: Factory,
+        eventLogger: EventLogger,
+        @Assisted override val owner: IRoutesContainer,
+        @Assisted builder: SequenceRouteBuilder
 ) : RouteBase(logger, eventLogger, owner, builder), ISequenceRoute, IRouteManager {
     private val TAG = javaClass.simpleName
     private var currentActiveBlocks = setOf<IBlock> ()
@@ -107,7 +110,7 @@ internal class SequenceRoute(
     }
 
     private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): RouteGraph {
-        val builder = RouteGraphBuilder(logger)
+        val builder = factory.createRouteGraphBuilder()
         builder.setSequence(sequence)
         for (branch in branches) {
             builder.addBranch(branch)

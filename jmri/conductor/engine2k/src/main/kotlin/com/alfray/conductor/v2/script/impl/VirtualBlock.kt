@@ -18,13 +18,10 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.conductor.jmri.IJmriProvider
-import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alflabs.manifest.Prefix
-import com.alfray.conductor.v2.dagger.Script2kIsSimulation
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.simulator.SimulRouteBlock

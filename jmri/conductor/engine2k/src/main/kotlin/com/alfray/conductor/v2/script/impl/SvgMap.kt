@@ -28,7 +28,7 @@ import com.google.common.io.Resources
 import java.io.File
 import java.io.IOException
 
-internal class SvgMapBuilder constructor() : ISvgMapBuilder {
+internal class SvgMapBuilder() : ISvgMapBuilder {
     override lateinit var name: String
     override lateinit var svg: String
     override lateinit var displayOn: SvgMapTarget

@@ -22,8 +22,11 @@ import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.utils.assertOrThrow
+import dagger.assisted.AssistedInject
 
-internal class RouteGraphBuilder(private val logger: ILogger) {
+internal class RouteGraphBuilder @AssistedInject constructor(
+        private val logger: ILogger
+) {
     private val TAG = javaClass.simpleName
     private lateinit var start : INode
     /** Map of nodes to the direction leading to this node. */

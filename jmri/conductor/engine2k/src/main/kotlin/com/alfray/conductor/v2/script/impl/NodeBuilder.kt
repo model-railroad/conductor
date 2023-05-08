@@ -24,11 +24,13 @@ import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.INodeBuilder
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.utils.assertOrThrow
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
 /** Internal DSL script builder for [INode]. */
-class NodeBuilder(
+class NodeBuilder @AssistedInject constructor(
     private val logger: ILogger,
-    val block: IBlock
+    @Assisted val block: IBlock
 ) : INodeBuilder {
     private val TAG = javaClass.simpleName
     var actionOnEnter: TAction? = null

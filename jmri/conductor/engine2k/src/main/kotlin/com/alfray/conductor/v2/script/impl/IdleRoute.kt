@@ -24,6 +24,8 @@ import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.INode
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
 /**
  * An idle route.
@@ -40,11 +42,11 @@ import com.alfray.conductor.v2.script.dsl.IRoutesContainer
  * The base startNode() method does not apply to an idle route and will throw an exception
  * if used.
  */
-internal class IdleRoute(
-    owner: IRoutesContainer,
-    logger: ILogger,
-    eventLogger: EventLogger,
-    builder: IdleRouteBuilder
+internal class IdleRoute @AssistedInject constructor(
+        logger: ILogger,
+        eventLogger: EventLogger,
+        @Assisted owner: IRoutesContainer,
+        @Assisted builder: IdleRouteBuilder,
 ) : RouteBase(logger, eventLogger, owner, builder), IIdleRoute {
     private val TAG = javaClass.simpleName
     private val actionOnIdle = builder.actionOnIdle

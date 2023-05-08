@@ -18,11 +18,9 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Prefix
 import com.alflabs.manifest.RouteInfo
-import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
 import com.alfray.conductor.v2.script.ExecContext
@@ -59,11 +57,9 @@ import java.util.Locale
  * followed by calling the RoutesContainer's onError callback once.
  */
 internal class RoutesContainer @AssistedInject constructor(
-        private val clock: IClock,
         private val logger: ILogger,
         private val factory: Factory,
         private val keyValue: IKeyValue,
-        private val eventLogger: EventLogger,
         @Assisted private val simulCallback: ISimulCallback?,
         @Assisted builder: RoutesContainerBuilder,
 ) : IRoutesContainer, IExecEngine {
@@ -183,13 +179,13 @@ internal class RoutesContainer @AssistedInject constructor(
     }
 
     override fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute {
-        val builder = IdleRouteBuilder(this, logger, eventLogger)
+        val builder = factory.createIdleRouteBuilder(owner = this)
         builder.idleRouteSpecification()
         return add(builder.create())
     }
 
     override fun sequence(sequenceRouteSpecification: ISequenceRouteBuilder.() -> Unit): IRoute {
-        val builder = SequenceRouteBuilder(this, clock, logger, eventLogger)
+        val builder = factory.createSequenceRouteBuilder(owner = this)
         builder.sequenceRouteSpecification()
         return add(builder.create())
     }

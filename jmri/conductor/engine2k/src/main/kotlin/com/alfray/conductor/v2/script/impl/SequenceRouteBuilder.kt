@@ -18,8 +18,6 @@
 
 package com.alfray.conductor.v2.script.impl
 
-import com.alflabs.conductor.util.EventLogger
-import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.script.dsl.IBlock
@@ -28,13 +26,14 @@ import com.alfray.conductor.v2.script.dsl.INodeBuilder
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.script.dsl.ISequenceRouteBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-internal class SequenceRouteBuilder(
-    owner: IRoutesContainer,
-    private val clock: IClock,
-    logger: ILogger,
-    eventLogger: EventLogger,
-) : RouteBaseBuilder(owner, logger, eventLogger), ISequenceRouteBuilder {
+internal class SequenceRouteBuilder @AssistedInject constructor(
+        logger: ILogger,
+        private val factory: Factory,
+        @Assisted owner: IRoutesContainer,
+) : RouteBaseBuilder(owner, logger), ISequenceRouteBuilder {
     private val TAG = javaClass.simpleName
     override val route: IRoutesContainer
         get() = owner
@@ -44,10 +43,10 @@ internal class SequenceRouteBuilder(
     override val branches = mutableListOf<List<INode>>()
 
     override fun node(block: IBlock, nodeSpecification: INodeBuilder.() -> Unit): INode {
-        val b = NodeBuilder(logger, block)
+        val b = factory.createNodeBuilder(block)
         b.nodeSpecification()
         return b.create()
     }
 
-    fun create() : ISequenceRoute = SequenceRoute(owner, clock, logger, eventLogger, this)
+    fun create() : ISequenceRoute = factory.createSequenceRoute(owner, this)
 }

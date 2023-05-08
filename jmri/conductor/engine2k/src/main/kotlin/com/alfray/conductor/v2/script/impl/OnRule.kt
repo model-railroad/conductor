@@ -26,8 +26,12 @@ import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.utils.ConductorExecException
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-internal open class OnRule(val key: OnRuleKey) : IOnRule {
+internal open class OnRule @AssistedInject constructor(
+        @Assisted val key: OnRuleKey
+) : IOnRule {
     private var action: TAction? = null
     private val context = ExecContext(ExecContext.Reason.ON_RULE)
 

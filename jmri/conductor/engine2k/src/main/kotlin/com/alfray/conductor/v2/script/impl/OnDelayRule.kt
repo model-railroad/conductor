@@ -19,11 +19,13 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alfray.conductor.v2.script.dsl.TAction
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 
-internal class OnDelayRule(
-    key: OnRuleKey,
-    private val factory: Factory,
-    private val registerTimer: (OnDelayRule) -> Unit,
+internal class OnDelayRule @AssistedInject constructor(
+        private val factory: Factory,
+        @Assisted key: OnRuleKey,
+    @Assisted private val registerTimer: (OnDelayRule) -> Unit,
 ) : OnRule(key) {
     private var timer: Timer? = null
 
