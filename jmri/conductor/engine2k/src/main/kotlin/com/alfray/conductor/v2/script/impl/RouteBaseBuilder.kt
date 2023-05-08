@@ -31,6 +31,7 @@ internal open class RouteBaseBuilder(
     private val TAG = javaClass.simpleName
     var actionOnActivate: TAction? = null
     var actionOnError: TAction? = null
+    override var name: String = ""
 
     override fun onActivate(action: TAction) {
         logger.assertOrThrow(TAG, actionOnActivate == null) {

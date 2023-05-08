@@ -370,6 +370,7 @@ val ML_Route = routes {
 var ML_Idle_Route: IRoute
 ML_Idle_Route = ML_Route.idle {
     // The idle route is where we check whether a mainline train should start, and which one.
+    name = "Ready"
 
     onActivate {
         ML_State = EML_State.Ready
@@ -394,6 +395,7 @@ ML_Idle_Route = ML_Route.idle {
 
 val ML_Wait_Route = ML_Route.idle {
     // The wait route creates the pause between two mainline train runs.
+    name = "Wait"
 
     val ML_Timer_Wait = 60.seconds  // 1 minute
 
@@ -408,6 +410,7 @@ val ML_Wait_Route = ML_Route.idle {
 
 val ML_Error_Route = ML_Route.idle {
     // The error route is used when we fail to recover from the recovery routes.
+    name = "Error"
 
     onActivate {
         ML_State = EML_State.Error
@@ -454,7 +457,7 @@ val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
     // The mainline passenger route sequence.
-
+    name = "Passenger"
     throttle = PA
     timeout = 120 // 2 minutes per block max
 
@@ -649,7 +652,7 @@ val SP_Sound_Stopped    = 2.seconds
 
 val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
-
+    name = "Freight"
     throttle = FR
     timeout = 120 // 2 minutes per block max
 
@@ -802,14 +805,14 @@ fun ML_Fn_Try_Recover_Route() {
         // PA train is not at start but there's one block occupied, so let's assume it's
         // our train and try to recover that PA train.
         log("[ML Recovery] Recover Passenger")
-        ML_Recover_Passenger_Route.activate()
+        ML_Recovery_Passenger_Route.activate()
 
     } else if (PA_start && !FR_start && FR_occup == 1) {
         // PA train is accounted for, where expected.
         // FR train is not at start but there's one block occupied, so let's assume it's
         // our train and try to recover that FR train.
         log("[ML Recovery] Recover Freight")
-        ML_Recover_Freight_Route.activate()
+        ML_Recovery_Freight_Route.activate()
 
     } else if (FR_start && !PA_start && FR_occup == 0) {
         // FR train is accounted for, where expected.
@@ -853,9 +856,9 @@ fun ML_Fn_Try_Recover_Route() {
     FR.stop()
 }
 
-val ML_Recover_Passenger_Route = ML_Route.sequence {
+val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Recovery route for the passenger mainline train.
-
+    name = "PA_Recovery"
     throttle = PA
     timeout = 120 // 2 minutes per block max
 
@@ -967,9 +970,9 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
         B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
 }
 
-val ML_Recover_Freight_Route = ML_Route.sequence {
+val ML_Recovery_Freight_Route = ML_Route.sequence {
     // Recovery route for the freight mainline train.
-
+    name = "FR_Recovery"
     throttle = FR
     timeout = 120 // 2 minutes per block max
 
@@ -1188,7 +1191,8 @@ val BL_Route = routes {
 
 var BL_Idle_Route: IRoute
 BL_Idle_Route = BL_Route.idle {
-    // The idle route is where we check whether a branchline train should start.
+    // The idle route is where we check whether a Branchline train should start.
+    name = "Ready"
 
     onActivate {
         BL_State = EBL_State.Ready
@@ -1203,6 +1207,7 @@ BL_Idle_Route = BL_Route.idle {
 
 val BL_Wait_Route = BL_Route.idle {
     // The wait route creates the pause between two branchline train runs.
+    name = "Wait"
 
     val BL_Timer_Wait = 300.seconds  // 300=5 minutes -- change for debugging
 
@@ -1217,6 +1222,7 @@ val BL_Wait_Route = BL_Route.idle {
 
 val BL_Error_Route = BL_Route.idle {
     // The error route is used when we cannot recover from an error during the recover route.
+    name = "Error"
 
     onActivate {
         BL_State = EBL_State.Error
@@ -1226,7 +1232,7 @@ val BL_Error_Route = BL_Route.idle {
 
 val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
-
+    name = "Shuttle"
     throttle = BL
     timeout = 120 // 2 minutes per block max
 
@@ -1363,7 +1369,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     onError {
-        BL_Recover_Route.activate()
+        BL_Recovery_Route.activate()
     }
 
     sequence = listOf(BLParked_fwd, BLStation_fwd, B830v_fwd, BLTunnel_fwd,
@@ -1372,9 +1378,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
 }
 
-val BL_Recover_Route = BL_Route.sequence {
+val BL_Recovery_Route = BL_Route.sequence {
     // Recovery mechanism for the branchline train.
-
+    name = "Recovery"
     throttle = BL
     timeout = 120 // 2 minutes per block max
 

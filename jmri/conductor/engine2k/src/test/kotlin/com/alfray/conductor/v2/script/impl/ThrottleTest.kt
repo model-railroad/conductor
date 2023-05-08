@@ -155,12 +155,12 @@ class ThrottleTest : ScriptTest2kBase() {
         throttle.sound(false)
         assertThat(throttle.sound).isFalse()
         verify(mockThrottle).setSound(false)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "sound_off")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "Sound OFF")
 
         throttle.sound(true)
         assertThat(throttle.sound).isTrue()
         verify(mockThrottle).setSound(true)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "sound_on")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "Sound ON")
 
         reset(mockThrottle)
         throttle.sound(false)
@@ -174,12 +174,12 @@ class ThrottleTest : ScriptTest2kBase() {
         throttle.light(false)
         assertThat(throttle.light).isFalse()
         verify(mockThrottle).setLight(false)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "light_off")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "Light OFF")
 
         throttle.light(true)
         assertThat(throttle.light).isTrue()
         verify(mockThrottle).setLight(true)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "light_on")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "Light ON")
 
         reset(mockThrottle)
         throttle.light(false)
@@ -191,16 +191,16 @@ class ThrottleTest : ScriptTest2kBase() {
     fun testFnFunction() {
         throttle.f(3, true)
         verify(mockThrottle).triggerFunction(3, true)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "f3_on")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "F3 ON")
         throttle.f(5, false)
         verify(mockThrottle).triggerFunction(5, false)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "f5_off")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "F5 OFF")
         throttle.f(12, true)
         verify(mockThrottle).triggerFunction(12, true)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "f12_on")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "F12 ON")
         throttle.f(28, false)
         verify(mockThrottle).triggerFunction(28, false)
-        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "f28_off")
+        verify(eventLogger).logAsync(EventLogger.Type.DccThrottle, "42", "F28 OFF")
     }
 
     @Test

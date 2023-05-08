@@ -76,7 +76,7 @@ class BlockTest {
         block.onExecHandle()
         assertThat(block.active).isTrue()
         verify(keyValue).putValue("S/jmriName", "ON", true)
-        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName", "Block-Name ON")
+        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName Block-Name", "ON")
         reset(keyValue)
 
         jmriSensor.isActive = false
@@ -85,7 +85,7 @@ class BlockTest {
         block.onExecHandle()
         assertThat(block.active).isFalse()
         verify(keyValue).putValue("S/jmriName", "OFF", true)
-        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName", "Block-Name OFF")
+        verify(eventLogger).logAsync(EventLogger.Type.Sensor, "S/jmriName Block-Name", "OFF")
     }
 
     @Test
@@ -95,16 +95,16 @@ class BlockTest {
         // This first "changeState" doesn't change anything since the block stats EMPTY.
         // Consequently, it does not generate a log event since no state actually changes.
         block.changeState(IBlock.State.EMPTY)
-        verify(eventLogger, never()).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name ON")
+        verify(eventLogger, never()).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "ON")
 
         block.changeState(IBlock.State.OCCUPIED)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name OCCUPIED")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "OCCUPIED")
 
         block.changeState(IBlock.State.TRAILING)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name TRAILING")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "TRAILING")
 
         block.changeState(IBlock.State.EMPTY)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName", "Block-Name EMPTY")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "EMPTY")
     }
 
     @Test

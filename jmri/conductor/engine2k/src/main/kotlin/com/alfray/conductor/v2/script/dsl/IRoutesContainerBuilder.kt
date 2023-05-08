@@ -21,13 +21,13 @@ package com.alfray.conductor.v2.script.dsl
 /** Interal DSL script interface to create a new [IRoutesContainer]. */
 interface IRoutesContainerBuilder {
     /**
-     * The exported name of this route. Mandatory.
+     * The exported name of this route container. Mandatory.
      * This name is displayed on the RTAC tablet display.
      */
     var name: String
 
     /**
-     * The toggle sensor that triggers route enablement. Mandatory.
+     * The toggle sensor that triggers route container enablement. Mandatory.
      * The toggle value has no bearing on the actual script execution -- it is up to the
      * script to test for the toggle when and where needed.
      * This is only used to display the toggle state on the RTAC tablet display.

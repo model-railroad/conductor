@@ -22,6 +22,10 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface for a generic abstract route. */
 interface IRoute {
+    /** The name of this route in its container. Optional yet recommended.
+     * This is mostly useful for debugging and informational purposes, to distinguish different routes. */
+    val name: String
+
     /** The [IRoutesContainer] containing this route. */
     val owner: IRoutesContainer
 

@@ -717,7 +717,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val routesContainer = conductorImpl.routesContainers[0]
         val route = routesContainer.active
         assertThat(route).isInstanceOf(IIdleRoute::class.java)
-        assertThat(route.toString()).isEqualTo("IdleRoute PA#0")
+        assertThat(route.toString()).isEqualTo("Idle PA #0")
         assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
@@ -847,7 +847,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             "[{B01}=>><B02>=<>{B01}]"
         )
 
-        assertThat(seq.toString()).isEqualTo("SequenceRoute PA#1 (1001)")
+        assertThat(seq.toString()).isEqualTo("Sequence PA #1 (1001)")
         assertThat(ar.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()

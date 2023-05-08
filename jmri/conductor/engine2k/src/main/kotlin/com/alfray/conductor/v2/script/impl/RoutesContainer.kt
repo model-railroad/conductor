@@ -97,7 +97,8 @@ internal class RoutesContainer @AssistedInject constructor(
         val index = if (_active == null) -1 else routeIndex(_active!!)
 
         sb.append(_active?.javaClass?.simpleName?.replace("Route", ""))
-            .append(" #$index = ")
+            .append(" #$index")
+            .append(" $name = ")
             .append(if (toggle.active) "ON" else "OFF")
             .append(' ')
             .append(_active?.state)

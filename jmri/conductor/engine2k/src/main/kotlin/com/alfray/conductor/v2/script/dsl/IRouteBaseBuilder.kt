@@ -20,6 +20,10 @@ package com.alfray.conductor.v2.script.dsl
 
 /** An abstract internal DSL script interface common to route builders. */
 interface IRouteBaseBuilder {
+    /** The name of this route in its container. Optional yet recommended.
+     * This is mostly useful for debugging and informational purposes, to distinguish different routes. */
+    var name: String
+
     /** Callback when a route is being activated. Called once after activation. */
     fun onActivate(action: TAction)
 

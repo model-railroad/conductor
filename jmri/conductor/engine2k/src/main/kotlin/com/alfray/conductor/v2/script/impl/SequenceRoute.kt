@@ -99,8 +99,8 @@ internal class SequenceRoute @AssistedInject constructor(
         owner as RoutesContainer
         val index = owner.routeIndex(this)
         val addr = throttle.dccAddress
-        val status = owner.status.invoke()
-        return String.format(Locale.US, "Sequence %s #%d (%04d) %s", owner.name, index, addr, status)
+        val name_ = if (name.isEmpty()) "" else "$name "
+        return String.format(Locale.US, "Sequence %s #%d %s(%04d)", owner.name, index, name_, addr)
     }
 
     override fun startNode(node: INode) {
