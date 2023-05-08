@@ -73,11 +73,11 @@ public class EventLoggerTest {
 
         assertThat(mFileOps.isFile(new File(logFile))).isTrue();
         assertThat(mFileOps.toString(new File(logFile), Charsets.UTF_8)).isEqualTo(
-                "13:42:43.000 S S1 Before_start_1\n" +
-                "13:42:43.000 S S2 Before_start_2\n" +
-                "13:42:43.000 V V3 \"Value 3\"\n" +
-                "13:42:43.000 D 444 28\n" +
-                "13:42:43.000 T T5 On\n" +
-                "13:42:43.000 T timer-2 Start:300\n");
+                "13:42:43.000 S S1 : Before_start_1\n" +
+                "13:42:43.000 S S2 : Before_start_2\n" +
+                "13:42:43.000 V V3 : Value 3\n" +
+                "13:42:43.000 D 444 : 28\n" +
+                "13:42:43.000 T T5 : On\n" +
+                "13:42:43.000 T timer-2 : Start:300\n");
     }
 }

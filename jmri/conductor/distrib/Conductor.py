@@ -86,7 +86,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         #   mode _and_ not send anything more than 1.0.
         # - Negative values send an E-Stop FWD or REV command (0xA2 0x06 or 0xA2 0x05 respectively).
 
-        print "[Conductor", self._address, "] Speed", speed28
+        # (covered in C2 event logger) # print "[Conductor", self._address, "] Speed", speed28
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
@@ -108,7 +108,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         Tsunami DCC decoders. There is a 100 ms delay after the action.
         Conductor 2 Throttles can override onSound to change the behavior in script.
         """
-        print "[Conductor", self._address, "] Sound", on
+        # (covered in C2 event logger) # print "[Conductor", self._address, "] Sound", on
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
@@ -122,7 +122,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         There is a 100 ms delay after the action.
         Conductor 2 Throttles can override onLight to change the behavior in script.
         """
-        print "[Conductor", self._address, "] Light", on
+        # (covered in C2 event logger) # print "[Conductor", self._address, "] Light", on
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
@@ -137,7 +137,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         The horn action takes 500 ms, followed by a 200 ms delay.
         Conductor 2 Throttles can override onLight to change the behavior in script.
         """
-        print "[Conductor", self._address, "] Horn"
+        # (covered in C2 event logger) # print "[Conductor", self._address, "] Horn"
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
@@ -151,7 +151,7 @@ class JmriThrottleAdapter(IJmriThrottle):
         """In: int function, boolean on; Out: void"""
         # Dynamically invoke JMRI throttle method setF0..setF28(boolean).
         Fn = "F" + str(function)
-        print "[Conductor", self._address, "]", Fn, on
+        # (covered in C2 event logger) # print "[Conductor", self._address, "]", Fn, on
         if self._throttle is None:
             print "[Conductor] No Throttle for ", self._address
             return
