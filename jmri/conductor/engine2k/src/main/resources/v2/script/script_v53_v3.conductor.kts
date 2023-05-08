@@ -681,9 +681,10 @@ val Freight_Route = ML_Route.sequence {
                 FR.horn()
                 FR.light(On)
                 FR.bell(Off)
-                FR.forward(SP_Forward_Speed)
+                FR.forward(SP_Station_Speed)
                 ML_Freight_Align_Turnouts()
-            } and_after (2.seconds) then {
+            } and_after (5.seconds) then {
+                FR.forward(SP_Forward_Speed)
                 FR.horn()
             }
         }
