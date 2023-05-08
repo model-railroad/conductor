@@ -79,7 +79,10 @@ internal class Sensor @AssistedInject constructor(
         val value = export(keyName)
         if (_active != lastActive) {
             lastActive = _active
-            eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
+            eventLogger.logAsync(
+                    EventLogger.Type.Sensor,
+                    "$keyName $name",
+                    value)
         }
     }
 

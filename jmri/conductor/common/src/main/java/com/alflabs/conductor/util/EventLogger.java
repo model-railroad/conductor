@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -94,9 +95,8 @@ public class EventLogger {
      * Generates an async log event. The call time is recorded and printed in the log.
      *
      * @param type The type name. Only the first letter is printed.
-     * @param name The object name. Must be a non-empty string without any spaces.
+     * @param name The object name.
      * @param value The non-empty event value.
-     *              If value contains spaces, it is double-quoted in the written log entry.
      */
     public void logAsync(@NonNull Type type, @NonNull String name, @NonNull String value) {
         LocalTime now = mLocalDateTimeNow.getNow().toLocalTime();
@@ -218,18 +218,16 @@ public class EventLogger {
 
         @Override
         public String toString() {
-            String value = mValue;
-            if (value.indexOf(' ') != -1) {
-                value = '"' + value + '"';
-            }
-            return String.format("%02d:%02d:%02d.%03d %c %s %s\n",
+            return String.format(
+                    Locale.US,
+                    "%02d:%02d:%02d.%03d %c %s : %s\n",
                     mLocalTime.getHour(),
                     mLocalTime.getMinute(),
                     mLocalTime.getSecond(),
                     mLocalTime.getNano() / 1000000, // from ns to ms
                     mType.name().charAt(0),
                     mName,
-                    value);
+                    mValue);
         }
     }
 

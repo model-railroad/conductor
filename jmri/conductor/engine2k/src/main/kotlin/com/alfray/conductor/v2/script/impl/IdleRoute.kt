@@ -60,7 +60,8 @@ internal class IdleRoute @AssistedInject constructor(
     override fun toString(): String {
         owner as RoutesContainer
         val index = owner.routeIndex(this)
-        return "IdleRoute ${owner.name}#$index"
+        val status = owner.status.invoke()
+        return "Idle ${owner.name} #${index} $status"
     }
 
     /** Invoked by the ExecEngine2 loop to collect all actions to evaluate. */

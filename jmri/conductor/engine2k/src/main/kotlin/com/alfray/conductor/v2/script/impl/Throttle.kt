@@ -105,7 +105,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun f(index: Int, on: Boolean) : IFBits {
         enforceContext()
-        eventLog("f${index}_" + (if (on) "on" else "off"))
+        eventLog("F${index} " + (if (on) "ON" else "OFF"))
         try {
             jmriThrottle?.triggerFunction(index, on)
         } catch (e: Throwable) {
@@ -116,7 +116,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun horn() {
         enforceContext()
-        eventLog("horn")
+        eventLog("Horn")
         try {
             lastJmriTS = clock.elapsedRealtime()
             jmriThrottle?.horn()
@@ -128,7 +128,7 @@ internal class Throttle @AssistedInject constructor(
     override fun light(on: Boolean) {
         enforceContext()
         _light = on
-        eventLog("light_" + (if (on) "on" else "off"))
+        eventLog("Light " + (if (on) "ON" else "OFF"))
         try {
             if (builder?.actionOnLight != null) {
                 builder.actionOnLight!!.invoke(on)
@@ -144,7 +144,7 @@ internal class Throttle @AssistedInject constructor(
     override fun sound(on: Boolean) {
         enforceContext()
         _sound = on
-        eventLog("sound_" + (if (on) "on" else "off"))
+        eventLog("Sound " + (if (on) "ON" else "OFF"))
         try {
             if (builder?.actionOnSound != null) {
                 builder.actionOnSound!!.invoke(on)
@@ -159,7 +159,7 @@ internal class Throttle @AssistedInject constructor(
 
     override fun bell(on: Boolean) {
         enforceContext()
-        eventLog("bell_" + (if (on) "on" else "off"))
+        eventLog("Bell " + (if (on) "ON" else "OFF"))
         try {
             if (builder?.actionOnBell != null) {
                 builder.actionOnBell!!.invoke(on)
