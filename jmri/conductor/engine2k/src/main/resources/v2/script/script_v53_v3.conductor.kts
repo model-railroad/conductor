@@ -459,7 +459,7 @@ val Passenger_Route = ML_Route.sequence {
     // The mainline passenger route sequence.
     name = "Passenger"
     throttle = PA
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     onError {
         // no-op
@@ -654,7 +654,7 @@ val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
     name = "Freight"
     throttle = FR
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     onError {
         // no-op
@@ -861,7 +861,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Recovery route for the passenger mainline train.
     name = "PA_Recovery"
     throttle = PA
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     fun move() {
         PA.bell(On)
@@ -975,7 +975,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
     // Recovery route for the freight mainline train.
     name = "FR_Recovery"
     throttle = FR
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     fun move() {
         FR.bell(On)
@@ -1235,7 +1235,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
     name = "Shuttle"
     throttle = BL
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
@@ -1383,7 +1383,7 @@ val BL_Recovery_Route = BL_Route.sequence {
     // Recovery mechanism for the branchline train.
     name = "Recovery"
     throttle = BL
-    timeout = 120 // 2 minutes per block max
+    maxSecondsOnBlock = 120 // 2 minutes per block max
 
     fun move() {
         BL.bell(On)

@@ -192,7 +192,7 @@ val _reverse_speed = 8.speed
 
 val Route1 = PA_Route.sequence {
     throttle = Train1
-    timeout = 60
+    maxSecondsOnBlock = 60
 
     onActivate {
         Train1.light(true)

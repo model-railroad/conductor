@@ -32,7 +32,7 @@ interface ISequenceRoute : IRoute {
 
     /** Max time in seconds that a running train can take to cross an active block.
      * Timeout becomes inactive if set to zero. */
-    val timeout: Int
+    val maxSecondsOnBlock: Int
 
     /** Internal Converts the route graph into a Simulator route graph. */
     fun toSimulGraph(): SimulRouteGraph

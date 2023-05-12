@@ -180,7 +180,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                 SimulRouteGraph graph = sequenceRoute.toSimulGraph();
                 routeManager.setRoute(
                         sequenceRoute.getThrottle().getDccAddress(),
-                        sequenceRoute.getTimeout(),
+                        sequenceRoute.getMaxSecondsOnBlock(),
                         graph);
         }));
     }

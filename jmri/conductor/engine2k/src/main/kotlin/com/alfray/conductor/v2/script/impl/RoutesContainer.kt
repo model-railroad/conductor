@@ -150,7 +150,7 @@ internal class RoutesContainer @AssistedInject constructor(
         simulCallback?.let {
             if (route is SequenceRoute) {
                 val simulGraph = route.toSimulGraph()
-                simulCallback.setRoute(route.throttle.dccAddress, route.timeout, simulGraph)
+                simulCallback.setRoute(route.throttle.dccAddress, route.maxSecondsOnBlock, simulGraph)
             }
         }
     }

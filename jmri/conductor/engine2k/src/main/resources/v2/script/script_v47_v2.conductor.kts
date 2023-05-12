@@ -397,7 +397,7 @@ val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
     throttle = PA
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     onError {
         // no-op
@@ -587,7 +587,7 @@ val SP_Sound_Stopped    = 2.seconds
 
 val Freight_Route = ML_Route.sequence {
     throttle = FR
-    timeout = 60
+    maxSecondsOnBlock = 60
 
     onError {
         // no-op
@@ -761,7 +761,7 @@ fun ML_Fn_Try_Recover_Route() {
 
 val ML_Recover_Passenger_Route = ML_Route.sequence {
     throttle = PA
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     fun move() {
         PA_bell(On)
@@ -874,7 +874,7 @@ val ML_Recover_Passenger_Route = ML_Route.sequence {
 
 val ML_Recover_Freight_Route = ML_Route.sequence {
     throttle = FR
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     fun move() {
         FR_bell(On)
@@ -1081,7 +1081,7 @@ BL_Idle_Route = BL_Route.idle {
 
 val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     val BL_Timer_Start_Delay = 5.seconds
     val BL_Timer_Bell_Delay = 2.seconds
@@ -1210,7 +1210,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
 val BL_Recover_Route = BL_Route.sequence {
     throttle = BL
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     fun move() {
         BL_bell(On)

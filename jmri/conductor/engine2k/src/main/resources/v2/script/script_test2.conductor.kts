@@ -187,7 +187,7 @@ val PA_Idle_Route = PA_Route.idle {}
 
 val Passenger_Route = PA_Route.sequence {
     throttle = AM
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     val AM_Leaving_Speed    = 6.speed
     val AM_Station_Speed    = 12.speed
@@ -401,7 +401,7 @@ val Passenger_Route = PA_Route.sequence {
 
 val Freight_Route = PA_Route.sequence {
     throttle = SP
-    timeout = 60
+    maxSecondsOnBlock = 60
 
     // Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
     val SP_Forward_Speed    = 8.speed
@@ -753,7 +753,7 @@ on { BL_Route.error } then {
 
 val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
-    timeout = 60 // 1 minute
+    maxSecondsOnBlock = 60 // 1 minute
 
     val BL_Timer_Start_Delay = 5.seconds
     val BL_Timer_Bell_Delay = 2.seconds

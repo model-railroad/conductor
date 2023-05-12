@@ -76,23 +76,23 @@ internal class SequenceRoute @AssistedInject constructor(
     override val throttle = builder.throttle
     override val sequence = builder.sequence
     private var startNode: INode? = null
-    private var blockStartMS = 0L
-    override val timeout = builder.timeout
+    private var blockStartMovingTS = 0L
+    override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
 
-    private fun timeoutExpired(): Boolean =
-        blockStartMS > 0 &&
-                timeout > 0 &&
-                ((clock.elapsedRealtime() - blockStartMS) > 1000L * timeout)
+    private fun maxSecondsReached(): Boolean =
+        blockStartMovingTS > 0 &&
+                maxSecondsOnBlock > 0 &&
+                ((clock.elapsedRealtime() - blockStartMovingTS) > 1000L * maxSecondsOnBlock)
 
-    private fun clearTimeout() {
-        blockStartMS = 0
+    private fun clearMaxSecondsTimer() {
+        blockStartMovingTS = 0
     }
 
-    private fun startTimeout() {
-        blockStartMS = clock.elapsedRealtime()
+    private fun startMaxSecondsTimer() {
+        blockStartMovingTS = clock.elapsedRealtime()
     }
 
     override fun toString(): String {
@@ -154,7 +154,7 @@ internal class SequenceRoute @AssistedInject constructor(
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
-        startTimeout()
+        startMaxSecondsTimer()
 
         // Set every block to its initial state of either occupied or empty.
         val currentNode_ = currentNode as Node
@@ -259,8 +259,8 @@ internal class SequenceRoute @AssistedInject constructor(
             // All Blocks Management
             if (outgoingNodesActive.isEmpty()) {
                 // Case A: Train still on same block. Current block active, no other active.
-                assertOrError(stillCurrentActive || !timeoutExpired()) {
-                    "ERROR $this current block suddenly became non-active after $timeout seconds."
+                assertOrError(stillCurrentActive || !maxSecondsReached()) {
+                    "ERROR $this current block suddenly became non-active after $maxSecondsOnBlock seconds."
                 }
             } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
@@ -293,23 +293,23 @@ internal class SequenceRoute @AssistedInject constructor(
                 enterNode.changeState(IBlock.State.OCCUPIED)
                 logger.d(TAG, "enter block ${enterNode.block} becomes ${enterNode.block.state}")
                 currentNode = enterNode
-                clearTimeout()
+                clearMaxSecondsTimer()
             }
         }
 
         // Handle current block timeout
         if (currentNode == null) {
             // Ignore timeout if we have no current block or if the train is stopped.
-            clearTimeout()
+            clearMaxSecondsTimer()
         } else if (throttle.stopped) {
-            clearTimeout()
+            clearMaxSecondsTimer()
         } else {
             // We have a moving train on an active node.
-            if (blockStartMS == 0L) {
-                startTimeout()
+            if (blockStartMovingTS == 0L) {
+                startMaxSecondsTimer()
             }
-            assertOrError(!timeoutExpired()) {
-                "ERROR $this current block timeout expired after $timeout seconds."
+            assertOrError(!maxSecondsReached()) {
+                "ERROR $this current block timeout expired after $maxSecondsOnBlock seconds."
             }
         }
     }
@@ -327,7 +327,7 @@ internal class SequenceRoute @AssistedInject constructor(
                 }
             }
             else -> {
-                clearTimeout()
+                clearMaxSecondsTimer()
                 super.collectActions(execActions)
             }
         }

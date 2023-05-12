@@ -22,13 +22,18 @@ package com.alfray.conductor.v2.script.dsl
 interface ISequenceRouteBuilder : IRouteBaseBuilder {
     /** The routes container owning this sequence. Cannot be null, but could be an idle route. */
     val route: IRoutesContainer
+
     /** The throttle controlled by this sequence. Cannot be null. */
     var throttle: IThrottle
-    /** Max time in seconds that a running train can take to cross an active block.
+
+    /** The maximum time spent moving on the currently occupied block.
+     * Timeout is reset when the train stops.
      * Timeout becomes inactive if set to zero. */
-    var timeout: Int
+    var maxSecondsOnBlock: Int
+
     /** The non-empty non-null list of nodes for this sequence. */
     var sequence: List<INode>
+
     /** The possible-empty non-null alternate branches for this sequence. */
     val branches: MutableList<List<INode>>
 

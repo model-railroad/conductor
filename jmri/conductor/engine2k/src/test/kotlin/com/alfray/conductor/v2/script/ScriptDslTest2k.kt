@@ -814,7 +814,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
-            timeout = 42
+            maxSecondsOnBlock = 42
             val block1_fwd = node(Block1) { }
             val block2_fwd = node(Block2) { }
             val block1_rev = node(Block1) {
@@ -836,7 +836,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(ar.routes[1]).isInstanceOf(SequenceRoute::class.java)
         val seq = ar.routes[1] as SequenceRoute
         assertThat(seq.throttle.dccAddress).isEqualTo(1001)
-        assertThat(seq.timeout).isEqualTo(42)
+        assertThat(seq.maxSecondsOnBlock).isEqualTo(42)
         assertThat(seq.graph).isNotNull()
 
         assertThat(ar.active).isSameInstanceAs(ar.routes[0])
@@ -892,7 +892,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val Route_Idle = Routes.idle {}
         val Route_Seq = Routes.sequence {
             throttle = Train1
-            timeout = 42
+            maxSecondsOnBlock = 42
             val block1_fwd = node(Block1) { }
             val block2_fwd = node(Block2) { }
             val block3_fwd = node(Block3) { }
