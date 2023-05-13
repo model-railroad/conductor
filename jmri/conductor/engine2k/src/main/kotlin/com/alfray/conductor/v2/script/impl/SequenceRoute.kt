@@ -16,6 +16,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+@file:Suppress("LocalVariableName")
+
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.util.EventLogger
@@ -76,23 +78,33 @@ internal class SequenceRoute @AssistedInject constructor(
     override val throttle = builder.throttle
     override val sequence = builder.sequence
     private var startNode: INode? = null
-    private var blockStartMovingTS = 0L
+    private var blockMaxSecondsReachedTS = 0L
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
 
     private fun maxSecondsReached(): Boolean =
-        blockStartMovingTS > 0 &&
-                maxSecondsOnBlock > 0 &&
-                ((clock.elapsedRealtime() - blockStartMovingTS) > 1000L * maxSecondsOnBlock)
+        blockMaxSecondsReachedTS > 0 &&
+                clock.elapsedRealtime() >= blockMaxSecondsReachedTS
 
     private fun clearMaxSecondsTimer() {
-        blockStartMovingTS = 0
+        blockMaxSecondsReachedTS = 0
     }
 
-    private fun startMaxSecondsTimer() {
-        blockStartMovingTS = clock.elapsedRealtime()
+    private fun getMaxSecondsOnBlock(node: Node) =
+        if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
+
+    @Suppress("LiftReturnOrAssignment")
+    private fun startMaxSecondsTimer(node: Node) {
+        val maxSecondsOnBlock_ = getMaxSecondsOnBlock(node)
+
+        if (maxSecondsOnBlock_ > 0) {
+            val nowMS = clock.elapsedRealtime()
+            blockMaxSecondsReachedTS = nowMS + 1000L * maxSecondsOnBlock_
+        } else {
+            blockMaxSecondsReachedTS = 0
+        }
     }
 
     override fun toString(): String {
@@ -154,11 +166,13 @@ internal class SequenceRoute @AssistedInject constructor(
         currentNode = startNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
-        startMaxSecondsTimer()
 
         // Set every block to its initial state of either occupied or empty.
         val currentNode_ = currentNode as Node
         val currentBlock = currentNode_.block
+
+        startMaxSecondsTimer(currentNode_)
+
         var currentBlockIsOccupied = false
         val otherBlockOccupied = mutableSetOf<IBlock>()
         graph.nodes.forEach { node ->
@@ -259,8 +273,17 @@ internal class SequenceRoute @AssistedInject constructor(
             // All Blocks Management
             if (outgoingNodesActive.isEmpty()) {
                 // Case A: Train still on same block. Current block active, no other active.
+                //
+                // Assert that the current block sensor is still active.
+                // However, for up to maxSecondsOnBlock, we accept that the sensor may be flaky and
+                // could seem temporarily off when we read it here.
+                // Note: the 'actual' maxSecondsOnBlock timeout check is the one below that checks
+                // if we have a moving train on this block. We just happen to reuse the same timeout
+                // here to accept flaky sensors, which arguably makes the stillCurrentActive check
+                // moot here, but we keep it because it's semantically the right check to do.
                 assertOrError(stillCurrentActive || !maxSecondsReached()) {
-                    "ERROR $this current block suddenly became non-active after $maxSecondsOnBlock seconds."
+                    val timeout = getMaxSecondsOnBlock(node)
+                    "ERROR $this current block ${node.block} suddenly became non-active after $timeout seconds."
                 }
             } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
@@ -299,17 +322,23 @@ internal class SequenceRoute @AssistedInject constructor(
 
         // Handle current block timeout
         if (currentNode == null) {
-            // Ignore timeout if we have no current block or if the train is stopped.
+            // Ignore max timeout if we have no current block.
             clearMaxSecondsTimer()
         } else if (throttle.stopped) {
+            // Ignore max timeout if the train is stopped.
             clearMaxSecondsTimer()
         } else {
             // We have a moving train on an active node.
-            if (blockStartMovingTS == 0L) {
-                startMaxSecondsTimer()
+            if (blockMaxSecondsReachedTS == 0L) {
+                startMaxSecondsTimer(currentNode as Node)
             }
+
+            // This block cannot be occupied for more than the maxSecondsOnBlock limit time
+            // with a moving train.
             assertOrError(!maxSecondsReached()) {
-                "ERROR $this current block timeout expired after $maxSecondsOnBlock seconds."
+                val node = currentNode as Node
+                val timeout = getMaxSecondsOnBlock(node)
+                "ERROR $this current block ${node.block} still occupied after $timeout seconds."
             }
         }
     }

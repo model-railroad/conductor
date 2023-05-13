@@ -41,6 +41,7 @@ internal class Node(builder: NodeBuilder) : INode {
     val actionWhileOccupied = builder.actionWhileOccupied
     val actionOnTrailing = builder.actionOnTrailing
     val actionOnEmpty = builder.actionOnEmpty
+    val maxSecondsOnBlock = builder.maxSecondsOnBlock
 
     /**
      * A shuttle node is a "reversal" node where a shuttle stops and reverses direction.

@@ -26,9 +26,12 @@ interface ISequenceRouteBuilder : IRouteBaseBuilder {
     /** The throttle controlled by this sequence. Cannot be null. */
     var throttle: IThrottle
 
-    /** The maximum time spent moving on the currently occupied block.
+    /**
+     * The maximum time spent moving on the currently occupied block.
+     * The default timeout per route is 60 seconds, unless changed.
      * Timeout is reset when the train stops.
-     * Timeout becomes inactive if set to zero. */
+     * Timeout becomes inactive if set to zero.
+     */
     var maxSecondsOnBlock: Int
 
     /** The non-empty non-null list of nodes for this sequence. */

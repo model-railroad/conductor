@@ -31,7 +31,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-class SequenceRouteTest {
+/**
+ * Tests the node graph side of the [SequenceRoute].
+ * For a test that can accept DSL script snippets, use [SequenceRouteManagerTest].
+ */
+class SequenceRouteGraphTest {
     private lateinit var blockFactory: Block_Factory
     private val jmriProvider = FakeJmriProvider()
     private val logger: ILogger = jmriProvider

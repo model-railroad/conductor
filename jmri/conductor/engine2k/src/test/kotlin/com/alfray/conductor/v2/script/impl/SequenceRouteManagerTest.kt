@@ -29,7 +29,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-/** Tests most features of the Conductor 2 DSL scripting engine. */
+/** Tests the sequence management side of the [SequenceRoute]. */
 class SequenceRouteManagerTest : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
@@ -134,6 +134,114 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(route.throttle.speed).isEqualTo(0.speed)
 
         assertThat(logger.string).doesNotContain("ERROR")
+    }
+
+    @Test
+    fun maxSecondsOnBlock_withRouteValueOnly() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            maxSecondsOnBlock = 42
+            val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
+            val b2_fwd = node(B2) { onEnter { T1.reverse(5.speed) } }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Advance by 41 seconds... this is still under the maxSecondsOnBlock timeout of 42 seconds.
+        clock.add(41 * 1000)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+
+        // Advance by 1 second... this is just over the maxSecondsOnBlock timeout of 42 seconds.
+        clock.add(1 * 1000)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
+
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 42 seconds")
+    }
+
+    @Test
+    fun maxSecondsOnBlock_withNodeOverride() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            maxSecondsOnBlock = 42
+            val b1_fwd = node(B1) { 
+                maxSecondsOnBlock = 53
+                onEnter { T1.forward(5.speed) }
+            }
+            val b2_fwd = node(B2) { onEnter { T1.reverse(5.speed) } }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Advance by 41 seconds... this is still under the maxSecondsOnBlock timeout of 42 seconds.
+        clock.add(41 * 1000)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+
+        // Advance by 1 second... this is just over the maxSecondsOnBlock timeout of 42 seconds,
+        // and it's not an error since the node for B1 overrides maxSecondsOnBlock to 53.
+        clock.add(1 * 1000)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+
+        // Advance by 53 second... this is just over the maxSecondsOnBlock timeout of 42 seconds,
+        // and it's not an error since the node for B1 overrides maxSecondsOnBlock to 53.
+        clock.add((53 - 42) * 1000)
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
+
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 53 seconds")
     }
 
     private fun SequenceRoute.print() =

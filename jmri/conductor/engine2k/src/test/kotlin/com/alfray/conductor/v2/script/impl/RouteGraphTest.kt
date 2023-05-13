@@ -25,7 +25,7 @@ import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
 
-/** Tests for [RouteGraph]. There's also some overlap coverage in [SequenceRouteTest]. */
+/** Tests for [RouteGraph]. There's also some overlap coverage in [SequenceRouteGraphTest]. */
 class RouteGraphTest: ScriptTest2kBase() {
 
     @Inject internal lateinit var factory: Factory
