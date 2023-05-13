@@ -78,11 +78,39 @@ internal class SequenceRoute @AssistedInject constructor(
     override val throttle = builder.throttle
     override val sequence = builder.sequence
     private var startNode: INode? = null
+    private var blockMinSecondsReachedTS = 0L
     private var blockMaxSecondsReachedTS = 0L
+    override val minSecondsOnBlock = builder.minSecondsOnBlock
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
+
+    private fun getMinSecondsOnBlock(node: Node) =
+        if (node.minSecondsOnBlock > 0) node.minSecondsOnBlock else minSecondsOnBlock
+
+    private fun getMaxSecondsOnBlock(node: Node) =
+        if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
+
+    private fun mainSecondsReached(): Boolean =
+        blockMinSecondsReachedTS > 0 &&
+                clock.elapsedRealtime() >= blockMinSecondsReachedTS
+
+    private fun clearMinSecondsTimer() {
+        blockMinSecondsReachedTS = 0
+    }
+
+    @Suppress("LiftReturnOrAssignment")
+    private fun startMinSecondsTimer(node: Node) {
+        val minSecondsOnBlock_ = getMinSecondsOnBlock(node)
+
+        if (minSecondsOnBlock_ > 0) {
+            val nowMS = clock.elapsedRealtime()
+            blockMinSecondsReachedTS = nowMS + 1000L * minSecondsOnBlock_
+        } else {
+            blockMinSecondsReachedTS = 0
+        }
+    }
 
     private fun maxSecondsReached(): Boolean =
         blockMaxSecondsReachedTS > 0 &&
@@ -91,9 +119,6 @@ internal class SequenceRoute @AssistedInject constructor(
     private fun clearMaxSecondsTimer() {
         blockMaxSecondsReachedTS = 0
     }
-
-    private fun getMaxSecondsOnBlock(node: Node) =
-        if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
 
     @Suppress("LiftReturnOrAssignment")
     private fun startMaxSecondsTimer(node: Node) {

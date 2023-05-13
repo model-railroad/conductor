@@ -3,7 +3,22 @@ package com.alfray.conductor.v2.script.dsl
 /** DSL script interface to build a route [INode]. */
 interface INodeBuilder {
     /**
-     * The maximum time spent moving on this currently occupied block.
+     * The minimum time once a block has been entered before we can reach the next block.
+     *
+     * It must cover at least the time needed to initially fully enter the block.
+     * Any "flaky" sensors in both the occupied and trailing blocks are ignored during that time.
+     * The default minimum time for the route's blocks is 10 seconds, unless changed in the
+     * route or in its nodes.
+     * When this is set to 0 (the default), the route's minSecondsOnBlock is used instead.
+     */
+    var minSecondsOnBlock: Int
+
+    /**
+     * The maximum time spent moving on the currently occupied block.
+     *
+     * Any "flaky" sensor in the occupied block are ignored during that time.
+     * The default timeout for the route's blocks is 60 seconds, unless changed in the
+     * route or in its nodes.
      * Timeout is reset when the train stops.
      * When this is set to 0 (the default), the route's maxSecondsOnBlock is used instead.
      */

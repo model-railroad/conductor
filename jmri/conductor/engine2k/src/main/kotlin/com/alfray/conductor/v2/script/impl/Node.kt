@@ -41,6 +41,7 @@ internal class Node(builder: NodeBuilder) : INode {
     val actionWhileOccupied = builder.actionWhileOccupied
     val actionOnTrailing = builder.actionOnTrailing
     val actionOnEmpty = builder.actionOnEmpty
+    val minSecondsOnBlock = builder.minSecondsOnBlock
     val maxSecondsOnBlock = builder.maxSecondsOnBlock
 
     /**

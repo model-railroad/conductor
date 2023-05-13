@@ -38,6 +38,7 @@ internal class SequenceRouteBuilder @AssistedInject constructor(
     override val route: IRoutesContainer
         get() = owner
     override lateinit var throttle: IThrottle
+    override var minSecondsOnBlock = 10
     override var maxSecondsOnBlock = 60
     override lateinit var sequence: List<INode>
     override val branches = mutableListOf<List<INode>>()
