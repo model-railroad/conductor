@@ -119,9 +119,8 @@ internal class RoutesContainer @AssistedInject constructor(
         if (countTimers.numTimers > 0) {
             val ns = countTimers.numStarted
             val na = countTimers.numActive
-            val ds = countTimers.durationSec
             val ls = countTimers.longestSec
-            sb.append(" ($ns started, $na active, $ls ~ $ds sec)")
+            sb.append(" ($ns started, $na active, $ls sec)")
         }
 
         return sb.toString()
@@ -150,7 +149,7 @@ internal class RoutesContainer @AssistedInject constructor(
         simulCallback?.let {
             if (route is SequenceRoute) {
                 val simulGraph = route.toSimulGraph()
-                simulCallback.setRoute(route.throttle.dccAddress, route.maxSecondsOnBlock, simulGraph)
+                simulCallback.setRoute(route.throttle.dccAddress, route.minSecondsOnBlock, route.maxSecondsOnBlock, simulGraph)
             }
         }
     }

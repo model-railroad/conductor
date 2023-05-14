@@ -80,11 +80,12 @@ class SimulJmriProvider @Inject constructor(
      *
      * Once a throttle is active and has a graph, the simulated throttle updates the blocks' states.
      */
-    override fun setRoute(dccAddress: Int, routeTimeout: Int, graph: SimulRouteGraph) {
+    override fun setRoute(dccAddress: Int, minSecondsOnBlock: Int, maxSecondsOnBlock: Int, graph: SimulRouteGraph) {
         this.d(TAG, "[Throttle $dccAddress] Set route $graph")
         val t = getThrottle(dccAddress) as SimulThrottle
         t.setGraph(graph)
-        t.routeTimeout = routeTimeout
+        t.minSecondsOnBlock = minSecondsOnBlock
+        t.maxSecondsOnBlock = maxSecondsOnBlock
     }
 
     fun getUiLogOutput(): String {

@@ -24,5 +24,5 @@ interface ISimulCallback {
     fun onBlockTimersChanged(systemName: String, sumTimersSec: Int)
 
     /** Sets the route definition for a given DCC throttle. */
-    fun setRoute(dccAddress: Int, routeTimeout: Int, graph: SimulRouteGraph)
+    fun setRoute(dccAddress: Int, minSecondsOnBlock: Int, maxSecondsOnBlock: Int, graph: SimulRouteGraph)
 }

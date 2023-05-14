@@ -45,8 +45,10 @@ class SimulThrottle @AssistedInject constructor(
     @Assisted val dccAddress_: Int
 ) : IJmriThrottle, IExecSimul {
     private val TAG = javaClass.simpleName
-    /** The route timeout, in seconds. 0 to deactivate. */
-    var routeTimeout: Int = 0
+    /** The route minSecondsOnBlock timeout, in seconds. 0 to deactivate. */
+    var minSecondsOnBlock: Int = 0
+    /** The route maxSecondsOnBlock timeout, in seconds. 0 to deactivate. */
+    var maxSecondsOnBlock: Int = 0
     /** The expected block graph for that throttle. */
     private var graph: SimulRouteGraph? = null
     /** The block simulating the current engine location for that throttle. */
@@ -75,7 +77,8 @@ class SimulThrottle @AssistedInject constructor(
                 sec = 15
             }
 
-            if (routeTimeout > 1) sec = min(sec, routeTimeout - 1)
+            if (maxSecondsOnBlock > 1) sec = min(sec, maxSecondsOnBlock - 1)
+            if (minSecondsOnBlock > 0) sec = max(sec, minSecondsOnBlock + 1)
             return sec * 1000
         }
 
