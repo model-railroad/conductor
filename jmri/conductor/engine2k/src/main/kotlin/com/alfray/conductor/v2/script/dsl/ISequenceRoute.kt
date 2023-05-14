@@ -30,8 +30,26 @@ interface ISequenceRoute : IRoute {
     /** The [INode] main sequence provided to the sequence route builder. */
     val sequence: List<INode>
 
-    /** Max time in seconds that a running train can take to cross an active block.
-     * Timeout becomes inactive if set to zero. */
+    /**
+     * The minimum time once a block has been entered before we can reach the next block.
+     *
+     * It must cover at least the time needed to initially fully enter the block.
+     * Any "flaky" sensors in both the occupied and trailing blocks are ignored during that time.
+     * The default minimum time for the route's blocks is 10 seconds, unless changed in the
+     * route or in its nodes.
+     * The minimum time check becomes inactive if set to zero in the route.
+     */
+    val minSecondsOnBlock: Int
+
+    /**
+     * The maximum time spent moving on the currently occupied block.
+     *
+     * Any "flaky" sensor in the occupied block are ignored during that time.
+     * The default timeout for the route's blocks is 60 seconds, unless changed in the
+     * route or in its nodes.
+     * Timeout is reset when the train stops.
+     * Timeout becomes inactive if set to zero in the route.
+     */
     val maxSecondsOnBlock: Int
 
     /** Internal Converts the route graph into a Simulator route graph. */

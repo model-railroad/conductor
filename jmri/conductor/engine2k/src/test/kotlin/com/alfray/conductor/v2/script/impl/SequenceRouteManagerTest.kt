@@ -22,6 +22,7 @@ import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.CurrentContext
 import com.alfray.conductor.v2.script.ScriptTest2kBase
+import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.speed
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
@@ -66,6 +67,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         }
         val Route_Seq = Routes.sequence {
             throttle = T1
+            minSecondsOnBlock = 0
             val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
             val v2_fwd = node(V2) {}
             val b3_fwd = node(B3) {}
@@ -134,6 +136,159 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(route.throttle.speed).isEqualTo(0.speed)
 
         assertThat(logger.string).doesNotContain("ERROR")
+    }
+
+    @Test
+    fun minSecondsOnBlock_withRouteValueOnly_activateNextBlockAfterMinimum() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 42
+            val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
+            val b2_fwd = node(B2) { onEnter { T1.reverse(5.speed) } }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val block2 = conductorImpl.blocks["B2"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Activate next block not too early
+        clock.add(43 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+
+        assertThat(logger.string).doesNotContain("ERROR")
+    }
+
+    @Test
+    fun minSecondsOnBlock_withRouteValueOnly_activateNextBlockTooEarly() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 42
+            val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
+            val b2_fwd = node(B2) { onEnter { T1.reverse(5.speed) } }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val block2 = conductorImpl.blocks["B2"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Activate next block too early
+        clock.add(40 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
+
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 40.1 seconds. Current block <B1> must remain occupied at least 42 seconds")
+    }
+
+    @Test
+    fun minSecondsOnBlock_withNodeOverride_activateNextBlockTooEarly() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 42
+            val b1_fwd = node(B1) {
+                minSecondsOnBlock = 60
+                onEnter { T1.forward(5.speed) } 
+            }
+            val b2_fwd = node(B2) {
+                minSecondsOnBlock = 120
+                onEnter { T1.reverse(5.speed) }
+            }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val block2 = conductorImpl.blocks["B2"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Activate next block too early
+        clock.add(50 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
+
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 50.1 seconds. Current block <B1> must remain occupied at least 60 seconds")
     }
 
     @Test
