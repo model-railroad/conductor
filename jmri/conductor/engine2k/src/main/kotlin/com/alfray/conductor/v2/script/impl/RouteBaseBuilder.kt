@@ -32,6 +32,8 @@ internal open class RouteBaseBuilder(
     var actionOnActivate: TAction? = null
     var actionOnError: TAction? = null
     override var name: String = ""
+    override val routes: IRoutesContainer
+        get() = owner
 
     override fun onActivate(action: TAction) {
         logger.assertOrThrow(TAG, actionOnActivate == null) {

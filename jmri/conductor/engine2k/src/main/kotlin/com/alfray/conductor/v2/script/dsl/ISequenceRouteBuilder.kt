@@ -20,8 +20,8 @@ package com.alfray.conductor.v2.script.dsl
 
 /** DSL script interface to build an [ISequenceRoute]. */
 interface ISequenceRouteBuilder : IRouteBaseBuilder {
-    /** The routes container owning this sequence. Cannot be null, but could be an idle route. */
-    val route: IRoutesContainer
+    /** This route. Cannot be null. */
+    val route: ISequenceRoute
 
     /** The throttle controlled by this sequence. Cannot be null. */
     var throttle: IThrottle

@@ -558,7 +558,7 @@ val Passenger_Route = ML_Route.sequence {
                 ML_Train = EML_Train.Freight
                 ML_State = EML_State.Wait
             } and_after (ML_Timer_Wait) then {
-                route.activate(ML_Idle_Route)
+                routes.activate(ML_Idle_Route)
             }
         }
     }
@@ -694,7 +694,7 @@ val Freight_Route = ML_Route.sequence {
                 ML_Train = EML_Train.Passenger
                 ML_State = EML_State.Wait
             } and_after (ML_Timer_Wait) then {
-                route.activate(ML_Idle_Route)
+                routes.activate(ML_Idle_Route)
             }
         }
     }

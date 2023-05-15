@@ -236,7 +236,7 @@ val Route1 = PA_Route.sequence {
     val B310_rev = node(B310) {
         onEnter {
             Train1.horn()
-            route.activate(Route_Idle)
+            routes.activate(Route_Idle)
         }
     }
 

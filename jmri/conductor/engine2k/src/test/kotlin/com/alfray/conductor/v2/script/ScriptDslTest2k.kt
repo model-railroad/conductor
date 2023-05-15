@@ -819,7 +819,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             val block2_fwd = node(Block2) { }
             val block1_rev = node(Block1) {
                 onEnter {
-                    route.activate(Route_Idle)
+                    routes.activate(Route_Idle)
                 }
             }
             sequence = listOf(block1_fwd, block2_fwd, block1_rev)
@@ -899,7 +899,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             val block4_fwd = node(Block4) { }
             val block1_rev = node(Block1) {
                 onEnter {
-                    route.activate(Route_Idle)
+                    routes.activate(Route_Idle)
                 }
             }
             sequence = listOf(block1_fwd, block2_fwd, block1_rev)

@@ -24,6 +24,9 @@ interface IRouteBaseBuilder {
      * This is mostly useful for debugging and informational purposes, to distinguish different routes. */
     var name: String
 
+    /** The routes container owning this route. Cannot be null. */
+    val routes: IRoutesContainer
+
     /** Callback when a route is being activated. Called once after activation. */
     fun onActivate(action: TAction)
 

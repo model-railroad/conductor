@@ -158,7 +158,7 @@ fun PA_Fn_Release_Route() {
     T321.normal()
 }
 
-val PA_Route = routes {
+val PA_Routes = routes {
     name = "Mainline"
     toggle = PA_Toggle
     status = { PA_State.toString() }
@@ -183,9 +183,9 @@ val PA_Route = routes {
     }
 }
 
-val PA_Idle_Route = PA_Route.idle {}
+val PA_Idle_Route = PA_Routes.idle {}
 
-val Passenger_Route = PA_Route.sequence {
+val Passenger_Route = PA_Routes.sequence {
     throttle = AM
     maxSecondsOnBlock = 60 // 1 minute
 
@@ -387,7 +387,7 @@ val Passenger_Route = PA_Route.sequence {
                 }
                 PA_Train = EPA_Train.Freight
                 PA_State = EPA_State.Wait
-                route.activate(PA_Idle_Route)
+                routes.activate(PA_Idle_Route)
             }
         }
     }
@@ -399,7 +399,7 @@ val Passenger_Route = PA_Route.sequence {
 }
 
 
-val Freight_Route = PA_Route.sequence {
+val Freight_Route = PA_Routes.sequence {
     throttle = SP
     maxSecondsOnBlock = 60
 
@@ -534,7 +534,7 @@ val Freight_Route = PA_Route.sequence {
                 }
                 PA_Train = EPA_Train.Passenger
                 PA_State = EPA_State.Wait
-                route.activate(PA_Idle_Route)
+                routes.activate(PA_Idle_Route)
             }
         }
     }
@@ -668,16 +668,16 @@ on { PA_State == EPA_State.Wait    && PA_Toggle.active && PA_Train == EPA_Train.
 
 // DEBUG place to force AM_up vs SP_up
 on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Passenger } then {
-    PA_Route.activate(Passenger_Route)
+    PA_Routes.activate(Passenger_Route)
 }
 on { PA_State == EPA_State.Shuttle && PA_Train == EPA_Train.Freight   } then {
-    PA_Route.activate(Freight_Route)
+    PA_Routes.activate(Freight_Route)
 }
 
 on { PA_State == EPA_State.Station && !PA_Toggle } then {
     // reset_timers("PA", "AM", "SP") -- obsolete
     PA_State = EPA_State.Idle
-    PA_Route.activate(PA_Idle_Route)
+    PA_Routes.activate(PA_Idle_Route)
 }
 
 
@@ -724,7 +724,7 @@ on { !BL_Toggle } then {
     }
 }
 
-val BL_Route = routes {
+val BL_Routes = routes {
     name = "Branchline"
     toggle = BL_Toggle
     status = { BL_State.toString() }
@@ -743,15 +743,15 @@ val BL_Route = routes {
     }
 }
 
-val BL_Idle_Route = BL_Route.idle {}
+val BL_Idle_Route = BL_Routes.idle {}
 
-on { BL_Route.error } then {
+on { BL_Routes.error } then {
     // Tip: can't call this from BL_Route.onError{} as neither BL_Route
     // nor BL_Idle_Route are defined inside the onError block yet.
-    BL_Route.activate(BL_Idle_Route)
+    BL_Routes.activate(BL_Idle_Route)
 }
 
-val BL_Shuttle_Route = BL_Route.sequence {
+val BL_Shuttle_Route = BL_Routes.sequence {
     throttle = BL
     maxSecondsOnBlock = 60 // 1 minute
 
@@ -864,7 +864,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.f9(Off)
                 BL.f10(Off)
                 BL_State = EBL_State.Wait
-                BL_Route.activate(BL_Idle_Route)
+                BL_Routes.activate(BL_Idle_Route)
             }
         }
     }
@@ -872,9 +872,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     onActivate {
         // It's ok to start either from BLParked or BLStation
         if (BLParked.active) {
-            BL_Route.active.startNode(BLParked_fwd)
+            BL_Routes.active.startNode(BLParked_fwd)
         } else if (!BLParked && BLStation.active) {
-            BL_Route.active.startNode(BLStation_fwd)
+            BL_Routes.active.startNode(BLStation_fwd)
         }
     }
 
@@ -942,12 +942,12 @@ on { BL_State == EBL_State.Wait } then {
 
 on { BL_Timer_Wait.active && BL_Toggle.active && AIU_Motion.active } then {
     BL_State = EBL_State.Ready
-    BL_Route.activate(BL_Shuttle_Route)
+    BL_Routes.activate(BL_Shuttle_Route)
 }
 
 on { BL_State == EBL_State.Start && BL_Toggle.active && AIU_Motion.active } then {
     BL_State = EBL_State.Ready
-    BL_Route.activate(BL_Shuttle_Route)
+    BL_Routes.activate(BL_Shuttle_Route)
 }
 
 on { BL_Toggle } then {

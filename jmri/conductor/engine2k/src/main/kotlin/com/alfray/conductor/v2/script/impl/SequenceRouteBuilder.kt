@@ -35,8 +35,7 @@ internal class SequenceRouteBuilder @AssistedInject constructor(
         @Assisted owner: IRoutesContainer,
 ) : RouteBaseBuilder(owner, logger), ISequenceRouteBuilder {
     private val TAG = javaClass.simpleName
-    override val route: IRoutesContainer
-        get() = owner
+    override lateinit var route: ISequenceRoute
     override lateinit var throttle: IThrottle
     override var minSecondsOnBlock = 10
     override var maxSecondsOnBlock = 60
@@ -49,5 +48,8 @@ internal class SequenceRouteBuilder @AssistedInject constructor(
         return b.create()
     }
 
-    fun create() : ISequenceRoute = factory.createSequenceRoute(owner, this)
+    fun create() : ISequenceRoute {
+        route = factory.createSequenceRoute(owner, this)
+        return route
+    }
 }
