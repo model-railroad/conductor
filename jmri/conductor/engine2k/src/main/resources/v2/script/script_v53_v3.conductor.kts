@@ -549,6 +549,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B370_end = node(B370) {
+        minSecondsOnBlock = AM_Timer_B370_Forward_Stop.seconds
         onEnter {
             after (4.seconds) then {
                 // Forward
@@ -654,6 +655,7 @@ val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
     name = "Freight"
     throttle = FR
+    minSecondsOnBlock = 20  // 20 seconds to enter a block
     maxSecondsOnBlock = 120 // 2 minutes per block max
 
     onError {
@@ -691,6 +693,7 @@ val Freight_Route = ML_Route.sequence {
     }
 
     val B321_fwd = node(B321) {
+        minSecondsOnBlock = SP_Timer_Up_Slow.seconds
         onEnter {
             FR.forward(SP_Forward_Speed)
             after (SP_Timer_Up_Slow) then {
