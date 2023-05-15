@@ -1447,7 +1447,10 @@ val BL_Recovery_Route = BL_Route.sequence {
         } else if (B801.active) {
             route.startNode(BLParked_rev)
         } else {
-            // If none of the sensors are active, assume the train is in the virtual block.
+            // If none of the sensors are active, assume the train is in the virtual block B830.
+            // Since this is a virtual block, we need to manually trigger its active state
+            // (TBD this likely doesn't work since activation only happens at the next engine cycle)
+            B830v.active(true)
             route.startNode(B830v_rev)
         }
     }
