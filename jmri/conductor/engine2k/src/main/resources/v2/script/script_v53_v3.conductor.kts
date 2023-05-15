@@ -455,7 +455,7 @@ val AM_Timer_B370_Pause_Delay    = 30.seconds
 val AM_Timer_B360_Full_Reverse   = 12.seconds
 val AM_Timer_B330_Down_Speed     = 8.seconds
 val AM_Timer_B321_Down_Crossover = 35.seconds
-val AM_Timer_B503b_Down_Stop     = 15.seconds
+val AM_Timer_B503b_Down_Stop     = 9.seconds
 val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
@@ -646,12 +646,13 @@ val SP_Reverse_Speed    = 4.speed
 val SP_Station_Speed    = 2.speed
 
 val SP_Sound_Started    = 2.seconds
-val SP_Timer_Up_Slow    = 40.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
-val SP_Timer_Up_Stop    = 12.seconds    // Time on slow down before stop
+val SP_Timer_Up_Station = 10.seconds    // Time to go from Station speed to full Forward speed at startup.
+val SP_Timer_Up_Slow    = 35.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+val SP_Timer_Up_Stop    = 17.seconds    // Time on slow down before stop
 val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
 val SP_Timer_Reverse_Horn = 2.seconds
 val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-val SP_Timer_Down_Stop  = 16.seconds    // Time on slow down before stop.
+val SP_Timer_Down_Stop  = 6.seconds    // Time on slow down before stop.
 val SP_Timer_Down_Off   = 20.seconds
 val SP_Sound_Stopped    = 2.seconds
 
@@ -689,7 +690,7 @@ val Freight_Route = ML_Route.sequence {
                 FR.bell(Off)
                 FR.forward(SP_Station_Speed)
                 ML_Freight_Align_Turnouts()
-            } and_after (5.seconds) then {
+            } and_after (SP_Timer_Up_Station) then {
                 FR.forward(SP_Forward_Speed)
                 FR.horn()
             }
@@ -728,6 +729,7 @@ val Freight_Route = ML_Route.sequence {
     val B330_fwd = node(B330) {
         // Error case: we should never reach block B330.
         // If we do, reverse and act on B321_rev
+        minSecondsOnBlock = 0
         onEnter {
             FR.reverse(SP_Reverse_Speed)
             FR.bell(On)
