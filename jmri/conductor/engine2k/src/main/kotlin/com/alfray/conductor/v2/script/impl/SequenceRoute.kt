@@ -323,35 +323,40 @@ internal class SequenceRoute @AssistedInject constructor(
                 // Did the next block activate too soon?
                 // We should have been on the current node for at least minSecondsOnBlock.
                 val minSecondsElapsed_ = minSecondsElapsed()
-                assertOrError(minSecondsElapsed_ <= 0.0) {
-                    val timeout = computeMinSecondsOnBlock()
-                    val elapsed = String.format("%.1f", minSecondsElapsed_)
-                    "ERROR $this next block ${enterNode.block} activated in $elapsed seconds. " +
-                            "Current block ${node.block} must remain occupied at least $timeout seconds."
-                }
-
-                // The current node can either become inactive or remain inactive (aka trailing).
-                // Any trailing block becomes empty, current occupied becomes trailing.
-                graph.nodes
-                    .filter { (it.block as INodeBlock).state == IBlock.State.TRAILING }
-                    .forEach { n ->
-                        n as Node
-                        n.changeState(IBlock.State.EMPTY)
-                        logger.d(TAG, "trailing block $n becomes ${n.block.state}")
+                val ignoreTrailing = minSecondsElapsed_ > 0.0 && enterNode.block.state == IBlock.State.TRAILING
+                if (ignoreTrailing) {
+                    logger.d(TAG, "WARNING ignore trailing block ${enterNode} activated in $minSecondsElapsed_ seconds.")
+                } else {
+                    assertOrError(minSecondsElapsed_ <= 0.0) {
+                        val timeout = computeMinSecondsOnBlock()
+                        val elapsed = String.format("%.1f", minSecondsElapsed_)
+                        "ERROR $this next block ${enterNode.block} activated in $elapsed seconds. " +
+                                "Current block ${node.block} must remain occupied for at least $timeout seconds."
                     }
 
-                // Mark current block as trailing.
-                node.changeState(IBlock.State.TRAILING)
-                if (node.block is VirtualBlock) {
-                    logger.d(TAG, "Trailing Virtual Block deactivated ${node.block}")
-                    node.block.active(false)
-                }
+                    // The current node can either become inactive or remain inactive (aka trailing).
+                    // Any trailing block becomes empty, current occupied becomes trailing.
+                    graph.nodes
+                        .filter { (it.block as INodeBlock).state == IBlock.State.TRAILING }
+                        .forEach { n ->
+                            n as Node
+                            n.changeState(IBlock.State.EMPTY)
+                            logger.d(TAG, "trailing block $n becomes ${n.block.state}")
+                        }
 
-                // Mark the outgoing block as the new occupied block.
-                enterNode.changeState(IBlock.State.OCCUPIED)
-                currentNode = enterNode
-                startMinSecondsTimer()
-                clearMaxSecondsTimer()
+                    // Mark current block as trailing.
+                    node.changeState(IBlock.State.TRAILING)
+                    if (node.block is VirtualBlock) {
+                        logger.d(TAG, "Trailing Virtual Block deactivated ${node.block}")
+                        node.block.active(false)
+                    }
+
+                    // Mark the outgoing block as the new occupied block.
+                    enterNode.changeState(IBlock.State.OCCUPIED)
+                    currentNode = enterNode
+                    startMinSecondsTimer()
+                    clearMaxSecondsTimer()
+                }
             }
         }
 
