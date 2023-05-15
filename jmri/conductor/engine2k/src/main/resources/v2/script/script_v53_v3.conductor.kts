@@ -271,6 +271,8 @@ var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
 var ML_Start_Counter = 0
 
+fun ML_is_Idle_State() = ML_State != EML_State.Run && ML_State != EML_State.Recover
+
 val PA = throttle(8330) {
     // Full mainline route -- Passenger.
     name = "PA"
@@ -323,7 +325,7 @@ on { PA.reverse } then { PA.f5(On) }
 
 // --- Turns mainline engine sound off when automation is turned off
 
-on { ML_State == EML_State.Ready && ML_Toggle.active } then {
+on { ML_is_Idle_State() && ML_Toggle.active } then {
     PA.sound(On);   PA.light(On)
     FR.sound(On);   FR.light(On)
     PA.stop();      FR.stop()
@@ -331,7 +333,7 @@ on { ML_State == EML_State.Ready && ML_Toggle.active } then {
 }
 
 val ML_Timer_Stop_Sound_Off = 10.seconds
-on { ML_State == EML_State.Ready && !ML_Toggle } then {
+on { ML_is_Idle_State() && !ML_Toggle } then {
     PA.light(Off);  FR.light(Off)
     PA.stop();      FR.stop()
     after(ML_Timer_Stop_Sound_Off) then {
@@ -441,6 +443,7 @@ val AM_Summit_Bridge_Speed  = 6.speed
 val AM_Sonora_Speed         = 12.speed
 val AM_Crossover_Speed      = 6.speed
 val AM_Full_Speed           = 16.speed
+val AM_Recover_Speed        = 12.speed
 
 val AM_Delayed_Horn              = 2.seconds
 val AM_Leaving_To_Full_Speed     = 15.seconds
@@ -452,7 +455,7 @@ val AM_Timer_B370_Pause_Delay    = 30.seconds
 val AM_Timer_B360_Full_Reverse   = 12.seconds
 val AM_Timer_B330_Down_Speed     = 8.seconds
 val AM_Timer_B321_Down_Crossover = 35.seconds
-val AM_Timer_B503b_Down_Stop     = 17.seconds
+val AM_Timer_B503b_Down_Stop     = 15.seconds
 val AM_Timer_Down_Station_Lights_Off = 10.seconds
 
 val Passenger_Route = ML_Route.sequence {
@@ -580,6 +583,7 @@ val Passenger_Route = ML_Route.sequence {
 
     val B330_rev = node(B330) {
         onEnter {
+            ML_Passenger_Align_Turnouts()
             after (AM_Timer_B330_Down_Speed) then {
                 PA.horn()
                 PA.reverse(AM_Sonora_Speed)
@@ -884,7 +888,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             move()
             PA.reverse(AM_Summit_Speed)
             after (AM_Timer_B360_Full_Reverse) then {
-                PA.reverse(AM_Full_Speed)
+                PA.reverse(AM_Recover_Speed)
             }
         }
     }
@@ -892,12 +896,13 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B340_rev = node(B340) {
         onEnter {
             move()
-            PA.reverse(AM_Full_Speed)
+            PA.reverse(AM_Recover_Speed)
         }
     }
 
     val B330_rev = node(B330) {
         onEnter {
+            ML_Passenger_Align_Turnouts()
             move()
             PA.reverse(AM_Sonora_Speed)
         }
@@ -907,7 +912,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         onEnter {
             ML_Passenger_Align_Turnouts()
             move()
-            PA.reverse(AM_Full_Speed)
+            PA.reverse(AM_Sonora_Speed)
             after (AM_Timer_B321_Down_Crossover) then {
                 PA.horn()
                 PA.bell(On)
@@ -934,11 +939,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             } and_after (5.seconds) then {
                 PA.sound(Off)
             } and_after (2.seconds) then {
-                if (ML_Toggle.active) {
-                    Passenger_Route.activate()
-                } else {
-                    ML_Idle_Route.activate()
-                }
+                ML_Idle_Route.activate()
             }
         }
     }
@@ -1009,11 +1010,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
                 FR.bell(Off)
                 FR.sound(Off)
             } and_after (2.seconds) then {
-                if (ML_Toggle.active) {
-                    Freight_Route.activate()
-                } else {
-                    ML_Idle_Route.activate()
-                }
+                ML_Idle_Route.activate()
             }
         }
     }
@@ -1077,7 +1074,7 @@ val BL = throttle(204) {
     onSound { on -> throttle.f8(on) }
 }
 
-val bl_has_gyro = false
+val BL_has_gyro = false
 fun BL_gyro (on: Boolean) { /*BL.f5(on)*/ }
 
 // val CAB = throttle(2552) named "Cab"  // for SP&P engine 4070
@@ -1088,8 +1085,9 @@ val BL_Speed_Station = 4.speed
 enum class EBL_State { Ready, Wait, Run, Recover, Error }
 
 var BL_State = EBL_State.Ready
-
 var BL_Start_Counter = 0
+
+fun BL_is_Idle_State() = BL_State != EBL_State.Run && BL_State != EBL_State.Recover
 
 fun BL_Send_Start_GaEvent() {
     BL_Start_Counter++
@@ -1104,21 +1102,24 @@ fun BL_Send_Start_GaEvent() {
         label = "BL"
         user = ML_Start_Counter.toString()
     }
-    // reset_timers("PA", "AM", "SP") -- obsolete
 }
 
-on { BL_Toggle } then {
+// Turns branchline engine sound off when automation is turned off
+
+on { BL_is_Idle_State() && BL_Toggle.active } then {
     BL.repeat(2.seconds)
     BL.light(Off)
 }
 
-on { !BL_Toggle } then {
+on { BL_is_Idle_State() && !BL_Toggle } then {
     BL.repeat(0.seconds)
     BL.light(Off)
     BL.bell(Off)
     BL.sound(Off)
     BL_gyro(Off)
 }
+
+// Send GA activation/toggle state events
 
 on { BL_Toggle.active } then {
     gaEvent {
@@ -1133,6 +1134,7 @@ on { BL_Toggle.active } then {
         value = "On"
     }
 }
+
 on { !BL_Toggle } then {
     gaEvent {
         category = "Automation"
@@ -1149,7 +1151,7 @@ on { !BL_Toggle } then {
 
 // --- BL Static State
 
-if (bl_has_gyro) {
+if (BL_has_gyro) {
     // #4070 Gyro light on when moving.
     // Caboose lights are controlled by the engine's direction.
     on { BL.stopped } then {
