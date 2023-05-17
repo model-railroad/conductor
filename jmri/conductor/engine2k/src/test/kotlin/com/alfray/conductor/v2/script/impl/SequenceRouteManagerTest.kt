@@ -233,7 +233,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(block2.occupied).isTrue()
         assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
 
-        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 40.1 seconds. Current block <B1> must remain occupied at least 42 seconds")
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 40.1 seconds. Current block <B1> must remain occupied for at least 42 seconds")
     }
 
     @Test
@@ -288,7 +288,98 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(block2.occupied).isTrue()
         assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
 
-        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 50.1 seconds. Current block <B1> must remain occupied at least 60 seconds")
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) next block <B2> activated in 50.1 seconds. Current block <B1> must remain occupied for at least 60 seconds")
+    }
+
+    @Test
+    fun minSecondsOnBlock_withReversingBlock_activatedTooEarly() {
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        val Route_Seq = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 42
+            val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
+            val b2_end = node(B2) { onEnter { after (20.seconds) then { T1.reverse(6.speed) } } }
+            val b1_rev = node(B1) { onEnter { T1.reverse(7.speed) } }
+            sequence = listOf(b1_fwd, b2_end, b1_rev)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val route = conductorImpl.routesContainers[0].active as SequenceRoute
+        val block1 = conductorImpl.blocks["B1"] as Block
+        val block2 = conductorImpl.blocks["B2"] as Block
+        val throttle = route.throttle
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.occupied).isTrue()
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Activate next block B2 not too early
+        clock.add(45 * 1000)
+        jmriProvider.getSensor("B1").isActive = false
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+
+        // While we enter B2, train wheels bridge rails gap and prematurely activate B1
+        clock.add(5 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(logger.string).contains("WARNING ignore trailing block {B1} activated in 5.0 seconds")
+        assertThat(throttle.speed).isEqualTo(5.speed)
+
+        // Train continues on B2 till it reverses
+        clock.add(20 * 1000)
+        jmriProvider.getSensor("B1").isActive = false
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block2.occupied).isTrue()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(throttle.speed).isEqualTo(6.speed.reverse())
+
+        // And back to B1
+        clock.add(20 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = false
+        execEngine.onExecHandle()
+        assertThat(block1.occupied).isTrue()
+        assertThat(block2.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(throttle.speed).isEqualTo(7.speed.reverse())
+
+        // Temporary activation of B2 as the train crosses rails gap is ignored
+        clock.add(1 * 1000)
+        jmriProvider.getSensor("B1").isActive = true
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(block1.occupied).isTrue()
+        assertThat(block2.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(throttle.speed).isEqualTo(7.speed.reverse())
+
+        assertThat(logger.string).doesNotContain("ERROR")
     }
 
     @Test
