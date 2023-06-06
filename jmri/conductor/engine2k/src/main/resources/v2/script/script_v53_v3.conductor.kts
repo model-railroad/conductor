@@ -430,7 +430,7 @@ fun ML_Send_Start_GaEvent() {
         user = ML_Start_Counter.toString()
     }
     gaEvent {
-        category = "Automation"
+        category = "Activation"
         action = "Start"
         label = ML_Train.name
         user = ML_Start_Counter.toString()
@@ -1099,8 +1099,17 @@ fun BL_Send_Start_GaEvent() {
         user = ML_Start_Counter.toString()
     }
     gaEvent {
-        category = "Automation"
+        category = "Activation"
         action = "Start"
+        label = "BL"
+        user = ML_Start_Counter.toString()
+    }
+}
+
+fun BL_Send_Stop_GaEvent() {
+    gaEvent {
+        category = "Activation"
+        action = "Stop"
         label = "BL"
         user = ML_Start_Counter.toString()
     }
@@ -1361,6 +1370,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             } and_after (5.seconds) then {
                 BL.light(Off)
                 BL.sound(Off)
+                BL_Send_Stop_GaEvent()
                 BL_Wait_Route.activate()
             }
         }
