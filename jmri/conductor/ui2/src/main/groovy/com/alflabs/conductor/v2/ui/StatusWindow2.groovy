@@ -26,6 +26,7 @@ import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.swing.JSVGCanvas
 import org.apache.batik.swing.gvt.GVTTreeRendererAdapter
 import org.apache.batik.swing.gvt.GVTTreeRendererEvent
+import org.apache.batik.swing.gvt.GVTTreeRendererListener
 import org.apache.batik.util.XMLResourceDescriptor
 import org.w3c.dom.Element
 import org.w3c.dom.events.EventListener
@@ -75,7 +76,7 @@ class StatusWindow2 {
     def JCheckBox mKioskCheck
     def JCheckBox mFlakyCheck
     private def mIsSimulation = true
-    private def mOnRenderCompleted
+    private def GVTTreeRendererListener mOnRenderCompleted
     private final Map mBlockColorMap = new HashMap()
     private final Queue<Runnable> mModifSvgQueue = new ConcurrentLinkedQueue<>()
     private final List<Runnable> mUpdaters = new ArrayList<>()
@@ -457,20 +458,9 @@ class StatusWindow2 {
     }
 
     void clearSvgMap() {
-        mSvgCanvas.stopThenRun {
-            mModifSvgQueue.clear()
-            mBlockColorMap.clear()
-
-            def emptySvg = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 50 50" />"""
-
-            String parser = XMLResourceDescriptor.getXMLParserClassName()
-            SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser)
-            SVGDocument document = factory.createSVGDocument(
-                    "empty", // informational only
-                    new ByteArrayInputStream(emptySvg.getBytes("UTF-8")))
-            mSvgCanvas.setSVGDocument(document)
-        }
+        mSvgCanvas.stopProcessing()
+        mModifSvgQueue.clear()
+        mBlockColorMap.clear()
     }
 
     // Fill SVG using svgDocument (as text).
@@ -478,59 +468,59 @@ class StatusWindow2 {
     // Note: the mapUrl is only used as a string below, however we use java.net.URI
     // to force callers to provide a valid URI.
     void displaySvgMap(String svgDocument, URI mapUrl) {
-        mSvgCanvas.stopThenRun {
-            mModifSvgQueue.clear()
-            mBlockColorMap.clear()
-            // Per documentation in JSVGComponentListener, this is invoked from a background thread.
-            mOnRenderCompleted = new GVTTreeRendererAdapter() {
-                @Override
-                void gvtRenderingCompleted(GVTTreeRendererEvent e) {
-                    mSvgCanvas.removeGVTTreeRendererListener(mOnRenderCompleted)
-                    mOnRenderCompleted = null
-                    mWindowCallback.onWindowSvgLoaded()
-                    mFrame.pack()
+        mSvgCanvas.stopProcessing()
+        mBlockColorMap.clear()
+        // Per documentation in JSVGComponentListener, this is invoked from a background thread.
+        mOnRenderCompleted = new GVTTreeRendererAdapter() {
+            @Override
+            void gvtRenderingCompleted(GVTTreeRendererEvent e) {
+                println "@@ SVG -- gvtRenderingCompleted"
+                mSvgCanvas.removeGVTTreeRendererListener(mOnRenderCompleted)
+                mOnRenderCompleted = null
+                mWindowCallback.onWindowSvgLoaded()
+                mFrame.pack()
 
-                    def onClick = new EventListener() {
-                        @Override
-                        void handleEvent(org.w3c.dom.events.Event event) {
-                            // Note: This is called on the SVG UpdateManager thread.
-                            def target = event.getTarget()
-                            if (target instanceof SVGElement) {
-                                mSwingBuilder.doLater {
-                                    mWindowCallback.onWindowSvgClick(((SVGElement) target).getId())
-                                }
+                def onClick = new EventListener() {
+                    @Override
+                    void handleEvent(org.w3c.dom.events.Event event) {
+                        // Note: This is called on the SVG UpdateManager thread.
+                        def target = event.getTarget()
+                        if (target instanceof SVGElement) {
+                            mSwingBuilder.doLater {
+                                mWindowCallback.onWindowSvgClick(((SVGElement) target).getId())
                             }
                         }
                     }
-
-                    modifySvg {
-                        SVGDocument doc = mSvgCanvas.getSVGDocument()
-                        def element = doc.getRootElement()
-                        initAllSvgElements(element, onClick)
-                    }
-                    // updateSvg()
                 }
-            }
-            mSvgCanvas.addGVTTreeRendererListener(mOnRenderCompleted)
 
-            XMLResourceDescriptor.setCSSParserClassName(InkscapeCssParser.class.getName());
-            mSvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC)
-
-            if (svgDocument != null && !svgDocument.isEmpty()) {
-                // Parse given document and load it. The URL is only informational
-                // and it could be "" or "file:///" for path-less documents.
-                String parser = XMLResourceDescriptor.getXMLParserClassName()
-                SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser)
-                SVGDocument document = factory.createSVGDocument(
-                        mapUrl.toString(), // informational only
-                        new ByteArrayInputStream(svgDocument.getBytes("UTF-8")))
-                mSvgCanvas.setSVGDocument(document)
-            } else {
-                // Otherwise let the SVG load the given URL (which much be valid)
-                mSvgCanvas.setURI(mapUrl.toString())
+                modifySvg {
+                    println "@@ SVG -- init"
+                    SVGDocument doc = mSvgCanvas.getSVGDocument()
+                    def element = doc.getRootElement()
+                    initAllSvgElements(element, onClick)
+                }
+                // updateSvg()
             }
-            if (VERBOSE) println(TAG + "SVG Map loaded from " + mapUrl)
         }
+        mSvgCanvas.addGVTTreeRendererListener(mOnRenderCompleted)
+
+        XMLResourceDescriptor.setCSSParserClassName(InkscapeCssParser.class.getName());
+        mSvgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC)
+
+        if (svgDocument != null && !svgDocument.isEmpty()) {
+            // Parse given document and load it. The URL is only informational
+            // and it could be "" or "file:///" for path-less documents.
+            String parser = XMLResourceDescriptor.getXMLParserClassName()
+            SAXSVGDocumentFactory factory = new SAXSVGDocumentFactory(parser)
+            SVGDocument document = factory.createSVGDocument(
+                    mapUrl.toString(), // informational only
+                    new ByteArrayInputStream(svgDocument.getBytes("UTF-8")))
+            mSvgCanvas.setSVGDocument(document)
+        } else {
+            // Otherwise let the SVG load the given URL (which much be valid)
+            mSvgCanvas.setURI(mapUrl.toString())
+        }
+        if (VERBOSE) println(TAG + "SVG Map loaded from " + mapUrl)
     }
 
     void initAllSvgElements(element, onClick) {
