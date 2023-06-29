@@ -69,7 +69,7 @@ public class AnalyticsTest {
     }
 
     @Test
-    public void testSetTrackingId_FromString() throws IOException {
+    public void ua_SetTrackingId_FromString() throws IOException {
         assertThat(mAnalytics.getAnalyticsId()).isNull();
 
         mAnalytics.setAnalyticsId("___ UID -string 1234 'ignored- 5 # Comment \nBlah");
@@ -77,7 +77,7 @@ public class AnalyticsTest {
     }
 
     @Test
-    public void testSetTrackingId_FromFile() throws IOException {
+    public void ua_SetTrackingId_FromFile() throws IOException {
         assertThat(mAnalytics.getAnalyticsId()).isNull();
 
         mFileOps.writeBytes(
@@ -89,7 +89,7 @@ public class AnalyticsTest {
     }
 
     @Test
-    public void testSendEvent() throws Exception {
+    public void ua_SendEvent() throws Exception {
         Mockito.when(mRandom.nextInt()).thenReturn(42);
 
         mAnalytics.setAnalyticsId("UID-1234-5");
@@ -107,5 +107,49 @@ public class AnalyticsTest {
         req.body().writeTo(bodyBuffer);
         assertThat(bodyBuffer.readUtf8()).isEqualTo(
                 "v=1&tid=UID-1234-5&ds=consist&cid=2b6cc9c3-0eaa-39c1-8909-1ea928529cbd&t=event&ec=CAT&ea=ACT&el=LAB&z=42&qt=0");
+    }
+
+    @Test
+    public void ga4_SetTrackingId_FromString() throws IOException {
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
+
+        mAnalytics.setAnalyticsId(" G-1234ABCD | 987654321 | XyzAppSecretZyX # Comment \nBlah");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("G-1234ABCD");
+    }
+
+    @Test
+    public void ga4_SetTrackingId_FromFile() throws IOException {
+        assertThat(mAnalytics.getAnalyticsId()).isNull();
+
+        mFileOps.writeBytes(
+                " G-1234|56789|Secret # Comment \nBlah".getBytes(Charsets.UTF_8),
+                new File("/tmp/id.txt"));
+
+        mAnalytics.setAnalyticsId("@/tmp/id.txt");
+        assertThat(mAnalytics.getAnalyticsId()).isEqualTo("G-1234");
+    }
+
+    @Test
+    public void ga4_SendEvent() throws Exception {
+        Mockito.when(mRandom.nextInt()).thenReturn(42);
+
+        mAnalytics.setAnalyticsId(" G-1234ABCD | 987654321 | XyzAppSecretZyX ");
+        mAnalytics.sendEvent("CAT", "ACT", "LAB", "72");
+        mAnalytics.shutdown(); // forces pending tasks to execute
+
+        ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
+        Mockito.verify(mOkHttpClient).newCall(requestCaptor.capture());
+        Request req = requestCaptor.getValue();
+        assertThat(req).isNotNull();
+        assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/mp/collect?api_secret=XyzAppSecretZyX&measurement_id=G-1234ABCD");
+        assertThat(req.method()).isEqualTo("POST");
+        Buffer bodyBuffer = new Buffer();
+        //noinspection ConstantConditions
+        req.body().writeTo(bodyBuffer);
+        assertThat(bodyBuffer.readUtf8()).isEqualTo(
+                "{'timestamp_micros':2000000,'client_id':'987654321'," +
+                        "'events':[{'name':'ACT','params':{'items':[]," +
+                        "'event_category':'CAT','event_label':'LAB'," +
+                        "'value':72,'currency':'USD'}}]}");
     }
 }

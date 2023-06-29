@@ -26,6 +26,7 @@ import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -57,6 +58,10 @@ public class Analytics extends ThreadLoop {
             "https://www.google-analytics.com/"
             + (VERBOSE_DEBUG ? "debug/" : "")
             + "collect";
+    private static final String GA4_URL =
+            "https://www.google-analytics.com/"
+                    + (VERBOSE_DEBUG ? "debug/" : "")
+                    + "mp/collect";
 
     private static final String DATA_SOURCE = "consist";
     private static final String UTF_8 = "UTF-8";
@@ -75,6 +80,9 @@ public class Analytics extends ThreadLoop {
     private final ScheduledExecutorService mExecutor;
 
     private String mAnalyticsId = null;
+    private String mGA4ClientId = null;
+    private String mGA4AppSecret = null;
+    private boolean mIsGA4 = false;
 
     @Inject
     public Analytics(ILogger logger,
@@ -119,12 +127,31 @@ public class Analytics extends ThreadLoop {
         }
         // Use "#" as a comment and only take the first thing before, if any.
         idOrFile = idOrFile.replaceAll("[#\n\r].*", "");
-        // GA ID format is "UA-Numbers-1" so accept only letters, numbers, hyphen. Ignore the rest.
-        idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
 
-        mAnalyticsId = idOrFile;
+        // GA ID format is "UA-Numbers-1" so accept only letters, numbers, hyphen. Ignore the rest.
+        // For GA4, we use the format "GA4ID|ClientID|AppSecret".
+        if (idOrFile.contains("|")) {
+            // GA4
+            idOrFile = idOrFile.replaceAll("[^A-Za-z0-9|-]", "");
+            String[] fields = idOrFile.split("\\|");
+            mAnalyticsId = fields.length > 0 ? fields[0] : null;
+            mGA4ClientId = fields.length > 1 ? fields[1] : null;
+            mGA4AppSecret = fields.length > 2 ? fields[2] : null;
+            mIsGA4 = !Strings.isNullOrEmpty(mAnalyticsId)
+                    && !Strings.isNullOrEmpty(mGA4ClientId)
+                    && !Strings.isNullOrEmpty(mGA4AppSecret);
+        } else {
+            // Legacy GA2-3
+            idOrFile = idOrFile.replaceAll("[^A-Z0-9-]", "");
+            mAnalyticsId = idOrFile;
+            mIsGA4 = false;
+        }
+
         mKeyValue.putValue(Constants.GAId, idOrFile, true /*broadcast*/);
         mLogger.d(TAG, "Tracking ID: " + mAnalyticsId);
+        if (mIsGA4) {
+            mLogger.d(TAG, "GA4 Client : " + mGA4ClientId);
+        }
     }
 
     @Null
@@ -202,7 +229,7 @@ public class Analytics extends ThreadLoop {
             @NonNull String category,
             @NonNull String action,
             @NonNull String label,
-            @NonNull String user_) {
+            @NonNull final String user_) {
         final String analyticsId = mAnalyticsId;
         if (analyticsId == null || analyticsId.isEmpty()) {
             mLogger.d(TAG, "Event Ignored -- No Tracking ID");
@@ -231,24 +258,51 @@ public class Analytics extends ThreadLoop {
 
             // Events keys:
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#event
+            // GA4:
+            // https://developers.google.com/analytics/devguides/collection/protocol/ga4
 
-            String payload = String.format(
-                    "v=1" +
-                            "&tid=%s" +         // tracking id
-                            "&ds=%s" +          // data source
-                            "&cid=%s" +         // anonymous cliend id
-                            "&t=event" +        // hit type == event
-                            "&ec=%s" +          // event category
-                            "&ea=%s" +          // event action
-                            "&el=%s" +          // event label
-                            "&z=%d",            // cache buster
-                    URLEncoder.encode(analyticsId, UTF_8),
-                    URLEncoder.encode(DATA_SOURCE, UTF_8),
-                    URLEncoder.encode(cid, UTF_8),
-                    URLEncoder.encode(category, UTF_8),
-                    URLEncoder.encode(action, UTF_8),
-                    URLEncoder.encode(label, UTF_8),
-                    random);
+            String payload;
+            if (mIsGA4) {
+                // TBD revisit later with a proper GA4 implementation.
+                // Nothing ever goes wrong generating JSON using a String.format, right?
+                payload = String.format("{" +
+                                "'client_id':'%s'" +                // GA4 client id
+                                ",'events':[{'name':'%s'" +         // event action
+                                ",'params':{'items':[]" +
+
+                                ",'event_category':'%s'" +          // event category
+                                ",'event_label':'%s'",              // event label
+                        mGA4ClientId,
+                        action,
+                        category,
+                        label
+                        );
+                try {
+                    int value = Integer.parseInt(user_);
+                    payload += String.format(",'value':%d,'currency':'USD'", value);
+                } catch (Exception _ignore) {
+                    // no-op
+                }
+                payload += "}}]}";
+            } else {
+                payload = String.format(
+                        "v=1" +
+                                "&tid=%s" +         // tracking id
+                                "&ds=%s" +          // data source
+                                "&cid=%s" +         // anonymous cliend id
+                                "&t=event" +        // hit type == event
+                                "&ec=%s" +          // event category
+                                "&ea=%s" +          // event action
+                                "&el=%s" +          // event label
+                                "&z=%d",            // cache buster
+                        URLEncoder.encode(analyticsId, UTF_8),
+                        URLEncoder.encode(DATA_SOURCE, UTF_8),
+                        URLEncoder.encode(cid, UTF_8),
+                        URLEncoder.encode(category, UTF_8),
+                        URLEncoder.encode(action, UTF_8),
+                        URLEncoder.encode(label, UTF_8),
+                        random);
+            }
 
             mPayloads.offerFirst(new Payload(
                     mClock.elapsedRealtime(),
@@ -268,6 +322,10 @@ public class Analytics extends ThreadLoop {
         final String analyticsId = mAnalyticsId;
         if (analyticsId == null || analyticsId.isEmpty()) {
             mLogger.d(TAG, "Page Ignored -- No Tracking ID");
+            return;
+        }
+        if (mIsGA4) {
+            mLogger.d(TAG, "Page Ignored with GA4");
             return;
         }
 
@@ -339,10 +397,19 @@ public class Analytics extends ThreadLoop {
 
             // Queue Time:
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters#qt
-            String payload = String.format("%s&qt=%d" /* queue_time */, mPayload, deltaTS);
+            // GA4 has timestamp_micros at the outer level:
+            // https://developers.google.com/analytics/devguides/collection/protocol/ga4/reference?client_type=firebase#payload
+            String payload;
+            if (mIsGA4) {
+                payload = mPayload.replaceFirst("\\{",
+                        String.format("{'timestamp_micros':%d,", mCreatedTS * 1000 /* ms to μs */)
+                        );
+            } else {
+                payload = String.format("%s&qt=%d" /* queue_time */, mPayload, deltaTS);
+            }
 
             try {
-                Response response = sendPayload(payload);
+                Response response = mIsGA4 ? sendPayloadGA4(payload) : sendPayloadV1(payload);
 
                 int code = response.code();
                 mLogger.d(TAG, String.format("%s delta: %d ms, code: %d",
@@ -363,7 +430,7 @@ public class Analytics extends ThreadLoop {
         }
 
         /** Must be executed in background thread. Caller must call Response.close(). */
-        private Response sendPayload(String payload) throws IOException {
+        private Response sendPayloadV1(String payload) throws IOException {
             if (VERBOSE_DEBUG) {
                 mLogger.d(TAG, "Event Payload: " + payload);
             }
@@ -380,6 +447,24 @@ public class Analytics extends ThreadLoop {
                 builder.post(body);
             }
 
+            Request request = builder.build();
+            return mOkHttpClient.newCall(request).execute();
+        }
+
+        /** Must be executed in background thread. Caller must call Response.close(). */
+        private Response sendPayloadGA4(String payload) throws IOException {
+            if (VERBOSE_DEBUG) {
+                mLogger.d(TAG, "GA4 Event Payload: " + payload);
+            }
+
+            String url = String.format("%s?api_secret=%s&measurement_id=%s",
+                    GA4_URL, mGA4AppSecret, mAnalyticsId);
+
+            Request.Builder builder = new Request.Builder().url(url);
+
+            // GA4 always uses POST
+            RequestBody body = RequestBody.create(MEDIA_TYPE, payload);
+            builder.post(body);
             Request request = builder.build();
             return mOkHttpClient.newCall(request).execute();
         }

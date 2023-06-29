@@ -47,7 +47,9 @@ class ExportedVars @Inject internal constructor(
     var jsonUrl: String = ""
 
     /** ID for the GA server. Written by the script.
-     * GA Events are not sent until this is defined. */
+     * GA Events are not sent until this is defined.
+     * For GA4, format is 'GA-ID|Client-ID|AppSecret'.
+     */
     var gaTrackingId: String = ""
 
     /** Announcement text sent to the remote RTAC tablet android software.
