@@ -474,7 +474,6 @@ class StatusWindow2 {
         mOnRenderCompleted = new GVTTreeRendererAdapter() {
             @Override
             void gvtRenderingCompleted(GVTTreeRendererEvent e) {
-                println "@@ SVG -- gvtRenderingCompleted"
                 mSvgCanvas.removeGVTTreeRendererListener(mOnRenderCompleted)
                 mOnRenderCompleted = null
                 mWindowCallback.onWindowSvgLoaded()
@@ -494,7 +493,6 @@ class StatusWindow2 {
                 }
 
                 modifySvg {
-                    println "@@ SVG -- init"
                     SVGDocument doc = mSvgCanvas.getSVGDocument()
                     def element = doc.getRootElement()
                     initAllSvgElements(element, onClick)

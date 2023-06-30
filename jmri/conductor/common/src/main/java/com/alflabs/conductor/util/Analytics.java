@@ -38,6 +38,7 @@ import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -76,6 +77,7 @@ public class Analytics extends ThreadLoop {
     private final ConcurrentLinkedDeque<Payload> mPayloads = new ConcurrentLinkedDeque<>();
     private final AtomicBoolean mStopLoopOnceEmpty = new AtomicBoolean(false);
     private final CountDownLatch mLatchEndLoop = new CountDownLatch(1);
+    private final ILocalDateTimeNowProvider mLocalDateTimeNow;
     // Note: The executor is a dagger singleton, shared with the JsonSender.
     private final ScheduledExecutorService mExecutor;
 
@@ -87,10 +89,11 @@ public class Analytics extends ThreadLoop {
     @Inject
     public Analytics(ILogger logger,
                      IClock clock,
+                     Random random,
                      FileOps fileOps,
                      IKeyValue keyValue,
                      OkHttpClient okHttpClient,
-                     Random random,
+                     ILocalDateTimeNowProvider localDateTimeNow,
                      @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         mLogger = logger;
         mClock = clock;
@@ -98,6 +101,7 @@ public class Analytics extends ThreadLoop {
         mKeyValue = keyValue;
         mRandom = random;
         mOkHttpClient = okHttpClient;
+        mLocalDateTimeNow = localDateTimeNow;
         mExecutor = executor;
     }
 
@@ -265,17 +269,24 @@ public class Analytics extends ThreadLoop {
             if (mIsGA4) {
                 // TBD revisit later with a proper GA4 implementation.
                 // Nothing ever goes wrong generating JSON using a String.format, right?
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String timeWithSeconds = mLocalDateTimeNow.getNow().format(formatter);
+                String timeWithMinutes = timeWithSeconds.substring(0, timeWithSeconds.length() - 2);
+
                 payload = String.format("{" +
                                 "'client_id':'%s'" +                // GA4 client id
                                 ",'events':[{'name':'%s'" +         // event action
                                 ",'params':{'items':[]" +
-
                                 ",'event_category':'%s'" +          // event category
-                                ",'event_label':'%s'",              // event label
+                                ",'event_label':'%s'" +             // event label
+                                ",'date_sec':'%s'" +                // date with seconds
+                                ",'date_min':'%s'",                 // date with minutes
                         mGA4ClientId,
                         action,
                         category,
-                        label
+                        label,
+                        timeWithSeconds,
+                        timeWithMinutes
                         );
                 try {
                     int value = Integer.parseInt(user_);

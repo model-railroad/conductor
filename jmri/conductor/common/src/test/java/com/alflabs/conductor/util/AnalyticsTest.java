@@ -19,6 +19,7 @@
 package com.alflabs.conductor.util;
 
 import com.alflabs.kv.IKeyValue;
+import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
@@ -39,11 +40,13 @@ import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.when;
 
 public class AnalyticsTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
@@ -52,6 +55,7 @@ public class AnalyticsTest {
     @Mock private IKeyValue mKeyValue;
     @Mock private Random mRandom;
     @Mock private OkHttpClient mOkHttpClient;
+    @Mock private ILocalDateTimeNowProvider mLocalDateTimeNowProvider;
 
     private MockClock mClock = new MockClock();
     private final FileOps mFileOps = new FakeFileOps();
@@ -60,7 +64,19 @@ public class AnalyticsTest {
 
     @Before
     public void setUp() {
-        mAnalytics = new Analytics(mLogger, mClock, mFileOps, mKeyValue, mOkHttpClient, mRandom, mExecutor);
+        // Otherwise by default it is permanently 1:42 PM here
+        when(mLocalDateTimeNowProvider.getNow()).thenReturn(
+                LocalDateTime.of(1901, 2, 3, 13, 42, 43));
+
+        mAnalytics = new Analytics(
+                mLogger,
+                mClock,
+                mRandom,
+                mFileOps,
+                mKeyValue,
+                mOkHttpClient,
+                mLocalDateTimeNowProvider,
+                mExecutor);
     }
 
     @After
@@ -90,7 +106,7 @@ public class AnalyticsTest {
 
     @Test
     public void ua_SendEvent() throws Exception {
-        Mockito.when(mRandom.nextInt()).thenReturn(42);
+        when(mRandom.nextInt()).thenReturn(42);
 
         mAnalytics.setAnalyticsId("UID-1234-5");
         mAnalytics.sendEvent("CAT", "ACT", "LAB", "USR");
@@ -131,7 +147,7 @@ public class AnalyticsTest {
 
     @Test
     public void ga4_SendEvent() throws Exception {
-        Mockito.when(mRandom.nextInt()).thenReturn(42);
+        when(mRandom.nextInt()).thenReturn(42);
 
         mAnalytics.setAnalyticsId(" G-1234ABCD | 987654321 | XyzAppSecretZyX ");
         mAnalytics.sendEvent("CAT", "ACT", "LAB", "72");
@@ -150,6 +166,7 @@ public class AnalyticsTest {
                 "{'timestamp_micros':2000000,'client_id':'987654321'," +
                         "'events':[{'name':'ACT','params':{'items':[]," +
                         "'event_category':'CAT','event_label':'LAB'," +
+                        "'date_sec':'19010203134243','date_min':'190102031342'," +
                         "'value':72,'currency':'USD'}}]}");
     }
 }

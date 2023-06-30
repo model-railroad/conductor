@@ -19,6 +19,7 @@
 package com.alflabs.conductor.dagger;
 
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.kv.IKeyValue;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -39,11 +40,20 @@ public abstract class AnalyticsModule {
     public static Analytics provideAnalytics(
             ILogger logger,
             IClock clock,
+            Random random,
             FileOps fileOps,
             IKeyValue keyValue,
             OkHttpClient okHttpClient,
-            Random random,
+            ILocalDateTimeNowProvider localDateTimeNow,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new Analytics(logger, clock, fileOps, keyValue, okHttpClient, random, executor);
+        return new Analytics(
+                logger,
+                clock,
+                random,
+                fileOps,
+                keyValue,
+                okHttpClient,
+                localDateTimeNow,
+                executor);
     }
 }
