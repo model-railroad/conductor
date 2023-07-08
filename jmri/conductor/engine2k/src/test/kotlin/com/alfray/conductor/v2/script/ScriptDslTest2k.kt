@@ -1158,6 +1158,123 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
+    fun testSequenceRoute_recovery_fromNonOverlappingBlocks() {
+        jmriProvider.getSensor("B01").isActive = false
+        jmriProvider.getSensor("B02").isActive = true
+        jmriProvider.getSensor("B03").isActive = false
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var n = 1
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                onEnter { Train1.forward(5.speed) }
+            }
+            val block2_fwd = node(Block2) {
+                onEnter { Train1.forward(6.speed) }
+            }
+            val block3_fwd = node(Block3) {
+                onEnter { Train1.forward(7.speed) }
+            }
+            onActivate {
+                if (Block1.active) { /* no-op as block1_fwd is the default */ }
+                else if (Block2.active) { route.startNode(block2_fwd) }
+                else if (Block3.active) { route.startNode(block3_fwd) }
+            }
+            sequence = listOf(block1_fwd, block2_fwd, block3_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val block1 = conductorImpl.blocks["B01"]!!
+        val block2 = conductorImpl.blocks["B02"]!!
+        val block3 = conductorImpl.blocks["B03"]!!
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(t1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(block2.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block3.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(t1.speed).isEqualTo(6.speed)
+    }
+
+    @Test
+    fun testSequenceRoute_recovery_fromOverlappingBlocks() {
+        jmriProvider.getSensor("B01").isActive = true
+        jmriProvider.getSensor("B02").isActive = true
+        jmriProvider.getSensor("B03").isActive = false
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var n = 1
+        val Route_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) {
+                onEnter { Train1.forward(5.speed) }
+            }
+            val block2_fwd = node(Block2) {
+                onEnter { Train1.forward(6.speed) }
+            }
+            val block3_fwd = node(Block3) {
+                onEnter { Train1.forward(7.speed) }
+            }
+            onActivate {
+                if (Block1.active) { /* no-op as block1_fwd is the default */ }
+                else if (Block2.active) { route.startNode(block2_fwd) }
+                else if (Block3.active) { route.startNode(block3_fwd) }
+            }
+            sequence = listOf(block1_fwd, block2_fwd, block3_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val block1 = conductorImpl.blocks["B01"]!!
+        val block2 = conductorImpl.blocks["B02"]!!
+        val block3 = conductorImpl.blocks["B03"]!!
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(t1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block2.state).isEqualTo(IBlock.State.OCCUPIED)
+        // TODO either block1 or 2 should be TRAILING, we should not have 2 OCCUPIED blocks.
+        assertThat(block3.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(t1.speed).isEqualTo(5.speed)
+    }
+
+    @Test
     fun testAfterThen() {
         loadScriptFromText(scriptText =
         """
