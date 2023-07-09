@@ -34,9 +34,14 @@ interface IRoute {
 
     /**
      * Changes the default starting block for this route.
+     *
+     * The start node is always set to OCCUPIED state.
+     * Optionally, an immediate leading node can be set to TRAILING.
+     *
      * Only effective if called from the onActivate callback.
-     * Throws an error if the node is not part of the route.
+     * Throws an error if the nodes are not part of the route, or the trailing node is not connected
+     * to the new starting occupied node.
      * Throws an error if called on a route without nodes such as an Idle Route.
      */
-    fun startNode(node: INode)
+    fun startNode(startNode: INode, trailing: INode? = null)
 }

@@ -490,6 +490,197 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 53 seconds")
     }
 
+    @Test
+    fun recovery_fromNonOverlappingBlocks() {
+        jmriProvider.getSensor("B01").isActive = false
+        jmriProvider.getSensor("B02").isActive = true
+        jmriProvider.getSensor("B03").isActive = false
+        jmriProvider.getSensor("B04").isActive = false
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Block4  = block("B04")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var n = 1
+        val Recovery_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) { onEnter { Train1.reverse(1.speed) } }
+            val block2_fwd = node(Block2) { onEnter { Train1.reverse(2.speed) } }
+            val block3_fwd = node(Block3) { onEnter { Train1.reverse(3.speed) } }
+            val block4_fwd = node(Block4) { onEnter { Train1.reverse(4.speed) } }
+            onActivate {
+                if      (Block4.active) { route.startNode(block4_fwd) }
+                else if (Block3.active) { route.startNode(block3_fwd) }
+                else if (Block2.active) { route.startNode(block2_fwd) }
+                else if (Block1.active) { /* no-op as block1_fwd is the default */ }
+            }
+            // in a recovery blocks are listed in reverse order
+            sequence = listOf(block4_fwd, block3_fwd, block2_fwd, block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val block1 = conductorImpl.blocks["B01"]!!
+        val block2 = conductorImpl.blocks["B02"]!!
+        val block3 = conductorImpl.blocks["B03"]!!
+        val block4 = conductorImpl.blocks["B04"]!!
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(t1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(block2.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block3.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(block4.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(t1.speed).isEqualTo(2.speed.reverse())
+    }
+
+    @Test
+    fun recovery_fromOverlappingBlocks_broken() {
+        /*
+            This is my initial attempty at doing route recovery. It works only when a single
+            block is occupied. It fails if the train overlaps 2 blocks. Issues here:
+            - We end up with a graph where multiple blocks are OCCUPIED, whereas ideally we would
+              want one block OCCUPIED and one TRAILING in the _proper_ direction of the recovery.
+            - This still somewhat works because we check blocks in reverse older, thus we end up
+              with B03 current followed by B02 active... this matches the route order "as if" a
+              train was just crossing a boundary. However since the route starts in that
+              configuration, it never transitions the OCCUPIED+OCCUPIED state to TRAILING+OCCUPIED.
+            - This is highly dependent on the order checks are done in the onActivate method.
+         */
+        jmriProvider.getSensor("B01").isActive = false
+        jmriProvider.getSensor("B02").isActive = true
+        jmriProvider.getSensor("B03").isActive = true
+        jmriProvider.getSensor("B04").isActive = false
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Block4  = block("B04")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var n = 1
+        val Recovery_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) { onEnter { Train1.reverse(1.speed) } }
+            val block2_fwd = node(Block2) { onEnter { Train1.reverse(2.speed) } }
+            val block3_fwd = node(Block3) { onEnter { Train1.reverse(3.speed) } }
+            val block4_fwd = node(Block4) { onEnter { Train1.reverse(4.speed) } }
+            onActivate {
+                if      (Block4.active) { route.startNode(block4_fwd) }
+                else if (Block3.active) { route.startNode(block3_fwd) }
+                else if (Block2.active) { route.startNode(block2_fwd) }
+                else if (Block1.active) { /* no-op as block1_fwd is the default */ }
+            }
+            // in a recovery blocks are listed in reverse order
+            sequence = listOf(block4_fwd, block3_fwd, block2_fwd, block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val block1 = conductorImpl.blocks["B01"]!!
+        val block2 = conductorImpl.blocks["B02"]!!
+        val block3 = conductorImpl.blocks["B03"]!!
+        val block4 = conductorImpl.blocks["B04"]!!
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(t1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(block2.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block3.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block4.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(t1.speed).isEqualTo(3.speed.reverse())
+    }
+
+    @Test
+    fun recovery_fromOverlappingBlocks_fixed() {
+        jmriProvider.getSensor("B01").isActive = false
+        jmriProvider.getSensor("B02").isActive = true
+        jmriProvider.getSensor("B03").isActive = true
+        jmriProvider.getSensor("B04").isActive = false
+        loadScriptFromText(scriptText =
+        """
+        val Train1  = throttle(1001)
+        val Block1  = block("B01")
+        val Block2  = block("B02")
+        val Block3  = block("B03")
+        val Block4  = block("B04")
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var n = 1
+        val Recovery_Seq = Routes.sequence {
+            throttle = Train1
+            val block1_fwd = node(Block1) { onEnter { Train1.reverse(1.speed) } }
+            val block2_fwd = node(Block2) { onEnter { Train1.reverse(2.speed) } }
+            val block3_fwd = node(Block3) { onEnter { Train1.reverse(3.speed) } }
+            val block4_fwd = node(Block4) { onEnter { Train1.reverse(4.speed) } }
+            onActivate {
+                if      (Block4.active && Block3.active) { route.startNode(block3_fwd, trailing=block4_fwd) }
+                else if (Block4.active)                  { route.startNode(block4_fwd) }
+                else if (Block3.active && Block2.active) { route.startNode(block2_fwd, trailing=block3_fwd) }
+                else if (Block3.active)                  { route.startNode(block3_fwd) }
+                else if (Block2.active && Block1.active) { route.startNode(block1_fwd, trailing=block2_fwd) }
+                else if (Block2.active)                  { route.startNode(block2_fwd) }
+                else if (Block1.active)                  { /* no-op as block1_fwd is the default */ }
+            }
+            // in a recovery blocks are listed in reverse order
+            sequence = listOf(block4_fwd, block3_fwd, block2_fwd, block1_fwd)
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val t1 = conductorImpl.throttles[1001]!!
+        val block1 = conductorImpl.blocks["B01"]!!
+        val block2 = conductorImpl.blocks["B02"]!!
+        val block3 = conductorImpl.blocks["B03"]!!
+        val block4 = conductorImpl.blocks["B04"]!!
+        val route = conductorImpl.routesContainers[0].active as RouteBase
+
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(t1.speed).isEqualTo(0.speed)
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+        assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
+        assertThat(block1.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(block2.state).isEqualTo(IBlock.State.OCCUPIED)
+        assertThat(block3.state).isEqualTo(IBlock.State.TRAILING)
+        assertThat(block4.state).isEqualTo(IBlock.State.EMPTY)
+        assertThat(t1.speed).isEqualTo(2.speed.reverse())
+    }
+
     private fun SequenceRoute.print() =
         this.graph.blocks.joinToString { "$it ${it.state}" }
 }

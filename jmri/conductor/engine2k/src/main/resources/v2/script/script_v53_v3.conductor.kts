@@ -810,19 +810,19 @@ fun ML_Fn_Try_Recover_Route() {
     log("[ML Recovery] FR start=$FR_start occup=$FR_occup total=$FR_total $FR_blocks")
 
 
-    if (!PA_start && FR_start && PA_occup == 1) {
-        // FR train is accounted for, where expected.
-        // PA train is not at start but there's one block occupied, so let's assume it's
-        // our train and try to recover that PA train.
-        log("[ML Recovery] Recover Passenger")
-        ML_Recovery_Passenger_Route.activate()
-
-    } else if (PA_start && !FR_start && FR_occup == 1) {
+    if (PA_start && (!FR_start || FR_occup == 1)) {
         // PA train is accounted for, where expected.
         // FR train is not at start but there's one block occupied, so let's assume it's
         // our train and try to recover that FR train.
         log("[ML Recovery] Recover Freight")
         ML_Recovery_Freight_Route.activate()
+
+    } else if (FR_start && ((!PA_start && PA_occup in 1..2) || (PA_start && PA_occup == 1))) {
+        // FR train is accounted for, where expected.
+        // PA train is not at start but there's 1~2 block occupied, so let's assume it's
+        // our train and try to recover that PA train.
+        log("[ML Recovery] Recover Passenger")
+        ML_Recovery_Passenger_Route.activate()
 
     } else if (FR_start && !PA_start && FR_occup == 0) {
         // FR train is accounted for, where expected.
@@ -933,7 +933,8 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B503b_rev = node(B503b) {
         onEnter {
             // Note: this is the normal start block and is never
-            // a recover block. We do not set any speed on purpose.
+            // a recover block. We do not set any speed on purpose
+            // (except to clear B503a below).
             after (AM_Timer_B503b_Down_Stop) then {
                 PA.stop()
                 PA.horn()
@@ -944,26 +945,36 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                 ML_Idle_Route.activate()
             }
         }
+
+        whileOccupied {
+            if (B503a.active) {
+                PA.reverse(AM_Crossover_Speed)
+            } else {
+                // This forces the train to stop prematurely.
+                // Its position will get fixed at the next normal run.
+                PA.stop()
+            }
+        }
     }
 
     onActivate {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Passenger
         ML_Passenger_Align_Turnouts()
-        if (B370.active) {
-            route.startNode(B370_rev)
-        } else if (B360.active) {
-            route.startNode(B360_rev)
-        } else if (B340.active) {
-            route.startNode(B340_rev)
-        } else if (B330.active) {
-            route.startNode(B330_rev)
-        } else if (B321.active) {
-            route.startNode(B321_rev)
-        } else if (B503a.active) {
-            route.startNode(B503a_rev)
-        } else if (B503b.active) {
-            route.startNode(B503b_rev)
+        when {
+            B370.active && B360.active ->   route.startNode(B360_rev, trailing=B370_rev)
+            B370.active ->                  route.startNode(B370_rev)
+            B360.active && B340.active ->   route.startNode(B340_rev, trailing=B360_rev)
+            B360.active ->                  route.startNode(B360_rev)
+            B340.active && B330.active ->   route.startNode(B330_rev, trailing=B340_rev)
+            B340.active ->                  route.startNode(B340_rev)
+            B330.active && B321.active ->   route.startNode(B321_rev, trailing=B330_rev)
+            B330.active ->                  route.startNode(B330_rev)
+            B321.active && B503a.active ->  route.startNode(B503a_rev, trailing=B321_rev)
+            B321.active ->                  route.startNode(B321_rev)
+            B503a.active && B503b.active -> route.startNode(B503b_rev, trailing=B503a_rev)
+            B503a.active ->                 route.startNode(B503a_rev)
+            B503b.active ->                 route.startNode(B503b_rev)
         }
     }
 
@@ -1000,7 +1011,8 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
     val B311_rev = node(B311) {
         onEnter {
             // Note: this is the normal start block and is never
-            // a recover block. We do not set any speed on purpose.
+            // a recover block. We do not set any speed on purpose
+            // (except to clear B321 below).
             ML_Freight_Align_Turnouts()
             after (SP_Timer_Down_Slow) then {
                 FR.bell(On)
@@ -1015,16 +1027,26 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
                 ML_Idle_Route.activate()
             }
         }
+
+        whileOccupied {
+            if (B321.active) {
+                FR.reverse(SP_Reverse_Speed)
+            } else {
+                // This forces the train to stop prematurely.
+                // Its position will get fixed at the next normal run.
+                FR.stop()
+            }
+        }
     }
 
     onActivate {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Freight
         ML_Freight_Align_Turnouts()
-        if (B321.active) {
-            route.startNode(B321_rev)
-        } else if (B311.active) {
-            route.startNode(B311_rev)
+        when {
+            B321.active && B311.active -> route.startNode(B311_rev, trailing=B321_rev)
+            B321.active -> route.startNode(B321_rev)
+            B311.active -> route.startNode(B311_rev)
         }
     }
 
@@ -1263,7 +1285,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
 
-    val BLParked_fwd = node(B801) {
+    val BL801_Parked_fwd = node(B801) {
         onEnter {
             BL.sound(On)
             BL.horn()
@@ -1277,7 +1299,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLStation_fwd = node(B820) {
+    val BL820_Station_fwd = node(B820) {
         onEnter {
             BL.bell(Off)
             BL.forward(BL_Speed_Station)
@@ -1298,13 +1320,13 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLTunnel_fwd = node(B850) {
+    val BL850_Tunnel_fwd = node(B850) {
         onEnter {
             BL.horn()
         }
     }
 
-    val BLReverse_fwd = node(B860) {
+    val BL860_Reverse_fwd = node(B860) {
         onEnter {
             BL.horn()
             BL.bell(On)
@@ -1331,7 +1353,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLTunnel_rev = node(B850) {
+    val BL850_Tunnel_rev = node(B850) {
         onEnter {
             BL.horn()
         }
@@ -1346,7 +1368,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLStation_rev = node(B820) {
+    val BL820_Station_rev = node(B820) {
         onEnter {
             BL.bell(On)
             T324.normal()
@@ -1361,7 +1383,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BLParked_rev = node(B801) {
+    val BL801_Parked_rev = node(B801) {
         onEnter {
             after (10.seconds) then {
                 BL.stop()
@@ -1390,9 +1412,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_Recovery_Route.activate()
     }
 
-    sequence = listOf(BLParked_fwd, BLStation_fwd, B830v_fwd, BLTunnel_fwd,
-        BLReverse_fwd,
-        BLTunnel_rev, B830v_rev, BLStation_rev, BLParked_rev)
+    sequence = listOf(BL801_Parked_fwd, BL820_Station_fwd, B830v_fwd, BL850_Tunnel_fwd,
+        BL860_Reverse_fwd,
+        BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
 
 }
 
@@ -1409,13 +1431,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL.reverse(BL_Speed_Station)
     }
 
-    val BLReverse_rev = node(B860) {
+    val BL860_Reverse_rev = node(B860) {
         onEnter {
             move()
         }
     }
 
-    val BLTunnel_rev = node(B850) {
+    val BL850_Tunnel_rev = node(B850) {
         onEnter {
             move()
         }
@@ -1427,13 +1449,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         }
     }
 
-    val BLStation_rev = node(B820) {
+    val BL820_Station_rev = node(B820) {
         onEnter {
             move()
         }
     }
 
-    val BLParked_rev = node(B801) {
+    val BL801_Parked_rev = node(B801) {
         onEnter {
             move()
         }
@@ -1450,20 +1472,20 @@ val BL_Recovery_Route = BL_Route.sequence {
 
     onActivate {
         BL_State = EBL_State.Recover
-        if (B860.active) {
-            route.startNode(BLReverse_rev)
-        } else if (B850.active) {
-            route.startNode(BLTunnel_rev)
-        } else if (B820.active) {
-            route.startNode(BLStation_rev)
-        } else if (B801.active) {
-            route.startNode(BLParked_rev)
-        } else {
-            // If none of the sensors are active, assume the train is in the virtual block B830.
-            // Since this is a virtual block, we need to manually trigger its active state
-            // (TBD this likely doesn't work since activation only happens at the next engine cycle)
-            B830v.active(true)
-            route.startNode(B830v_rev)
+        when {
+            B860.active && B850.active ->   route.startNode(BL850_Tunnel_rev, trailing=BL860_Reverse_rev)
+            B860.active ->                  route.startNode(BL860_Reverse_rev)
+            B850.active ->                  route.startNode(BL850_Tunnel_rev)
+            B820.active && B801.active ->   route.startNode(BL801_Parked_rev, trailing=BL820_Station_rev)
+            B820.active ->                  route.startNode(BL820_Station_rev)
+            B801.active ->                  route.startNode(BL801_Parked_rev)
+            else -> {
+                // If none of the sensors are active, assume the train is in the virtual block B830.
+                // Since this is a virtual block, we need to manually trigger its active state
+                // (TBD this likely doesn't work since activation only happens at the next engine cycle)
+                B830v.active(true)
+                route.startNode(B830v_rev)
+            }
         }
     }
 
@@ -1473,7 +1495,7 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL_Error_Route.activate()
     }
 
-    sequence = listOf(BLReverse_rev, BLTunnel_rev, B830v_rev, BLStation_rev, BLParked_rev)
+    sequence = listOf(BL860_Reverse_rev, BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
 }
 
 

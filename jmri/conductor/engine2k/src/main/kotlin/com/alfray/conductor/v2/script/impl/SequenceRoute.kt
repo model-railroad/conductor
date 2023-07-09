@@ -77,7 +77,8 @@ internal class SequenceRoute @AssistedInject constructor(
     private var currentActiveBlocks = setOf<IBlock> ()
     override val throttle = builder.throttle
     override val sequence = builder.sequence
-    private var startNode: INode? = null
+    private var occupiedStartNode: INode? = null
+    private var trailingStartNode: INode? = null
     private var blockMinSecondsStartTS = 0L
     private var blockMaxSecondsReachedTS = 0L
     override val minSecondsOnBlock = builder.minSecondsOnBlock
@@ -140,11 +141,27 @@ internal class SequenceRoute @AssistedInject constructor(
         return String.format(Locale.US, "Sequence %s #%d %s(%04d)", owner.name, index, name_, addr)
     }
 
-    override fun startNode(node: INode) {
-        assertOrError(graph.nodes.contains(node)) {
-            "ERROR startNode($node) is not part of the route $this"
+    @Suppress("UnnecessaryVariable")
+    override fun startNode(startNode: INode, trailing: INode?) {
+        val occupiedStartNode = startNode
+        val trailingStartNode = trailing
+        assertOrError(graph.nodes.contains(occupiedStartNode)) {
+            "ERROR occupied start node ($occupiedStartNode) is not part of the route $this"
         }
-        startNode = node
+        trailingStartNode?.let {
+            assertOrError(graph.nodes.contains(trailingStartNode)) {
+                "ERROR trailing start node ($trailingStartNode) is not part of the route $this"
+            }
+            assertOrError(graph.outgoing(trailingStartNode).contains(occupiedStartNode)) {
+                "ERROR occupied start node ($occupiedStartNode) is not an outgoing node for ($trailingStartNode) in route $this"
+            }
+        }
+        this.occupiedStartNode = occupiedStartNode
+        this.trailingStartNode = trailingStartNode
+        logger.d(TAG, buildString {
+            append("Start node set to $occupiedStartNode")
+            trailingStartNode?.let { append(" w/ trailing $trailingStartNode") }
+        })
     }
 
     private fun parse(sequence: List<INode>, branches: MutableList<List<INode>>): RouteGraph {
@@ -182,13 +199,13 @@ internal class SequenceRoute @AssistedInject constructor(
      * Called _after_ the route's [actionOnActivate] has completed,
      * when this sequence route becomes activated.
      *
-     * This gave the script a chance to change to startNode, thus at this point we can
+     * This gives the script a chance to change to startNode, thus at this point we can
      * validate that the start node is both defined and occupied, and that no other block
      * is occupied.
      */
     override fun postOnActivateAction() {
         // Set or reset the initial start node.
-        currentNode = startNode ?: graph.start
+        currentNode = occupiedStartNode ?: graph.start
         logger.d(TAG, "$this start node is $currentNode")
         assertOrError(currentNode != null) { "ERROR Missing start node for $this." }
 
@@ -199,12 +216,20 @@ internal class SequenceRoute @AssistedInject constructor(
         startMinSecondsTimer()
         startMaxSecondsTimer(currentNode_)
 
+        val trailingStartBlock = trailingStartNode?.block
+
         var currentBlockIsOccupied = false
         val otherBlockOccupied = mutableSetOf<IBlock>()
         graph.nodes.forEach { node ->
             node as Node
             val b = node.block
-            node.changeState(if (b.active) IBlock.State.OCCUPIED else IBlock.State.EMPTY)
+            node.changeState(
+                when {
+                    b.active && b == trailingStartBlock -> IBlock.State.TRAILING
+                    b.active -> IBlock.State.OCCUPIED
+                    else -> IBlock.State.EMPTY
+                }
+            )
             if (b.active) {
                 if (b == currentBlock) {
                     currentBlockIsOccupied = b.active

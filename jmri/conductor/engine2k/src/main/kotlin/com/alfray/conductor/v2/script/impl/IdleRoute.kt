@@ -51,7 +51,7 @@ internal class IdleRoute @AssistedInject constructor(
     private val TAG = javaClass.simpleName
     private val actionOnIdle = builder.actionOnIdle
 
-    override fun startNode(node: INode) {
+    override fun startNode(startNode: INode, trailing: INode?) {
         assertOrError(false) {
             "No startNode to set in an idle route."
         }
