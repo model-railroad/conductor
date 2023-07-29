@@ -347,11 +347,15 @@ internal class SequenceRoute @AssistedInject constructor(
 
                 // Did the next block activate too soon?
                 val minSecondsElapsed_ = minSecondsElapsed()
-                val ignoreTrailing = minSecondsElapsed_ > 0.0 && trailingBlocks.contains(enterNode.block)
+                val ignoreTrailing = minSecondsElapsed_ > 0.0 &&
+                        (trailingBlocks.contains(enterNode.block) || currentNode === occupiedStartNode)
                 if (ignoreTrailing) {
                     // If this is a reversing shuttle scenario (the trailing block is also the outgoing block)
                     // then we need to ignore trailing block activations during the first minSecondsOnBlock seconds
                     // since the entering train may be activating its own trailing block.
+                    // We also need to ignore minSecondsOnBlock on the start node, since the train may be
+                    // at the edge of the block and exit it right away (minSecondsOnBlock is really the time
+                    // to _enter_ a block, and by definition the train is already on the start block.)
                     val elapsed = String.format("%.1f", minSecondsElapsed_)
                     logger.d(TAG, "WARNING ignore trailing block $enterNode activated in $elapsed seconds.")
                 } else {

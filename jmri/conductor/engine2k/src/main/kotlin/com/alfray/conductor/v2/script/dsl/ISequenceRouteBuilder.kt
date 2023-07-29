@@ -34,6 +34,7 @@ interface ISequenceRouteBuilder : IRouteBaseBuilder {
      * The default minimum time for the route's blocks is 10 seconds, unless changed in the
      * route or in its nodes.
      * The minimum time check becomes inactive if set to zero in the route.
+     * This check is ignored for the start node of a route.
      */
     var minSecondsOnBlock: Int
 
