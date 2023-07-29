@@ -85,7 +85,7 @@ internal abstract class RouteBase(
     protected inline fun assertOrError(value: Boolean, lazyMessage: () -> Any) {
         if (!value) {
             val message = lazyMessage().toString()
-            logger.d(TAG, message)
+            eventLogger.logAsync(EventLogger.Type.Route, toString(), message)
             (owner as RoutesContainer).reportError(this, true)
         }
     }

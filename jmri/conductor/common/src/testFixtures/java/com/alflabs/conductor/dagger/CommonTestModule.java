@@ -27,7 +27,7 @@ import dagger.Module;
         FakeKeyValueModule.class,
         LoggerModule.class,
         MockAnalyticsModule.class,
-        MockEventLoggerModule.class,
+        FakeEventLoggerModule.class,
         MockHttpClientModule.class,
         MockJsonSenderModule.class,
         MockRandomModule.class,
