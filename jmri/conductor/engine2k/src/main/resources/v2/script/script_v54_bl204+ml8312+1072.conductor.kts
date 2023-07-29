@@ -872,6 +872,9 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     throttle = PA
     maxSecondsOnBlock = 120 // 2 minutes per block max
 
+    // Whether to monitor B503a when entering B503b.
+    var monitor_B503a = false
+
     fun move() {
         PA.bell(On)
         PA.sound(On)
@@ -947,12 +950,14 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         }
 
         whileOccupied {
-            if (B503a.active) {
-                PA.reverse(AM_Crossover_Speed)
-            } else {
-                // This forces the train to stop prematurely.
-                // Its position will get fixed at the next normal run.
-                PA.stop()
+            if (monitor_B503a) {
+                if (B503a.active) {
+                    PA.reverse(AM_Crossover_Speed)
+                } else {
+                    // This forces the train to stop prematurely.
+                    // Its position will get fixed at the next normal run.
+                    PA.stop()
+                }
             }
         }
     }
@@ -972,7 +977,10 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             B330.active ->                  route.startNode(B330_rev)
             B321.active && B503a.active ->  route.startNode(B503a_rev, trailing=B321_rev)
             B321.active ->                  route.startNode(B321_rev)
-            B503a.active && B503b.active -> route.startNode(B503b_rev, trailing=B503a_rev)
+            B503a.active && B503b.active -> {
+                monitor_B503a = true
+                route.startNode(B503b_rev, trailing=B503a_rev)
+            }
             B503a.active ->                 route.startNode(B503a_rev)
             B503b.active ->                 route.startNode(B503b_rev)
         }
