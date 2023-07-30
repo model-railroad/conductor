@@ -21,9 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
-import com.alflabs.manifest.Prefix
 import com.alfray.conductor.v2.script.CondCache
-import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.simulator.SimulRouteBlock
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -52,21 +50,11 @@ import dagger.assisted.AssistedInject
  */
 internal class VirtualBlock @AssistedInject constructor(
     private val keyValue: IKeyValue,
-    private val condCache: CondCache,
-    private val eventLogger: EventLogger,
-    @Assisted override val systemName: String
-) : VarName(), IBlock, INodeBlock, IExecEngine {
+    condCache: CondCache,
+    eventLogger: EventLogger,
+    @Assisted systemName: String
+) : BlockBase(condCache, eventLogger, systemName) {
     private var _active = false
-    private var lastActive = false
-    private val keyName = "${Prefix.Block}$systemName"
-    /** The cached active property of the underlying sensor. Updated in [onExecHandle] only. */
-    override val active: Boolean
-        get() = condCache.cached(lastActive, keyName) // uses internal state, does NOT update from JMRI.
-    /** Occupancy state of the block: empty, occupied, or trailing. */
-    override var state = IBlock.State.EMPTY
-        private set
-
-    override fun not(): Boolean = !active
 
     /**
      * Called by the DSL to mark the virtual block as occupied/active.
@@ -75,21 +63,6 @@ internal class VirtualBlock @AssistedInject constructor(
      */
     override fun active(isActive: Boolean) {
         _active = isActive
-    }
-
-    override fun named(name: String): IBlock {
-        setNamed(name)
-        return this
-    }
-
-    override fun defaultName(): String = systemName
-
-    /** Internal method used by a Node to change the Block occupancy state. */
-    override fun changeState(newState: IBlock.State) {
-        if (state != newState) {
-            eventLogger.logAsync(EventLogger.Type.Block, keyName, "$name ${newState.name}")
-        }
-        state = newState
     }
 
     /** Initializes the underlying JMRI sensor. */
@@ -104,33 +77,12 @@ internal class VirtualBlock @AssistedInject constructor(
         if (_active != lastActive) {
             lastActive = _active
             val value = if (lastActive) Constants.On else Constants.Off
-            eventLogger.logAsync(EventLogger.Type.Sensor, keyName, value)
+            eventLogger.logAsync(
+                EventLogger.Type.Sensor,
+                "$keyName $name",
+                value)
             keyValue.putValue(keyName, value, true /*broadcast*/)
         }
-    }
-
-    /**
-     * Block equality purely relies on the equality of the unique systemName ID.
-     * The active state of the block is NOT used in equality. This ensures stability
-     * when used as a map key.
-     */
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is IBlock) return false
-        return systemName == other.systemName
-    }
-
-    override fun hashCode(): Int {
-        var result = systemName.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        var s = name
-        if (s != systemName) {
-            s = "$s [$systemName]"
-        }
-        return if (lastActive) "<$s>" else "{$s}"
     }
 
     override fun toSimulRouteBlock(reversal: Boolean?): SimulRouteBlock =
