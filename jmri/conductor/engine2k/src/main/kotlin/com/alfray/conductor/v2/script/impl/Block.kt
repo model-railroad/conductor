@@ -23,6 +23,7 @@ import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
+import com.alflabs.utils.IClock
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.simulator.SimulRouteBlock
 import dagger.assisted.Assisted
@@ -52,11 +53,12 @@ import dagger.assisted.AssistedInject
  */
 internal class Block @AssistedInject constructor(
     private val keyValue: IKeyValue,
+    private val jmriProvider: IJmriProvider,
+    clock: IClock,
     condCache: CondCache,
     eventLogger: EventLogger,
-    private val jmriProvider: IJmriProvider,
     @Assisted systemName: String
-) : BlockBase(condCache, eventLogger, systemName) {
+) : BlockBase(clock, condCache, eventLogger, systemName) {
     private var jmriSensor: IJmriSensor? = null
     private var _active = false
 

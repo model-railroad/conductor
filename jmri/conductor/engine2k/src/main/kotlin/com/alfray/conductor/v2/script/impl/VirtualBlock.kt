@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
+import com.alflabs.utils.IClock
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.simulator.SimulRouteBlock
 import dagger.assisted.Assisted
@@ -50,10 +51,11 @@ import dagger.assisted.AssistedInject
  */
 internal class VirtualBlock @AssistedInject constructor(
     private val keyValue: IKeyValue,
+    clock: IClock,
     condCache: CondCache,
     eventLogger: EventLogger,
     @Assisted systemName: String
-) : BlockBase(condCache, eventLogger, systemName) {
+) : BlockBase(clock, condCache, eventLogger, systemName) {
     private var _active = false
 
     /**

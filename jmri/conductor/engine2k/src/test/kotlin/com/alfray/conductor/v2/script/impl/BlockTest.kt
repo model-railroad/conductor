@@ -22,13 +22,13 @@ import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriSensor
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
-import com.nhaarman.mockitokotlin2.stub
 import com.nhaarman.mockitokotlin2.verify
 import dagger.internal.InstanceFactory
 import org.junit.Before
@@ -47,15 +47,17 @@ class BlockTest {
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
     private val condCache = CondCache()
+    private val clock = FakeClock(1000)
     private lateinit var block: Block
 
     @Before
     fun setUp() {
         val factory = Block_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(jmriProvider),
+            InstanceFactory.create(clock),
             InstanceFactory.create(condCache),
-            InstanceFactory.create(eventLogger),
-            InstanceFactory.create(jmriProvider))
+            InstanceFactory.create(eventLogger))
         block = factory.get("jmriName")
 
         block.onExecStart()
@@ -97,14 +99,17 @@ class BlockTest {
         block.changeState(IBlock.State.EMPTY)
         verify(eventLogger, never()).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "ON")
 
+        clock.add(2543)
         block.changeState(IBlock.State.OCCUPIED)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "OCCUPIED")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "OCCUPIED after 2.54 seconds")
 
+        clock.add(2543)
         block.changeState(IBlock.State.TRAILING)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "TRAILING")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "TRAILING after 2.54 seconds")
 
+        clock.add(2543)
         block.changeState(IBlock.State.EMPTY)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "EMPTY")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "EMPTY after 2.54 seconds")
     }
 
     @Test

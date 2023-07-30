@@ -49,7 +49,7 @@ internal class Factory @Inject constructor(
 ) {
     internal fun createBlock(
             systemName: String) : Block =
-        Block(keyValue, condCache, eventLogger, jmriProvider, systemName)
+        Block(keyValue, jmriProvider, clock, condCache, eventLogger, systemName)
 
     internal fun createIdleRoute(owner: IRoutesContainer, builder: IdleRouteBuilder): IdleRoute =
         IdleRoute(logger, eventLogger, owner, builder)
@@ -101,6 +101,6 @@ internal class Factory @Inject constructor(
         Turnout(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createVirtualBlock(systemName: String) : VirtualBlock =
-        VirtualBlock(keyValue, condCache, eventLogger, systemName)
+        VirtualBlock(keyValue, clock, condCache, eventLogger, systemName)
 }
 

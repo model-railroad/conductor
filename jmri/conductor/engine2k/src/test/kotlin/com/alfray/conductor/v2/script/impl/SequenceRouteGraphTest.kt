@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
+import com.alflabs.utils.FakeClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.CondCache
 import com.alfray.conductor.v2.utils.ConductorExecException
@@ -42,14 +43,16 @@ class SequenceRouteGraphTest {
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
     private val condCache = CondCache()
+    private val clock = FakeClock(1000)
 
     @Before
     fun setUp() {
         blockFactory = Block_Factory(
             InstanceFactory.create(keyValue),
+            InstanceFactory.create(jmriProvider),
+            InstanceFactory.create(clock),
             InstanceFactory.create(condCache),
-            InstanceFactory.create(eventLogger),
-            InstanceFactory.create(jmriProvider))
+            InstanceFactory.create(eventLogger))
     }
 
     @Test
