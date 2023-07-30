@@ -1515,6 +1515,7 @@ val BL_Recovery_Route = BL_Route.sequence {
 // If automation is off, T330 is automatically selected:
 // B320 -> B330 via T330 Normal
 // B321 -> B330 via T330 Reverse
+// TBD: should check that mainline automated route is idle first.
 
 on { !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
 on { !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
