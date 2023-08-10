@@ -14,15 +14,25 @@ interface INodeBuilder {
     var minSecondsOnBlock: Int
 
     /**
-     * The maximum time spent moving on the currently occupied block.
+     * The maximum time spent on the currently occupied block.
      *
      * Any "flaky" sensor in the occupied block are ignored during that time.
      * The default timeout for the route's blocks is 60 seconds, unless changed in the
      * route or in its nodes.
-     * Timeout is reset when the train stops.
      * When this is set to 0 (the default), the route's maxSecondsOnBlock is used instead.
      */
     var maxSecondsOnBlock: Int
+
+    /**
+     * The maximum time to enter a block, when a train overlaps 2 blocks boundaries.
+     *
+     * When a train enters a block, wheels can create a contact bridging the trailing block and
+     * make it look temporarily occupied. During this timeout, we ignore this effect. After this
+     * timeout, it's an error for the trailing block to suddenly become occupied.
+     * The default timeout value is 30 seconds, unless changed in the route or in its nodes.
+     * When this is set to 0 (the default), the route's maxSecondsEnterBlock is used instead.
+     */
+    var maxSecondsEnterBlock: Int
 
     /** Callback executed once when a new block becomes occupied. */
     fun onEnter(action: TAction)

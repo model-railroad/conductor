@@ -81,6 +81,7 @@ internal class SequenceRoute @AssistedInject constructor(
     private var trailingStartNode: INode? = null
     override val minSecondsOnBlock = builder.minSecondsOnBlock
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
+    override val maxSecondsEnterBlock = builder.maxSecondsEnterBlock
     val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
@@ -106,17 +107,34 @@ internal class SequenceRoute @AssistedInject constructor(
     private fun computeMaxSecondsOnBlock(node: Node): Int =
         if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
 
-    /** Returns true if the time spent on this node's block in its current block state is
-     * equal or more than [computeMaxSecondsOnBlock]. */
-    private fun maxSecondsReached(node: Node): Boolean {
+    /** Returns -1 if the maxSecondsOnBlock time has NOT been reached or is deactivated,
+    otherwise returns the number of seconds spend on the block so far. */
+    private fun maxSecondsOnBlockElapsed(node: Node): Double {
         val maxSecondsOnBlock_ = computeMaxSecondsOnBlock(node)
         if (maxSecondsOnBlock_ <= 0) {
-            return false
+            return -1.0
         }
 
         val block = node.block as BlockBase
         val stateTimeSeconds = block.stateTimeMs() / 1000.0
-        return stateTimeSeconds >= maxSecondsOnBlock_
+        return if (stateTimeSeconds < maxSecondsOnBlock_) -1.0 else stateTimeSeconds
+    }
+
+    /** Returns the [maxSecondsEnterBlock] for the given [node] or the current route. */
+    private fun computeMaxSecondsEnterBlock(node: Node): Int =
+        if (node.maxSecondsEnterBlock > 0) node.maxSecondsEnterBlock else maxSecondsEnterBlock
+
+    /** Returns -1 if the maxSecondsEnterBlock time has NOT been reached or is deactivated,
+    otherwise returns the number of seconds spend on the block so far. */
+    private fun maxSecondsEnterBlockElapsed(node: Node): Double {
+        val maxSecondsEnterBlock_ = computeMaxSecondsEnterBlock(node)
+        if (maxSecondsEnterBlock_ <= 0) {
+            return -1.0
+        }
+
+        val block = node.block as BlockBase
+        val stateTimeSeconds = block.stateTimeMs() / 1000.0
+        return if (stateTimeSeconds < maxSecondsEnterBlock_) -1.0 else stateTimeSeconds
     }
 
     override fun toString(): String {
@@ -309,15 +327,12 @@ internal class SequenceRoute @AssistedInject constructor(
                 // Case A: Train still on same block. Current block active, no other active.
                 //
                 // Assert that the current block sensor is still active.
-                // However, for up to maxSecondsOnBlock, we accept that the sensor may be flaky and
+                // However, for up to maxSecondsEnterBlock, we accept that the sensor may be flaky and
                 // could seem temporarily off when we read it here.
-                // Note: the 'actual' maxSecondsOnBlock timeout check is the one below that checks
-                // if we have a moving train on this block. We just happen to reuse the same timeout
-                // here to accept flaky sensors, which arguably makes the stillCurrentActive check
-                // moot here, but we keep it because it's semantically the right check to do.
-                assertOrError(stillCurrentActive || !maxSecondsReached(currentNode_)) {
-                    val timeout = computeMaxSecondsOnBlock(currentNode_)
-                    "ERROR $this current block ${currentNode_.block} suddenly became non-active after $timeout seconds."
+                val maxSecondsEnterBlockElapsed_ = maxSecondsEnterBlockElapsed(currentNode_)
+                assertOrError(stillCurrentActive || maxSecondsEnterBlockElapsed_ <= 0) {
+                    val elapsed = String.format("%.1f", maxSecondsEnterBlockElapsed_)
+                    "ERROR $this current block ${currentNode_.block} suddenly became non-active after $elapsed seconds."
                 }
             } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
@@ -329,20 +344,21 @@ internal class SequenceRoute @AssistedInject constructor(
                 val enterNode = outgoingNodesActive.first() as Node
 
                 // Did the next block activate too soon?
-                val minSecondsElapsed_ = minSecondsElapsed(currentNode_)
-                val ignoreTrailing = minSecondsElapsed_ > 0.0 &&
+                val maxSecondsEnterBlockElapsed_ = maxSecondsEnterBlockElapsed(currentNode_)
+                val ignoreTrailing = maxSecondsEnterBlockElapsed_ <= 0 &&
                         (trailingBlocks.contains(enterNode.block) || currentNode_ === occupiedStartNode)
                 if (ignoreTrailing) {
                     // If this is a reversing shuttle scenario (the trailing block is also the outgoing block)
-                    // then we need to ignore trailing block activations during the first minSecondsOnBlock seconds
-                    // since the entering train may be activating its own trailing block.
-                    // We also need to ignore minSecondsOnBlock on the start node, since the train may be
-                    // at the edge of the block and exit it right away (minSecondsOnBlock is really the time
-                    // to _enter_ a block, and by definition the train is already on the start block.)
-                    val elapsed = String.format("%.1f", minSecondsElapsed_)
-                    logger.d(TAG, "WARNING ignore trailing block $enterNode activated in $elapsed seconds.")
+                    // then we need to ignore trailing block activations during the first maxSecondsEnterBlockElapsed
+                    // seconds since the entering train may be activating its own trailing block.
+                    //
+                    // We also need to ignore the minSecondsOnBlock check below on the start node, since the
+                    // train may be at the edge of the block and exit it right away.
+                    val timeout = computeMaxSecondsEnterBlock(currentNode_)
+                    logger.d(TAG, "WARNING ignore trailing block $enterNode activated under $timeout seconds.")
                 } else {
                     // We should have been on the current node for at least minSecondsOnBlock.
+                    val minSecondsElapsed_ = minSecondsElapsed(currentNode_)
                     assertOrError(minSecondsElapsed_ <= 0.0) {
                         val timeout = computeMinSecondsOnBlock(currentNode_)
                         val elapsed = String.format("%.1f", minSecondsElapsed_)
@@ -382,12 +398,12 @@ internal class SequenceRoute @AssistedInject constructor(
         } else if (currentNode!!.block.occupied) {
             // We have a train on an occupied node.
 
-            // This block cannot be occupied for more than the maxSecondsOnBlock time limit
-            // with a moving train.
+            // This block cannot be occupied for more than the maxSecondsOnBlock time limit.
             val currentNode_ = currentNode as Node
-            assertOrError(!maxSecondsReached(currentNode_)) {
-                val timeout = computeMaxSecondsOnBlock(currentNode_)
-                "ERROR $this current block ${currentNode_.block} still occupied after $timeout seconds."
+            val maxSecondsOnBlockElapsed_ = maxSecondsOnBlockElapsed(currentNode_)
+            assertOrError(maxSecondsOnBlockElapsed_ < 0) {
+                val elapsed = String.format("%.1f", maxSecondsOnBlockElapsed_)
+                "ERROR $this current block ${currentNode_.block} still occupied after $elapsed seconds."
             }
         }
     }

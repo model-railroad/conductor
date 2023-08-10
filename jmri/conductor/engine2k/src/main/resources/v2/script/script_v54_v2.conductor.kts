@@ -465,7 +465,7 @@ val Passenger_Route = ML_Route.sequence {
     throttle = PA
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    // maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -681,7 +681,7 @@ val Freight_Route = ML_Route.sequence {
     throttle = FR
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    // maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -893,7 +893,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     throttle = PA
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max
-    // maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 30
 
     // Whether to monitor B503a when entering B503b.
     var monitor_B503a = false
@@ -1035,7 +1035,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
     throttle = FR
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 180     // 3 minutes per block max
-    // maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 30
 
     fun move() {
         FR.bell(On)
@@ -1318,7 +1318,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    // maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 30
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
