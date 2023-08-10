@@ -200,8 +200,23 @@ internal class SequenceRoute @AssistedInject constructor(
     }
 
     /**
+     * Called as soon as this sequence route becomes activated,
+     * and before the route's [actionOnActivate] is invoked.
+     * Start node is not known yet.
+     */
+    override fun onActivated() {
+        // Force the blocks' state timer to reset by setting all blocks to EMPTY
+        // and then set them back to TRAILING / OCCUPIED as needed (done in postOnActivateAction).
+        graph.nodes.forEach { node ->
+            node as Node
+            node.changeState(IBlock.State.EMPTY)
+        }
+    }
+
+    /**
      * Called _after_ the route's [actionOnActivate] has completed,
      * when this sequence route becomes activated.
+     * Start node is known at this point.
      *
      * This gives the script a chance to change to startNode, thus at this point we can
      * validate that the start node is both defined and occupied, and that no other block
@@ -221,6 +236,7 @@ internal class SequenceRoute @AssistedInject constructor(
 
         var currentBlockIsOccupied = false
         val otherBlockOccupied = mutableSetOf<IBlock>()
+
         graph.nodes.forEach { node ->
             node as Node
             val b = node.block

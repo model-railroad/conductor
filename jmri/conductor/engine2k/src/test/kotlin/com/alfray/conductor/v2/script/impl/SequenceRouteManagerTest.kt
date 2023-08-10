@@ -87,47 +87,56 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         execEngine.onExecHandle()
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
 
+        // B1 occupied
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("<B1> OCCUPIED, {V2} EMPTY, {B3} EMPTY, {B4} EMPTY")
         assertThat(route.throttle.speed).isEqualTo(5.speed)
 
+        // B1 -> V2 transition
         jmriProvider.getSensor("B1").isActive = false
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} TRAILING, {V2} OCCUPIED, {B3} EMPTY, {B4} EMPTY")
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} TRAILING, <V2> OCCUPIED, {B3} EMPTY, {B4} EMPTY")
 
+        // V2 -> B3 transition
         jmriProvider.getSensor("B3").isActive = true
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, <V2> TRAILING, <B3> OCCUPIED, {B4} EMPTY")
 
+        // B3 -> B4 transition (both temporarily active)
         jmriProvider.getSensor("B3").isActive = true
         jmriProvider.getSensor("B4").isActive = true
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, {V2} EMPTY, <B3> TRAILING, <B4> OCCUPIED")
-        assertThat(route.throttle.speed).isEqualTo((-5).speed)
 
+        // B3 -> B4 transition... train on the reversing block now.
         jmriProvider.getSensor("B3").isActive = false
         jmriProvider.getSensor("B4").isActive = true
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, {V2} EMPTY, {B3} TRAILING, <B4> OCCUPIED")
+        assertThat(route.throttle.speed).isEqualTo((-5).speed)
 
+        // B4 -> B3 transition (both temporarily active)
         jmriProvider.getSensor("B3").isActive = true
         jmriProvider.getSensor("B4").isActive = true
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, {V2} EMPTY, <B3> OCCUPIED, <B4> TRAILING")
 
+        // B4 -> B3 transition
         jmriProvider.getSensor("B3").isActive = true
         jmriProvider.getSensor("B4").isActive = false
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, {V2} EMPTY, <B3> OCCUPIED, {B4} TRAILING")
 
+        // B3 -> V2 transition
         jmriProvider.getSensor("B3").isActive = false
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, {V2} OCCUPIED, {B3} TRAILING, {B4} EMPTY")
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("{B1} EMPTY, <V2> OCCUPIED, {B3} TRAILING, {B4} EMPTY")
 
+        // V2 -> B1 transition
         jmriProvider.getSensor("B1").isActive = true
         execEngine.onExecHandle()
         assertThat(route.print()).isEqualTo("<B1> OCCUPIED, <V2> TRAILING, {B3} EMPTY, {B4} EMPTY")
@@ -346,7 +355,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
         assertThat(block2.occupied).isTrue()
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
-        assertThat(logger.string).contains("WARNING ignore trailing block {B1} activated in 5.0 seconds")
+        assertThat(logger.string).contains("WARNING ignore trailing block {B1} activated under 30 seconds")
         assertThat(throttle.speed).isEqualTo(5.speed)
 
         // Train continues on B2 till it reverses
@@ -428,7 +437,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         execEngine.onExecHandle()
         assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
 
-        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 42 seconds")
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 42.1 seconds")
     }
 
     @Test
@@ -487,7 +496,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         execEngine.onExecHandle()
         assertThat(route.state).isEqualTo(RouteBase.State.ERROR)
 
-        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 53 seconds")
+        assertThat(logger.string).contains("ERROR Sequence PA #0 (1001) current block <B1> still occupied after 53.1 seconds")
     }
 
     @Test

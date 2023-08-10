@@ -63,18 +63,26 @@ internal abstract class RouteBase(
     open fun changeState(newState: State) {
         val oldState = state
         if (oldState != newState) {
-            if (oldState == State.ACTIVATED && newState == State.ACTIVE) {
-                // keep ACTIVATED timers when going to the ACTIVE state.
-            } else if (newState == State.ERROR) {
-                callOnError = actionOnError
-                context.clearTimers()
-            } else {
-                // Clear all context timers.
-                context.clearTimers()
+            when {
+                oldState == State.ACTIVATED && newState == State.ACTIVE -> {
+                    // keep ACTIVATED timers when going to the ACTIVE state.
+                }
+                newState == State.ERROR -> {
+                    callOnError = actionOnError
+                    context.clearTimers()
+                }
+                else -> {
+                    // Clear all context timers.
+                    context.clearTimers()
+                }
             }
             // Update state
             state = newState
             eventLogger.logAsync(EventLogger.Type.Route, toString(), state.name)
+
+            if (newState == State.ACTIVATED) {
+                onActivated()
+            }
         }
     }
 
@@ -133,8 +141,17 @@ internal abstract class RouteBase(
     }
 
     /**
+     * Called as soon as this sequence route becomes activated,
+     * and before the route's [actionOnActivate] is invoked.
+     * Start node is not known yet.
+     */
+    open fun onActivated() {}
+
+
+    /**
      * Called _after_ the route's [actionOnActivate] has completed,
      * when this sequence route becomes activated.
+     * Start node is known at this point.
      */
     open fun postOnActivateAction() {}
 
