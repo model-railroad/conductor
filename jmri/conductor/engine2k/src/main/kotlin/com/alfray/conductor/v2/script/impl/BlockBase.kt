@@ -77,6 +77,16 @@ internal abstract class BlockBase(
         stateTS = nowMs
     }
 
+    /**
+     * Returns time spent in the block in the current state.
+     *
+     * Time is the delta since the last state change, if any.
+     * Returns -1 if there has not been a state change yet. */
+    fun stateTimeMs(): Long {
+        val nowMs = clock.elapsedRealtime()
+        return if (stateTS == 0L) -1 else nowMs - stateTS
+    }
+
     /** Initializes the underlying JMRI sensor. */
     abstract override fun onExecStart()
 
