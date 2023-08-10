@@ -463,7 +463,9 @@ val Passenger_Route = ML_Route.sequence {
     // The mainline passenger route sequence.
     name = "Passenger"
     throttle = PA
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    // maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -511,6 +513,8 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504v_fwd = node(B504v) {
+        minSecondsOnBlock = 10
+        maxSecondsOnBlock = 40
         onEnter {
             PA.horn()
         }
@@ -599,6 +603,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B321_rev = node(B321) {
+        maxSecondsOnBlock = 140
         onEnter {
             ML_Passenger_Align_Turnouts()
             PA.reverse(AM_Sonora_Speed)
@@ -616,6 +621,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504v_rev = node(B504v) {
+        maxSecondsOnBlock = 60
         onEnter {
             PA.horn()
         }
@@ -673,8 +679,9 @@ val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
     name = "Freight"
     throttle = FR
-    minSecondsOnBlock = 20  // 20 seconds to enter a block
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    // maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -711,7 +718,7 @@ val Freight_Route = ML_Route.sequence {
     }
 
     val B321_fwd = node(B321) {
-        minSecondsOnBlock = SP_Timer_Up_Slow.seconds
+        maxSecondsOnBlock = 180
         onEnter {
             FR.forward(SP_Forward_Speed)
             after (SP_Timer_Up_Slow) then {
@@ -751,6 +758,7 @@ val Freight_Route = ML_Route.sequence {
 
     val B321_rev = node(B321) {
         // Error case coming back to B321 after overshooting in B330
+        maxSecondsOnBlock = 180
         onEnter {
             FR.horn()
             after (SP_Timer_Reverse_Horn) then {
@@ -883,7 +891,9 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Recovery route for the passenger mainline train.
     name = "PA_Recovery"
     throttle = PA
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
+    // maxSecondsEnterBlock = 30
 
     // Whether to monitor B503a when entering B503b.
     var monitor_B503a = false
@@ -927,6 +937,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     }
 
     val B321_rev = node(B321) {
+        maxSecondsOnBlock = 180
         onEnter {
             ML_Passenger_Align_Turnouts()
             move()
@@ -1022,7 +1033,9 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
     // Recovery route for the freight mainline train.
     name = "FR_Recovery"
     throttle = FR
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 180     // 3 minutes per block max
+    // maxSecondsEnterBlock = 30
 
     fun move() {
         FR.bell(On)
@@ -1303,7 +1316,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
     name = "Shuttle"
     throttle = BL
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    // maxSecondsEnterBlock = 30
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
@@ -1452,7 +1467,8 @@ val BL_Recovery_Route = BL_Route.sequence {
     // Recovery mechanism for the branchline train.
     name = "Recovery"
     throttle = BL
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
 
     fun move() {
         BL.bell(On)
