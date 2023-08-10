@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2023 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ val B370         = block ("NS776") named "B370"         // 49:9
 
 val B503a        = block ("NS786") named "B503a"        // 50:3
 val B503b        = block ("NS787") named "B503b"        // 50:4
+val B504v = virtualBlock ("B504v") named "B504"
 val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
@@ -509,6 +510,12 @@ val Passenger_Route = ML_Route.sequence {
         }
     }
 
+    val B504v_fwd = node(B504v) {
+        onEnter {
+            PA.horn()
+        }
+    }
+
     val B321_fwd = node(B321) {
         onEnter {
             // Wait for train to have cleared up T320 before switching to full speed.
@@ -608,6 +615,12 @@ val Passenger_Route = ML_Route.sequence {
         }
     }
 
+    val B504v_rev = node(B504v) {
+        onEnter {
+            PA.horn()
+        }
+    }
+
     val B503a_rev = node(B503a) {
         onEnter {
             PA.horn()
@@ -634,9 +647,9 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     sequence = listOf(
-        B503b_start, B503a_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
+        B503b_start, B503a_fwd, B504v_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
         B370_end,
-        B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+        B360_rev, B340_rev, B330_rev, B321_rev, B504v_rev, B503a_rev, B503b_rev)
 }
 
 
@@ -926,6 +939,13 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         }
     }
 
+    val B504v_rev = node(B504v) {
+        onEnter {
+            move()
+            PA.horn()
+        }
+    }
+
     val B503a_rev = node(B503a) {
         onEnter {
             move()
@@ -975,8 +995,10 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             B340.active ->                  route.startNode(B340_rev)
             B330.active && B321.active ->   route.startNode(B321_rev, trailing=B330_rev)
             B330.active ->                  route.startNode(B330_rev)
-            B321.active && B503a.active ->  route.startNode(B503a_rev, trailing=B321_rev)
+            B321.active && B504v.active ->  route.startNode(B504v_rev, trailing=B321_rev)
             B321.active ->                  route.startNode(B321_rev)
+            B504v.active && B503a.active -> route.startNode(B503a_rev, trailing=B504v_rev)
+            B504v.active ->                 route.startNode(B504v_rev)
             B503a.active && B503b.active -> {
                 monitor_B503a = true
                 route.startNode(B503b_rev, trailing=B503a_rev)
@@ -993,7 +1015,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     }
 
     sequence = listOf(
-        B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+        B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B504v_rev, B503a_rev, B503b_rev)
 }
 
 val ML_Recovery_Freight_Route = ML_Route.sequence {
@@ -1484,13 +1506,16 @@ val BL_Recovery_Route = BL_Route.sequence {
             B860.active && B850.active ->   route.startNode(BL850_Tunnel_rev, trailing=BL860_Reverse_rev)
             B860.active ->                  route.startNode(BL860_Reverse_rev)
             B850.active ->                  route.startNode(BL850_Tunnel_rev)
+            B830v.active && B820.active ->  route.startNode(BL820_Station_rev, trailing=B830v_rev)
+            B830v.active ->                 route.startNode(B830v_rev)
             B820.active && B801.active ->   route.startNode(BL801_Parked_rev, trailing=BL820_Station_rev)
             B820.active ->                  route.startNode(BL820_Station_rev)
             B801.active ->                  route.startNode(BL801_Parked_rev)
             else -> {
                 // If none of the sensors are active, assume the train is in the virtual block B830.
                 // Since this is a virtual block, we need to manually trigger its active state
-                // (TBD this likely doesn't work since activation only happens at the next engine cycle)
+                // Note: this doesn't work since activation only happens at the next engine cycle.
+                // So essentially right now we cannot recover from a virtual block.
                 B830v.active(true)
                 route.startNode(B830v_rev)
             }
