@@ -272,7 +272,7 @@ var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
 var ML_Start_Counter = 0
 
-fun ML_is_Idle_State() = ML_State != EML_State.Run && ML_State != EML_State.Recover
+fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
 
 val PA = throttle(8312) {
     // Full mainline route -- Passenger.
@@ -326,7 +326,7 @@ on { PA.reverse } then { PA.f5(On) }
 
 // --- Turns mainline engine sound off when automation is turned off
 
-on { ML_is_Idle_State() && ML_Toggle.active } then {
+on { ML_State.isIdle() && ML_Toggle.active } then {
     PA.sound(On);   PA.light(On)
     FR.sound(On);   FR.light(On)
     PA.stop();      FR.stop()
@@ -334,7 +334,7 @@ on { ML_is_Idle_State() && ML_Toggle.active } then {
 }
 
 val ML_Timer_Stop_Sound_Off = 10.seconds
-on { ML_is_Idle_State() && !ML_Toggle } then {
+on { ML_State.isIdle() && !ML_Toggle } then {
     PA.light(Off);  FR.light(Off)
     PA.stop();      FR.stop()
     after(ML_Timer_Stop_Sound_Off) then {
@@ -1562,10 +1562,9 @@ val BL_Recovery_Route = BL_Route.sequence {
 // If automation is off, T330 is automatically selected:
 // B320 -> B330 via T330 Normal
 // B321 -> B330 via T330 Reverse
-// TBD: should check that mainline automated route is idle first.
 
-on { !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
-on { !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
+on { ML_State.isIdle() && !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
+on { ML_State.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
 
 
 // ---------
