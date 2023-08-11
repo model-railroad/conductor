@@ -66,6 +66,7 @@ internal class Throttle @AssistedInject constructor(
     private var jmriThrottle: IJmriThrottle? = null
     private val keyName = "${Prefix.DccThrottle}$dccAddress"
     private var _f = FBits(condCache, keyName)
+    private var _activationCount = 0
 
     /** The last speed set for this engine. */
     override val speed: DccSpeed
@@ -76,6 +77,9 @@ internal class Throttle @AssistedInject constructor(
         get() = condCache.cached(_sound, keyName, "S")
     override val f: FBits
         get() = _f
+
+    override val activationCount: Int
+        get() = _activationCount
 
     init {
         builder?.throttle = this
@@ -90,6 +94,10 @@ internal class Throttle @AssistedInject constructor(
     }
 
     override fun defaultName(): String = "Throttle-$dccAddress"
+
+    override fun incActivationCount() {
+        _activationCount++
+    }
 
     override fun forward(speed: DccSpeed) {
         setSpeed(speed)

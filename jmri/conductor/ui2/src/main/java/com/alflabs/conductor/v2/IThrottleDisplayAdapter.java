@@ -31,4 +31,6 @@ public interface IThrottleDisplayAdapter {
     boolean isLight();
 
     boolean isSound();
+
+    int getActivationsCount();
 }

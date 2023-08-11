@@ -45,12 +45,16 @@ interface IThrottle : IVarName {
         get() = speed.forward
     val reverse: Boolean
         get() = speed.reverse
+    val activationCount: Int
 
     /**
      * Provides a script-defined name for this throttle that differs from the JMRI system name.
      * Can only be set once. Ignored if already set to the same value.
      */
     infix fun named(name: String) : IThrottle
+
+    /** Increments [activationCount]. */
+    fun incActivationCount()
 
     /** Sets the speed to forward on a DCC 28 speed scale. */
     fun forward(speed: DccSpeed)

@@ -79,10 +79,6 @@ internal abstract class RouteBase(
             // Update state
             state = newState
             eventLogger.logAsync(EventLogger.Type.Route, toString(), state.name)
-
-            if (newState == State.ACTIVATED) {
-                onActivated()
-            }
         }
     }
 
@@ -139,14 +135,6 @@ internal abstract class RouteBase(
             }
         }
     }
-
-    /**
-     * Called as soon as this sequence route becomes activated,
-     * and before the route's [actionOnActivate] is invoked.
-     * Start node is not known yet.
-     */
-    open fun onActivated() {}
-
 
     /**
      * Called _after_ the route's [actionOnActivate] has completed,

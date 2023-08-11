@@ -491,6 +491,8 @@ val Passenger_Route = ML_Route.sequence {
         PA.bell(Off)
         PA.sound(On)
         FR.sound(Off)
+
+        throttle.incActivationCount()
     }
 
     val B503b_start = node(B503b) {
@@ -696,6 +698,8 @@ val Freight_Route = ML_Route.sequence {
             key1 = "Depart"
             key2 = "Freight"
         }
+
+        throttle.incActivationCount()
     }
 
     val B311_start = node(B311) {
@@ -1451,6 +1455,8 @@ val BL_Shuttle_Route = BL_Route.sequence {
             key1 = "Depart"
             key2 = "Branchline"
         }
+
+        throttle.incActivationCount()
     }
 
     onError {

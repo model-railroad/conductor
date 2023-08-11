@@ -192,7 +192,8 @@ internal class SequenceRoute @AssistedInject constructor(
                 onSequenceRouteIdle()
             }
             State.ACTIVATED -> {
-                // no-op. postOnActivateAction() will be executed after [actionOnActivate].
+                onSequenceRouteActivated()
+                // postOnActivateAction() will be executed after [actionOnActivate].
             }
             State.ACTIVE -> {}
             State.ERROR -> {}
@@ -204,7 +205,8 @@ internal class SequenceRoute @AssistedInject constructor(
      * and before the route's [actionOnActivate] is invoked.
      * Start node is not known yet.
      */
-    override fun onActivated() {
+    private fun onSequenceRouteActivated() {
+
         // Force the blocks' state timer to reset by setting all blocks to EMPTY
         // and then set them back to TRAILING / OCCUPIED as needed (done in postOnActivateAction).
         graph.nodes.forEach { node ->
