@@ -68,6 +68,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         val Route_Seq = Routes.sequence {
             throttle = T1
             minSecondsOnBlock = 0
+            maxSecondsEnterBlock = 0
             val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
             val v2_fwd = node(V2) {}
             val b3_fwd = node(B3) {}
@@ -355,7 +356,7 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(block1.state).isEqualTo(IBlock.State.TRAILING)
         assertThat(block2.occupied).isTrue()
         assertThat(route.state).isEqualTo(RouteBase.State.ACTIVE)
-        assertThat(logger.string).contains("WARNING ignore trailing block {B1} activated under 30 seconds")
+        assertThat(logger.string).contains("WARNING ignore trailing block {B1} activated after 5.0 seconds")
         assertThat(throttle.speed).isEqualTo(5.speed)
 
         // Train continues on B2 till it reverses
