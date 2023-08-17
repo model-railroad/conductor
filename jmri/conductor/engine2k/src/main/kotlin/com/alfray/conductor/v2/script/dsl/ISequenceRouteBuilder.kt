@@ -44,10 +44,20 @@ interface ISequenceRouteBuilder : IRouteBaseBuilder {
      * Any "flaky" sensor in the occupied block are ignored during that time.
      * The default timeout for the route's blocks is 60 seconds, unless changed in the
      * route or in its nodes.
-     * Timeout is reset when the train stops.
      * Timeout becomes inactive if set to zero in the route.
      */
     var maxSecondsOnBlock: Int
+
+    /**
+     * The maximum time to enter a block, when a train overlaps 2 blocks boundaries.
+     *
+     * When a train enters a block, wheels can create a contact bridging the trailing block and
+     * make it look temporarily occupied. During this timeout, we ignore this effect. After this
+     * timeout, it's an error for the trailing block to suddenly become occupied.
+     * The default timeout value is 30 seconds, unless changed in the route or in its nodes.
+     * Timeout becomes inactive if set to zero in the route.
+     */
+    var maxSecondsEnterBlock: Int
 
     /** The non-empty non-null list of nodes for this sequence. */
     var sequence: List<INode>

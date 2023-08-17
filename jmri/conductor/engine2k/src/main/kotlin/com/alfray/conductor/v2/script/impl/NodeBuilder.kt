@@ -39,6 +39,7 @@ class NodeBuilder @AssistedInject constructor(
     var actionOnEmpty: TAction? = null
     override var minSecondsOnBlock = 0
     override var maxSecondsOnBlock = 0
+    override var maxSecondsEnterBlock = 0
 
     override fun onEnter(action: TAction) {
         logger.assertOrThrow(TAG, actionOnEnter == null) {

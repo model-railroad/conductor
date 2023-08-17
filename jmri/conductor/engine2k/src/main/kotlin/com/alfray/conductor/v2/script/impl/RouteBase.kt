@@ -63,14 +63,18 @@ internal abstract class RouteBase(
     open fun changeState(newState: State) {
         val oldState = state
         if (oldState != newState) {
-            if (oldState == State.ACTIVATED && newState == State.ACTIVE) {
-                // keep ACTIVATED timers when going to the ACTIVE state.
-            } else if (newState == State.ERROR) {
-                callOnError = actionOnError
-                context.clearTimers()
-            } else {
-                // Clear all context timers.
-                context.clearTimers()
+            when {
+                oldState == State.ACTIVATED && newState == State.ACTIVE -> {
+                    // keep ACTIVATED timers when going to the ACTIVE state.
+                }
+                newState == State.ERROR -> {
+                    callOnError = actionOnError
+                    context.clearTimers()
+                }
+                else -> {
+                    // Clear all context timers.
+                    context.clearTimers()
+                }
             }
             // Update state
             state = newState
@@ -135,6 +139,7 @@ internal abstract class RouteBase(
     /**
      * Called _after_ the route's [actionOnActivate] has completed,
      * when this sequence route becomes activated.
+     * Start node is known at this point.
      */
     open fun postOnActivateAction() {}
 

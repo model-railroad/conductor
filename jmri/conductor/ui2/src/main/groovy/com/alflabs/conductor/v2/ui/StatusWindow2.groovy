@@ -365,23 +365,31 @@ class StatusWindow2 {
         boolean light = throttleAdapter.isLight()
         boolean sound = throttleAdapter.isSound()
 
-        String line1 = String.format(" %s [%d] %s %d \n",
+        String spanSpeed = String.format(" %s [%d] %s %d \n",
                 throttleAdapter.getName(),
                 throttleAdapter.getDccAddress(),
-                speed < 0 ? " << " : (speed == 0 ? " == " : " >> "),
+                speed < 0 ? " < " : (speed == 0 ? " = " : " > "),
                 speed)
 
-        String line2 = String.format(" L%s ", light ? "+" : "-")
-        String line3 = String.format(" S%s ", sound ? "+" : "-")
+        String spanA = ""
+        if (throttleAdapter.activationsCount >= 0) {
+            spanA = String.format(" #%d • ", throttleAdapter.activationsCount)
+        }
+
+        String spanL = String.format(" L%s ", light ? "+" : "-")
+        String spanS = String.format(" S%s ", sound ? "+" : "-")
 
         try {
             StyledDocument doc = (StyledDocument) textPane.getDocument()
             doc.remove(0, doc.getLength())
-            doc.insertString(0, line1, doc.getStyle(
+            doc.insertString(0, spanSpeed, doc.getStyle(
                     fwd ? "fwd" : (rev ? "rev" : "center")))
-            doc.insertString(doc.getLength(), line2, doc.getStyle(
+            if (!spanA.empty) {
+                doc.insertString(doc.getLength(), spanA, doc.getStyle("center"))
+            }
+            doc.insertString(doc.getLength(), spanL, doc.getStyle(
                     light ? "light" : "center"))
-            doc.insertString(doc.getLength(), line3, doc.getStyle(
+            doc.insertString(doc.getLength(), spanS, doc.getStyle(
                     sound ? "sound" : "center"))
             // everything is centered
             doc.setParagraphAttributes(0, doc.getLength(), doc.getStyle("center"), false /*replace*/)

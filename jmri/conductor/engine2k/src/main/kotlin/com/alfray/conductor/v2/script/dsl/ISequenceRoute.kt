@@ -52,6 +52,17 @@ interface ISequenceRoute : IRoute {
      */
     val maxSecondsOnBlock: Int
 
+    /**
+     * The maximum time to enter a block, when a train overlaps 2 blocks boundaries.
+     *
+     * When a train enters a block, wheels can create a contact bridging the trailing block and
+     * make it look temporarily occupied. During this timeout, we ignore this effect. After this
+     * timeout, it's an error for the trailing block to suddenly become occupied.
+     * The default timeout value is 30 seconds, unless changed in the route or in its nodes.
+     * Timeout becomes inactive if set to zero in the route.
+     */
+    val maxSecondsEnterBlock: Int
+
     /** Internal Converts the route graph into a Simulator route graph. */
     fun toSimulGraph(): SimulRouteGraph
     // TODO ISequenceRoute.toSimulGraph should not be exposed in the DSL.

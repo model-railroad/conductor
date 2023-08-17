@@ -217,6 +217,11 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                     public boolean isSound() {
                         return throttle.getSound();
                     }
+
+                    @Override
+                    public int getActivationsCount() {
+                        return throttle.getActivationCount();
+                    }
                 })));
         return list;
     }

@@ -142,6 +142,12 @@ public class Engine1Adapter implements IEngineAdapter {
                     public boolean isSound() {
                         return throttle.isSound();
                     }
+
+                    @Override
+                    public int getActivationsCount() {
+                        // Not implemented for Conductor 1.
+                        return -1;
+                    }
                 })));
         return list;
     }

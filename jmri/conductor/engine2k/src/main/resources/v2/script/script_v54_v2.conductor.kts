@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2023 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +45,7 @@ val B370         = block ("NS776") named "B370"         // 49:9
 
 val B503a        = block ("NS786") named "B503a"        // 50:3
 val B503b        = block ("NS787") named "B503b"        // 50:4
+val B504v = virtualBlock ("B504v") named "B504"
 val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
@@ -271,7 +272,7 @@ var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
 var ML_Start_Counter = 0
 
-fun ML_is_Idle_State() = ML_State != EML_State.Run && ML_State != EML_State.Recover
+fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
 
 val PA = throttle(8312) {
     // Full mainline route -- Passenger.
@@ -325,7 +326,7 @@ on { PA.reverse } then { PA.f5(On) }
 
 // --- Turns mainline engine sound off when automation is turned off
 
-on { ML_is_Idle_State() && ML_Toggle.active } then {
+on { ML_State.isIdle() && ML_Toggle.active } then {
     PA.sound(On);   PA.light(On)
     FR.sound(On);   FR.light(On)
     PA.stop();      FR.stop()
@@ -333,7 +334,7 @@ on { ML_is_Idle_State() && ML_Toggle.active } then {
 }
 
 val ML_Timer_Stop_Sound_Off = 10.seconds
-on { ML_is_Idle_State() && !ML_Toggle } then {
+on { ML_State.isIdle() && !ML_Toggle } then {
     PA.light(Off);  FR.light(Off)
     PA.stop();      FR.stop()
     after(ML_Timer_Stop_Sound_Off) then {
@@ -462,7 +463,9 @@ val Passenger_Route = ML_Route.sequence {
     // The mainline passenger route sequence.
     name = "Passenger"
     throttle = PA
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -488,6 +491,8 @@ val Passenger_Route = ML_Route.sequence {
         PA.bell(Off)
         PA.sound(On)
         FR.sound(Off)
+
+        throttle.incActivationCount()
     }
 
     val B503b_start = node(B503b) {
@@ -506,6 +511,14 @@ val Passenger_Route = ML_Route.sequence {
     val B503a_fwd = node(B503a) {
         onEnter {
             PA.bell(Off)
+        }
+    }
+
+    val B504v_fwd = node(B504v) {
+        minSecondsOnBlock = 10
+        maxSecondsOnBlock = 40
+        onEnter {
+            PA.horn()
         }
     }
 
@@ -592,6 +605,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B321_rev = node(B321) {
+        maxSecondsOnBlock = 140
         onEnter {
             ML_Passenger_Align_Turnouts()
             PA.reverse(AM_Sonora_Speed)
@@ -605,6 +619,13 @@ val Passenger_Route = ML_Route.sequence {
                 PA.bell(On)
                 PA.reverse(AM_Crossover_Speed)
             }
+        }
+    }
+
+    val B504v_rev = node(B504v) {
+        maxSecondsOnBlock = 60
+        onEnter {
+            PA.horn()
         }
     }
 
@@ -634,9 +655,9 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     sequence = listOf(
-        B503b_start, B503a_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
+        B503b_start, B503a_fwd, B504v_fwd, B321_fwd, B330_fwd, B340_fwd, B360_fwd,
         B370_end,
-        B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+        B360_rev, B340_rev, B330_rev, B321_rev, B504v_rev, B503a_rev, B503b_rev)
 }
 
 
@@ -660,8 +681,9 @@ val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
     name = "Freight"
     throttle = FR
-    minSecondsOnBlock = 20  // 20 seconds to enter a block
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    maxSecondsEnterBlock = 30
 
     onError {
         // no-op
@@ -676,6 +698,8 @@ val Freight_Route = ML_Route.sequence {
             key1 = "Depart"
             key2 = "Freight"
         }
+
+        throttle.incActivationCount()
     }
 
     val B311_start = node(B311) {
@@ -698,7 +722,7 @@ val Freight_Route = ML_Route.sequence {
     }
 
     val B321_fwd = node(B321) {
-        minSecondsOnBlock = SP_Timer_Up_Slow.seconds
+        maxSecondsOnBlock = 180
         onEnter {
             FR.forward(SP_Forward_Speed)
             after (SP_Timer_Up_Slow) then {
@@ -738,6 +762,7 @@ val Freight_Route = ML_Route.sequence {
 
     val B321_rev = node(B321) {
         // Error case coming back to B321 after overshooting in B330
+        maxSecondsOnBlock = 180
         onEnter {
             FR.horn()
             after (SP_Timer_Reverse_Horn) then {
@@ -870,7 +895,9 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Recovery route for the passenger mainline train.
     name = "PA_Recovery"
     throttle = PA
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
+    maxSecondsEnterBlock = 30
 
     // Whether to monitor B503a when entering B503b.
     var monitor_B503a = false
@@ -914,6 +941,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     }
 
     val B321_rev = node(B321) {
+        maxSecondsOnBlock = 180
         onEnter {
             ML_Passenger_Align_Turnouts()
             move()
@@ -923,6 +951,13 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                 PA.bell(On)
                 PA.reverse(AM_Crossover_Speed)
             }
+        }
+    }
+
+    val B504v_rev = node(B504v) {
+        onEnter {
+            move()
+            PA.horn()
         }
     }
 
@@ -975,8 +1010,10 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             B340.active ->                  route.startNode(B340_rev)
             B330.active && B321.active ->   route.startNode(B321_rev, trailing=B330_rev)
             B330.active ->                  route.startNode(B330_rev)
-            B321.active && B503a.active ->  route.startNode(B503a_rev, trailing=B321_rev)
+            B321.active && B504v.active ->  route.startNode(B504v_rev, trailing=B321_rev)
             B321.active ->                  route.startNode(B321_rev)
+            B504v.active && B503a.active -> route.startNode(B503a_rev, trailing=B504v_rev)
+            B504v.active ->                 route.startNode(B504v_rev)
             B503a.active && B503b.active -> {
                 monitor_B503a = true
                 route.startNode(B503b_rev, trailing=B503a_rev)
@@ -993,14 +1030,16 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     }
 
     sequence = listOf(
-        B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B503a_rev, B503b_rev)
+        B370_rev, B360_rev, B340_rev, B330_rev, B321_rev, B504v_rev, B503a_rev, B503b_rev)
 }
 
 val ML_Recovery_Freight_Route = ML_Route.sequence {
     // Recovery route for the freight mainline train.
     name = "FR_Recovery"
     throttle = FR
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 180     // 3 minutes per block max
+    maxSecondsEnterBlock = 30
 
     fun move() {
         FR.bell(On)
@@ -1281,7 +1320,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
     name = "Shuttle"
     throttle = BL
+    minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
+    maxSecondsEnterBlock = 30
 
     val BL_Timer_Start_Delay = 8.seconds
     val BL_Timer_Bell_Delay = 5.seconds
@@ -1414,6 +1455,8 @@ val BL_Shuttle_Route = BL_Route.sequence {
             key1 = "Depart"
             key2 = "Branchline"
         }
+
+        throttle.incActivationCount()
     }
 
     onError {
@@ -1430,7 +1473,8 @@ val BL_Recovery_Route = BL_Route.sequence {
     // Recovery mechanism for the branchline train.
     name = "Recovery"
     throttle = BL
-    maxSecondsOnBlock = 120 // 2 minutes per block max
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
 
     fun move() {
         BL.bell(On)
@@ -1484,13 +1528,16 @@ val BL_Recovery_Route = BL_Route.sequence {
             B860.active && B850.active ->   route.startNode(BL850_Tunnel_rev, trailing=BL860_Reverse_rev)
             B860.active ->                  route.startNode(BL860_Reverse_rev)
             B850.active ->                  route.startNode(BL850_Tunnel_rev)
+            B830v.active && B820.active ->  route.startNode(BL820_Station_rev, trailing=B830v_rev)
+            B830v.active ->                 route.startNode(B830v_rev)
             B820.active && B801.active ->   route.startNode(BL801_Parked_rev, trailing=BL820_Station_rev)
             B820.active ->                  route.startNode(BL820_Station_rev)
             B801.active ->                  route.startNode(BL801_Parked_rev)
             else -> {
                 // If none of the sensors are active, assume the train is in the virtual block B830.
                 // Since this is a virtual block, we need to manually trigger its active state
-                // (TBD this likely doesn't work since activation only happens at the next engine cycle)
+                // Note: this doesn't work since activation only happens at the next engine cycle.
+                // So essentially right now we cannot recover from a virtual block.
                 B830v.active(true)
                 route.startNode(B830v_rev)
             }
@@ -1515,10 +1562,9 @@ val BL_Recovery_Route = BL_Route.sequence {
 // If automation is off, T330 is automatically selected:
 // B320 -> B330 via T330 Normal
 // B321 -> B330 via T330 Reverse
-// TBD: should check that mainline automated route is idle first.
 
-on { !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
-on { !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
+on { ML_State.isIdle() && !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
+on { ML_State.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
 
 
 // ---------
