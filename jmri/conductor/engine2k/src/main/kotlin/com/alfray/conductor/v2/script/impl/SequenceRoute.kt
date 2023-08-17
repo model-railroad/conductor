@@ -337,14 +337,16 @@ internal class SequenceRoute @AssistedInject constructor(
                 // Case A: Train still on same block. Current block active, no other active.
                 //
                 // Assert that the current block sensor is still active.
-                // However, for up to maxSecondsEnterBlock, we accept that the sensor may be flaky and
-                // could seem temporarily off when we read it here.
-                val enterBlockTimeout = maxSecondsEnterBlockReached(currentNode_)
+                // However, since a train can occupy a block for up to maxSecondsOnBlock, we accept
+                // that the sensor may be flaky and could seem temporarily off when we read it here.
+                val onBlockTimeout = maxSecondsOnBlockReached(currentNode_)
                 assertOrError(
                         stillCurrentActive ||
-                        !(enterBlockTimeout.enabled && enterBlockTimeout.reached)) {
-                    val elapsed = String.format("%.1f", enterBlockTimeout.elapsed)
-                    "ERROR $this current block ${currentNode_.block} suddenly became non-active after $elapsed seconds."
+                        !(onBlockTimeout.enabled && onBlockTimeout.reached)) {
+                    val elapsed = String.format("%.1f", onBlockTimeout.elapsed)
+                    val timeout = String.format("%.1f", onBlockTimeout.timeout)
+                    "ERROR $this current block ${currentNode_.block} suddenly became non-active after $elapsed seconds " +
+                            "(max occupancy is $timeout seconds)."
                 }
             } else if (outgoingNodesActive.size >= 2) {
                 // The train cannot exit to more than one outgoing edge, so this has to be an error.
@@ -365,8 +367,8 @@ internal class SequenceRoute @AssistedInject constructor(
                     // then we need to ignore trailing block activations during the first maxSecondsEnterBlockElapsed
                     // seconds since the entering train may be activating its own trailing block.
                     //
-                    // We also need to ignore the minSecondsOnBlock check below on the start node, since the
-                    // train may be at the edge of the block and exit it right away.
+                    // We also need to ignore the minSecondsOnBlock check below on the start node,
+                    // since the train may be at the edge of the block and exit it right away.
                     val elapsed = String.format("%.1f", enterBlockTimeout.elapsed)
                     logger.d(TAG, "WARNING ignore trailing block $enterNode activated after $elapsed seconds.")
                 } else {
