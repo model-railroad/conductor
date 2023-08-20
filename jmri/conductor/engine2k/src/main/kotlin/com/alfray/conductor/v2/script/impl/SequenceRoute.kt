@@ -85,7 +85,9 @@ internal class SequenceRoute @AssistedInject constructor(
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     override val maxSecondsEnterBlock = builder.maxSecondsEnterBlock
     val graph = parse(builder.sequence, builder.branches)
-    val stats = SequenceRouteStats(if (throttle.name.isNotEmpty()) throttle.name else throttle.dccAddress.toString())
+    val stats = SequenceRouteStats(
+        name.ifEmpty { builder.routes.name },
+        throttle.name.ifEmpty { throttle.dccAddress.toString() })
     var currentNode: INode? = null
         private set
 
@@ -378,8 +380,8 @@ internal class SequenceRoute @AssistedInject constructor(
                 assertOrError(
                         stillCurrentActive ||
                         !(onBlockTimeout.enabled && onBlockTimeout.reached)) {
+                    val timeout = onBlockTimeout.timeout
                     val elapsed = String.format("%.1f", onBlockTimeout.elapsed)
-                    val timeout = String.format("%.1f", onBlockTimeout.timeout)
                     "ERROR $this current block ${currentNode_.block} suddenly became non-active after $elapsed seconds " +
                             "(max occupancy is $timeout seconds)."
                 }

@@ -26,11 +26,21 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * Data class collecting stats for a route and exporting the data as JSON.
  *
  * All JSON exported fields must be public or annotated with @JsonProperty.
+ *
+ * @param name The name of the route exported to JSON.
+ * @param th The name of the throttle exported to JSON.
  */
 class SequenceRouteStats(
     val name: String,                           // field name exported to JSON
+    val th: String,                             // field name exported to JSON
 ) {
     companion object {
+        /**
+         * One node and its occupation duration in milliseconds.
+         *
+         * @param n The name of the node, exported to JSON.
+         * @param ms The occupation duration in milliseconds, exported to JSON.
+         */
         data class NodeTiming(
             var n: String,                      // field name exported to JSON
             val ms: Long)                       // field name exported to JSON

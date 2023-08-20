@@ -51,9 +51,10 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_Empty() {
-        val stat = SequenceRouteStats("MyRoute")
+        val stat = SequenceRouteStats("MyRoute", "TH")
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
+            |"th":"TH",
             |"act":0,
             |"err":false,
             |"nodes":[]}
@@ -62,11 +63,12 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_Error() {
-        val stat = SequenceRouteStats("MyRoute")
+        val stat = SequenceRouteStats("MyRoute", "TH")
         stat.activateAndReset()
         stat.setError()
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
+            |"th":"TH",
             |"act":1,
             |"err":true,
             |"nodes":[]}
@@ -75,7 +77,7 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_UniqueNodeNames() {
-        val stat = SequenceRouteStats("MyRoute")
+        val stat = SequenceRouteStats("MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
         stat.addNodeWithDurationMs(node("B2"), 42)
@@ -84,6 +86,7 @@ class SequenceRouteStatsTest {
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
+            |"th":"TH",
             |"act":1,
             |"err":false,
             |"nodes":[
@@ -96,7 +99,7 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_RepeatedNodeNames() {
-        val stat = SequenceRouteStats("MyRoute")
+        val stat = SequenceRouteStats("MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
 
@@ -114,6 +117,7 @@ class SequenceRouteStatsTest {
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
+            |"th":"TH",
             |"act":2,
             |"err":false,
             |"nodes":[
@@ -132,7 +136,7 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_ShuttleNodeNames() {
-        val stat = SequenceRouteStats("MyRoute")
+        val stat = SequenceRouteStats("MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
 
@@ -148,6 +152,7 @@ class SequenceRouteStatsTest {
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
+            |"th":"TH",
             |"act":3,
             |"err":false,
             |"nodes":[
