@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.util.EventLogger
+import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
@@ -40,6 +41,7 @@ internal class Factory @Inject constructor(
         private val logger: ILogger,
         private val keyValue: IKeyValue,
         private val condCache: CondCache,
+        private val jsonSender: JsonSender,
         private val eventLogger: EventLogger,
         private val jmriProvider: IJmriProvider,
         private val currentContext: CurrentContext,
@@ -81,7 +83,7 @@ internal class Factory @Inject constructor(
         Sensor(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createSequenceRoute(owner: IRoutesContainer, builder: SequenceRouteBuilder): SequenceRoute =
-        SequenceRoute(clock, logger, this, eventLogger, owner, builder)
+        SequenceRoute(clock, logger, this, jsonSender, eventLogger, owner, builder)
 
     internal fun createSequenceRouteBuilder(owner: IRoutesContainer): SequenceRouteBuilder =
         SequenceRouteBuilder(logger, this, owner)

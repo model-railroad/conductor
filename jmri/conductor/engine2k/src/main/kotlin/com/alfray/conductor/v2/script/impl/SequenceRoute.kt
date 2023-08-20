@@ -21,6 +21,7 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.util.EventLogger
+import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.ExecAction
@@ -69,6 +70,7 @@ internal class SequenceRoute @AssistedInject constructor(
         private val clock: IClock,
         logger: ILogger,
         private val factory: Factory,
+        private val jsonSender: JsonSender,
         eventLogger: EventLogger,
         @Assisted override val owner: IRoutesContainer,
         @Assisted builder: SequenceRouteBuilder
@@ -83,6 +85,7 @@ internal class SequenceRoute @AssistedInject constructor(
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     override val maxSecondsEnterBlock = builder.maxSecondsEnterBlock
     val graph = parse(builder.sequence, builder.branches)
+    val stats = SequenceRouteStats(if (throttle.name.isNotEmpty()) throttle.name else throttle.dccAddress.toString())
     var currentNode: INode? = null
         private set
 
@@ -187,8 +190,12 @@ internal class SequenceRoute @AssistedInject constructor(
                 onSequenceRouteActivated()
                 // postOnActivateAction() will be executed after [actionOnActivate].
             }
-            State.ACTIVE -> {}
-            State.ERROR -> {}
+            State.ACTIVE -> {
+                // no-op
+            }
+            State.ERROR -> {
+                onSequenceRouteError()
+            }
         }
     }
 
@@ -198,6 +205,7 @@ internal class SequenceRoute @AssistedInject constructor(
      * Start node is not known yet.
      */
     private fun onSequenceRouteActivated() {
+        stats.activateAndReset()
 
         // Force the blocks' state timer to reset by setting all blocks to EMPTY
         // and then set them back to TRAILING / OCCUPIED as needed (done in postOnActivateAction).
@@ -254,6 +262,7 @@ internal class SequenceRoute @AssistedInject constructor(
         // At the minimum, the initial start node should actually be occupied.
         // We do not need to validate whether any other block is occupied as that is going
         // to be done by the next [manageRoute] call to the manager.
+        // Note: this prevents us from starting on a flaky block sensor.
         assertOrError(currentBlockIsOccupied) {
             "ERROR $this cannot start because start node $currentNode is not occupied."
         }
@@ -265,6 +274,17 @@ internal class SequenceRoute @AssistedInject constructor(
 
     /** Called by [changeState] when this sequence route ends and becomes idle. */
     private fun onSequenceRouteIdle() {
+        // If the route has been running (e.g. it had a current node), update the
+        // route running stats when the route is deactivated.
+        currentNode?.let {
+            // Capture time spent on this block for our route running stats.
+            stats.addNode(it)
+
+            val json = stats.toJsonString()
+            eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
+            jsonSender.sendEvent("route_stats", stats.name, json)
+        }
+
         // Remove any trailing blocks. We don't need them as they will not be
         // updated by this route manager anymore.
         graph.nodes.forEach { node ->
@@ -274,6 +294,21 @@ internal class SequenceRoute @AssistedInject constructor(
                 node.changeState(IBlock.State.EMPTY)
                 logger.d(TAG, "[idle] block $b becomes ${b.state}")
             }
+        }
+    }
+
+    /** Called by [changeState] when this sequence route ends and becomes error. */
+    private fun onSequenceRouteError() {
+        // If the route has been running (e.g. it had a current node), update the
+        // route running stats when the route is deactivated.
+        currentNode?.let {
+            // Capture time spent on this block for our route running stats.
+            stats.addNode(it)
+            stats.setError()
+
+            val json = stats.toJsonString()
+            eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
+            jsonSender.sendEvent("route_stats", stats.name, json)
         }
     }
 
@@ -381,6 +416,8 @@ internal class SequenceRoute @AssistedInject constructor(
                         "Current block ${currentNode_.block} must remain occupied for at least $timeout seconds."
                     }
 
+                    // --- we are now going to start tracking a new current block ---
+
                     // The current node can either become inactive or remain inactive (aka trailing).
                     // Any trailing block becomes empty, current occupied becomes trailing.
                     graph.nodes
@@ -390,6 +427,9 @@ internal class SequenceRoute @AssistedInject constructor(
                             n.changeState(IBlock.State.EMPTY)
                             logger.d(TAG, "trailing block $n becomes ${n.block.state}")
                         }
+
+                    // Capture time spent on this block for our route running stats.
+                    stats.addNode(currentNode_)
 
                     // Mark current block as trailing.
                     // Any timer for min/maxSecondsOnBlock becomes reset after the state change.

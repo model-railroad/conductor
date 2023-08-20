@@ -62,7 +62,10 @@ internal abstract class BlockBase(
 
     override fun defaultName(): String = systemName
 
-    /** Internal method used by a Node to change the Block occupancy state. */
+    /**
+     * Internal method used by a Node to change the Block occupancy state.
+     * This also resets the timer used by [stateTimeMs].
+     */
     override fun changeState(newState: IBlock.State) {
         val nowMs = clock.elapsedRealtime()
         if (state != newState) {

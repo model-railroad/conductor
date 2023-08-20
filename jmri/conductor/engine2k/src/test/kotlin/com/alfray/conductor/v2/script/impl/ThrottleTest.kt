@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.util.EventLogger
+import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.MockClock
@@ -51,6 +52,7 @@ class ThrottleTest : ScriptTest2kBase() {
 
     private val mockThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
     private val mockProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn mockThrottle }
+    private val jsonSender = mock<JsonSender>()
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
     private val mockClock = MockClock()
@@ -67,6 +69,7 @@ class ThrottleTest : ScriptTest2kBase() {
             logger,
             keyValue,
             condCache,
+            jsonSender,
             eventLogger,
             mockProvider,
             currentContext,
