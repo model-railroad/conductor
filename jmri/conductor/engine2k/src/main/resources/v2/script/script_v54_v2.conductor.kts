@@ -1278,7 +1278,7 @@ val BL_Route = routes {
 var BL_Idle_Route: IRoute
 BL_Idle_Route = BL_Route.idle {
     // The idle route is where we check whether a Branchline train should start.
-    name = "BL Ready"
+    name = "Ready"
 
     onActivate {
         BL_State = EBL_State.Ready
@@ -1293,7 +1293,7 @@ BL_Idle_Route = BL_Route.idle {
 
 val BL_Wait_Route = BL_Route.idle {
     // The wait route creates the pause between two branchline train runs.
-    name = "BL Wait"
+    name = "Wait"
 
     val BL_Timer_Wait = 300.seconds  // 300=5 minutes -- change for debugging
 
@@ -1308,7 +1308,7 @@ val BL_Wait_Route = BL_Route.idle {
 
 val BL_Error_Route = BL_Route.idle {
     // The error route is used when we cannot recover from an error during the recover route.
-    name = "BL Error"
+    name = "Error"
 
     onActivate {
         BL_State = EBL_State.Error
@@ -1318,7 +1318,7 @@ val BL_Error_Route = BL_Route.idle {
 
 val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
-    name = "BL Shuttle"
+    name = "Shuttle"
     throttle = BL
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
@@ -1471,7 +1471,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
 val BL_Recovery_Route = BL_Route.sequence {
     // Recovery mechanism for the branchline train.
-    name = "BL Recovery"
+    name = "Recovery"
     throttle = BL
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max

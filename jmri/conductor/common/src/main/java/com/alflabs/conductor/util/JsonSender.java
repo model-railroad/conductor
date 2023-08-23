@@ -140,9 +140,6 @@ public class JsonSender implements Runnable {
             return;
         }
 
-        if (value != null) {
-            value = value.toLowerCase(Locale.US);
-        }
         Entry entry = new Entry(value, mClock.elapsedRealtime());
 
         key1 = key1.toLowerCase(Locale.US);

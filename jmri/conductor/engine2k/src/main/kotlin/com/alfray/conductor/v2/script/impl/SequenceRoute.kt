@@ -284,7 +284,8 @@ internal class SequenceRoute @AssistedInject constructor(
 
             val json = stats.toJsonString()
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
-            jsonSender.sendEvent("route_stats", stats.name, json)
+            val key2 = "${stats.name}_${stats.th}"
+            jsonSender.sendEvent("route_stats", key2, json)
         }
 
         // Remove any trailing blocks. We don't need them as they will not be
@@ -310,7 +311,8 @@ internal class SequenceRoute @AssistedInject constructor(
 
             val json = stats.toJsonString()
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
-            jsonSender.sendEvent("route_stats", stats.name, json)
+            val key2 = "${stats.name}_${stats.th}"
+            jsonSender.sendEvent("route_stats", key2, json)
         }
     }
 
