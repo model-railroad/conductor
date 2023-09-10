@@ -1,7 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 import cgi
 import os
-import urllib2
 import sys
 import time
 
@@ -32,10 +31,13 @@ def file_path():
     """Returns file path for data or None. The file must exist, otherwise None is returned."""
     _dir = os.environ.get("DOCUMENT_ROOT", "")
     _dir = _dir.replace("public_html","apache-settings")
+    if _DEBUG: print("\n\n_dir: :", _dir)
+
     if not os.path.isdir(_dir):
         return None
 
     _file = os.path.join(_dir, FILE)
+    if _DEBUG: print("\n\n_file: :", _file)
     if not os.path.isfile(_file):
         return None
     return _file
@@ -76,7 +78,8 @@ def load_data():
     try:
         f = open(_file)
         return sanitize_data(json.load(f))
-    except:
+    except e:
+        if _DEBUG: raise e
         return {}
     finally:
         if f: f.close()
@@ -117,14 +120,14 @@ def doCgi():
         form = cgi.FieldStorage()
 
         if _DEBUG:
-            print "Content-type: text/html"
-            print
+            print("Content-type: text/html")
+            print("")
             sys.stderr = sys.stdout
             cgi.print_directory()
             cgi.print_arguments()
             cgi.print_environ(os.environ)
-            print "\n\nmethod: :", os.environ.get("REQUEST_METHOD", "")
-            print "\n\njson: :", form.value
+            print("\n\nmethod: :", os.environ.get("REQUEST_METHOD", ""))
+            print("\n\njson: :", form.value)
         else:
             _LOCAL = os.environ.get("AUTH_TYPE", "") == "Basic" \
                 and os.environ.get("REMOTE_ADDR", "").startswith("192.168.1.") \
@@ -136,28 +139,29 @@ def doCgi():
             new_data = merge_data(existing, new_data)
             write_data(new_data)
 
-            print "Status: 200 I like what you got"
-            print
+            print("Status: 200 I like what you got")
+            print("")
             _exit = 0
             return
         elif os.environ.get("REQUEST_METHOD", "") == "GET":
             existing = load_data()
-            print "Content-Type: application/json"
-            print "Status: 200 It really tied the room together"
-            print
-            print json.dumps(existing, indent=1)
+            print("Content-Type: application/json")
+            print("Status: 200 It really tied the room together")
+            print("")
+            print(json.dumps(existing, indent=1))
             _exit = 0
             return
 
-        print "Status: 400 That is just like your opinion man"
-        print
+        print("Status: 400 That is just like your opinion man")
+        print("")
 
     except:
-        print "Status: 500 Princess is in another castle"
-        print
+        print("Status: 500 Princess is in another castle")
+        print("")
         if _DEBUG or _LOCAL:
             cgi.print_exception()
     finally:
         sys.exit(_exit)
 
 doCgi()
+
