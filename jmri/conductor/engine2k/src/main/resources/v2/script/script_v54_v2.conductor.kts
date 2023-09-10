@@ -496,6 +496,9 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B503b_start = node(B503b) {
+        // After a recovery, the train may be just at the edge of the block.
+        // in which case we may be leaving the block just after the horn delay.
+        minSecondsOnBlock = 2
         onEnter {
             FR.sound(Off)
             PA.horn()
@@ -509,6 +512,10 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B503a_fwd = node(B503a) {
+        // Time in block fluctuates around 10 seconds.
+        minSecondsOnBlock = 5
+        maxSecondsOnBlock = 30
+        maxSecondsEnterBlock = 10
         onEnter {
             PA.bell(Off)
         }
@@ -623,6 +630,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504v_rev = node(B504v) {
+        minSecondsOnBlock = 10
         maxSecondsOnBlock = 60
         onEnter {
             PA.horn()
@@ -630,6 +638,10 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B503a_rev = node(B503a) {
+        // Time in block fluctuates around 10 seconds.
+        minSecondsOnBlock = 5
+        maxSecondsOnBlock = 30
+        maxSecondsEnterBlock = 10
         onEnter {
             PA.horn()
         }
@@ -897,7 +909,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     throttle = PA
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max
-    maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 0	// deactivated
 
     // Whether to monitor B503a when entering B503b.
     var monitor_B503a = false
@@ -973,14 +985,26 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             // Note: this is the normal start block and is never
             // a recover block. We do not set any speed on purpose
             // (except to clear B503a below).
-            after (AM_Timer_B503b_Down_Stop) then {
+            if (!monitor_B503a) {
+                log("ML PA Recovery: Enter B503 without monitor B503a")
+                after (AM_Timer_B503b_Down_Stop) then {
+                    PA.stop()
+                    PA.horn()
+                    PA.bell(Off)
+                } and_after (5.seconds) then {
+                    PA.sound(Off)
+                } and_after (2.seconds) then {
+                    ML_Idle_Route.activate()
+                }
+            } else {
+                log("ML PA Recovery: Enter B503 with monitor B503a")
                 PA.stop()
-                PA.horn()
                 PA.bell(Off)
-            } and_after (5.seconds) then {
-                PA.sound(Off)
-            } and_after (2.seconds) then {
-                ML_Idle_Route.activate()
+                after (5.seconds) then {
+                    PA.sound(Off)
+                } and_after (2.seconds) then {
+                    ML_Idle_Route.activate()
+                }
             }
         }
 
@@ -1001,6 +1025,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Passenger
         ML_Passenger_Align_Turnouts()
+        log("ML PA Recovery: Select start node.")
         when {
             B370.active && B360.active ->   route.startNode(B360_rev, trailing=B370_rev)
             B370.active ->                  route.startNode(B370_rev)
@@ -1018,8 +1043,14 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                 monitor_B503a = true
                 route.startNode(B503b_rev, trailing=B503a_rev)
             }
-            B503a.active ->                 route.startNode(B503a_rev)
+            B503a.active -> {
+                monitor_B503a = true
+                route.startNode(B503a_rev)
+            }
             B503b.active ->                 route.startNode(B503b_rev)
+            else -> {
+               log("ML PA Recovery: WARNING: No condition for start node.")
+            }
         }
     }
 
@@ -1094,6 +1125,9 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
             B321.active && B311.active -> route.startNode(B311_rev, trailing=B321_rev)
             B321.active -> route.startNode(B321_rev)
             B311.active -> route.startNode(B311_rev)
+            else -> {
+               log("ML FR Recovery: WARNING: No condition for start node.")
+            }
         }
     }
 
