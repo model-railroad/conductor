@@ -914,7 +914,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Whether to monitor B503a when entering B503b.
     var monitor_B503a = false
 
-    fun move() {
+    fun initSound() {
         PA.bell(On)
         PA.sound(On)
         PA.horn()
@@ -922,14 +922,14 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
 
     val B370_rev = node(B370) {
         onEnter {
-            move()
+            initSound()
             PA.reverse(AM_Summit_Speed)
         }
     }
 
     val B360_rev = node(B360) {
         onEnter {
-            move()
+            initSound()
             PA.reverse(AM_Summit_Speed)
             after (AM_Timer_B360_Full_Reverse) then {
                 PA.reverse(AM_Recover_Speed)
@@ -939,7 +939,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
 
     val B340_rev = node(B340) {
         onEnter {
-            move()
+            initSound()
             PA.reverse(AM_Recover_Speed)
         }
     }
@@ -947,7 +947,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B330_rev = node(B330) {
         onEnter {
             ML_Passenger_Align_Turnouts()
-            move()
+            initSound()
             PA.reverse(AM_Sonora_Speed)
         }
     }
@@ -956,7 +956,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         maxSecondsOnBlock = 180
         onEnter {
             ML_Passenger_Align_Turnouts()
-            move()
+            initSound()
             PA.reverse(AM_Sonora_Speed)
             after (AM_Timer_B321_Down_Crossover) then {
                 PA.horn()
@@ -968,14 +968,15 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
 
     val B504_rev = node(B504) {
         onEnter {
-            move()
+            initSound()
+            PA.reverse(AM_Crossover_Speed)
             PA.horn()
         }
     }
 
     val B503a_rev = node(B503a) {
         onEnter {
-            move()
+            initSound()
             PA.reverse(AM_Crossover_Speed)
         }
     }
