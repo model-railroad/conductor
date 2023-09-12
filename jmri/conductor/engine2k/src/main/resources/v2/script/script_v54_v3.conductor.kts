@@ -522,7 +522,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504_fwd = node(B504) {
-        minSecondsOnBlock = 10
+        minSecondsOnBlock = 8
         maxSecondsOnBlock = 40
         onEnter {
             PA.horn()
@@ -599,6 +599,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B340_rev = node(B340) {
+        minSecondsOnBlock = 8
     }
 
     val B330_rev = node(B330) {
@@ -630,7 +631,7 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504_rev = node(B504) {
-        minSecondsOnBlock = 10
+        minSecondsOnBlock = 8
         maxSecondsOnBlock = 60
         onEnter {
             PA.horn()
