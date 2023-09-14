@@ -1,3 +1,4 @@
+/* vim: set ai ts=4 sts=4 et sw=4 */
 /*
  * Project: Conductor
  * Copyright (C) 2023 alf.labs gmail com,
@@ -347,6 +348,8 @@ on { ML_State.isIdle() && !ML_Toggle } then {
 
 // --- Mainline Routes
 
+val _disable_PA = true      // for emergencies when train is not working
+
 val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
@@ -388,9 +391,13 @@ ML_Idle_Route = ML_Route.idle {
 
     onIdle {
         if (ML_Toggle.active && AIU_Motion.active && PA.stopped && FR.stopped) {
-            when (ML_Train) {
-                EML_Train.Passenger -> Passenger_Route.activate()
-                EML_Train.Freight -> Freight_Route.activate()
+            if (_disable_PA) {
+                Freight_Route.activate()
+            } else {
+                when (ML_Train) {
+                    EML_Train.Passenger -> Passenger_Route.activate()
+                    EML_Train.Freight -> Freight_Route.activate()
+                }
             }
         }
     }
@@ -400,7 +407,7 @@ val ML_Wait_Route = ML_Route.idle {
     // The wait route creates the pause between two mainline train runs.
     name = "ML Wait"
 
-    val ML_Timer_Wait = 60.seconds  // 1 minute
+    val ML_Timer_Wait = if (_disable_PA) 120.seconds else 60.seconds  // 1 minute
 
     onActivate {
         ML_State = EML_State.Wait
