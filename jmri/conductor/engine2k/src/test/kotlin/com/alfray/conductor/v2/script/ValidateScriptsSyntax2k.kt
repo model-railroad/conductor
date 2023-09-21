@@ -104,4 +104,13 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         loadScriptFromFile("script_v54_v4_bl204+ml8330+1072")
         assertResultNoError()
     }
+
+    @Test
+    fun testScript54_v5() {
+        fileOps.writeBytes(
+            "<svg/>".toByteArray(Charsets.UTF_8),
+            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
+        loadScriptFromFile("script_v54_v5_bl204+ml8312+1067")
+        assertResultNoError()
+    }
 }

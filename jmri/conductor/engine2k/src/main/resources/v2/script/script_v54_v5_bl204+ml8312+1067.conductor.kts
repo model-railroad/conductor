@@ -275,14 +275,16 @@ var ML_Start_Counter = 0
 
 fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
 
-val _disable_PA = true      // for emergencies when train is not working
-val PA = throttle(8330) {
+// PA is UP 8312 or 8330
+val _disable_PA = false      // for emergencies when train is not working
+val PA = throttle(8312) {
     // Full mainline route -- Passenger.
     name = "PA"
     onBell  { on -> throttle.f1(on) }
     onSound { on -> throttle.f8(on) }
 }
-val FR = throttle(1072) {
+// FR is Beeline 1067 or 1072
+val FR = throttle(1067) {
     // Short mainline route -- Freight.
     name = "FR"
     onBell  { on -> throttle.f1(on) }
