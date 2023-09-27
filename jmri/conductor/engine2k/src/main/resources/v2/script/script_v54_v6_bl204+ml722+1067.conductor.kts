@@ -254,6 +254,11 @@ Walthers Mainline UP 8736 / 8749:
 Walthers Mainline UP 8312 / 8330 (LokSound Essentials):
 >> Timings for NCE Momentum #3
 
+UP 722/712
+>> Timings for NCE Momentum #3
+>> F5 for Beacon light; F6 for rear number plates
+>> F8 is mute (0 for sound, Tsunami)
+
 On the RDC SP-10:
 - F0 is light (use BL Light)
 - F1 is bell
@@ -275,13 +280,13 @@ var ML_Start_Counter = 0
 
 fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
 
-// PA is UP 8312 or 8330
-val _disable_PA = true      // for emergencies when train is not working
-val PA = throttle(8312) {
+// PA is UP 722 or 712
+val _disable_PA = false      // for emergencies when train is not working
+val PA = throttle(722) {
     // Full mainline route -- Passenger.
     name = "PA"
     onBell  { on -> throttle.f1(on) }
-    onSound { on -> throttle.f8(on) }
+    onSound { on -> throttle.f8(!on) }
 }
 // FR is Beeline 1067 or 1072
 val FR = throttle(1067) {
@@ -292,6 +297,7 @@ val FR = throttle(1067) {
 }
 
 fun PA_doppler(on: Boolean) { /* no-op on 8749 */ }
+fun PA_beacon(on: Boolean) { PA.f5(on); PA.f6(on); }
 fun FR_marker (on: Boolean) { /* no-op on 1072 */ }
 
 fun ML_Passenger_Align_Turnouts() {
@@ -513,6 +519,7 @@ val Passenger_Route = ML_Route.sequence {
             PA.horn()
             ML_Passenger_Align_Turnouts()
             PA.bell(On)
+            PA_beacon(On)
             after (AM_Delayed_Horn) then {
                 PA.horn()
                 PA.forward(AM_Leaving_Speed)
@@ -663,6 +670,7 @@ val Passenger_Route = ML_Route.sequence {
                 PA.stop()
                 PA.horn()
                 PA.bell(Off)
+                PA_beacon(Off)
             } and_after (AM_Timer_Down_Station_Lights_Off) then {
                 gaEvent {
                     category = "Activation"
