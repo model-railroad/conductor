@@ -18,6 +18,10 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+/**
+ * A DCC speed on a DCC 28 speed scale.
+ * Negative for reverse, 0 for stopped, positive for forward.
+ */
 data class DccSpeed(val speed: Int) {
     val stopped: Boolean
         get() = speed == 0
@@ -29,6 +33,8 @@ data class DccSpeed(val speed: Int) {
         DccSpeed(-1 * speed)
 }
 
+/** Defines a DCC speed on a DCC 28 speed scale.
+ * Negative for reverse, 0 for stopped, positive for forward. */
 val Int.speed: DccSpeed
     get() = DccSpeed(this)
 

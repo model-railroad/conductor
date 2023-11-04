@@ -52,6 +52,10 @@ val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
 val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
+val B713a        = block ("IS713A") named "B713a"       // SDB Trolley
+val B713b        = block ("IS713B") named "B713b"       // SDB Trolley
+val B713c        = block ("IS713C") named "B713c"       // SDB Trolley
+
 
 // turnouts
 
@@ -1191,7 +1195,6 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
-val _enable_BL = true
 
 val BL = throttle(204) {
     name = "BL"
@@ -1339,7 +1342,7 @@ BL_Idle_Route = BL_Route.idle {
     }
 
     onIdle {
-        if (_enable_BL && BL_Toggle.active && AIU_Motion.active) {
+        if (BL_Toggle.active && AIU_Motion.active) {
             BL_Shuttle_Route.activate()
         }
     }
@@ -1607,6 +1610,254 @@ val BL_Recovery_Route = BL_Route.sequence {
     sequence = listOf(BL860_Reverse_rev, BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
 }
 
+
+// --------------------
+// Events Trolley Line (TL)
+// --------------------
+
+val _enable_TL = true
+
+val TL = throttle(6885) {
+    name = "TL"
+    onSound { on -> throttle.f8(on) }
+}
+
+val TL_Speed = 8.speed
+
+enum class ETL_State { Ready, Wait, Run, Recover, Error }
+
+var TL_State = ETL_State.Ready
+var TL_Start_Counter = 0
+
+fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
+
+fun TL_Send_Start_GaEvent() {
+    TL_Start_Counter++
+    gaPage {
+        url = GA_URL
+        path = "TL"
+        user = ML_Start_Counter.toString()
+    }
+    gaEvent {
+        category = "Activation"
+        action = "Start"
+        label = "TL"
+        user = ML_Start_Counter.toString()
+    }
+}
+
+fun TL_Send_Stop_GaEvent() {
+    gaEvent {
+        category = "Activation"
+        action = "Stop"
+        label = "TL"
+        user = ML_Start_Counter.toString()
+    }
+}
+
+val TL_Route = routes {
+    name = "Trolley"
+    toggle = BL_Toggle      // Trolley is active when Branchline is active.
+    status = { TL_State.toString() }
+
+    onError {
+        // --- TL State: Error
+        // The current route will trigger the corresponding TL_Recover_Route.
+        TL.stop()
+        TL.sound(Off)
+        gaEvent {
+            category = "Automation"
+            action = "Error"
+            label = "Trolley"
+            user = "Staff"
+        }
+    }
+}
+
+var TL_Idle_Route: IRoute
+TL_Idle_Route = TL_Route.idle {
+    // The idle route is where we check whether a Branchline train should start.
+    name = "Ready"
+
+    onActivate {
+        TL_State = ETL_State.Ready
+    }
+
+    onIdle {
+        if (_enable_TL && route.owner.toggle.active && AIU_Motion.active) {
+            TL_Shuttle_Route.activate()
+        }
+    }
+}
+
+val TL_Wait_Route = TL_Route.idle {
+    // The wait route creates the pause between two trolley runs.
+    name = "Wait"
+
+    val TL_Timer_Wait = 30.seconds
+
+    onActivate {
+        TL_State = ETL_State.Wait
+
+        after (TL_Timer_Wait) then {
+            TL_Idle_Route.activate()
+        }
+    }
+}
+
+val TL_Error_Route = TL_Route.idle {
+    // The error route is used when we cannot recover from an error during the recover route.
+    name = "Error"
+
+    onActivate {
+        TL_State = ETL_State.Error
+        TL.stop()
+    }
+}
+
+val TL_Shuttle_Route = TL_Route.sequence {
+    // The normal "shuttle sequence" for the trolley.
+    name = "Run"
+    throttle = TL
+    minSecondsOnBlock = 10
+    maxSecondsOnBlock = 120 // 2 minutes per Block max
+    maxSecondsEnterBlock = 20
+
+    val TL_Timer_Start_Delay = 2.seconds
+    val TL_Timer_Reverse_Delay = 40.seconds
+    val TL_Timer_Stop_Delay = 3.seconds
+    val TL_Timer_Off_Delay = 5.seconds
+
+    val B713a_fwd = node(B713a) {
+        onEnter {
+            TL.light(On)
+            TL.sound(On)
+            TL.horn()
+            after (TL_Timer_Start_Delay) then {
+                TL.forward(TL_Speed)
+            }
+        }
+    }
+
+    val B713b_fwd = node(B713b) {
+        onEnter {
+            TL.horn()
+        }
+    }
+
+    val B713c_fwd = node(B713c) {
+        onEnter {
+            TL.horn()
+            after (TL_Timer_Reverse_Delay) then {
+                TL.horn()
+                TL.reverse(TL_Speed)
+            }
+        }
+    }
+
+    val B713b_rev = node(B713b) {
+        onEnter {
+            TL.horn()
+        }
+    }
+
+    val B713a_rev = node(B713a) {
+        onEnter {
+            TL.horn()
+            // Engine 6885 will not stop in reverse.
+            // The kludge to force 6885 to stop is to change it to go forward then stop.
+            TL.forward(TL_Speed)
+            after (TL_Timer_Stop_Delay) then {
+                TL.stop()
+            } and_after (TL_Timer_Off_Delay) then {
+                TL.sound(Off)
+                TL.light(Off)
+                TL_Send_Stop_GaEvent()
+                TL_Wait_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        TL_State = ETL_State.Run
+
+        TL_Send_Start_GaEvent()
+        jsonEvent {
+            key1 = "Depart"
+            key2 = "Trolley"
+        }
+
+        throttle.incActivationCount()
+    }
+
+    onError {
+        TL_Recovery_Route.activate()
+    }
+
+    sequence = listOf(B713a_fwd, B713b_fwd, B713c_fwd, B713b_rev, B713a_rev)
+}
+
+val TL_Recovery_Route = TL_Route.sequence {
+    // Recovery mechanism for the trolley.
+    name = "Recovery"
+    throttle = TL
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
+
+    fun move() {
+        TL.sound(On)
+        TL.horn()
+        TL.reverse(TL_Speed)
+    }
+
+    val B713c_rev = node(B713c) {
+        onEnter {
+            move()
+        }
+    }
+
+    val B713b_rev = node(B713b) {
+        onEnter {
+            move()
+        }
+    }
+
+    val B713a_rev = node(B713a) {
+        onEnter {
+            TL.horn()
+            // Engine 6885 will not stop in reverse.
+            // The kludge to force 6885 to stop is to change it to go forward then stop.
+            TL.forward(TL_Speed)
+            after (3.seconds) then {
+                TL.stop()
+            } and_after (2.seconds) then {
+                TL.sound(Off)
+                TL.light(Off)
+                TL_Idle_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        TL_State = ETL_State.Recover
+        when {
+            B713c.active && B713b.active -> route.startNode(B713b_rev, trailing = B713c_rev)
+            B713c.active -> route.startNode(B713c_rev)
+            B713b.active && B713a.active -> route.startNode(B713a_rev, trailing = B713b_rev)
+            B713b.active -> route.startNode(B713b_rev)
+            B713a.active -> route.startNode(B713a_rev)
+        }
+    }
+
+    onError {
+        // We cannot recover from an error during the recover route.
+        TL.stop()
+        TL_Error_Route.activate()
+    }
+
+    sequence = listOf(B713c_rev, B713b_rev, B713a_rev)
+
+}
 
 
 // ------------------
