@@ -1391,7 +1391,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
 
-    val BL801_Parked_fwd = node(B801) {
+    val B801_Parked_fwd = node(B801) {
         onEnter {
             BL.sound(On)
             BL.horn()
@@ -1405,7 +1405,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_fwd = node(B820) {
+    val B820_Station_fwd = node(B820) {
         onEnter {
             BL.bell(Off)
             BL.forward(BL_Speed_Station)
@@ -1426,13 +1426,13 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL850_Tunnel_fwd = node(B850) {
+    val B850_Tunnel_fwd = node(B850) {
         onEnter {
             BL.horn()
         }
     }
 
-    val BL860_Reverse_fwd = node(B860) {
+    val B860_Reverse_fwd = node(B860) {
         onEnter {
             BL.horn()
             BL.bell(On)
@@ -1459,7 +1459,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL850_Tunnel_rev = node(B850) {
+    val B850_Tunnel_rev = node(B850) {
         onEnter {
             BL.horn()
         }
@@ -1474,7 +1474,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_rev = node(B820) {
+    val B820_Station_rev = node(B820) {
         onEnter {
             BL.bell(On)
             T324.normal()
@@ -1489,7 +1489,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL801_Parked_rev = node(B801) {
+    val B801_Parked_rev = node(B801) {
         onEnter {
             after (10.seconds) then {
                 BL.stop()
@@ -1520,10 +1520,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_Recovery_Route.activate()
     }
 
-    sequence = listOf(BL801_Parked_fwd, BL820_Station_fwd, B830v_fwd, BL850_Tunnel_fwd,
-        BL860_Reverse_fwd,
-        BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
-
+    sequence = listOf(B801_Parked_fwd, B820_Station_fwd, B830v_fwd, B850_Tunnel_fwd,
+        B860_Reverse_fwd,
+        B850_Tunnel_rev, B830v_rev, B820_Station_rev, B801_Parked_rev)
 }
 
 val BL_Recovery_Route = BL_Route.sequence {
@@ -1540,13 +1539,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL.reverse(BL_Speed_Station)
     }
 
-    val BL860_Reverse_rev = node(B860) {
+    val B860_Reverse_rev = node(B860) {
         onEnter {
             move()
         }
     }
 
-    val BL850_Tunnel_rev = node(B850) {
+    val B850_Tunnel_rev = node(B850) {
         onEnter {
             move()
         }
@@ -1558,13 +1557,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_rev = node(B820) {
+    val B820_Station_rev = node(B820) {
         onEnter {
             move()
         }
     }
 
-    val BL801_Parked_rev = node(B801) {
+    val B801_Parked_rev = node(B801) {
         onEnter {
             move()
         }
@@ -1582,14 +1581,14 @@ val BL_Recovery_Route = BL_Route.sequence {
     onActivate {
         BL_State = EBL_State.Recover
         when {
-            B860.active && B850.active ->   route.startNode(BL850_Tunnel_rev, trailing=BL860_Reverse_rev)
-            B860.active ->                  route.startNode(BL860_Reverse_rev)
-            B850.active ->                  route.startNode(BL850_Tunnel_rev)
-            B830v.active && B820.active ->  route.startNode(BL820_Station_rev, trailing=B830v_rev)
+            B860.active && B850.active ->   route.startNode(B850_Tunnel_rev, trailing=B860_Reverse_rev)
+            B860.active ->                  route.startNode(B860_Reverse_rev)
+            B850.active ->                  route.startNode(B850_Tunnel_rev)
+            B830v.active && B820.active ->  route.startNode(B820_Station_rev, trailing=B830v_rev)
             B830v.active ->                 route.startNode(B830v_rev)
-            B820.active && B801.active ->   route.startNode(BL801_Parked_rev, trailing=BL820_Station_rev)
-            B820.active ->                  route.startNode(BL820_Station_rev)
-            B801.active ->                  route.startNode(BL801_Parked_rev)
+            B820.active && B801.active ->   route.startNode(B801_Parked_rev, trailing=B820_Station_rev)
+            B820.active ->                  route.startNode(B820_Station_rev)
+            B801.active ->                  route.startNode(B801_Parked_rev)
             else -> {
                 // If none of the sensors are active, assume the train is in the virtual block B830.
                 // Since this is a virtual block, we need to manually trigger its active state
@@ -1607,7 +1606,7 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL_Error_Route.activate()
     }
 
-    sequence = listOf(BL860_Reverse_rev, BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
+    sequence = listOf(B860_Reverse_rev, B850_Tunnel_rev, B830v_rev, B820_Station_rev, B801_Parked_rev)
 }
 
 
@@ -1717,7 +1716,7 @@ val TL_Error_Route = TL_Route.idle {
 
 val TL_Shuttle_Route = TL_Route.sequence {
     // The normal "shuttle sequence" for the trolley.
-    name = "Run"
+    name = "Trolley"
     throttle = TL
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per Block max
@@ -1846,6 +1845,11 @@ val TL_Recovery_Route = TL_Route.sequence {
             B713b.active && B713a.active -> route.startNode(B713a_rev, trailing = B713b_rev)
             B713b.active -> route.startNode(B713b_rev)
             B713a.active -> route.startNode(B713a_rev)
+            else -> {
+                // SDB is setup such that B713c is active if the train is not found *elsewhere*.
+                // The only reason B713c may be inactive is if SDB cannot communicate with JMRI.
+                log("TL Recovery: WARNING: Engine not detected.")
+            }
         }
     }
 
