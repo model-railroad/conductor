@@ -296,9 +296,16 @@ val FR = throttle(1067) {
     onSound { on -> throttle.f8(!on) }
 }
 
-fun PA_doppler(on: Boolean) { /* no-op on 8749 */ }
-fun PA_beacon(on: Boolean) { PA.f5(on); PA.f6(on); }
-fun FR_marker (on: Boolean) { /* no-op on 1072 */ }
+fun PA_doppler(on: Boolean) {
+    /* no-op on 8749, 8330, 722 */
+}
+fun PA_beacon(on: Boolean) {
+    // For UP 712 / 722
+    PA.f5(on); PA.f6(on);
+}
+fun FR_marker (on: Boolean) {
+    /* no-op on 1067, 1072 */
+}
 
 fun ML_Passenger_Align_Turnouts() {
     T311.reverse()
