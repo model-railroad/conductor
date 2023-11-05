@@ -52,6 +52,10 @@ val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
 val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
+val B713a        = block ("IS713A") named "B713a"       // SDB Trolley
+val B713b        = block ("IS713B") named "B713b"       // SDB Trolley
+val B713c        = block ("IS713C") named "B713c"       // SDB Trolley
+
 
 // turnouts
 
@@ -296,16 +300,9 @@ val FR = throttle(1067) {
     onSound { on -> throttle.f8(!on) }
 }
 
-fun PA_doppler(on: Boolean) {
-    /* no-op on 8749, 8330, 722 */
-}
-fun PA_beacon(on: Boolean) {
-    // For UP 712 / 722
-    PA.f5(on); PA.f6(on);
-}
-fun FR_marker (on: Boolean) {
-    /* no-op on 1067, 1072 */
-}
+fun PA_doppler(on: Boolean) { /* no-op on 8749 */ }
+fun PA_beacon(on: Boolean) { PA.f5(on); PA.f6(on); }
+fun FR_marker (on: Boolean) { /* no-op on 1072 */ }
 
 fun ML_Passenger_Align_Turnouts() {
     T311.reverse()
@@ -1198,7 +1195,6 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
-val _enable_BL = true
 
 val BL = throttle(204) {
     name = "BL"
@@ -1346,7 +1342,7 @@ BL_Idle_Route = BL_Route.idle {
     }
 
     onIdle {
-        if (_enable_BL && BL_Toggle.active && AIU_Motion.active) {
+        if (BL_Toggle.active && AIU_Motion.active) {
             BL_Shuttle_Route.activate()
         }
     }
@@ -1395,7 +1391,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val BL_Timer_Station_Stop = 6.seconds
     val BL_Timer_Station_Rev3 = 8.seconds
 
-    val BL801_Parked_fwd = node(B801) {
+    val B801_Parked_fwd = node(B801) {
         onEnter {
             BL.sound(On)
             BL.horn()
@@ -1409,7 +1405,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_fwd = node(B820) {
+    val B820_Station_fwd = node(B820) {
         onEnter {
             BL.bell(Off)
             BL.forward(BL_Speed_Station)
@@ -1430,13 +1426,13 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL850_Tunnel_fwd = node(B850) {
+    val B850_Tunnel_fwd = node(B850) {
         onEnter {
             BL.horn()
         }
     }
 
-    val BL860_Reverse_fwd = node(B860) {
+    val B860_Reverse_fwd = node(B860) {
         onEnter {
             BL.horn()
             BL.bell(On)
@@ -1463,7 +1459,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL850_Tunnel_rev = node(B850) {
+    val B850_Tunnel_rev = node(B850) {
         onEnter {
             BL.horn()
         }
@@ -1478,7 +1474,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_rev = node(B820) {
+    val B820_Station_rev = node(B820) {
         onEnter {
             BL.bell(On)
             T324.normal()
@@ -1493,7 +1489,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val BL801_Parked_rev = node(B801) {
+    val B801_Parked_rev = node(B801) {
         onEnter {
             after (10.seconds) then {
                 BL.stop()
@@ -1524,10 +1520,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_Recovery_Route.activate()
     }
 
-    sequence = listOf(BL801_Parked_fwd, BL820_Station_fwd, B830v_fwd, BL850_Tunnel_fwd,
-        BL860_Reverse_fwd,
-        BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
-
+    sequence = listOf(B801_Parked_fwd, B820_Station_fwd, B830v_fwd, B850_Tunnel_fwd,
+        B860_Reverse_fwd,
+        B850_Tunnel_rev, B830v_rev, B820_Station_rev, B801_Parked_rev)
 }
 
 val BL_Recovery_Route = BL_Route.sequence {
@@ -1544,13 +1539,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL.reverse(BL_Speed_Station)
     }
 
-    val BL860_Reverse_rev = node(B860) {
+    val B860_Reverse_rev = node(B860) {
         onEnter {
             move()
         }
     }
 
-    val BL850_Tunnel_rev = node(B850) {
+    val B850_Tunnel_rev = node(B850) {
         onEnter {
             move()
         }
@@ -1562,13 +1557,13 @@ val BL_Recovery_Route = BL_Route.sequence {
         }
     }
 
-    val BL820_Station_rev = node(B820) {
+    val B820_Station_rev = node(B820) {
         onEnter {
             move()
         }
     }
 
-    val BL801_Parked_rev = node(B801) {
+    val B801_Parked_rev = node(B801) {
         onEnter {
             move()
         }
@@ -1586,14 +1581,14 @@ val BL_Recovery_Route = BL_Route.sequence {
     onActivate {
         BL_State = EBL_State.Recover
         when {
-            B860.active && B850.active ->   route.startNode(BL850_Tunnel_rev, trailing=BL860_Reverse_rev)
-            B860.active ->                  route.startNode(BL860_Reverse_rev)
-            B850.active ->                  route.startNode(BL850_Tunnel_rev)
-            B830v.active && B820.active ->  route.startNode(BL820_Station_rev, trailing=B830v_rev)
+            B860.active && B850.active ->   route.startNode(B850_Tunnel_rev, trailing=B860_Reverse_rev)
+            B860.active ->                  route.startNode(B860_Reverse_rev)
+            B850.active ->                  route.startNode(B850_Tunnel_rev)
+            B830v.active && B820.active ->  route.startNode(B820_Station_rev, trailing=B830v_rev)
             B830v.active ->                 route.startNode(B830v_rev)
-            B820.active && B801.active ->   route.startNode(BL801_Parked_rev, trailing=BL820_Station_rev)
-            B820.active ->                  route.startNode(BL820_Station_rev)
-            B801.active ->                  route.startNode(BL801_Parked_rev)
+            B820.active && B801.active ->   route.startNode(B801_Parked_rev, trailing=B820_Station_rev)
+            B820.active ->                  route.startNode(B820_Station_rev)
+            B801.active ->                  route.startNode(B801_Parked_rev)
             else -> {
                 // If none of the sensors are active, assume the train is in the virtual block B830.
                 // Since this is a virtual block, we need to manually trigger its active state
@@ -1611,9 +1606,262 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL_Error_Route.activate()
     }
 
-    sequence = listOf(BL860_Reverse_rev, BL850_Tunnel_rev, B830v_rev, BL820_Station_rev, BL801_Parked_rev)
+    sequence = listOf(B860_Reverse_rev, B850_Tunnel_rev, B830v_rev, B820_Station_rev, B801_Parked_rev)
 }
 
+
+// --------------------
+// Events Trolley Line (TL)
+// --------------------
+
+val _enable_TL = true
+
+val TL = throttle(6885) {
+    name = "TL"
+    onSound { on -> throttle.f8(on) }
+}
+
+val TL_Speed = 8.speed
+
+enum class ETL_State { Ready, Wait, Run, Recover, Error }
+
+var TL_State = ETL_State.Ready
+var TL_Start_Counter = 0
+
+fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
+
+fun TL_Send_Start_GaEvent() {
+    TL_Start_Counter++
+    gaPage {
+        url = GA_URL
+        path = "TL"
+        user = ML_Start_Counter.toString()
+    }
+    gaEvent {
+        category = "Activation"
+        action = "Start"
+        label = "TL"
+        user = ML_Start_Counter.toString()
+    }
+}
+
+fun TL_Send_Stop_GaEvent() {
+    gaEvent {
+        category = "Activation"
+        action = "Stop"
+        label = "TL"
+        user = ML_Start_Counter.toString()
+    }
+}
+
+val TL_Route = routes {
+    name = "Trolley"
+    toggle = BL_Toggle      // Trolley is active when Branchline is active.
+    status = { TL_State.toString() }
+
+    onError {
+        // --- TL State: Error
+        // The current route will trigger the corresponding TL_Recover_Route.
+        TL.stop()
+        TL.sound(Off)
+        gaEvent {
+            category = "Automation"
+            action = "Error"
+            label = "Trolley"
+            user = "Staff"
+        }
+    }
+}
+
+var TL_Idle_Route: IRoute
+TL_Idle_Route = TL_Route.idle {
+    // The idle route is where we check whether a Branchline train should start.
+    name = "Ready"
+
+    onActivate {
+        TL_State = ETL_State.Ready
+    }
+
+    onIdle {
+        if (_enable_TL && route.owner.toggle.active && AIU_Motion.active) {
+            TL_Shuttle_Route.activate()
+        }
+    }
+}
+
+val TL_Wait_Route = TL_Route.idle {
+    // The wait route creates the pause between two trolley runs.
+    name = "Wait"
+
+    val TL_Timer_Wait = 30.seconds
+
+    onActivate {
+        TL_State = ETL_State.Wait
+
+        after (TL_Timer_Wait) then {
+            TL_Idle_Route.activate()
+        }
+    }
+}
+
+val TL_Error_Route = TL_Route.idle {
+    // The error route is used when we cannot recover from an error during the recover route.
+    name = "Error"
+
+    onActivate {
+        TL_State = ETL_State.Error
+        TL.stop()
+    }
+}
+
+val TL_Shuttle_Route = TL_Route.sequence {
+    // The normal "shuttle sequence" for the trolley.
+    name = "Trolley"
+    throttle = TL
+    minSecondsOnBlock = 10
+    maxSecondsOnBlock = 120 // 2 minutes per Block max
+    maxSecondsEnterBlock = 20
+
+    val TL_Timer_Start_Delay = 2.seconds
+    val TL_Timer_Reverse_Delay = 40.seconds
+    val TL_Timer_Stop_Delay = 3.seconds
+    val TL_Timer_Off_Delay = 5.seconds
+
+    val B713a_fwd = node(B713a) {
+        onEnter {
+            TL.light(On)
+            TL.sound(On)
+            TL.horn()
+            after (TL_Timer_Start_Delay) then {
+                TL.forward(TL_Speed)
+            }
+        }
+    }
+
+    val B713b_fwd = node(B713b) {
+        onEnter {
+            TL.horn()
+        }
+    }
+
+    val B713c_fwd = node(B713c) {
+        onEnter {
+            TL.horn()
+            after (TL_Timer_Reverse_Delay) then {
+                TL.horn()
+                TL.reverse(TL_Speed)
+            }
+        }
+    }
+
+    val B713b_rev = node(B713b) {
+        onEnter {
+            TL.horn()
+        }
+    }
+
+    val B713a_rev = node(B713a) {
+        onEnter {
+            TL.horn()
+            // Engine 6885 will not stop in reverse.
+            // The kludge to force 6885 to stop is to change it to go forward then stop.
+            TL.forward(TL_Speed)
+            after (TL_Timer_Stop_Delay) then {
+                TL.stop()
+            } and_after (TL_Timer_Off_Delay) then {
+                TL.sound(Off)
+                TL.light(Off)
+                TL_Send_Stop_GaEvent()
+                TL_Wait_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        TL_State = ETL_State.Run
+
+        TL_Send_Start_GaEvent()
+        jsonEvent {
+            key1 = "Depart"
+            key2 = "Trolley"
+        }
+
+        throttle.incActivationCount()
+    }
+
+    onError {
+        TL_Recovery_Route.activate()
+    }
+
+    sequence = listOf(B713a_fwd, B713b_fwd, B713c_fwd, B713b_rev, B713a_rev)
+}
+
+val TL_Recovery_Route = TL_Route.sequence {
+    // Recovery mechanism for the trolley.
+    name = "Recovery"
+    throttle = TL
+    minSecondsOnBlock = 0       // deactivated
+    maxSecondsOnBlock = 120     // 2 minutes per block max
+
+    fun move() {
+        TL.sound(On)
+        TL.horn()
+        TL.reverse(TL_Speed)
+    }
+
+    val B713c_rev = node(B713c) {
+        onEnter {
+            move()
+        }
+    }
+
+    val B713b_rev = node(B713b) {
+        onEnter {
+            move()
+        }
+    }
+
+    val B713a_rev = node(B713a) {
+        onEnter {
+            TL.horn()
+            // Engine 6885 will not stop in reverse.
+            // The kludge to force 6885 to stop is to change it to go forward then stop.
+            TL.forward(TL_Speed)
+            after (3.seconds) then {
+                TL.stop()
+            } and_after (2.seconds) then {
+                TL.sound(Off)
+                TL.light(Off)
+                TL_Idle_Route.activate()
+            }
+        }
+    }
+
+    onActivate {
+        TL_State = ETL_State.Recover
+        when {
+            B713c.active && B713b.active -> route.startNode(B713b_rev, trailing = B713c_rev)
+            B713c.active -> route.startNode(B713c_rev)
+            B713b.active && B713a.active -> route.startNode(B713a_rev, trailing = B713b_rev)
+            B713b.active -> route.startNode(B713b_rev)
+            B713a.active -> route.startNode(B713a_rev)
+            else -> {
+                // SDB is setup such that B713c is active if the train is not found *elsewhere*.
+                // The only reason B713c may be inactive is if SDB cannot communicate with JMRI.
+                log("TL Recovery: WARNING: Engine not detected.")
+            }
+        }
+    }
+
+    onError {
+        // We cannot recover from an error during the recover route.
+        TL.stop()
+        TL_Error_Route.activate()
+    }
+
+    sequence = listOf(B713c_rev, B713b_rev, B713a_rev)
+
+}
 
 
 // ------------------
