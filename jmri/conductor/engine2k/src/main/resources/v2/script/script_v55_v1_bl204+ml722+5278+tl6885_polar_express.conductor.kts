@@ -724,8 +724,8 @@ val SP_Station_Speed    = 12.speed
 val SP_Sound_Started    = 2.seconds
 val SP_Timer_Up_Station = 10.seconds    // Time to go from Station speed to full Forward speed at startup.
 //val SP_Timer_Up_Slow    = 35.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
-val SP_Timer_Up_Stop    = 17.seconds    // Time on slow down before stop
-val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
+//val SP_Timer_Up_Stop    = 17.seconds    // Time on slow down before stop
+val SP_Timer_Up_Reverse = 28.seconds    // Time stopped before reverse
 val SP_Timer_Reverse_Horn = 2.seconds
 //val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
 //val SP_Timer_Down_Stop  = 6.seconds    // Time on slow down before stop.
@@ -733,8 +733,9 @@ val SP_Timer_Down_Off   = 20.seconds
 val SP_Sound_Stopped    = 2.seconds
 // Polar Express 5278
 val SP_Timer_Up_Slow    = 58.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
-val SP_Timer_Down_Slow  = 18.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-val SP_Timer_Down_Stop  = 14.seconds    // Time on slow down before stop.
+val SP_Timer_Up_Stop    = 24.seconds
+val SP_Timer_Down_Slow  = 18.seconds
+val SP_Timer_Down_Stop  = 10.seconds
 
 
 val Freight_Route = ML_Route.sequence {
@@ -753,7 +754,9 @@ val Freight_Route = ML_Route.sequence {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Run
         ML_Send_Start_GaEvent()
-        exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
+        //exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nFreight"
+        // Polar Express 5278
+        exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\nPolar Express"
         jsonEvent {
             key1 = "Depart"
             key2 = "Freight"
@@ -782,7 +785,9 @@ val Freight_Route = ML_Route.sequence {
     }
 
     val B321_fwd = node(B321) {
-        maxSecondsOnBlock = 180
+        //maxSecondsOnBlock = 180
+        // Polar Express 5278
+        maxSecondsOnBlock = 4*60
         onEnter {
             FR.forward(SP_Forward_Speed)
             after (SP_Timer_Up_Slow) then {
@@ -795,6 +800,10 @@ val Freight_Route = ML_Route.sequence {
                 FR.stop()
                 FR.bell(Off)
                 // This is the long stop at the station.
+            } and_after (1.seconds) then {
+                FR.stop()
+            } and_after (1.seconds) then {
+                FR.stop()
             } and_after (SP_Timer_Up_Reverse) then {
                 // Start reversing after the long stop.
                 FR.horn()
