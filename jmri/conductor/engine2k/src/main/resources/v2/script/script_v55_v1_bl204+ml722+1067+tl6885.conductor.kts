@@ -300,9 +300,16 @@ val FR = throttle(1067) {
     onSound { on -> throttle.f8(!on) }
 }
 
-fun PA_doppler(on: Boolean) { /* no-op on 8749 */ }
-fun PA_beacon(on: Boolean) { PA.f5(on); PA.f6(on); }
-fun FR_marker (on: Boolean) { /* no-op on 1072 */ }
+fun PA_doppler(on: Boolean) {
+    /* no-op on 8749, 8330, 722 */
+}
+fun PA_beacon(on: Boolean) {
+    // For UP 712 / 722
+    PA.f5(on); PA.f6(on);
+}
+fun FR_marker (on: Boolean) {
+    /* no-op on 1067, 1072 */
+}
 
 fun ML_Passenger_Align_Turnouts() {
     T311.reverse()
@@ -1195,6 +1202,7 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
+val _enable_BL = false
 
 val BL = throttle(204) {
     name = "BL"
@@ -1342,7 +1350,7 @@ BL_Idle_Route = BL_Route.idle {
     }
 
     onIdle {
-        if (BL_Toggle.active && AIU_Motion.active) {
+        if (_enable_BL && BL_Toggle.active && AIU_Motion.active) {
             BL_Shuttle_Route.activate()
         }
     }
@@ -1723,7 +1731,7 @@ val TL_Shuttle_Route = TL_Route.sequence {
     maxSecondsEnterBlock = 20
 
     val TL_Timer_Start_Delay = 2.seconds
-    val TL_Timer_Reverse_Delay = 40.seconds
+    val TL_Timer_Reverse_Delay = 30.seconds
     val TL_Timer_Stop_Delay = 3.seconds
     val TL_Timer_Off_Delay = 5.seconds
 
