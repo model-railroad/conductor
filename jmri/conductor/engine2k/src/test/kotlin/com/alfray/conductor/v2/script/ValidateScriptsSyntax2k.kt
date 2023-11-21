@@ -128,7 +128,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v55_v1_bl204+ml722+1067+tl6885")
+        loadScriptFromFile("script_v55_v1_bl204+ml722+5278+tl6885_polar_express")
         assertResultNoError()
     }
 }

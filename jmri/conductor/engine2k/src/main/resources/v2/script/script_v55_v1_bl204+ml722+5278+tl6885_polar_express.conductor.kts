@@ -215,10 +215,14 @@ on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Pa
     exportedVars.rtacPsaText = "{c:blue}Next Train:\\nPassenger\\nLeaving in 1 minute"
 }
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight"
+    //exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight"
+    // Polar Express 5278
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nPolar Express"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
+    //exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nFreight\\nLeaving in 1 minute"
+    // Polar Express 5278
+    exportedVars.rtacPsaText = "{c:#FF008800}Next Train:\\nPolar Express\\nLeaving in 1 minute"
 }
 
 // --------------------
@@ -295,7 +299,8 @@ val PA = throttle(722) {
     onSound { on -> throttle.f8(!on) }
 }
 // FR is Beeline 1067 or 1072
-val FR = throttle(1067) {
+// FR is 5278 for Polar Express
+val FR = throttle(5278) {
     // Short mainline route -- Freight.
     name = "FR"
     onBell  { on -> throttle.f1(on) }
@@ -708,20 +713,29 @@ val Passenger_Route = ML_Route.sequence {
 
 
 // Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
-val SP_Forward_Speed    = 8.speed
-val SP_Reverse_Speed    = 4.speed
-val SP_Station_Speed    = 2.speed
+//val SP_Forward_Speed    = 8.speed
+//val SP_Reverse_Speed    = 4.speed
+//val SP_Station_Speed    = 2.speed
+// Polar Express 5278
+val SP_Forward_Speed    = 16.speed
+val SP_Reverse_Speed    = 15.speed
+val SP_Station_Speed    = 12.speed
 
 val SP_Sound_Started    = 2.seconds
 val SP_Timer_Up_Station = 10.seconds    // Time to go from Station speed to full Forward speed at startup.
-val SP_Timer_Up_Slow    = 35.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+//val SP_Timer_Up_Slow    = 35.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
 val SP_Timer_Up_Stop    = 17.seconds    // Time on slow down before stop
 val SP_Timer_Up_Reverse = 30.seconds    // Time stopped before reverse
 val SP_Timer_Reverse_Horn = 2.seconds
-val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-val SP_Timer_Down_Stop  = 6.seconds    // Time on slow down before stop.
+//val SP_Timer_Down_Slow  = 24.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+//val SP_Timer_Down_Stop  = 6.seconds    // Time on slow down before stop.
 val SP_Timer_Down_Off   = 20.seconds
 val SP_Sound_Stopped    = 2.seconds
+// Polar Express 5278
+val SP_Timer_Up_Slow    = 58.seconds    // B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
+val SP_Timer_Down_Slow  = 18.seconds    // Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
+val SP_Timer_Down_Stop  = 14.seconds    // Time on slow down before stop.
+
 
 val Freight_Route = ML_Route.sequence {
     // The mainline freight route sequence.
@@ -1627,7 +1641,7 @@ val BL_Recovery_Route = BL_Route.sequence {
 // Events Trolley Line (TL)
 // --------------------
 
-val _enable_TL = true       // for emergencies when train is not working
+val _enable_TL = false       // for emergencies when train is not working
 
 val TL = throttle(6885) {
     name = "TL"
