@@ -284,8 +284,10 @@ var ML_Start_Counter = 0
 
 fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
 
+val _enable_FR = true       // for emergencies when one of the trains is not working
+val _enable_PA = true
+
 // PA is UP 722 or 712
-val _disable_PA = false      // for emergencies when train is not working
 val PA = throttle(722) {
     // Full mainline route -- Passenger.
     name = "PA"
@@ -410,8 +412,10 @@ ML_Idle_Route = ML_Route.idle {
 
     onIdle {
         if (ML_Toggle.active && AIU_Motion.active && PA.stopped && FR.stopped) {
-            if (_disable_PA) {
+            if (!_enable_PA) {
                 Freight_Route.activate()
+            } else if (!_enable_FR) {
+                Passenger_Route.activate()
             } else {
                 when (ML_Train) {
                     EML_Train.Passenger -> Passenger_Route.activate()
@@ -426,7 +430,8 @@ val ML_Wait_Route = ML_Route.idle {
     // The wait route creates the pause between two mainline train runs.
     name = "ML Wait"
 
-    val ML_Timer_Wait = if (_disable_PA) 120.seconds else 60.seconds  // 1 minute
+    // Wait 1 minute (or wait 2 if one of the routes is disabled)
+    val ML_Timer_Wait = if (_enable_FR xor _enable_PA) 120.seconds else 60.seconds
 
     onActivate {
         ML_State = EML_State.Wait
@@ -1202,7 +1207,7 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
-val _enable_BL = false
+val _enable_BL = true       // for emergencies when train is not working
 
 val BL = throttle(204) {
     name = "BL"
@@ -1622,14 +1627,14 @@ val BL_Recovery_Route = BL_Route.sequence {
 // Events Trolley Line (TL)
 // --------------------
 
-val _enable_TL = true
+val _enable_TL = true       // for emergencies when train is not working
 
 val TL = throttle(6885) {
     name = "TL"
     onSound { on -> throttle.f8(on) }
 }
 
-val TL_Speed = 8.speed
+val TL_Speed = 4.speed
 
 enum class ETL_State { Ready, Wait, Run, Recover, Error }
 
