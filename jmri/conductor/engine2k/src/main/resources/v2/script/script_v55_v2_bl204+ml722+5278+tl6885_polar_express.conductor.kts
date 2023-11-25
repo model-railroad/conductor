@@ -54,7 +54,6 @@ val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
 val B713a        = block ("IS713A") named "B713a"       // SDB Trolley
 val B713b        = block ("IS713B") named "B713b"       // SDB Trolley
-val B713c        = block ("IS713C") named "B713c"       // SDB Trolley
 
 
 // turnouts
@@ -1650,11 +1649,15 @@ val BL_Recovery_Route = BL_Route.sequence {
 // Events Trolley Line (TL)
 // --------------------
 
-val _enable_TL = false       // for emergencies when train is not working
+val _enable_TL = true       // for debug // for emergencies when train is not working
 
 val TL = throttle(6885) {
     name = "TL"
+    onLight { on -> throttle.f0(on)
+                    throttle.f5(on) }
+    onBell  { on -> throttle.f1(on) }
     onSound { on -> throttle.f8(on) }
+    // no horn
 }
 
 val TL_Speed = 4.speed
@@ -1716,6 +1719,8 @@ TL_Idle_Route = TL_Route.idle {
 
     onActivate {
         TL_State = ETL_State.Ready
+        TL.light(Off)
+        TL.sound(Off)
     }
 
     onIdle {
@@ -1758,8 +1763,10 @@ val TL_Shuttle_Route = TL_Route.sequence {
     maxSecondsOnBlock = 120 // 2 minutes per Block max
     maxSecondsEnterBlock = 20
 
-    val TL_Timer_Start_Delay = 2.seconds
-    val TL_Timer_Reverse_Delay = 30.seconds
+    val TL_Timer_Start_Delay1= 3.seconds
+    val TL_Timer_Start_Delay = 3.seconds
+    val TL_Timer_Reverse_Delay = 43.seconds
+    val TL_Timer_Kludge_Delay = 3.seconds
     val TL_Timer_Stop_Delay = 3.seconds
     val TL_Timer_Off_Delay = 5.seconds
 
@@ -1767,8 +1774,11 @@ val TL_Shuttle_Route = TL_Route.sequence {
         onEnter {
             TL.light(On)
             TL.sound(On)
-            TL.horn()
-            after (TL_Timer_Start_Delay) then {
+            after (5.seconds) then {
+                TL.reverse(1.speed)
+            } and_after (1.seconds) then {
+                TL.stop()
+            } and_after (1.seconds) then {
                 TL.forward(TL_Speed)
             }
         }
@@ -1776,33 +1786,26 @@ val TL_Shuttle_Route = TL_Route.sequence {
 
     val B713b_fwd = node(B713b) {
         onEnter {
-            TL.horn()
-        }
-    }
-
-    val B713c_fwd = node(B713c) {
-        onEnter {
-            TL.horn()
+            TL.sound(On)
+            TL.bell(On)
             after (TL_Timer_Reverse_Delay) then {
-                TL.horn()
+                TL.bell(Off)
                 TL.reverse(TL_Speed)
             }
         }
     }
 
-    val B713b_rev = node(B713b) {
-        onEnter {
-            TL.horn()
-        }
-    }
-
     val B713a_rev = node(B713a) {
         onEnter {
-            TL.horn()
+            TL.bell(On)
             // Engine 6885 will not stop in reverse.
             // The kludge to force 6885 to stop is to change it to go forward then stop.
-            TL.forward(TL_Speed)
-            after (TL_Timer_Stop_Delay) then {
+            TL.forward(2.speed)
+            after (TL_Timer_Kludge_Delay) then {
+                TL.bell(Off)
+                TL.stop()
+                TL.forward(2.speed)
+            } and_after (TL_Timer_Stop_Delay) then {
                 TL.stop()
             } and_after (TL_Timer_Off_Delay) then {
                 TL.sound(Off)
@@ -1829,7 +1832,7 @@ val TL_Shuttle_Route = TL_Route.sequence {
         TL_Recovery_Route.activate()
     }
 
-    sequence = listOf(B713a_fwd, B713b_fwd, B713c_fwd, B713b_rev, B713a_rev)
+    sequence = listOf(B713a_fwd, B713b_fwd, B713a_rev)
 }
 
 val TL_Recovery_Route = TL_Route.sequence {
@@ -1845,12 +1848,6 @@ val TL_Recovery_Route = TL_Route.sequence {
         TL.reverse(TL_Speed)
     }
 
-    val B713c_rev = node(B713c) {
-        onEnter {
-            move()
-        }
-    }
-
     val B713b_rev = node(B713b) {
         onEnter {
             move()
@@ -1862,8 +1859,13 @@ val TL_Recovery_Route = TL_Route.sequence {
             TL.horn()
             // Engine 6885 will not stop in reverse.
             // The kludge to force 6885 to stop is to change it to go forward then stop.
-            TL.forward(TL_Speed)
-            after (3.seconds) then {
+            after (1.seconds) then {
+                TL.forward(2.speed)
+            } and_after (1.seconds) then {
+                TL.stop()
+            } and_after (1.seconds) then {
+                TL.forward(2.speed)
+            } and_after (1.seconds) then {
                 TL.stop()
             } and_after (2.seconds) then {
                 TL.sound(Off)
@@ -1876,14 +1878,12 @@ val TL_Recovery_Route = TL_Route.sequence {
     onActivate {
         TL_State = ETL_State.Recover
         when {
-            B713c.active && B713b.active -> route.startNode(B713b_rev, trailing = B713c_rev)
-            B713c.active -> route.startNode(B713c_rev)
             B713b.active && B713a.active -> route.startNode(B713a_rev, trailing = B713b_rev)
             B713b.active -> route.startNode(B713b_rev)
             B713a.active -> route.startNode(B713a_rev)
             else -> {
-                // SDB is setup such that B713c is active if the train is not found *elsewhere*.
-                // The only reason B713c may be inactive is if SDB cannot communicate with JMRI.
+                // SDB is setup such that B713b is active if the train is not found *elsewhere*.
+                // The only reason B713b may be inactive is if SDB cannot communicate with JMRI.
                 log("TL Recovery: WARNING: Engine not detected.")
             }
         }
@@ -1895,7 +1895,7 @@ val TL_Recovery_Route = TL_Route.sequence {
         TL_Error_Route.activate()
     }
 
-    sequence = listOf(B713c_rev, B713b_rev, B713a_rev)
+    sequence = listOf(B713b_rev, B713a_rev)
 
 }
 
