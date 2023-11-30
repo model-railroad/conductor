@@ -295,6 +295,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         mPaused.set(true);
         mWin.clearUpdates();
+        mLoadError.setLength(0);
 
         if (!mAdapter.isPresent()) {
             log("onWindowReload: no engine adapter.");
@@ -323,7 +324,6 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             log("Failed to load event script with the following exception:");
             LogException.logException(mLogger, TAG, e);
 
-            mLoadError.setLength(0);
             mLoadError.append(e).append('\n').append(_getStackTrace(e));
             if (mWin == null) {
                 log("Parsing Exception: " + _getStackTrace(e));
