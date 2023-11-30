@@ -470,27 +470,27 @@ fun ML_Send_Start_GaEvent() {
 }
 
 data class _AM_Data(
-    val AM_Leaving_Speed: DccSpeed        = 8.speed,
-    val AM_Summit_Speed: DccSpeed         = 8.speed,
-    val AM_Summit_Bridge_Speed: DccSpeed  = 6.speed,
-    val AM_Sonora_Speed: DccSpeed         = 12.speed,
-    val AM_Crossover_Speed: DccSpeed      = 6.speed,
-    val AM_Full_Speed: DccSpeed           = 16.speed,
-    val AM_Recover_Speed: DccSpeed        = 12.speed,
+    val Leaving_Speed: DccSpeed             = 8.speed,
+    val Summit_Speed: DccSpeed              = 8.speed,
+    val Summit_Bridge_Speed: DccSpeed       = 6.speed,
+    val Sonora_Speed: DccSpeed              = 12.speed,
+    val Crossover_Speed: DccSpeed           = 6.speed,
+    val Full_Speed: DccSpeed                = 16.speed,
+    val Recover_Speed: DccSpeed             = 12.speed,
 
-    val AM_Delayed_Horn: Delay              = 2.seconds,
-    val AM_Leaving_To_Full_Speed: Delay     = 15.seconds,
-    val AM_Timer_B321_Up_Doppler: Delay     = 27.seconds,
-    val AM_Timer_B330_Up_Resume: Delay      = 12.seconds,
-    val AM_Timer_B340_Up_Horn: Delay        = 10.seconds,
+    val Delay_Horn: Delay                   = 2.seconds,
+    val Delay_Leaving_To_Full_Speed: Delay  = 15.seconds,
+    val Delay_B321_Up_Doppler: Delay        = 27.seconds,
+    val Delay_B330_Up_Resume: Delay         = 12.seconds,
+    val Delay_B340_Up_Horn: Delay           = 10.seconds,
     /// time running at AM_Summit_Speed before stopping
-    val AM_Timer_B370_Forward_Stop: Delay   = 17.seconds,
-    val AM_Timer_B370_Pause_Delay: Delay    = 30.seconds,
-    val AM_Timer_B360_Full_Reverse: Delay   = 12.seconds,
-    val AM_Timer_B330_Down_Speed: Delay     = 8.seconds,
-    val AM_Timer_B321_Down_Crossover: Delay = 35.seconds,
-    val AM_Timer_B503b_Down_Stop: Delay     = 9.seconds,
-    val AM_Timer_Down_Station_Lights_Off: Delay = 10.seconds,
+    val Delay_B370_Forward_Stop: Delay      = 17.seconds,
+    val Delay_B370_Pause_Delay: Delay       = 30.seconds,
+    val Delay_B360_Full_Reverse: Delay      = 12.seconds,
+    val Delay_B330_Down_Speed: Delay        = 8.seconds,
+    val Delay_B321_Down_Crossover: Delay    = 35.seconds,
+    val Delay_B503b_Down_Stop: Delay        = 9.seconds,
+    val Delay_Down_Station_Lights_Off: Delay = 10.seconds,
 
     val PSA_Name: String = "Passenger"
 )
@@ -544,9 +544,9 @@ val Passenger_Route = ML_Route.sequence {
             ML_Passenger_Align_Turnouts()
             PA.bell(On)
             PA_beacon(On)
-            after (AM_Data.AM_Delayed_Horn) then {
+            after (AM_Data.Delay_Horn) then {
                 PA.horn()
-                PA.forward(AM_Data.AM_Leaving_Speed)
+                PA.forward(AM_Data.Leaving_Speed)
             }
         }
     }
@@ -573,12 +573,12 @@ val Passenger_Route = ML_Route.sequence {
         onEnter {
             // Wait for train to have cleared up T320 before switching to full speed.
             // The problem is that B321 activates as train hits diverted leg of turnout.
-            after (AM_Data.AM_Leaving_To_Full_Speed) then {
-                PA.forward(AM_Data.AM_Full_Speed)
+            after (AM_Data.Delay_Leaving_To_Full_Speed) then {
+                PA.forward(AM_Data.Full_Speed)
             }
 
             // Mid_Station doppler on the way up
-            after (AM_Data.AM_Timer_B321_Up_Doppler) then {
+            after (AM_Data.Delay_B321_Up_Doppler) then {
                 PA_doppler(On)
             } and_after (1.seconds) then {
                 PA_doppler(Off)
@@ -589,9 +589,9 @@ val Passenger_Route = ML_Route.sequence {
     val B330_fwd = node(B330) {
         onEnter {
             // Sonora speed reduction
-            PA.forward(AM_Data.AM_Sonora_Speed)
-            after (AM_Data.AM_Timer_B330_Up_Resume) then {
-                PA.forward(AM_Data.AM_Full_Speed)
+            PA.forward(AM_Data.Sonora_Speed)
+            after (AM_Data.Delay_B330_Up_Resume) then {
+                PA.forward(AM_Data.Full_Speed)
                 PA.horn()
             }
         }
@@ -600,7 +600,7 @@ val Passenger_Route = ML_Route.sequence {
     val B340_fwd = node(B340) {
         onEnter {
             // After tunnel on the way up
-            after (AM_Data.AM_Timer_B340_Up_Horn) then {
+            after (AM_Data.Delay_B340_Up_Horn) then {
                 PA.horn()
             }
         }
@@ -612,28 +612,28 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B370_end = node(B370) {
-        minSecondsOnBlock = AM_Data.AM_Timer_B370_Forward_Stop.seconds
+        minSecondsOnBlock = AM_Data.Delay_B370_Forward_Stop.seconds
         onEnter {
             after (4.seconds) then {
                 // Forward
-                PA.forward(AM_Data.AM_Summit_Speed)
+                PA.forward(AM_Data.Summit_Speed)
                 PA.bell(On)
-            } and_after (AM_Data.AM_Timer_B370_Forward_Stop) then {
+            } and_after (AM_Data.Delay_B370_Forward_Stop) then {
                 PA.stop()
                 PA.horn()
-            } and_after (AM_Data.AM_Timer_B370_Pause_Delay) then {
+            } and_after (AM_Data.Delay_B370_Pause_Delay) then {
                 // Stopped
                 PA.bell(Off)
                 PA.horn()
-                PA.reverse(AM_Data.AM_Summit_Speed)
+                PA.reverse(AM_Data.Summit_Speed)
             }
         }
     }
 
     val B360_rev = node(B360) {
         onEnter {
-            after (AM_Data.AM_Timer_B360_Full_Reverse) then {
-                PA.reverse(AM_Data.AM_Full_Speed)
+            after (AM_Data.Delay_B360_Full_Reverse) then {
+                PA.reverse(AM_Data.Full_Speed)
             }
         }
     }
@@ -645,9 +645,9 @@ val Passenger_Route = ML_Route.sequence {
     val B330_rev = node(B330) {
         onEnter {
             ML_Passenger_Align_Turnouts()
-            after (AM_Data.AM_Timer_B330_Down_Speed) then {
+            after (AM_Data.Delay_B330_Down_Speed) then {
                 PA.horn()
-                PA.reverse(AM_Data.AM_Sonora_Speed)
+                PA.reverse(AM_Data.Sonora_Speed)
             }
         }
     }
@@ -656,16 +656,16 @@ val Passenger_Route = ML_Route.sequence {
         maxSecondsOnBlock = 140
         onEnter {
             ML_Passenger_Align_Turnouts()
-            PA.reverse(AM_Data.AM_Sonora_Speed)
+            PA.reverse(AM_Data.Sonora_Speed)
             // Doppler sound
             //PA_doppler(On)
             //after (1.seconds) then {
             //    PA_doppler(Off)
             //}
-            after (AM_Data.AM_Timer_B321_Down_Crossover) then {
+            after (AM_Data.Delay_B321_Down_Crossover) then {
                 PA.horn()
                 PA.bell(On)
-                PA.reverse(AM_Data.AM_Crossover_Speed)
+                PA.reverse(AM_Data.Crossover_Speed)
             }
         }
     }
@@ -690,12 +690,12 @@ val Passenger_Route = ML_Route.sequence {
 
     val B503b_rev = node(B503b) {
         onEnter {
-            after (AM_Data.AM_Timer_B503b_Down_Stop) then {
+            after (AM_Data.Delay_B503b_Down_Stop) then {
                 PA.stop()
                 PA.horn()
                 PA.bell(Off)
                 PA_beacon(Off)
-            } and_after (AM_Data.AM_Timer_Down_Station_Lights_Off) then {
+            } and_after (AM_Data.Delay_Down_Station_Lights_Off) then {
                 gaEvent {
                     category = "Activation"
                     action = "Stop"
@@ -718,26 +718,26 @@ val Passenger_Route = ML_Route.sequence {
 // Speeds: Doodlebug: 8/4; RDC: 20/12; 804: 16/12/4; 6580: 8/6/2; 655: 16/12/8; 2468: 28/20/12; 1840: 20/16/12; 5278:16/16/12; 024: 8/6/2
 // Default values currently for FR is Beeline 1067 or 1072
 data class _SP_Data(
-    val SP_Forward_Speed: DccSpeed = 8.speed,
-    val SP_Reverse_Speed: DccSpeed    = 4.speed,
-    val SP_Station_Speed: DccSpeed    = 2.speed,
+    val Forward_Speed: DccSpeed     = 8.speed,
+    val Reverse_Speed: DccSpeed     = 4.speed,
+    val Station_Speed: DccSpeed     = 2.speed,
 
-    val SP_Sound_Started: Delay = 2.seconds,
+    val Delay_Sound_Started: Delay  = 2.seconds,
     /// Time to go from Station speed to full Forward speed at startup.
-    val SP_Timer_Up_Station: Delay = 10.seconds,
+    val Delay_Up_Station: Delay     = 10.seconds,
     /// B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
-    val SP_Timer_Up_Slow: Delay    = 35.seconds,
+    val Delay_Up_Slow: Delay        = 35.seconds,
     /// Time on slow down before stop
-    val SP_Timer_Up_Stop: Delay    = 17.seconds,
+    val Delay_Up_Stop: Delay        = 17.seconds,
     /// Time stopped before reverse
-    val SP_Timer_Up_Reverse: Delay = 28.seconds,
-    val SP_Timer_Reverse_Horn: Delay = 2.seconds,
+    val Delay_Up_Reverse: Delay     = 28.seconds,
+    val Delay_Reverse_Horn: Delay   = 2.seconds,
     /// Time before slow on B311. RDC=10, Doodlebug or 804=18. 024=21, 5278=12.
-    val SP_Timer_Down_Slow: Delay  = 24.seconds,
+    val Delay_Down_Slow: Delay      = 24.seconds,
     /// Time on slow down before stop.
-    val SP_Timer_Down_Stop: Delay  = 6.seconds,
-    val SP_Timer_Down_Off: Delay   = 20.seconds,
-    val SP_Sound_Stopped: Delay    = 2.seconds,
+    val Delay_Down_Stop: Delay      = 6.seconds,
+    val Delay_Down_Off: Delay       = 20.seconds,
+    val Delay_Sound_Stopped: Delay  = 2.seconds,
 
     val PSA_Name: String = "Freight",
 
@@ -746,13 +746,13 @@ data class _SP_Data(
 
 val SP_Data = if (FR.dccAddress == 5278) _SP_Data(
     // Polar Express 5278
-    SP_Forward_Speed    = 16.speed,
-    SP_Reverse_Speed    = 15.speed,
-    SP_Station_Speed    = 12.speed,
-    SP_Timer_Up_Slow    = 58.seconds,
-    SP_Timer_Up_Stop    = 24.seconds,
-    SP_Timer_Down_Slow  = 18.seconds,
-    SP_Timer_Down_Stop  = 13.seconds,
+    Forward_Speed    = 16.speed,
+    Reverse_Speed    = 15.speed,
+    Station_Speed    = 12.speed,
+    Delay_Up_Slow    = 58.seconds,
+    Delay_Up_Stop    = 24.seconds,
+    Delay_Down_Slow  = 18.seconds,
+    Delay_Down_Stop  = 13.seconds,
     PSA_Name = "Polar Express",
     B321_maxSecondsOnBlock = 4*60,
 ) else _SP_Data()
@@ -790,14 +790,14 @@ val Freight_Route = ML_Route.sequence {
             FR_marker(On)
             FR.sound(On)
             PA.sound(Off)
-            after (SP_Data.SP_Sound_Started) then {
+            after (SP_Data.Delay_Sound_Started) then {
                 FR.horn()
                 FR.light(On)
                 FR.bell(Off)
-                FR.forward(SP_Data.SP_Station_Speed)
+                FR.forward(SP_Data.Station_Speed)
                 ML_Freight_Align_Turnouts()
-            } and_after (SP_Data.SP_Timer_Up_Station) then {
-                FR.forward(SP_Data.SP_Forward_Speed)
+            } and_after (SP_Data.Delay_Up_Station) then {
+                FR.forward(SP_Data.Forward_Speed)
                 FR.horn()
             }
         }
@@ -806,12 +806,12 @@ val Freight_Route = ML_Route.sequence {
     val B321_fwd = node(B321) {
         maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
         onEnter {
-            FR.forward(SP_Data.SP_Forward_Speed)
-            after (SP_Data.SP_Timer_Up_Slow) then {
+            FR.forward(SP_Data.Forward_Speed)
+            after (SP_Data.Delay_Up_Slow) then {
                 FR.horn()
                 FR.bell(On)
-                FR.forward(SP_Data.SP_Station_Speed)
-            } and_after (SP_Data.SP_Timer_Up_Stop) then {
+                FR.forward(SP_Data.Station_Speed)
+            } and_after (SP_Data.Delay_Up_Stop) then {
                 // Stop in B321. Normal case is to *not* go into B330.
                 FR.horn()
                 FR.stop()
@@ -821,14 +821,14 @@ val Freight_Route = ML_Route.sequence {
                 FR.stop()
             } and_after (1.seconds) then {
                 FR.stop()
-            } and_after (SP_Data.SP_Timer_Up_Reverse) then {
+            } and_after (SP_Data.Delay_Up_Reverse) then {
                 // Start reversing after the long stop.
                 FR.horn()
-                FR.reverse(SP_Data.SP_Reverse_Speed)
+                FR.reverse(SP_Data.Reverse_Speed)
                 FR.bell(On)
-            } and_after (SP_Data.SP_Timer_Reverse_Horn) then {
+            } and_after (SP_Data.Delay_Reverse_Horn) then {
                 FR.horn()
-            } and_after (SP_Data.SP_Timer_Reverse_Horn) then {
+            } and_after (SP_Data.Delay_Reverse_Horn) then {
                 FR.horn()
                 FR.bell(Off)
                 // Normal case: continue to B311_rev.
@@ -841,7 +841,7 @@ val Freight_Route = ML_Route.sequence {
         // If we do, reverse and act on B321_rev
         minSecondsOnBlock = 0
         onEnter {
-            FR.reverse(SP_Data.SP_Reverse_Speed)
+            FR.reverse(SP_Data.Reverse_Speed)
             FR.bell(On)
         }
     }
@@ -851,7 +851,7 @@ val Freight_Route = ML_Route.sequence {
         maxSecondsOnBlock = 180
         onEnter {
             FR.horn()
-            after (SP_Data.SP_Timer_Reverse_Horn) then {
+            after (SP_Data.Delay_Reverse_Horn) then {
                 FR.horn()
             }
         }
@@ -859,18 +859,18 @@ val Freight_Route = ML_Route.sequence {
 
     val B311_rev = node(B311) {
         onEnter {
-            after (SP_Data.SP_Timer_Down_Slow) then {
+            after (SP_Data.Delay_Down_Slow) then {
                 FR.bell(On)
-            } and_after (SP_Data.SP_Timer_Down_Stop) then {
+            } and_after (SP_Data.Delay_Down_Stop) then {
                 FR.bell(Off)
                 FR.horn()
                 FR.stop()
-            } and_after (SP_Data.SP_Timer_Down_Off) then {
+            } and_after (SP_Data.Delay_Down_Off) then {
                 FR.horn()
                 FR.bell(Off)
                 FR.light(Off)
                 FR_marker(Off)
-            } and_after (SP_Data.SP_Sound_Stopped) then {
+            } and_after (SP_Data.Delay_Sound_Stopped) then {
                 FR.sound(Off)
                 PA.sound(On)
                 gaEvent {
@@ -997,16 +997,16 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B370_rev = node(B370) {
         onEnter {
             initSound()
-            PA.reverse(AM_Data.AM_Summit_Speed)
+            PA.reverse(AM_Data.Summit_Speed)
         }
     }
 
     val B360_rev = node(B360) {
         onEnter {
             initSound()
-            PA.reverse(AM_Data.AM_Summit_Speed)
-            after (AM_Data.AM_Timer_B360_Full_Reverse) then {
-                PA.reverse(AM_Data.AM_Recover_Speed)
+            PA.reverse(AM_Data.Summit_Speed)
+            after (AM_Data.Delay_B360_Full_Reverse) then {
+                PA.reverse(AM_Data.Recover_Speed)
             }
         }
     }
@@ -1014,7 +1014,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B340_rev = node(B340) {
         onEnter {
             initSound()
-            PA.reverse(AM_Data.AM_Recover_Speed)
+            PA.reverse(AM_Data.Recover_Speed)
         }
     }
 
@@ -1022,7 +1022,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         onEnter {
             ML_Passenger_Align_Turnouts()
             initSound()
-            PA.reverse(AM_Data.AM_Sonora_Speed)
+            PA.reverse(AM_Data.Sonora_Speed)
         }
     }
 
@@ -1031,11 +1031,11 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         onEnter {
             ML_Passenger_Align_Turnouts()
             initSound()
-            PA.reverse(AM_Data.AM_Sonora_Speed)
-            after (AM_Data.AM_Timer_B321_Down_Crossover) then {
+            PA.reverse(AM_Data.Sonora_Speed)
+            after (AM_Data.Delay_B321_Down_Crossover) then {
                 PA.horn()
                 PA.bell(On)
-                PA.reverse(AM_Data.AM_Crossover_Speed)
+                PA.reverse(AM_Data.Crossover_Speed)
             }
         }
     }
@@ -1043,7 +1043,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B504_rev = node(B504) {
         onEnter {
             initSound()
-            PA.reverse(AM_Data.AM_Crossover_Speed)
+            PA.reverse(AM_Data.Crossover_Speed)
             PA.horn()
         }
     }
@@ -1051,7 +1051,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
     val B503a_rev = node(B503a) {
         onEnter {
             initSound()
-            PA.reverse(AM_Data.AM_Crossover_Speed)
+            PA.reverse(AM_Data.Crossover_Speed)
         }
     }
 
@@ -1062,7 +1062,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             // (except to clear B503a below).
             if (!monitor_B503a) {
                 log("ML PA Recovery: Enter B503 without monitor B503a")
-                after (AM_Data.AM_Timer_B503b_Down_Stop) then {
+                after (AM_Data.Delay_B503b_Down_Stop) then {
                     PA.stop()
                     PA.horn()
                     PA.bell(Off)
@@ -1086,7 +1086,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         whileOccupied {
             if (monitor_B503a) {
                 if (B503a.active) {
-                    PA.reverse(AM_Data.AM_Crossover_Speed)
+                    PA.reverse(AM_Data.Crossover_Speed)
                 } else {
                     // This forces the train to stop prematurely.
                     // Its position will get fixed at the next normal run.
@@ -1151,7 +1151,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
         FR.bell(On)
         FR.sound(On)
         FR.horn()
-        FR.reverse(SP_Data.SP_Reverse_Speed)
+        FR.reverse(SP_Data.Reverse_Speed)
     }
 
     val B321_rev = node(B321) {
@@ -1167,9 +1167,9 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
             // a recover block. We do not set any speed on purpose
             // (except to clear B321 below).
             ML_Freight_Align_Turnouts()
-            after (SP_Data.SP_Timer_Down_Slow) then {
+            after (SP_Data.Delay_Down_Slow) then {
                 FR.bell(On)
-            } and_after (SP_Data.SP_Timer_Down_Stop) then {
+            } and_after (SP_Data.Delay_Down_Stop) then {
                 FR.bell(Off)
                 FR.horn()
                 FR.stop()
@@ -1183,7 +1183,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
 
         whileOccupied {
             if (B321.active) {
-                FR.reverse(SP_Data.SP_Reverse_Speed)
+                FR.reverse(SP_Data.Reverse_Speed)
             } else {
                 // This forces the train to stop prematurely.
                 // Its position will get fixed at the next normal run.
@@ -1247,26 +1247,49 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
-val _enable_BL = true       // for emergencies when train is not working
-
 val BL = throttle(204) {
     name = "BL"
     onBell  { on -> throttle.f1(on) }
     onSound { on -> throttle.f8(on) }
 }
 
-val BL_has_gyro = false
-fun BL_gyro (on: Boolean) { /*BL.f5(on)*/ }
+fun BL_gyro (on: Boolean) {
+    if (BL_Data.Has_Gyro) {
+        BL.f5(on)
+    }
+}
 
 // val CAB = throttle(2552) named "Cab"  // for SP&P engine 4070
-
-val BL_Speed = 6.speed
-val BL_Speed_Station = 4.speed
 
 enum class EBL_State { Ready, Wait, Run, Recover, Error }
 
 var BL_State = EBL_State.Ready
 var BL_Start_Counter = 0
+
+data class _BL_Data(
+    val Has_Gyro: Boolean = false,
+
+    val Speed: DccSpeed                 = 6.speed,
+    val Speed_Station: DccSpeed         = 4.speed,
+
+    val Delay_Start: Delay              =  8.seconds,
+    val Delay_Bell: Delay               =  5.seconds,
+    val Delay_UpToSpeed: Delay          = 10.seconds,
+    val Delay_Canyon_Horn_Fwd: Delay    = 23.seconds,
+    val Delay_Canyon_Horn_Rev: Delay    = 41.seconds,
+    val Delay_RevStation_Stop: Delay    =  8.seconds,
+    val Delay_RevStation_Pause: Delay   = 25.seconds,
+    val Delay_Station_Stop: Delay       =  6.seconds,
+    val Delay_Station_Rev3: Delay       =  8.seconds,
+
+    // 300=5 minutes -- change for debugging
+    val Cycle_Wait: Delay            = 300.seconds,
+
+    // for emergencies when train is not working
+    val Enable_BL: Boolean = true,
+)
+
+val BL_Data = _BL_Data()
 
 fun BL_is_Idle_State() = BL_State != EBL_State.Run && BL_State != EBL_State.Recover
 
@@ -1341,29 +1364,27 @@ on { !BL_Toggle } then {
 
 // --- BL Static State
 
-if (BL_has_gyro) {
-    // #4070 Gyro light on when moving.
-    // Caboose lights are controlled by the engine's direction.
-    on { BL.stopped } then {
-        BL_gyro(Off)
-        // CAB.light(On)
-        // CAB.f3(Off)
-        // CAB.f4(Off)
-    }
-    on { BL.forward } then {
-        BL_gyro(On)
-        // CAB.light(On)
-        // CAB.forward(1.speed)
-        // CAB.f3(Off)
-        // CAB.f4(On)
-    }
-    on { BL.reverse } then {
-        BL_gyro(On)
-        // CAB.light(On)
-        // CAB.reverse(1.speed)
-        // CAB.f3(On)
-        // CAB.f4(Off)
-    }
+// #4070 Gyro light on when moving.
+// Caboose lights are controlled by the engine's direction.
+on { BL.stopped } then {
+    BL_gyro(Off)
+    // CAB.light(On)
+    // CAB.f3(Off)
+    // CAB.f4(Off)
+}
+on { BL.forward } then {
+    BL_gyro(On)
+    // CAB.light(On)
+    // CAB.forward(1.speed)
+    // CAB.f3(Off)
+    // CAB.f4(On)
+}
+on { BL.reverse } then {
+    BL_gyro(On)
+    // CAB.light(On)
+    // CAB.reverse(1.speed)
+    // CAB.f3(On)
+    // CAB.f4(Off)
 }
 
 val BL_Route = routes {
@@ -1395,7 +1416,7 @@ BL_Idle_Route = BL_Route.idle {
     }
 
     onIdle {
-        if (_enable_BL && BL_Toggle.active && AIU_Motion.active) {
+        if (BL_Data.Enable_BL && BL_Toggle.active && AIU_Motion.active) {
             BL_Shuttle_Route.activate()
         }
     }
@@ -1405,12 +1426,11 @@ val BL_Wait_Route = BL_Route.idle {
     // The wait route creates the pause between two branchline train runs.
     name = "Wait"
 
-    val BL_Timer_Wait = 300.seconds  // 300=5 minutes -- change for debugging
 
     onActivate {
         BL_State = EBL_State.Wait
 
-        after (BL_Timer_Wait) then {
+        after (BL_Data.Cycle_Wait) then {
             BL_Idle_Route.activate()
         }
     }
@@ -1434,26 +1454,16 @@ val BL_Shuttle_Route = BL_Route.sequence {
     maxSecondsOnBlock = 120 // 2 minutes per block max
     maxSecondsEnterBlock = 30
 
-    val BL_Timer_Start_Delay = 8.seconds
-    val BL_Timer_Bell_Delay = 5.seconds
-    val BL_Timer_UpToSpeed = 10.seconds
-    val BL_Timer_CanyonHorn_Fwd = 23.seconds
-    val BL_Timer_CanyonHorn_Rev = 41.seconds
-    val BL_Timer_RevStation_Stop = 8.seconds
-    val BL_Timer_RevStation_Pause = 25.seconds
-    val BL_Timer_Station_Stop = 6.seconds
-    val BL_Timer_Station_Rev3 = 8.seconds
-
     val B801_Parked_fwd = node(B801) {
         onEnter {
             BL.sound(On)
             BL.horn()
             BL.bell(On)
-            after (BL_Timer_Start_Delay) then {
+            after (BL_Data.Delay_Start) then {
                 BL.bell(Off)
                 BL.horn()
                 BL.light(On)
-                BL.forward(BL_Speed_Station)
+                BL.forward(BL_Data.Speed_Station)
             }
         }
     }
@@ -1461,9 +1471,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B820_Station_fwd = node(B820) {
         onEnter {
             BL.bell(Off)
-            BL.forward(BL_Speed_Station)
-            after (BL_Timer_UpToSpeed) then {
-                BL.forward(BL_Speed)
+            BL.forward(BL_Data.Speed_Station)
+            after (BL_Data.Delay_UpToSpeed) then {
+                BL.forward(BL_Data.Speed)
             }
         }
     }
@@ -1473,7 +1483,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
 
             // Horn over Canyon bridge
-            after (BL_Timer_CanyonHorn_Fwd) then {
+            after (BL_Data.Delay_Canyon_Horn_Fwd) then {
                 BL.horn()
             }
         }
@@ -1489,21 +1499,21 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             BL.horn()
             BL.bell(On)
-            after (BL_Timer_RevStation_Stop) then {
+            after (BL_Data.Delay_RevStation_Stop) then {
                 // Toggle Stop/Reverse/Stop to turn off the Reverse front light on RDC 10.
                 // Next event should still be the BLReverse Stopped one.
                 BL.stop()
                 BL.horn()
                 BL.reverse(1.speed)
                 BL.stop()
-            } and_after (BL_Timer_Bell_Delay) then {
+            } and_after (BL_Data.Delay_Bell) then {
                 BL.bell(Off)
-            } and_after (BL_Timer_RevStation_Pause) then {
+            } and_after (BL_Data.Delay_RevStation_Pause) then {
                 BL.bell(On)
                 BL.horn()
             } and_after (5.seconds) then {
-                BL.reverse(BL_Speed)
-            } and_after (BL_Timer_Bell_Delay) then {
+                BL.reverse(BL_Data.Speed)
+            } and_after (BL_Data.Delay_Bell) then {
                 BL.light(On)
                 BL.bell(Off)
                 BL.sound(On)
@@ -1521,7 +1531,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B830v_rev = node(B830v) {
         onEnter {
             BL.horn()
-            after (BL_Timer_CanyonHorn_Rev) then {
+            after (BL_Data.Delay_Canyon_Horn_Rev) then {
                 BL.horn()
             }
         }
@@ -1531,13 +1541,13 @@ val BL_Shuttle_Route = BL_Route.sequence {
         onEnter {
             BL.bell(On)
             T324.normal()
-            BL.reverse(BL_Speed_Station)
-            after (BL_Timer_Station_Stop) then {
+            BL.reverse(BL_Data.Speed_Station)
+            after (BL_Data.Delay_Station_Stop) then {
                 BL.stop()
                 BL.horn()
-            } and_after (BL_Timer_Station_Rev3) then {
+            } and_after (BL_Data.Delay_Station_Rev3) then {
                 BL.horn()
-                BL.reverse(BL_Speed_Station)
+                BL.reverse(BL_Data.Speed_Station)
             }
         }
     }
@@ -1589,7 +1599,7 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL.bell(On)
         BL.sound(On)
         BL.horn()
-        BL.reverse(BL_Speed_Station)
+        BL.reverse(BL_Data.Speed_Station)
     }
 
     val B860_Reverse_rev = node(B860) {
@@ -1667,7 +1677,6 @@ val BL_Recovery_Route = BL_Route.sequence {
 // Events Trolley Line (TL)
 // --------------------
 
-val _enable_TL = true       // for debug // for emergencies when train is not working
 
 val TL = throttle(6885) {
     name = "TL"
@@ -1678,12 +1687,28 @@ val TL = throttle(6885) {
     // no horn
 }
 
-val TL_Speed = 4.speed
-
 enum class ETL_State { Ready, Wait, Run, Recover, Error }
 
 var TL_State = ETL_State.Ready
 var TL_Start_Counter = 0
+
+data class _TL_Data(
+    val Speed: DccSpeed = 4.speed,
+
+    val Delay_Start: Delay  = 5.seconds,
+    val Delay_Start2: Delay = 1.seconds,
+    val Delay_Reverse: Delay= 43.seconds,
+    val Delay_Kludge: Delay = 3.seconds,
+    val Delay_Stop: Delay   = 3.seconds,
+    val Delay_Off: Delay    = 5.seconds,
+
+    val Cycle_Wait: Delay   = 30.seconds,
+
+    // for emergencies when train is not working
+    val Enable_TL: Boolean = true
+)
+
+val TL_Data = _TL_Data()
 
 fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
 
@@ -1742,7 +1767,7 @@ TL_Idle_Route = TL_Route.idle {
     }
 
     onIdle {
-        if (_enable_TL && route.owner.toggle.active && AIU_Motion.active) {
+        if (TL_Data.Enable_TL && route.owner.toggle.active && AIU_Motion.active) {
             TL_Shuttle_Route.activate()
         }
     }
@@ -1752,12 +1777,10 @@ val TL_Wait_Route = TL_Route.idle {
     // The wait route creates the pause between two trolley runs.
     name = "Wait"
 
-    val TL_Timer_Wait = 30.seconds
-
     onActivate {
         TL_State = ETL_State.Wait
 
-        after (TL_Timer_Wait) then {
+        after (TL_Data.Cycle_Wait) then {
             TL_Idle_Route.activate()
         }
     }
@@ -1781,23 +1804,16 @@ val TL_Shuttle_Route = TL_Route.sequence {
     maxSecondsOnBlock = 120 // 2 minutes per Block max
     maxSecondsEnterBlock = 20
 
-    val TL_Timer_Start_Delay1= 3.seconds
-    val TL_Timer_Start_Delay = 3.seconds
-    val TL_Timer_Reverse_Delay = 43.seconds
-    val TL_Timer_Kludge_Delay = 3.seconds
-    val TL_Timer_Stop_Delay = 3.seconds
-    val TL_Timer_Off_Delay = 5.seconds
-
     val B713a_fwd = node(B713a) {
         onEnter {
             TL.light(On)
             TL.sound(On)
-            after (5.seconds) then {
+            after (TL_Data.Delay_Start) then {
                 TL.reverse(1.speed)
-            } and_after (1.seconds) then {
+            } and_after (TL_Data.Delay_Start2) then {
                 TL.stop()
-            } and_after (1.seconds) then {
-                TL.forward(TL_Speed)
+            } and_after (TL_Data.Delay_Start2) then {
+                TL.forward(TL_Data.Speed)
             }
         }
     }
@@ -1806,9 +1822,9 @@ val TL_Shuttle_Route = TL_Route.sequence {
         onEnter {
             TL.sound(On)
             TL.bell(On)
-            after (TL_Timer_Reverse_Delay) then {
+            after (TL_Data.Delay_Reverse) then {
                 TL.bell(Off)
-                TL.reverse(TL_Speed)
+                TL.reverse(TL_Data.Speed)
             }
         }
     }
@@ -1819,13 +1835,13 @@ val TL_Shuttle_Route = TL_Route.sequence {
             // Engine 6885 will not stop in reverse.
             // The kludge to force 6885 to stop is to change it to go forward then stop.
             TL.forward(2.speed)
-            after (TL_Timer_Kludge_Delay) then {
+            after (TL_Data.Delay_Kludge) then {
                 TL.bell(Off)
                 TL.stop()
                 TL.forward(2.speed)
-            } and_after (TL_Timer_Stop_Delay) then {
+            } and_after (TL_Data.Delay_Stop) then {
                 TL.stop()
-            } and_after (TL_Timer_Off_Delay) then {
+            } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
                 TL.light(Off)
                 TL_Send_Stop_GaEvent()
@@ -1863,7 +1879,7 @@ val TL_Recovery_Route = TL_Route.sequence {
     fun move() {
         TL.sound(On)
         TL.horn()
-        TL.reverse(TL_Speed)
+        TL.reverse(TL_Data.Speed)
     }
 
     val B713b_rev = node(B713b) {
@@ -1877,15 +1893,14 @@ val TL_Recovery_Route = TL_Route.sequence {
             TL.horn()
             // Engine 6885 will not stop in reverse.
             // The kludge to force 6885 to stop is to change it to go forward then stop.
-            after (1.seconds) then {
-                TL.forward(2.speed)
-            } and_after (1.seconds) then {
+            TL.forward(2.speed)
+            after (TL_Data.Delay_Kludge) then {
+                TL.bell(Off)
                 TL.stop()
-            } and_after (1.seconds) then {
                 TL.forward(2.speed)
-            } and_after (1.seconds) then {
+            } and_after (TL_Data.Delay_Stop) then {
                 TL.stop()
-            } and_after (2.seconds) then {
+            } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
                 TL.light(Off)
                 TL_Idle_Route.activate()
