@@ -456,7 +456,6 @@ class StatusWindow2 {
         mUpdaters.add(updater)
     }
 
-
     void updateUI() {
         mSwingBuilder.doLater {
             for (final def updater in mUpdaters) {
