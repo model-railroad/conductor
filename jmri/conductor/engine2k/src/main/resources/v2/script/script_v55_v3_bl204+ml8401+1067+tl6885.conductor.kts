@@ -287,10 +287,13 @@ val _enable_FR = true       // for emergencies when one of the trains is not wor
 val _enable_PA = true
 
 // PA is UP 722 or 712
-val PA = throttle(722) {
+val PA = throttle(8401) {
     // Full mainline route -- Passenger.
     name = "PA"
     onBell  { on -> throttle.f1(on) }
+    // LokSound 8330
+    // onSound { on -> throttle.f8(on) }
+    // Tsunami 8401
     onSound { on -> throttle.f8(!on) }
 }
 // FR is Beeline 1067 or 1072
@@ -484,6 +487,7 @@ data class _AM_Data(
     val Delay_B330_Up_Resume: Delay         = 12.seconds,
     val Delay_B340_Up_Horn: Delay           = 10.seconds,
     /// time running at AM_Summit_Speed before stopping
+    val Delay_B370_Entrance: Delay          = 4.seconds,
     val Delay_B370_Forward_Stop: Delay      = 17.seconds,
     val Delay_B370_Pause_Delay: Delay       = 30.seconds,
     val Delay_B360_Full_Reverse: Delay      = 12.seconds,
@@ -492,10 +496,19 @@ data class _AM_Data(
     val Delay_B503b_Down_Stop: Delay        = 9.seconds,
     val Delay_Down_Station_Lights_Off: Delay = 10.seconds,
 
-    val PSA_Name: String = "Passenger"
+    val PSA_Name: String = "Passenger",
 )
 
-val AM_Data = _AM_Data()
+val AM_Data = if (PA.dccAddress == 8401) _AM_Data(
+    Leaving_Speed             = 4.speed,
+    Summit_Speed              = 4.speed,
+    Summit_Bridge_Speed       = 6.speed,
+    Sonora_Speed              = 6.speed,
+    Crossover_Speed           = 4.speed,
+    Full_Speed                = 8.speed,
+    Recover_Speed             = 8.speed,
+    Delay_B370_Entrance       = 10.seconds,
+) else _AM_Data()
 
 
 val Passenger_Route = ML_Route.sequence {
@@ -614,7 +627,7 @@ val Passenger_Route = ML_Route.sequence {
     val B370_end = node(B370) {
         minSecondsOnBlock = AM_Data.Delay_B370_Forward_Stop.seconds
         onEnter {
-            after (4.seconds) then {
+            after (AM_Data.Delay_B370_Entrance) then {
                 // Forward
                 PA.forward(AM_Data.Summit_Speed)
                 PA.bell(On)
