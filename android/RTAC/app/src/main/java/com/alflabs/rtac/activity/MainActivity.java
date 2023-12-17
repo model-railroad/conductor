@@ -213,27 +213,23 @@ public class MainActivity extends FragmentActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        final int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        switch (id) {
-            case R.id.action_disconnect:
-                askDisconnect();
-                return true;
+        if (id == R.id.action_disconnect) {
+            askDisconnect();
+            return true;
 
-    // FIXME enable SetupActivity or remove
-    //        case R.id.action_setup: {
-    //            Intent i = new Intent(this, SetupActivity.class);
-    //            i.putExtra(SetupActivity.EXTRA_BOOL_SHOW_CALIBRATE, true);
-    //            startActivity(i);
-    //            return true;
-    //        }
-
-            case R.id.action_settings: {
-                Intent i = new Intent(this, PrefsActivity.class);
-                startActivity(i);
-                return true;
-            }
+        // FIXME enable SetupActivity or remove
+        //  } else if (id == R.id.action_setup) {
+        //            Intent i = new Intent(this, SetupActivity.class);
+        //            i.putExtra(SetupActivity.EXTRA_BOOL_SHOW_CALIBRATE, true);
+        //            startActivity(i);
+        //            return true;
+        } else if (id == R.id.action_settings) {
+            Intent i = new Intent(this, PrefsActivity.class);
+            startActivity(i);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
