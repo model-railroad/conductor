@@ -473,6 +473,7 @@ fun ML_Send_Start_GaEvent() {
 }
 
 data class _AM_Data(
+    // Default values for UP 8312 or 8330
     val Leaving_Speed: DccSpeed             = 8.speed,
     val Summit_Speed: DccSpeed              = 8.speed,
     val Summit_Bridge_Speed: DccSpeed       = 6.speed,
