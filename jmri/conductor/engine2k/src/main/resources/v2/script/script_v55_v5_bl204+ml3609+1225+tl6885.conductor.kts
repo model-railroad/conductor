@@ -52,8 +52,8 @@ val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
 val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
-val B713a        = block ("IS713A") named "B713a"       // SDB Trolley
-val B713b        = block ("IS713B") named "B713b"       // SDB Trolley
+val B713a        = block ("MS713a") named "B713a"       // SDB Trolley
+val B713b        = block ("MS713b") named "B713b"       // SDB Trolley
 
 
 // turnouts
