@@ -26,7 +26,7 @@ public class DevEntryPoint2 {
         System.out.println(TAG + " - Start");
         EntryPoint2 entry = new EntryPoint2();
 
-        entry.init("script_v55_v2_bl204+ml722+5278+tl6885_polar_express.conductor.kts");
+        entry.init("script_55_v6_bl204+ml3609+1067+tl6885.conductor.conductor.kts");
         entry.runDevLoop();
         System.out.println(TAG + " - End");
     }

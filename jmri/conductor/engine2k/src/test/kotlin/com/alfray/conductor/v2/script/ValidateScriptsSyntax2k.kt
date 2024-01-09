@@ -25,7 +25,7 @@ import org.junit.Test
 import javax.inject.Inject
 
 /**
- * Tests the syntax of the various script_vNN_v2.conductor.kts files.
+ * Tests the syntax of the various script_NN_v2.conductor.kts files.
  * No behavior is actually tested.
  * When adding a new script file, simply add a test here to validate the syntax upfront.
  */
@@ -47,7 +47,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v47_v2")
+        loadScriptFromFile("script_47_v2")
         assertResultNoError()
     }
 
@@ -56,7 +56,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v53_v2")
+        loadScriptFromFile("script_53_v2")
         assertResultNoError()
     }
 
@@ -65,7 +65,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v53_v3")
+        loadScriptFromFile("script_53_v3")
         assertResultNoError()
     }
 
@@ -74,7 +74,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v1_bl204+ml8312+1072")
+        loadScriptFromFile("script_54_v1_bl204+ml8312+1072")
         assertResultNoError()
     }
 
@@ -83,7 +83,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v2")
+        loadScriptFromFile("script_54_v2")
         assertResultNoError()
     }
 
@@ -92,7 +92,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v3")
+        loadScriptFromFile("script_54_v3")
         assertResultNoError()
     }
 
@@ -101,7 +101,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v4_bl204+ml8330+1072")
+        loadScriptFromFile("script_54_v4_bl204+ml8330+1072")
         assertResultNoError()
     }
 
@@ -110,7 +110,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v5_bl204+ml8312+1067")
+        loadScriptFromFile("script_54_v5_bl204+ml8312+1067")
         assertResultNoError()
     }
 
@@ -119,16 +119,34 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v54_v6_bl204+ml722+1067")
+        loadScriptFromFile("script_54_v6_bl204+ml722+1067")
         assertResultNoError()
     }
 
     @Test
-    fun testScript55_v1() {
+    fun testScript55_v2() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
-        loadScriptFromFile("script_v55_v2_bl204+ml722+5278+tl6885_polar_express")
+        loadScriptFromFile("script_55_v2_bl204+ml722+5278+tl6885_polar_express")
+        assertResultNoError()
+    }
+
+    @Test
+    fun testScript55_v5() {
+        fileOps.writeBytes(
+            "<svg/>".toByteArray(Charsets.UTF_8),
+            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
+        loadScriptFromFile("script_55_v5_bl204+ml3609+1225+tl6885")
+        assertResultNoError()
+    }
+
+    @Test
+    fun testScript55_v6() {
+        fileOps.writeBytes(
+            "<svg/>".toByteArray(Charsets.UTF_8),
+            fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
+        loadScriptFromFile("script_55_v6_bl204+ml3609+1067+tl6885")
         assertResultNoError()
     }
 }
