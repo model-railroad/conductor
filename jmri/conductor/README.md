@@ -131,6 +131,8 @@ The full GPL license is available in the file "LICENSE-gpl-3.0.txt".
 
 ## Building
 
+Java JDK 11 is the minimum version supported.
+
 Before building, the git submodules must be imported:
 
     $ android/RTAC/_init.sh -f
@@ -158,7 +160,7 @@ To build and use this from IntelliJ using the Community Edition:
     - Main Class: `com.alflabs.conductor.v2.DevEntryPoint2`.
     - Workding dir: Set to `.../automation/jmri/conductor`.
     - Use classpath of module: `-cp conductor`.
-    - JRE: 1.8.
+    - JRE: 11.
     - Before launch: Build.
   - Gradle > Name "All Tests"
     - Check Single Instance Only.
@@ -178,7 +180,7 @@ To build and use this from IntelliJ using the Community Edition:
     - Search for tests: in single module.
     - Working dir: Set to ".../automation/jmri/conductor" (or $MODULE_DIR).
     - Use classpath of module: conductor_test.
-    - JRE: 1.8.
+    - JRE: 11.
     - Before launch: Build.
 
 Issue: On Windows with DPI scaling, the Java UI does not scale properly.
