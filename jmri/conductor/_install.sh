@@ -35,6 +35,6 @@ echo; echo "---- Building with gradle..."
 ./gradlew $GRADLE_CMD --console=plain $@
 echo; echo "---- Copying files..."
 op src/Conductor.py                          jython/Conductor.py
-op build/libs/conductor-2.0-SNAPSHOT-all.jar lib/conductor.jar
+op build/libs/conductor-2.1-SNAPSHOT-all.jar lib/conductor.jar
 
 if [[ ! -d "$JDIR" ]]; then echo; echo "==> NOT COPIED TO JMRI --- Missing $JDIR"; echo; exit 1; fi
