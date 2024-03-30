@@ -62,5 +62,4 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$vers_mockito"
     testImplementation "com.google.guava:guava:$vers_guava"
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$vers_mockito_kotlin"
-
 }

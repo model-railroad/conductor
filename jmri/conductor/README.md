@@ -151,15 +151,17 @@ This works under Linux or under Windows using Cygwin 64.
 
 To build and use this from IntelliJ using the Community Edition:
 
+- File > Settings > Build > Gradle:
+  - Ensure "Gradle JVM" is 11.
 - Open Existing Project located in the `jmri/conductor` directory.
 - Build > Build Project at least once (to load dependencies and build the main classes).
-- File > Project Structure > Project > Project SDK: JRE or JDK 1.8.
+- File > Project Structure > Project > Project SDK: JRE or JDK 11.
 - Create Run/Debug Configurations:
   - Application > Name `DevEntryPoint2`
     - Check Single Instance Only.
+    - Use classpath of module: `-cp conductor` or `-cp conductor.main`.
     - Main Class: `com.alflabs.conductor.v2.DevEntryPoint2`.
     - Workding dir: Set to `.../automation/jmri/conductor`.
-    - Use classpath of module: `-cp conductor`.
     - JRE: 11.
     - Before launch: Build.
   - Gradle > Name "All Tests"

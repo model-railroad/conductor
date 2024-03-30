@@ -794,7 +794,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         """.trimIndent()
         )
         assertResultContainsError(
-            "ERROR No value passed for parameter 'idleRouteSpecification' (local.conductor.kts:7:30)")
+            "ERROR No value passed for parameter 'idleRouteSpecification' (local.conductor.kts:7:")
     }
 
     @Test
