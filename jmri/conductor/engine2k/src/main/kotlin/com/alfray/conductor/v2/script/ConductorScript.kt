@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script
 import com.alfray.conductor.v2.script.dsl.IConductor
 import kotlin.script.experimental.annotations.KotlinScript
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.api.compilerOptions
 import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jvm
 
@@ -48,6 +49,7 @@ object ConductorScriptConfiguration : ScriptCompilationConfiguration({
             "engine2k",
         )
     }
+    compilerOptions.append("-Xadd-modules=ALL-MODULE-PATH")
     // defaultImports {}
 })
 
