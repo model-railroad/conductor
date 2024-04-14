@@ -141,6 +141,7 @@ This script will checkout the
 [LibUtils](https://bitbucket.org/ralfoide/libutils) submodule which
 is used by both __RTAC__ and __Conductor__.
 
+Verify that android/RTAC/LibUtils is using the branch `android-lib-v3`.
 
 To build this from the command-line:
 
@@ -151,11 +152,14 @@ This works under Linux or under Windows using Cygwin 64.
 
 To build and use this from IntelliJ using the Community Edition:
 
-- File > Settings > Build > Gradle:
+- Verify the android/RTAC/LibUtils branch (see above).
+- File > Settings > Build > Build Tools > Gradle:
   - Ensure "Gradle JVM" is 11.
 - Open Existing Project located in the `jmri/conductor` directory.
 - Build > Build Project at least once (to load dependencies and build the main classes).
 - File > Project Structure > Project > Project SDK: JRE or JDK 11.
+- Since IJ 2024.1, there are predefined Run Configurations in `jmri/conductor/.run`.
+  They seem to be loaded automatically. Otherwise, they are defined as follows:
 - Create Run/Debug Configurations:
   - Application > Name `DevEntryPoint2`
     - Check Single Instance Only.
