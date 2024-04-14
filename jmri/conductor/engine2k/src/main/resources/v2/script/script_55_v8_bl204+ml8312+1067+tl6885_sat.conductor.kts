@@ -49,6 +49,7 @@ val B503a        = block ("NS786") named "B503a"        // 50:3
 val B503b        = block ("NS787") named "B503b"        // 50:4
 val AIU_Motion   = sensor("NS797") named "AIU-Motion"   // 50:14
 
+val Sat_Toggle   = sensor("NS827") named "Saturday"     // 52:12
 val BL_Toggle    = sensor("NS828") named "BL-Toggle"    // 52:13
 val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
