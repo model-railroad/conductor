@@ -535,7 +535,7 @@ class StatusWindow2 {
             }
             if (element instanceof SVGElement) {
                 String id = element.getId()
-                if (id != null && (id.startsWith("S-NS") || id.startsWith("T-NT"))) {
+                if (id != null && (id.startsWith("S-") || id.startsWith("T-"))) {
                     //if (VERBOSE) println(TAG + "Add onClick listener to id = $id") // -- for debugging
                     element.addEventListener("click", onClick, false /* useCapture */)
                 }

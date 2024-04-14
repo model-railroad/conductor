@@ -1742,6 +1742,8 @@ data class _TL_Data(
 
     val Cycle_Wait: Delay   = 30.seconds,
 
+    val Delay_Recovery: Delay = 600.seconds,
+
     // for emergencies when train is not working
     val Enable_TL: Boolean = true
 )
@@ -1961,9 +1963,15 @@ val TL_Recovery_Route = TL_Route.sequence {
     }
 
     onError {
-        // We cannot recover from an error during the recover route.
         TL.stop()
-        TL_Error_Route.activate()
+
+        // We cannot recover from an error during the recover route.
+        // Previous behavior was to abandon by calling:
+        //     TL_Error_Route.activate()
+        // New behavior is to wait for a long time (e.g. 1 hour) then retry recovery.
+        after (TL_Data.Delay_Recovery) then {
+            TL_Idle_Route.activate()
+        }
     }
 
     sequence = listOf(B713b_rev, B713a_rev)

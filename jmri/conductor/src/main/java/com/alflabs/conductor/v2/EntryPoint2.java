@@ -387,7 +387,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         final AtomicBoolean processed = new AtomicBoolean();
         mSimul2kComponent.ifPresent(comp -> {
             IJmriProvider jmri = comp.getJmriProvider();
-            if (itemId.startsWith("S-NS")) {
+            if (itemId.startsWith("S-")) {
                 String blockId = itemId.substring(2);
                 IJmriSensor sensor = jmri.getSensor(blockId);
                 if (sensor != null) {
