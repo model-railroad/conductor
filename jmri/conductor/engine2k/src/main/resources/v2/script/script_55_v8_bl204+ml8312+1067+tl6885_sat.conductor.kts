@@ -152,7 +152,7 @@ on { BL_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     BL_Toggle.active(Off)
 }
 
-on { ML_Toggle } then {
+on { ML_Toggle.active && ML_Saturday.isOff() } then {
     exportedVars.rtacPsaText = "Automation Started"
 }
 
@@ -161,11 +161,11 @@ on { !ML_Toggle && exportedVars.conductorTime == End_Of_Day_HHMM } then {
 }
 
 on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM
-                && ML_Saturday == EML_Saturday.Off } then {
+                && ML_Saturday.isOff() } then {
     exportedVars.rtacPsaText = "{c:red}Automation Stopped"
 }
 
-on { ML_Saturday != EML_Saturday.Off && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+on { !ML_Saturday.isOff() && exportedVars.conductorTime != End_Of_Day_HHMM } then {
     exportedVars.rtacPsaText = "{c:red}Saturday Trains Running"
 }
 
@@ -281,7 +281,7 @@ On the RDC SP-10:
 */
 
 enum class EML_State { Ready, Wait, Run, Recover, Error }
-enum class EML_Train { Passenger, Freight, }
+enum class EML_Train { Passenger, Freight, Saturday }
 enum class EML_Saturday { Off, Setup, On, Reset }
 
 var ML_State = EML_State.Ready
@@ -289,9 +289,10 @@ var ML_Train = EML_Train.Passenger
 var ML_Saturday = if (Sat_Toggle.active) EML_Saturday.On else EML_Saturday.Off
 var ML_Start_Counter = 0
 
+fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
 fun EML_State.isIdle() = ML_State != EML_State.Run
         && ML_State != EML_State.Recover
-        && ML_Saturday == EML_Saturday.Off
+        && ML_Saturday.isOff()
 
 val _enable_FR = true       // for emergencies when one of the trains is not working
 val _enable_PA = true
@@ -391,10 +392,10 @@ val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
     status = {
-        if (ML_Saturday == EML_Saturday.Off)
+        if (ML_Saturday.isOff())
             "$ML_Train $ML_State"
         else
-            "Saturday $ML_Saturday"
+            "$ML_Train $ML_Saturday"
     }
 
     onError {
@@ -436,7 +437,7 @@ ML_Idle_Route = ML_Route.idle {
                 && AIU_Motion.active
                 && PA.stopped
                 && FR.stopped
-                && ML_Saturday == EML_Saturday.Off) {
+                && ML_Saturday.isOff()) {
             if (!_enable_PA) {
                 Freight_Route.activate()
             } else if (!_enable_FR) {
@@ -445,9 +446,10 @@ ML_Idle_Route = ML_Route.idle {
                 when (ML_Train) {
                     EML_Train.Passenger -> Passenger_Route.activate()
                     EML_Train.Freight -> Freight_Route.activate()
+                    EML_Train.Saturday -> { /* no-op */ }
                 }
             }
-        } else if (ML_Saturday == EML_Saturday.Off && Sat_Toggle.active) {
+        } else if (ML_Saturday.isOff() && Sat_Toggle.active) {
             SaturdaySetup_Route.activate()
         } else if (ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
             SaturdayReset_Route.activate()
@@ -968,6 +970,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     }
 
     onActivate {
+        ML_Train = EML_Train.Saturday
         ML_Saturday = EML_Saturday.Setup
     }
 
@@ -1125,8 +1128,9 @@ val SaturdayReset_Route = ML_Route.sequence {
             } and_after (SP_Data.Delay_Sound_Stopped) then {
                 FR.sound(Off)
                 PA.sound(Off)
+                ML_Train = EML_Train.Passenger
                 ML_Saturday = EML_Saturday.Off
-                ML_Wait_Route.activate()
+                ML_Idle_Route.activate()
             }
         }
     }
