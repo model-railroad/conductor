@@ -160,8 +160,12 @@ on { !ML_Toggle && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     exportedVars.rtacPsaText = "{c:red}Automation Turned Off\\nat 4:50 PM"
 }
 
-on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+on { !ML_Toggle && !ML_Saturday && exportedVars.conductorTime != End_Of_Day_HHMM } then {
     exportedVars.rtacPsaText = "{c:red}Automation Stopped"
+}
+
+on { !ML_Toggle && ML_Saturday.active && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+    exportedVars.rtacPsaText = "{c:red}Saturday Trains Running"
 }
 
 // ---------------------
@@ -277,9 +281,11 @@ On the RDC SP-10:
 
 enum class EML_State { Ready, Wait, Run, Recover, Error }
 enum class EML_Train { Passenger, Freight, }
+enum class EML_Saturday { Off, Setup, On, Reset }
 
 var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
+var ML_Saturday = if (Sat_Toggle.active) EML_Saturday.On else EML_Saturday.Off
 var ML_Start_Counter = 0
 
 fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
@@ -418,7 +424,11 @@ ML_Idle_Route = ML_Route.idle {
     }
 
     onIdle {
-        if (ML_Toggle.active && AIU_Motion.active && PA.stopped && FR.stopped) {
+        if (ML_Toggle.active
+                && AIU_Motion.active
+                && PA.stopped
+                && FR.stopped
+                && ML_Saturday == EML_Saturday.Off) {
             if (!_enable_PA) {
                 Freight_Route.activate()
             } else if (!_enable_FR) {
@@ -429,6 +439,10 @@ ML_Idle_Route = ML_Route.idle {
                     EML_Train.Freight -> Freight_Route.activate()
                 }
             }
+        } else if (ML_Saturday == EML_Saturday.Off && Sat_Toggle.active) {
+            SaturdaySetup_Route.activate()
+        } else if (ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
+            SaturdayReset_Route.activate()
         }
     }
 }
@@ -767,6 +781,11 @@ data class _SP_Data(
     val Delay_Down_Off: Delay       = 20.seconds,
     val Delay_Sound_Stopped: Delay  = 2.seconds,
 
+    // Saturday Mode Delays
+    val Delay_Saturday_Into_B321: Delay = 10.seconds,
+    val Delay_Saturday_Into_B503: Delay = 5.seconds,
+    val Delay_Saturday_Stop: Delay = 3.seconds,
+
     val PSA_Name: String = "Freight",
 
     val B321_maxSecondsOnBlock: Int = 3*60,
@@ -927,6 +946,180 @@ val Freight_Route = ML_Route.sequence {
     sequence = listOf(B311_start, B321_fwd, B311_rev)
     branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
 }
+
+val SaturdaySetup_Route = ML_Route.sequence {
+    // The route sequence to move Freight train into Saturday Mode.
+    name = "Saturday"
+    throttle = FR
+    minSecondsOnBlock = 10
+    maxSecondsOnBlock = 120 // 2 minutes per block max
+    maxSecondsEnterBlock = 30
+
+    onError {
+        // no-op
+    }
+
+    onActivate {
+        ML_Saturday = EML_Saturday.Setup
+    }
+
+    val B311_start = node(B311) {
+        onEnter {
+            FR.light(On)
+            FR.sound(On)
+            PA.sound(Off)
+            after (SP_Data.Delay_Sound_Started) then {
+                FR.horn()
+                FR.light(On)
+                FR.bell(Off)
+                FR.forward(SP_Data.Station_Speed)
+                ML_Freight_Align_Turnouts()
+                T311.normal()
+            }
+        }
+    }
+
+    val B321_fwd = node(B321) {
+        maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
+        onEnter {
+            FR.forward(SP_Data.Station_Speed)
+            after (SP_Data.Delay_Saturday_Into_B321) then {
+                FR.horn()
+                FR.bell(On)
+                // Stop in B321. Normal case is to *not* go into B330.
+                FR.stop()
+            } and_after (SP_Data.Delay_Saturday_Stop) then {
+                // Reverse into storage track
+                T311.reverse()
+                FR.horn()
+                FR.reverse(SP_Data.Reverse_Speed)
+            }
+        }
+    }
+
+    val B504_rev = node(B504) {
+        minSecondsOnBlock = 0
+        maxSecondsOnBlock = 40
+        onEnter {
+            FR.horn()
+            FR.reverse(SP_Data.Reverse_Speed)
+            FR.bell(On)
+        }
+    }
+
+    val B503a_rev = node(B503a) {
+        minSecondsOnBlock = 0
+        maxSecondsOnBlock = 0
+        onEnter {
+            FR.horn()
+            FR.reverse(SP_Data.Reverse_Speed)
+            FR.bell(On)
+            after (SP_Data.Delay_Saturday_Into_B503) then {
+                FR.horn()
+                FR.bell(Off)
+                FR.stop()
+            } and_after (1.seconds) then {
+                FR.light(Off)
+                FR.sound(Off)
+                PA.sound(Off)
+            } and_after (1.seconds) then {
+                ML_Saturday = EML_Saturday.On
+                ML_Idle_Route.activate()
+            }
+        }
+    }
+
+    sequence = listOf(B311_start, B321_fwd, B504_rev, B503a_rev)
+}
+
+
+
+val SaturdayReset_Route = ML_Route.sequence {
+    // The route sequence to move Freight train into Saturday Mode.
+    name = "Saturday"
+    throttle = FR
+    minSecondsOnBlock = 10
+    maxSecondsOnBlock = 120 // 2 minutes per block max
+    maxSecondsEnterBlock = 30
+
+    onError {
+        // no-op
+    }
+
+    onActivate {
+        ML_Saturday = EML_Saturday.Setup
+    }
+
+    val B503a_start = node(B503a) {
+        onEnter {
+            FR.light(On)
+            FR.sound(On)
+            PA.sound(Off)
+            after (SP_Data.Delay_Sound_Started) then {
+                FR.horn()
+                FR.light(On)
+                FR.bell(Off)
+                FR.forward(SP_Data.Station_Speed)
+            } and_after (2.seconds) then {
+                // Align for storage track
+                T311.reverse()
+            }
+        }
+    }
+
+    val B504_fwd = node(B504) {
+        minSecondsOnBlock = 0
+        maxSecondsOnBlock = 40
+        onEnter {
+            T311.reverse()
+            FR.horn()
+            FR.forward(SP_Data.Station_Speed)
+            FR.bell(On)
+        }
+    }
+
+    val B321_fwd = node(B321) {
+        maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
+        onEnter {
+            FR.forward(SP_Data.Station_Speed)
+            after (SP_Data.Delay_Saturday_Into_B321) then {
+                FR.horn()
+                FR.bell(On)
+                // Stop in B321. Normal case is to *not* go into B330.
+                FR.stop()
+            } and_after (SP_Data.Delay_Saturday_Stop) then {
+                // Reverse into normal track
+                T311.normal()
+                FR.horn()
+                FR.reverse(SP_Data.Reverse_Speed)
+            }
+        }
+    }
+
+    val B311_rev = node(B311) {
+        onEnter {
+            after (SP_Data.Delay_Down_Slow) then {
+                FR.bell(On)
+            } and_after (SP_Data.Delay_Down_Stop) then {
+                FR.bell(Off)
+                FR.horn()
+                FR.stop()
+            } and_after (SP_Data.Delay_Down_Off) then {
+                FR.horn()
+                FR.bell(Off)
+                FR.light(Off)
+                FR_marker(Off)
+            } and_after (SP_Data.Delay_Sound_Stopped) then {
+                FR.sound(Off)
+                PA.sound(On)
+                ML_Wait_Route.activate()
+            }
+        }
+    }
+
+    sequence = listOf(B503a_start, B504_fwd, B321_fwd, B311_rev)
+}
+
 
 fun ML_Fn_Try_Recover_Route() {
     // Utility method that tries to see if mainline trains are at the correct position
