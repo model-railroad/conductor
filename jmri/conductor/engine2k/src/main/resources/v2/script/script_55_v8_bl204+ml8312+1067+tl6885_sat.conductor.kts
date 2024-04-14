@@ -160,11 +160,12 @@ on { !ML_Toggle && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     exportedVars.rtacPsaText = "{c:red}Automation Turned Off\\nat 4:50 PM"
 }
 
-on { !ML_Toggle && !ML_Saturday && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM
+                && ML_Saturday == EML_Saturday.Off } then {
     exportedVars.rtacPsaText = "{c:red}Automation Stopped"
 }
 
-on { !ML_Toggle && ML_Saturday.active && exportedVars.conductorTime != End_Of_Day_HHMM } then {
+on { ML_Saturday != EML_Saturday.Off && exportedVars.conductorTime != End_Of_Day_HHMM } then {
     exportedVars.rtacPsaText = "{c:red}Saturday Trains Running"
 }
 
@@ -288,7 +289,9 @@ var ML_Train = EML_Train.Passenger
 var ML_Saturday = if (Sat_Toggle.active) EML_Saturday.On else EML_Saturday.Off
 var ML_Start_Counter = 0
 
-fun EML_State.isIdle() = ML_State != EML_State.Run && ML_State != EML_State.Recover
+fun EML_State.isIdle() = ML_State != EML_State.Run
+        && ML_State != EML_State.Recover
+        && ML_Saturday == EML_Saturday.Off
 
 val _enable_FR = true       // for emergencies when one of the trains is not working
 val _enable_PA = true
@@ -387,7 +390,12 @@ on { ML_State.isIdle() && !ML_Toggle } then {
 val ML_Route = routes {
     name = "Mainline"
     toggle = ML_Toggle
-    status = { "$ML_Train $ML_State" }
+    status = {
+        if (ML_Saturday == EML_Saturday.Off)
+            "$ML_Train $ML_State"
+        else
+            "Saturday $ML_Saturday"
+    }
 
     onError {
         // The current route will trigger the corresponding ML_Recover_Route.
@@ -975,6 +983,9 @@ val SaturdaySetup_Route = ML_Route.sequence {
                 FR.forward(SP_Data.Station_Speed)
                 ML_Freight_Align_Turnouts()
                 T311.normal()
+            } and_after (SP_Data.Delay_Up_Station) then {
+                FR.forward(SP_Data.Forward_Speed)
+                FR.horn()
             }
         }
     }
@@ -1047,7 +1058,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     }
 
     onActivate {
-        ML_Saturday = EML_Saturday.Setup
+        ML_Saturday = EML_Saturday.Reset
     }
 
     val B503a_start = node(B503a) {
@@ -1060,9 +1071,11 @@ val SaturdayReset_Route = ML_Route.sequence {
                 FR.light(On)
                 FR.bell(Off)
                 FR.forward(SP_Data.Station_Speed)
-            } and_after (2.seconds) then {
+            } and_after (SP_Data.Delay_Up_Station) then {
                 // Align for storage track
                 T311.reverse()
+                FR.forward(SP_Data.Forward_Speed)
+                FR.horn()
             }
         }
     }
@@ -1073,7 +1086,7 @@ val SaturdayReset_Route = ML_Route.sequence {
         onEnter {
             T311.reverse()
             FR.horn()
-            FR.forward(SP_Data.Station_Speed)
+            FR.forward(SP_Data.Forward_Speed)
             FR.bell(On)
         }
     }
@@ -1081,7 +1094,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     val B321_fwd = node(B321) {
         maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
         onEnter {
-            FR.forward(SP_Data.Station_Speed)
+            FR.forward(SP_Data.Forward_Speed)
             after (SP_Data.Delay_Saturday_Into_B321) then {
                 FR.horn()
                 FR.bell(On)
@@ -1111,7 +1124,8 @@ val SaturdayReset_Route = ML_Route.sequence {
                 FR_marker(Off)
             } and_after (SP_Data.Delay_Sound_Stopped) then {
                 FR.sound(Off)
-                PA.sound(On)
+                PA.sound(Off)
+                ML_Saturday = EML_Saturday.Off
                 ML_Wait_Route.activate()
             }
         }
