@@ -792,7 +792,7 @@ data class _SP_Data(
     val Delay_Sound_Stopped: Delay  = 2.seconds,
 
     // Saturday Mode Delays
-    val Delay_Saturday_Into_B321: Delay = 10.seconds,
+    val Delay_Saturday_Into_B321: Delay = 20.seconds,
     val Delay_Saturday_Into_B503: Delay = 5.seconds,
     val Delay_Saturday_Stop: Delay = 3.seconds,
 
@@ -1016,7 +1016,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
         maxSecondsOnBlock = 40
         onEnter {
             FR.horn()
-            FR.reverse(SP_Data.Reverse_Speed)
+            FR.reverse(SP_Data.Station_Speed)
             FR.bell(On)
         }
     }
@@ -1026,7 +1026,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
         maxSecondsOnBlock = 0
         onEnter {
             FR.horn()
-            FR.reverse(SP_Data.Reverse_Speed)
+            FR.reverse(SP_Data.Station_Speed)
             FR.bell(On)
             after (SP_Data.Delay_Saturday_Into_B503) then {
                 FR.horn()

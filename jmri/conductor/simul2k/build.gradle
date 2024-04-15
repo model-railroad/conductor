@@ -32,6 +32,10 @@ kapt {
     correctErrorTypes = true
 }
 
+kotlin {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
 dependencies {
     implementation project(":common")
     implementation project(":LibUtilsJava")
