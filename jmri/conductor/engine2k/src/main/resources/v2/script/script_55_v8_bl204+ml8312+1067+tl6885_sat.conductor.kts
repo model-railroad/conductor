@@ -1016,8 +1016,8 @@ val SaturdaySetup_Route = ML_Route.sequence {
         maxSecondsOnBlock = 40
         onEnter {
             FR.horn()
-            FR.reverse(SP_Data.Station_Speed)
             FR.bell(On)
+            FR.reverse(SP_Data.Station_Speed)
         }
     }
 
@@ -1026,17 +1026,23 @@ val SaturdaySetup_Route = ML_Route.sequence {
         maxSecondsOnBlock = 0
         onEnter {
             FR.horn()
-            FR.reverse(SP_Data.Station_Speed)
             FR.bell(On)
-            after (SP_Data.Delay_Saturday_Into_B503) then {
+            FR.reverse(SP_Data.Station_Speed)
+        }
+
+        whileOccupied {
+            // Stop as soon as B504 is no longer active
+            if (!B504.active && FR.reverse) {
                 FR.horn()
                 FR.bell(Off)
                 FR.stop()
-            } and_after (1.seconds) then {
+
+                ML_Freight_Align_Turnouts()
+
                 FR.light(Off)
                 FR.sound(Off)
                 PA.sound(Off)
-            } and_after (1.seconds) then {
+
                 ML_Saturday = EML_Saturday.On
                 ML_Idle_Route.activate()
             }
