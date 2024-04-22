@@ -285,9 +285,11 @@ enum class EML_Train { Passenger, Freight, Saturday }
 enum class EML_Saturday { Off, Setup, On, Reset }
 
 var ML_State = EML_State.Ready
-var ML_Train = EML_Train.Passenger
 var ML_Saturday = if (Sat_Toggle.active) EML_Saturday.On else EML_Saturday.Off
+var ML_Train = if (Sat_Toggle.active) EML_Train.Saturday else EML_Train.Passenger
 var ML_Start_Counter = 0
+
+log("@@ ML INIT --> ML_Train=${ML_Train} // ML_Saturday ${ML_Saturday} // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
 
 fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
 fun EML_State.isIdle() = ML_State != EML_State.Run
@@ -296,6 +298,7 @@ fun EML_State.isIdle() = ML_State != EML_State.Run
 
 val _enable_FR = true       // for emergencies when one of the trains is not working
 val _enable_PA = true
+val _enable_Saturday = false
 
 // PA is UP 722 or 712 or 3609 or 8312 or 8330
 val PA = throttle(8312) {
@@ -355,6 +358,7 @@ fun ML_Release_Turnouts() {
     T320.normal()
     T321.normal()
 }
+
 
 // --- AM Auto Lights
 
@@ -449,9 +453,11 @@ ML_Idle_Route = ML_Route.idle {
                     EML_Train.Saturday -> { /* no-op */ }
                 }
             }
-        } else if (ML_Saturday.isOff() && Sat_Toggle.active) {
+        } else if (_enable_Saturday && ML_Saturday.isOff() && Sat_Toggle.active) {
+            log("@@ ML onIdle 1 ML_Train=${ML_Train} // ML_Saturday ${ML_Saturday} // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
             SaturdaySetup_Route.activate()
-        } else if (ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
+        } else if (_enable_Saturday && ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
+            log("@@ ML onIdle 2 ML_Train=${ML_Train} // ML_Saturday ${ML_Saturday} // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
             SaturdayReset_Route.activate()
         }
     }
@@ -791,8 +797,9 @@ data class _SP_Data(
     val Delay_Down_Off: Delay       = 20.seconds,
     val Delay_Sound_Stopped: Delay  = 2.seconds,
 
-    // Saturday Mode Delays
-    val Delay_Saturday_Into_B321: Delay = 20.seconds,
+    // Saturday Mode
+    val Saturday_Speed: DccSpeed        = 6.speed,
+    val Delay_Saturday_Into_B321: Delay = 15.seconds,
     val Delay_Saturday_Into_B503: Delay = 5.seconds,
     val Delay_Saturday_Stop: Delay = 3.seconds,
 
@@ -975,6 +982,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     }
 
     val B311_start = node(B311) {
+        minSecondsOnBlock = 0
         onEnter {
             FR.light(On)
             FR.sound(On)
@@ -987,7 +995,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
                 ML_Freight_Align_Turnouts()
                 T311.normal()
             } and_after (SP_Data.Delay_Up_Station) then {
-                FR.forward(SP_Data.Forward_Speed)
+                FR.forward(SP_Data.Saturday_Speed)
                 FR.horn()
             }
         }
@@ -996,7 +1004,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     val B321_fwd = node(B321) {
         maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
         onEnter {
-            FR.forward(SP_Data.Station_Speed)
+            FR.forward(SP_Data.Saturday_Speed)
             after (SP_Data.Delay_Saturday_Into_B321) then {
                 FR.horn()
                 FR.bell(On)
@@ -1017,7 +1025,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
         onEnter {
             FR.horn()
             FR.bell(On)
-            FR.reverse(SP_Data.Station_Speed)
+            FR.reverse(SP_Data.Reverse_Speed)
         }
     }
 
@@ -1027,7 +1035,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
         onEnter {
             FR.horn()
             FR.bell(On)
-            FR.reverse(SP_Data.Station_Speed)
+            FR.reverse(SP_Data.Reverse_Speed)
         }
 
         whileOccupied {
@@ -1058,7 +1066,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     // The route sequence to move Freight train into Saturday Mode.
     name = "Saturday"
     throttle = FR
-    minSecondsOnBlock = 10
+    minSecondsOnBlock = 0
     maxSecondsOnBlock = 120 // 2 minutes per block max
     maxSecondsEnterBlock = 30
 
@@ -1071,6 +1079,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     }
 
     val B503a_start = node(B503a) {
+        minSecondsOnBlock = 0
         onEnter {
             FR.light(On)
             FR.sound(On)
@@ -1083,7 +1092,7 @@ val SaturdayReset_Route = ML_Route.sequence {
             } and_after (SP_Data.Delay_Up_Station) then {
                 // Align for storage track
                 T311.reverse()
-                FR.forward(SP_Data.Forward_Speed)
+                FR.forward(SP_Data.Saturday_Speed)
                 FR.horn()
             }
         }
@@ -1095,7 +1104,7 @@ val SaturdayReset_Route = ML_Route.sequence {
         onEnter {
             T311.reverse()
             FR.horn()
-            FR.forward(SP_Data.Forward_Speed)
+            FR.forward(SP_Data.Saturday_Speed)
             FR.bell(On)
         }
     }
@@ -1103,7 +1112,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     val B321_fwd = node(B321) {
         maxSecondsOnBlock = SP_Data.B321_maxSecondsOnBlock
         onEnter {
-            FR.forward(SP_Data.Forward_Speed)
+            FR.forward(SP_Data.Saturday_Speed)
             after (SP_Data.Delay_Saturday_Into_B321) then {
                 FR.horn()
                 FR.bell(On)
@@ -1120,6 +1129,7 @@ val SaturdayReset_Route = ML_Route.sequence {
 
     val B311_rev = node(B311) {
         onEnter {
+            FR.reverse(SP_Data.Reverse_Speed)
             after (SP_Data.Delay_Down_Slow) then {
                 FR.bell(On)
             } and_after (SP_Data.Delay_Down_Stop) then {
