@@ -1943,7 +1943,7 @@ val BL_Recovery_Route = BL_Route.sequence {
 // Events Trolley Line (TL)
 // --------------------
 
-
+// Trolley: Orange = 6885 -- Yellow = 6119
 val TL = throttle(6885) {
     name = "TL"
     onLight { on -> throttle.f0(on)
@@ -1959,6 +1959,7 @@ var TL_State = ETL_State.Ready
 var TL_Start_Counter = 0
 
 data class _TL_Data(
+    // Defaults for Orange Trolley 6885
     val Speed: DccSpeed = 4.speed,
 
     val Delay_Start: Delay  = 5.seconds,
@@ -1976,7 +1977,17 @@ data class _TL_Data(
     val Enable_TL: Boolean = true
 )
 
-val TL_Data = _TL_Data()
+val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
+    // Values for Yellow Trolley 6119
+    Speed = 12.speed,
+
+    Delay_Start  = 5.seconds,
+    Delay_Start2 = 1.seconds,
+    Delay_Reverse= 43.seconds,
+    Delay_Kludge = 3.seconds,
+    Delay_Stop   = 3.seconds,
+    Delay_Off    = 5.seconds,
+) else _TL_Data()
 
 fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
 
