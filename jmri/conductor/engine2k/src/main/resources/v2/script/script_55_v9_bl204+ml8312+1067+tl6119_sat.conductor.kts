@@ -282,14 +282,12 @@ On the RDC SP-10:
 
 enum class EML_State { Ready, Wait, Run, Recover, Error }
 enum class EML_Train { Passenger, Freight, Saturday }
-enum class EML_Saturday { Off, Setup, On, Reset }
+enum class EML_Saturday { Init, Off, Setup, On, Reset }
 
 var ML_State = EML_State.Ready
-var ML_Saturday = if (Sat_Toggle.active) EML_Saturday.On else EML_Saturday.Off
-var ML_Train = if (Sat_Toggle.active) EML_Train.Saturday else EML_Train.Passenger
+var ML_Train = EML_Train.Passenger
+var ML_Saturday = EML_Saturday.Off
 var ML_Start_Counter = 0
-
-log("@@ ML INIT --> ML_Train=${ML_Train} // ML_Saturday ${ML_Saturday} // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
 
 fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
 fun EML_State.isIdle() = ML_State != EML_State.Run
@@ -434,6 +432,19 @@ ML_Idle_Route = ML_Route.idle {
         FR.stop()
         FR.light(On)
         FR.bell(Off)
+
+        if (ML_Saturday == EML_Saturday.Init) {
+            if (Sat_Toggle.active && !B311.active && B503a.active && !B503b.active) {
+                // This looks like Freight is in the Saturday storage location
+                // with the Passenger at its default startup location.
+                ML_Saturday = EML_Saturday.On
+                ML_Train = EML_Train.Saturday
+            } else {
+                // Otherwise do not assume anything about the Saturday mode.
+                ML_Saturday = EML_Saturday.Off
+            }
+        }
+
     }
 
     onIdle {
@@ -799,7 +810,7 @@ data class _SP_Data(
 
     // Saturday Mode
     val Saturday_Speed: DccSpeed        = 6.speed,
-    val Delay_Saturday_Into_B321: Delay = 15.seconds,
+    val Delay_Saturday_Into_B321: Delay = 10.seconds,
     val Delay_Saturday_Into_B503: Delay = 5.seconds,
     val Delay_Saturday_Stop: Delay = 3.seconds,
 
@@ -970,7 +981,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     throttle = FR
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 10
 
     onError {
         // no-op
@@ -1068,7 +1079,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     throttle = FR
     minSecondsOnBlock = 0
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 10
 
     onError {
         // no-op
@@ -1079,7 +1090,7 @@ val SaturdayReset_Route = ML_Route.sequence {
     }
 
     val B503a_start = node(B503a) {
-        minSecondsOnBlock = 0
+        minSecondsOnBlock = 1
         onEnter {
             FR.light(On)
             FR.sound(On)
@@ -1099,8 +1110,9 @@ val SaturdayReset_Route = ML_Route.sequence {
     }
 
     val B504_fwd = node(B504) {
-        minSecondsOnBlock = 0
+        minSecondsOnBlock = 5
         maxSecondsOnBlock = 40
+        maxSecondsEnterBlock = 10
         onEnter {
             T311.reverse()
             FR.horn()
