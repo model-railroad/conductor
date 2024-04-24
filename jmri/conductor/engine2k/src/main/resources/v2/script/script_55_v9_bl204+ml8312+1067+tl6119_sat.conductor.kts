@@ -286,7 +286,7 @@ enum class EML_Saturday { Init, Off, Setup, On, Reset }
 
 var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
-var ML_Saturday = EML_Saturday.Off
+var ML_Saturday = EML_Saturday.Init
 var ML_Start_Counter = 0
 
 fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
@@ -433,8 +433,13 @@ ML_Idle_Route = ML_Route.idle {
         FR.light(On)
         FR.bell(Off)
 
-        if (ML_Saturday == EML_Saturday.Init) {
-            if (Sat_Toggle.active && !B311.active && B503a.active && !B503b.active) {
+        log("@@ ML INIT 1 --> ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
+        if (_enable_Saturday && ML_Saturday == EML_Saturday.Init) {
+            log("@@ ML INIT 1 --> Sat_Toggle.active ${Sat_Toggle.active}") // RM DEBUG
+            log("@@ ML INIT 1 --> B311.active ${B311.active}") // RM DEBUG
+            log("@@ ML INIT 1 --> B503a.active ${B503a.active}") // RM DEBUG
+            log("@@ ML INIT 1 --> B503b.active ${B503b.active}") // RM DEBUG
+            if (Sat_Toggle.active && !B311.active && B503a.active && B503b.active) {
                 // This looks like Freight is in the Saturday storage location
                 // with the Passenger at its default startup location.
                 ML_Saturday = EML_Saturday.On
@@ -444,7 +449,7 @@ ML_Idle_Route = ML_Route.idle {
                 ML_Saturday = EML_Saturday.Off
             }
         }
-
+        log("@@ ML INIT 2 --> ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
     }
 
     onIdle {
@@ -464,12 +469,14 @@ ML_Idle_Route = ML_Route.idle {
                     EML_Train.Saturday -> { /* no-op */ }
                 }
             }
-        } else if (_enable_Saturday && ML_Saturday.isOff() && Sat_Toggle.active) {
-            log("@@ ML onIdle 1 ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
-            SaturdaySetup_Route.activate()
-        } else if (_enable_Saturday && ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
-            log("@@ ML onIdle 2 ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
-            SaturdayReset_Route.activate()
+        } else if (ML_Saturday != EML_Saturday.Init) {
+            if (ML_Saturday.isOff() && Sat_Toggle.active) {
+                log("@@ ML onIdle 1 ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
+                SaturdaySetup_Route.activate()
+            } else if (ML_Saturday == EML_Saturday.On && !Sat_Toggle.active) {
+                log("@@ ML onIdle 2 ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
+                SaturdayReset_Route.activate()
+            }
         }
     }
 }
@@ -990,6 +997,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     onActivate {
         ML_Train = EML_Train.Saturday
         ML_Saturday = EML_Saturday.Setup
+        log("@@ ML SAT SETUP --> ML_Train=${ML_Train} // ML_Saturday $ML_Saturday // .isOff = ${ML_Saturday.isOff()}") // RM DEBUG
     }
 
     val B311_start = node(B311) {
