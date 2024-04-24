@@ -1965,8 +1965,8 @@ data class _TL_Data(
     val Delay_Start: Delay  = 5.seconds,
     val Delay_Start2: Delay = 1.seconds,
     val Delay_Reverse: Delay= 43.seconds,
-    val Delay_Kludge: Delay = 3.seconds,
-    val Delay_Stop: Delay   = 3.seconds,
+    val Delay_RevStop: Delay = 3.seconds,
+    val Delay_RevKludge: Delay   = 3.seconds,
     val Delay_Off: Delay    = 5.seconds,
 
     val Cycle_Wait: Delay   = 30.seconds,
@@ -1984,8 +1984,8 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
     Delay_Start  = 5.seconds,
     Delay_Start2 = 1.seconds,
     Delay_Reverse= 43.seconds,
-    Delay_Kludge = 3.seconds,
-    Delay_Stop   = 3.seconds,
+    Delay_RevStop = 3.seconds,
+    Delay_RevKludge = 1.seconds,
     Delay_Off    = 5.seconds,
 ) else _TL_Data()
 
@@ -2111,14 +2111,15 @@ val TL_Shuttle_Route = TL_Route.sequence {
     val B713a_rev = node(B713a) {
         onEnter {
             TL.bell(On)
-            // Engine 6885 will not stop in reverse.
-            // The kludge to force 6885 to stop is to change it to go forward then stop.
             TL.forward(2.speed)
-            after (TL_Data.Delay_Kludge) then {
+            after (TL_Data.Delay_RevStop) then {
                 TL.bell(Off)
                 TL.stop()
+                // Engine 6885 will not stop in reverse.
+                // The kludge to force 6885 to stop is to change it to go forward then stop
+                // after a very small delay.
                 TL.forward(2.speed)
-            } and_after (TL_Data.Delay_Stop) then {
+            } and_after (TL_Data.Delay_RevKludge) then {
                 TL.stop()
             } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
@@ -2173,11 +2174,11 @@ val TL_Recovery_Route = TL_Route.sequence {
             // Engine 6885 will not stop in reverse.
             // The kludge to force 6885 to stop is to change it to go forward then stop.
             TL.forward(2.speed)
-            after (TL_Data.Delay_Kludge) then {
+            after (TL_Data.Delay_RevStop) then {
                 TL.bell(Off)
                 TL.stop()
                 TL.forward(2.speed)
-            } and_after (TL_Data.Delay_Stop) then {
+            } and_after (TL_Data.Delay_RevKludge) then {
                 TL.stop()
             } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
