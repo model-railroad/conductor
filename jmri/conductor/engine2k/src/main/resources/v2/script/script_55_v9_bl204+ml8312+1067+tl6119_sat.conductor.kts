@@ -298,7 +298,7 @@ fun EML_State.isIdle() = ML_State != EML_State.Run
 
 val _enable_FR = true       // for emergencies when one of the trains is not working
 val _enable_PA = true
-val _enable_Saturday = false
+val _enable_Saturday = true
 
 // PA is UP 722 or 712 or 3609 or 8312 or 8330
 val PA = throttle(8312) {
@@ -1958,9 +1958,14 @@ enum class ETL_State { Ready, Wait, Run, Recover, Error }
 var TL_State = ETL_State.Ready
 var TL_Start_Counter = 0
 
+// SDB sensor block timings:
+// 6885: block0 = 0..200, block1: = 300..2000
+// 6119: block0 = 0..400, block1: = 380..2000
+
 data class _TL_Data(
     // Defaults for Orange Trolley 6885
     val Speed: DccSpeed = 4.speed,
+    val RevSpeed: DccSpeed = 2.speed,
 
     val Delay_Start: Delay      = 5.seconds,
     val Delay_Start2: Delay     = 1.seconds,
@@ -1980,13 +1985,16 @@ data class _TL_Data(
 val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
     // Values for Yellow Trolley 6119
     Speed = 12.speed,
+    RevSpeed = 8.speed,
 
     Delay_Start     = 5.seconds,
     Delay_Start2    = 1.seconds,
-    Delay_Reverse   = 20.seconds,
-    Delay_RevStop   = 3.seconds,
+    Delay_Reverse   = 17.seconds,
+    Delay_RevStop   = 1.seconds,
     Delay_RevKludge = 1.seconds,
     Delay_Off       = 5.seconds,
+
+    Cycle_Wait      = 300.seconds,
 ) else _TL_Data()
 
 fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
@@ -2081,9 +2089,10 @@ val TL_Shuttle_Route = TL_Route.sequence {
     throttle = TL
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per Block max
-    maxSecondsEnterBlock = 20
+    maxSecondsEnterBlock = 10
 
     val B713a_fwd = node(B713a) {
+        minSecondsOnBlock = 2
         onEnter {
             TL.light(On)
             TL.sound(On)
@@ -2098,6 +2107,7 @@ val TL_Shuttle_Route = TL_Route.sequence {
     }
 
     val B713b_fwd = node(B713b) {
+        minSecondsOnBlock = 10
         onEnter {
             TL.sound(On)
             TL.bell(On)
@@ -2111,7 +2121,8 @@ val TL_Shuttle_Route = TL_Route.sequence {
     val B713a_rev = node(B713a) {
         onEnter {
             TL.bell(On)
-            TL.forward(2.speed)
+            // Note: 6885 needed a short forward(2.speed) kludge here. Still need it?
+            TL.reverse(TL_Data.RevSpeed)
             after (TL_Data.Delay_RevStop) then {
                 TL.bell(Off)
                 TL.stop()
@@ -2155,28 +2166,30 @@ val TL_Recovery_Route = TL_Route.sequence {
     throttle = TL
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max
-
-    fun move() {
-        TL.sound(On)
-        TL.horn()
-        TL.reverse(TL_Data.Speed)
-    }
+    maxSecondsEnterBlock = 2
 
     val B713b_rev = node(B713b) {
+        minSecondsOnBlock = 0       // deactivated
         onEnter {
-            move()
+            TL.sound(On)
+            TL.horn()
+            TL.reverse(TL_Data.RevSpeed)
         }
     }
 
     val B713a_rev = node(B713a) {
+        maxSecondsEnterBlock = 2
         onEnter {
             TL.horn()
             // Engine 6885 will not stop in reverse.
-            // The kludge to force 6885 to stop is to change it to go forward then stop.
-            TL.forward(2.speed)
+            // Note: 6885 needed a short forward(2.speed) kludge here. Still need it?
+            TL.reverse(TL_Data.RevSpeed)
             after (TL_Data.Delay_RevStop) then {
                 TL.bell(Off)
                 TL.stop()
+                // Engine 6885 will not stop in reverse.
+                // The kludge to force 6885 to stop is to change it to go forward then stop
+                // after a very small delay.
                 TL.forward(2.speed)
             } and_after (TL_Data.Delay_RevKludge) then {
                 TL.stop()
@@ -2207,11 +2220,11 @@ val TL_Recovery_Route = TL_Route.sequence {
 
         // We cannot recover from an error during the recover route.
         // Previous behavior was to abandon by calling:
-        //     TL_Error_Route.activate()
+        TL_Error_Route.activate()
         // New behavior is to wait for a long time (e.g. 1 hour) then retry recovery.
-        after (TL_Data.Delay_Recovery) then {
-            TL_Idle_Route.activate()
-        }
+        //after (TL_Data.Delay_Recovery) then {
+        //    TL_Idle_Route.activate()
+        //}
     }
 
     sequence = listOf(B713b_rev, B713a_rev)
