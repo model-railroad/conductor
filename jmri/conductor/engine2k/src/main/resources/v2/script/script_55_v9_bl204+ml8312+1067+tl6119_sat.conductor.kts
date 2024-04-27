@@ -811,7 +811,7 @@ data class _SP_Data(
     val Saturday_Speed: DccSpeed        = 6.speed,
     val Delay_Saturday_Into_B321: Delay = 10.seconds,
     val Delay_Saturday_Into_B503: Delay = 5.seconds,
-    val Delay_Saturday_Stop: Delay = 3.seconds,
+    val Delay_Saturday_Stop: Delay      = 6.seconds,
 
     val PSA_Name: String = "Freight",
 
@@ -1000,7 +1000,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
             after (SP_Data.Delay_Sound_Started) then {
                 FR.horn()
                 FR.light(On)
-                FR.bell(Off)
+                FR.bell(On)
                 FR.forward(SP_Data.Station_Speed)
                 ML_Freight_Align_Turnouts()
                 T311.normal()

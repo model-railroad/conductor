@@ -209,6 +209,9 @@ internal class SequenceRoute @AssistedInject constructor(
     private fun onSequenceRouteActivated() {
         stats.activateAndReset()
 
+        // Forget any older value of currentNode. It is properly set in postOnActivateAction.
+        currentNode = null
+
         // Force the blocks' state timer to reset by setting all blocks to EMPTY
         // and then set them back to TRAILING / OCCUPIED as needed (done in postOnActivateAction).
         graph.nodes.forEach { node ->

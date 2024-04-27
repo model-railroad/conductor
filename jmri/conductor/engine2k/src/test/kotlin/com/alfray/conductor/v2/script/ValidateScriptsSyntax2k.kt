@@ -160,7 +160,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testScript55_v8() {
+    fun testScript55_v9() {
         fileOps.writeBytes(
             "<svg/>".toByteArray(Charsets.UTF_8),
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))

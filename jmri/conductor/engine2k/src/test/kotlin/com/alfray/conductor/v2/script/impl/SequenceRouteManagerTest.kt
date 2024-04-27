@@ -691,6 +691,131 @@ class SequenceRouteManagerTest : ScriptTest2kBase() {
         assertThat(t1.speed).isEqualTo(2.speed.reverse())
     }
 
+    @Test
+    fun testSequenceRoute_activateTwice() {
+        // This case tests a "shuttle" implemented using 2 separate routes.
+        jmriProvider.getSensor("B1").isActive = true
+        loadScriptFromText(scriptText =
+        """
+        val T1 = throttle(1001)
+        val B1 = block("B1")
+        val B2 = block("B2")
+        val Toggle = sensor("S1")
+        val S2 = sensor("S2")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+        }
+        var nextRoute: IRoute? = null
+        lateinit var RouteSeqB: IRoute
+        val RouteSeqA = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 0
+            maxSecondsEnterBlock = 0
+            val b1_fwd = node(B1) { onEnter { T1.forward(5.speed) } }
+            val b2_fwd = node(B2) { onEnter { 
+                T1.stop()
+                nextRoute = RouteSeqB
+            } }
+            sequence = listOf(b1_fwd, b2_fwd)
+        }
+        RouteSeqB = Routes.sequence {
+            throttle = T1
+            minSecondsOnBlock = 0
+            maxSecondsEnterBlock = 0
+            val b2_rev = node(B2) { onEnter { T1.reverse(5.speed) } }
+            val b1_rev = node(B1) { onEnter { 
+                T1.stop()
+                nextRoute = RouteSeqA
+            } }
+            sequence = listOf(b2_rev, b1_rev)
+        }
+        on { S2.active && nextRoute != null } then { nextRoute!!.activate() }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val s2 = conductorImpl.sensors["S2"]!!
+
+        val ar = conductorImpl.routesContainers[0] as RoutesContainer
+        assertThat(ar.routes).hasSize(2)
+        val routeA = ar.routes[0] as SequenceRoute
+        val routeB = ar.routes[1] as SequenceRoute
+
+        // <Setup> Run the RouteA once, from B1 and B2.
+        assertThat(routeA.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(routeB.state).isEqualTo(RouteBase.State.IDLE)
+        execEngine.onExecHandle()
+        assertThat(routeA.state).isEqualTo(RouteBase.State.ACTIVE)
+        // RouteA's initial node is B1
+        assertThat(routeA.currentNode.toString()).isEqualTo("{B1}")
+        // B1 occupied
+        execEngine.onExecHandle()
+        assertThat(routeA.print()).isEqualTo("<B1> OCCUPIED, {B2} EMPTY")
+        assertThat(routeA.throttle.speed).isEqualTo(5.speed)
+        // B1 -> B2 transition
+        jmriProvider.getSensor("B1").isActive = false
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(routeA.print()).isEqualTo("{B1} TRAILING, <B2> OCCUPIED")
+        assertThat(routeA.throttle.speed).isEqualTo(0.speed)
+        // And the end of the run, the route's current node is the last occupied node.
+        assertThat(routeA.currentNode.toString()).isEqualTo("{B2}")
+
+        // <Setup> Run the RouteB, from B2 to B1.
+        s2.active(true)
+        execEngine.onExecHandle()
+        s2.active(false)
+        assertThat(routeA.state).isEqualTo(RouteBase.State.IDLE)
+        assertThat(routeB.state).isEqualTo(RouteBase.State.ACTIVATED)
+        execEngine.onExecHandle()
+        assertThat(routeB.state).isEqualTo(RouteBase.State.ACTIVE)
+        // RouteB's initial node is B1
+        assertThat(routeB.currentNode.toString()).isEqualTo("{B2}")
+        // B2 occupied
+        execEngine.onExecHandle()
+        assertThat(routeB.print()).isEqualTo("<B2> OCCUPIED, {B1} EMPTY")
+        assertThat(routeB.throttle.speed).isEqualTo((-5).speed)
+        // B2 -> B1 transition
+        jmriProvider.getSensor("B2").isActive = false
+        jmriProvider.getSensor("B1").isActive = true
+        execEngine.onExecHandle()
+        assertThat(routeB.print()).isEqualTo("{B2} TRAILING, <B1> OCCUPIED")
+        assertThat(routeB.throttle.speed).isEqualTo(0.speed)
+        // And the end of the run, the route's current node is the last occupied node.
+        assertThat(routeB.currentNode.toString()).isEqualTo("{B1}")
+
+        // Now try to re-run RouteA again.
+        // Since RouteA's has already be run, its currentNode is still {B2}. whereas the engine has
+        // shuttled back to its original {B1} position. The currentNode must be reset when the route
+        // is (re)activated, in order to reinitialize it to its default or override it in the
+        // onActivated callback.
+        s2.active(true)
+        execEngine.onExecHandle()
+        s2.active(false)
+        assertThat(routeA.state).isEqualTo(RouteBase.State.ACTIVATED)
+        assertThat(routeB.state).isEqualTo(RouteBase.State.IDLE)
+        execEngine.onExecHandle()
+        assertThat(routeA.state).isEqualTo(RouteBase.State.ACTIVE)
+        // RouteA's initial node is B1
+        assertThat(routeA.currentNode.toString()).isEqualTo("{B1}")
+        // B1 occupied
+        execEngine.onExecHandle()
+        assertThat(routeA.print()).isEqualTo("<B1> OCCUPIED, {B2} EMPTY")
+        assertThat(routeA.throttle.speed).isEqualTo(5.speed)
+        // B1 -> B2 transition
+        jmriProvider.getSensor("B1").isActive = false
+        jmriProvider.getSensor("B2").isActive = true
+        execEngine.onExecHandle()
+        assertThat(routeA.print()).isEqualTo("{B1} TRAILING, <B2> OCCUPIED")
+        assertThat(routeA.throttle.speed).isEqualTo(0.speed)
+        // And the end of the run, the route's current node is the last occupied node.
+        assertThat(routeA.currentNode.toString()).isEqualTo("{B2}")
+
+        assertThat(logger.string).doesNotContain("ERROR")
+    }
+
     private fun SequenceRoute.print() =
         this.graph.blocks.joinToString { "$it ${it.state}" }
 }
