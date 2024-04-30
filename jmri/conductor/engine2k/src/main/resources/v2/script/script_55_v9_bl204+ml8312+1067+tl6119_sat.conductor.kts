@@ -2005,7 +2005,7 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
     Delay_RevKludge = 1.seconds,
     Delay_Off       = 5.seconds,
 
-    Cycle_Wait      = 300.seconds,
+    Cycle_Wait      = 120.seconds,
 ) else _TL_Data()
 
 fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
@@ -2231,11 +2231,11 @@ val TL_Recovery_Route = TL_Route.sequence {
 
         // We cannot recover from an error during the recover route.
         // Previous behavior was to abandon by calling:
-        TL_Error_Route.activate()
+        // TL_Error_Route.activate()
         // New behavior is to wait for a long time (e.g. 1 hour) then retry recovery.
-        //after (TL_Data.Delay_Recovery) then {
-        //    TL_Idle_Route.activate()
-        //}
+        after (TL_Data.Delay_Recovery) then {
+            TL_Idle_Route.activate()
+        }
     }
 
     sequence = listOf(B713b_rev, B713a_rev)
