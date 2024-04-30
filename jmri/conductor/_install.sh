@@ -21,7 +21,7 @@ else
 fi
 
 if [[ ! -d "$JDIR" ]]; then
-  echo "Invalid script. Please adjust $0"
+  echo "## JMRI install directory not found. Please adjust $0"
 fi
 
 # We currently need Java 1.8
@@ -31,11 +31,15 @@ if ! grep -qs "1.8" $(java -version 2>&1) ; then
     JS=$(find "$PF/Java" -type f -name javac.exe | grep 1.8 | sort -r | head -n 1)
     JS=$(cygpath -w "${JS//\/bin*/}")
   else
-    echo "TBD"
-    exit 1
+    JS=$(ls /usr/lib/jvm/*java8*/bin/javac | head -n 1)
+    JS="${JS//\/bin*/}"
   fi
-  export JAVA_HOME="$JS"
-  echo "## New JAVA_HOME = $JAVA_HOME"
+  if [[ -d "$JS" ]]; then
+    export JAVA_HOME="$JS"
+  else
+    echo "## Consider installing Java 1.8 and setting JAVA_HOME for it."
+  fi
+  echo "## JAVA_HOME = $JAVA_HOME"
 fi
 
 
