@@ -986,7 +986,7 @@ val SaturdaySetup_Route = ML_Route.sequence {
     // The route sequence to move Freight train into Saturday Mode.
     name = "Saturday"
     throttle = FR
-    minSecondsOnBlock = 10
+    minSecondsOnBlock = 5
     maxSecondsOnBlock = 120 // 2 minutes per block max
     maxSecondsEnterBlock = 10
 
