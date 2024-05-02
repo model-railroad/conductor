@@ -289,10 +289,18 @@ var ML_Train = EML_Train.Passenger
 var ML_Saturday = EML_Saturday.Init
 var ML_Start_Counter = 0
 
-fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
+/** Indicates that the Mainline automation is not running or in active recovery.
+ *  This does not check the Saturday mode. */
 fun EML_State.isIdle() = ML_State != EML_State.Run
         && ML_State != EML_State.Recover
-        && ML_Saturday.isOff()
+
+/** Indicates that the Saturday automation is off -- it's not doing a setup/reset,
+ *  and it's not idle in storage. */
+fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
+
+/** Indicates that the Saturday automation is idle -- it's not doing a setup/reset;
+ *  the train can be in storage or at its normal position, but it's not moving. */
+fun EML_Saturday.isIdle() = ML_Saturday == EML_Saturday.Off || ML_Saturday == EML_Saturday.On
 
 val _enable_FR = true       // for emergencies when one of the trains is not working
 val _enable_PA = true
@@ -368,7 +376,7 @@ on { PA.stopped } then { PA.f5(Off) }
 
 // --- Turns mainline engine sound off when automation is turned off
 
-on { ML_State.isIdle() && ML_Toggle.active } then {
+on { ML_State.isIdle() && ML_Saturday.isOff() && ML_Toggle.active } then {
     PA.sound(On);   PA.light(On)
     FR.sound(On);   FR.light(On)
     PA.stop();      FR.stop()
@@ -376,7 +384,7 @@ on { ML_State.isIdle() && ML_Toggle.active } then {
 }
 
 val ML_Timer_Stop_Sound_Off = 10.seconds
-on { ML_State.isIdle() && !ML_Toggle } then {
+on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle } then {
     PA.light(Off);  FR.light(Off)
     PA.stop();      FR.stop()
     after(ML_Timer_Stop_Sound_Off) then {
@@ -2251,8 +2259,8 @@ val TL_Recovery_Route = TL_Route.sequence {
 // B320 -> B330 via T330 Normal
 // B321 -> B330 via T330 Reverse
 
-on { ML_State.isIdle() && !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
-on { ML_State.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
+on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
+on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
 
 
 // ---------
