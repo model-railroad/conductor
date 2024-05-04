@@ -28,8 +28,8 @@ repositories {
 }
 
 compileJava {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 dependencies {
@@ -53,7 +53,7 @@ dependencies {
     testImplementation "com.google.guava:guava:$vers_guava"
 
     testFixturesImplementation project(":LibUtilsJava")
-    testFixturesImplementation  "com.google.dagger:dagger:$vers_dagger"
-    testFixturesImplementation  "com.squareup.okhttp3:okhttp:$vers_okhttp"
+    testFixturesImplementation "com.google.dagger:dagger:$vers_dagger"
+    testFixturesImplementation "com.squareup.okhttp3:okhttp:$vers_okhttp"
     testFixturesImplementation "org.mockito:mockito-core:$vers_mockito"
 }
