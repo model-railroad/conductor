@@ -47,7 +47,7 @@ if ! grep -qs "$JV" $(java -version 2>&1) ; then
     JS=$(find "$PF/Java" -type f -name javac.exe | grep "$JV" | sort -r | head -n 1)
     JS=$(cygpath -w "${JS//\/bin*/}")
   else
-    JS=$(ls /usr/lib/jvm/*java8*/bin/javac | head -n 1)
+    JS=$(ls /usr/lib/jvm/*java*$JV*/bin/javac | head -n 1)
     JS="${JS//\/bin*/}"
   fi
   if [[ -d "$JS" ]]; then
