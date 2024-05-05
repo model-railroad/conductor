@@ -91,4 +91,11 @@ tasks.register<ShadowJar>("fatJar") {
             }
         }
     }
+    doLast {
+        outputs.files.forEach { file ->
+            val b = file.toPath().fileSize()
+            val mb = String.format("%.03f MB", b.toDouble() / 1024.0 / 1024.0)
+            println("## fatJar: output [$mb] ${file.absolutePath}")
+        }
+    }
 }
