@@ -8,7 +8,11 @@ ARTIFACT=$(sed -n -e "/artifact_vers/s/.*=\(.*\)/\\1/p" gradle.properties)
 # Detect JMRI and install method
 JDIR=""
 if [[ $(uname) =~ CYGWIN_.* || $(uname) =~ MSYS_.* ]]; then
-  JDIR=/cygdrive/c/Program\ Files\ \(x86\)/JMRI
+  if [[ $(uname) =~ CYGWIN_.* ]]; then
+    JDIR=/cygdrive/c/Program\ Files\ \(x86\)/JMRI
+  else
+    JDIR=/c/Program\ Files\ \(x86\)/JMRI
+  fi
 
   function op() {
     cp -v "$1" distrib/
@@ -27,7 +31,9 @@ else
   }
 fi
 
-if [[ ! -d "$JDIR" ]]; then
+if [[ -d "$JDIR" ]]; then
+  echo "---- JMRI install directory: $JDIR"
+else
   echo "---- JMRI install directory not found. Please adjust $0"
 fi
 
