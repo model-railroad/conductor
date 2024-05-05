@@ -80,14 +80,14 @@ tasks.withType<Jar> {
     }
 }
 
-tasks.register<ShadowJar>("fatJar") {
+tasks.withType<Jar> {
     doFirst {
         val elems = project.configurations.runtimeClasspath.get().elements.get()
-        println("## fatJar: Packaging ${elems.size} libraries")
+        println("## $name: Packaging ${elems.size} libraries")
         elems.forEach {
             val n = it.asFile.name
             if (n.contains("SNAPSHOT")) {
-                println("## fatJar: adding $n")
+                println("## $name: adding $n")
             }
         }
     }
@@ -95,7 +95,7 @@ tasks.register<ShadowJar>("fatJar") {
         outputs.files.forEach { file ->
             val b = file.toPath().fileSize()
             val mb = String.format("%.03f MB", b.toDouble() / 1024.0 / 1024.0)
-            println("## fatJar: output [$mb] ${file.absolutePath}")
+            println("## $name: output [$mb] ${file.absolutePath}")
         }
     }
 }

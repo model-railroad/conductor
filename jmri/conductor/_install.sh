@@ -52,10 +52,11 @@ if ! grep -qs "$JV" $(java -version 2>&1) ; then
   echo "---- JAVA_HOME = $JAVA_HOME"
 fi
 
-GRADLE_CMD="fatJar"
-if [[ "$1" != "--skip-tests" ]]; then
-  GRADLE_CMD="test"
+GRADLE_CMD="shadowJar"
+if [[ "$1" == "--skip-tests" ]]; then
   shift
+else
+  GRADLE_CMD="$GRADLE_CMD test"
 fi
 
 set -e
