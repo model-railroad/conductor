@@ -45,6 +45,7 @@ dependencies {
     implementation(project(":engine1"))
     implementation(project(":engine2k"))
     implementation(project(":ui2"))
+    implementation(project(":ui3"))
     implementation(project(":simul2k"))
     implementation(project(":LibManifest"))
     implementation(project(":LibUtilsJava"))

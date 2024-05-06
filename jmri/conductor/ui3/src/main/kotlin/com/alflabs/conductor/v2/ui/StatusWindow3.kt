@@ -6,48 +6,53 @@ import com.alflabs.conductor.v2.IThrottleDisplayAdapter
 import java.net.URI
 
 class StatusWindow3 : IStatusWindow {
+    private lateinit var windowCallback: IWindowCallback
+
     override fun open(windowCallback: IWindowCallback) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - open")
+        this.windowCallback = windowCallback
     }
 
     override fun updateScriptName(scriptName: String) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - updateScriptName")
     }
 
     override fun setSimulationMode(isSimulation: Boolean) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - setSimulationMode")
+        windowCallback.onQuit() // TEMP
     }
 
     override fun enterKioskMode() {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - enterKioskMode")
     }
 
     override fun displaySvgMap(svgDocument: String?, mapUrl: URI) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - displaySvgMap")
+        windowCallback.onWindowSvgLoaded() // TEMP
     }
 
     override fun updateUI() {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - updateUI")
     }
 
     override fun updateMainLog(logText: String) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - updateMainLog")
     }
 
     override fun updateSimuLog(logText: String) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - updateSimuLog")
     }
 
     override fun updatePause(isPaused: Boolean) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - updatePause")
     }
 
     override fun clearUpdates() {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - clearUpdates")
     }
 
     override fun registerThrottles(throttles: MutableList<IThrottleDisplayAdapter>) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - registerThrottles")
     }
 
     override fun registerActivables(
@@ -55,7 +60,7 @@ class StatusWindow3 : IStatusWindow {
         blocks: MutableList<IActivableDisplayAdapter>,
         turnouts: MutableList<IActivableDisplayAdapter>
     ) {
-        TODO("Not yet implemented")
+        println("StatusWindow3 - Not yet implemented - registerActivables")
     }
 
 }
