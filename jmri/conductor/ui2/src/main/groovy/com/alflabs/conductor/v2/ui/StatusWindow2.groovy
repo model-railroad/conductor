@@ -34,6 +34,7 @@ import org.w3c.dom.svg.SVGDocument
 import org.w3c.dom.svg.SVGElement
 import org.w3c.dom.svg.SVGStylable
 
+import javax.annotation.Nonnull
 import javax.swing.*
 import javax.swing.text.*
 import java.awt.*
@@ -56,7 +57,7 @@ import static java.awt.GridBagConstraints.*
 import static javax.swing.ScrollPaneConstants.*
 import static javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
-class StatusWindow2 {
+class StatusWindow2 implements IStatusWindow {
     private static final String TAG = "Ui2"
     private def VERBOSE = true
     def IWindowCallback mWindowCallback
@@ -82,7 +83,7 @@ class StatusWindow2 {
     private final List<Runnable> mUpdaters = new ArrayList<>()
     private final def midColumnW = 125
 
-    void open(IWindowCallback windowCallback) {
+    void open(@Nonnull IWindowCallback windowCallback) {
         mWindowCallback = windowCallback
         mSwingBuilder = new SwingBuilder()
         mSwingBuilder.registerBeanFactory("svgCanvas", JSVGCanvas)
@@ -281,13 +282,13 @@ class StatusWindow2 {
         }
     }
 
-    void updateScriptName(String scriptName) {
+    void updateScriptName(@Nonnull String scriptName) {
         mSwingBuilder.doLater {
             mScriptNameField.text = scriptName
         }
     }
 
-    void updateMainLog(String logText) {
+    void updateMainLog(@Nonnull String logText) {
         mSwingBuilder.doLater {
             def p = mLogField.caretPosition
             mLogField.text = logText
@@ -295,7 +296,7 @@ class StatusWindow2 {
         }
     }
 
-    void updateSimuLog(String logText) {
+    void updateSimuLog(@Nonnull String logText) {
         mSwingBuilder.doLater {
             def p = mLogSimul.caretPosition
             mLogSimul.text = logText
@@ -309,7 +310,7 @@ class StatusWindow2 {
         }
     }
 
-    void registerThrottles(List<IThrottleDisplayAdapter> throttles) {
+    void registerThrottles(@Nonnull List<IThrottleDisplayAdapter> throttles) {
         mSwingBuilder.doLater {
             if (VERBOSE) println(TAG + "registerThrottles # " + throttles.size())
             mThrottlePanel.removeAll()
@@ -399,9 +400,9 @@ class StatusWindow2 {
     }
 
     void registerActivables(
-            List<ISensorDisplayAdapter> sensors,
-            List<IActivableDisplayAdapter> blocks,
-            List<IActivableDisplayAdapter> turnouts) {
+            @Nonnull List<ISensorDisplayAdapter> sensors,
+            @Nonnull List<IActivableDisplayAdapter> blocks,
+            @Nonnull List<IActivableDisplayAdapter> turnouts) {
         mSwingBuilder.doLater {
             if (VERBOSE) println(TAG + "register UI Updates.")
             mSensorPanel.removeAll()
@@ -474,7 +475,7 @@ class StatusWindow2 {
     // If svgDocument is null or empty, rely only on mapUrl.
     // Note: the mapUrl is only used as a string below, however we use java.net.URI
     // to force callers to provide a valid URI.
-    void displaySvgMap(String svgDocument, URI mapUrl) {
+    void displaySvgMap(String svgDocument, @Nonnull URI mapUrl) {
         mSvgCanvas.stopProcessing()
         mBlockColorMap.clear()
         // Per documentation in JSVGComponentListener, this is invoked from a background thread.

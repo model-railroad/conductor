@@ -42,6 +42,9 @@ dependencies {
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
 
+    // For @Nonnull and @Nullable
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
+
     implementation "org.codehaus.groovy:groovy-all:$vers_groovy"
     implementation "org.apache.xmlgraphics:batik-swing:$vers_batik"
 
