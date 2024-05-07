@@ -58,7 +58,7 @@ import kotlin.math.min
  * https://docs.oracle.com/javase/tutorial/uiswing/layout/visual.html
  */
 
-class StatusWindow3 : IStatusWindow {
+class StatusWindow2k : IStatusWindow {
     private val TAG = javaClass.simpleName
     private var isSimulation = true
     private lateinit var windowCallback: IWindowCallback
@@ -89,7 +89,7 @@ class StatusWindow3 : IStatusWindow {
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
 
-        frame = JFrame("Conductor v2").apply {
+        frame = JFrame("Conductor v2.2").apply {
             preferredSize = Dimension(1000, 500)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()

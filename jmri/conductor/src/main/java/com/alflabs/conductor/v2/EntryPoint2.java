@@ -30,7 +30,7 @@ import com.alflabs.conductor.util.Pair;
 import com.alflabs.conductor.v2.ui.IStatusWindow;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
-import com.alflabs.conductor.v2.ui.StatusWindow3;
+import com.alflabs.conductor.v2.ui.StatusWindow2k;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
@@ -226,7 +226,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
                 String uiVers = System.getenv("CONDUCTOR_UI");
 
                 if ("3".equals(uiVers)) {
-                    mWin = new StatusWindow3();
+                    mWin = new StatusWindow2k();
                 } else {
                     mWin = new StatusWindow2();
                 }
