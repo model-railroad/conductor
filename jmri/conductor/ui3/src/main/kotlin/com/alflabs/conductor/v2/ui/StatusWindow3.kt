@@ -3,16 +3,31 @@ package com.alflabs.conductor.v2.ui
 import com.alflabs.conductor.v2.IActivableDisplayAdapter
 import com.alflabs.conductor.v2.ISensorDisplayAdapter
 import com.alflabs.conductor.v2.IThrottleDisplayAdapter
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.swing.JSVGCanvas
+import org.apache.batik.swing.gvt.GVTTreeRendererAdapter
+import org.apache.batik.swing.gvt.GVTTreeRendererEvent
 import org.apache.batik.swing.gvt.GVTTreeRendererListener
-import java.awt.Checkbox
+import org.apache.batik.util.XMLResourceDescriptor
+import org.w3c.dom.Element
+import org.w3c.dom.Node
+import org.w3c.dom.css.CSSStyleDeclaration
+import org.w3c.dom.events.EventListener
+import org.w3c.dom.events.EventTarget
+import org.w3c.dom.svg.SVGDocument
+import org.w3c.dom.svg.SVGElement
+import org.w3c.dom.svg.SVGStylable
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
-import java.awt.TextField
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.io.ByteArrayInputStream
 import java.net.URI
+import java.util.Collections
+import java.util.Optional
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.swing.BoxLayout
@@ -24,7 +39,15 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextArea
 import javax.swing.JTextField
-
+import javax.swing.JTextPane
+import javax.swing.SwingUtilities
+import javax.swing.text.BadLocationException
+import javax.swing.text.DefaultStyledDocument
+import javax.swing.text.JTextComponent
+import javax.swing.text.StyleConstants
+import javax.swing.text.StyleContext
+import javax.swing.text.StyledDocument
+import kotlin.math.min
 
 /*
  * Some reading to understand this:
@@ -53,12 +76,15 @@ class StatusWindow3 : IStatusWindow {
     private lateinit var quitButton: JButton
     private lateinit var kioskCheck: JCheckBox
     private lateinit var flakyCheck: JCheckBox
-    private lateinit var onRenderCompleted: GVTTreeRendererListener
-    private val mBlockColorMap: Map<*, *> = HashMap<Any?, Any?>()
-    private val mModifSvgQueue: Queue<Runnable> = ConcurrentLinkedQueue()
+    private var onRenderCompleted: GVTTreeRendererListener? = null
+    private val blockColorMap = mutableMapOf<Element, String>()
+    private val modifSvgQueue: Queue<Runnable> = ConcurrentLinkedQueue()
     private val mUpdaters = mutableListOf<Runnable>()
     private val midColumnW = 125
 
+    companion object {
+        const val VERBOSE = true
+    }
 
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
@@ -68,7 +94,11 @@ class StatusWindow3 : IStatusWindow {
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()
             defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-            addWindowStateListener { onQuit() }
+            addWindowStateListener(object : WindowAdapter() {
+                override fun windowClosing(event: WindowEvent?) {
+                    onQuit()
+                }
+            })
         }
         createWidgets()
         frame.apply {
@@ -159,7 +189,9 @@ class StatusWindow3 : IStatusWindow {
                 weightx = 1.0
                 weighty = 1.0
             }
-        ) {}
+        ) {
+            minimumSize = Dimension(200, 200)
+        }
 
         // Below Map
         // Bottom Simulator Log
@@ -174,16 +206,16 @@ class StatusWindow3 : IStatusWindow {
                 gridwidth = wsvg + 1
                 gridheight = 1
                 weightx = 1.0
-                weighty = 0.3
+                weighty = 0.2
             }
         ) {
+            minimumSize = Dimension(200, 50)
             logSimul = addWidget(JTextArea("Simulator output\nLine 2\nLine 3").apply {
                     rows = 4
                     isEditable = false
                     lineWrap = true
                     wrapStyleWord = true
                     caretPosition = 0
-                    minimumSize = Dimension(200, 300)
                 })
         }
 
@@ -257,13 +289,13 @@ class StatusWindow3 : IStatusWindow {
                 weighty = 1.0
             }
         ) {
+            minimumSize = Dimension(200, 200)
             logField = addWidget(JTextArea("Log Area").apply {
                 columns = 100
                 isEditable = false
                 lineWrap = true
                 wrapStyleWord = true
                 caretPosition = 0
-                minimumSize = Dimension(200, 200)
             })
         }
     }
@@ -277,72 +309,77 @@ class StatusWindow3 : IStatusWindow {
         return instance
     }
 
-    private fun <C : JComponent> JComponent.addWidget(
+    private fun <C : JComponent> JPanel.addWidget(
         instance: C,
         constraints: GridBagConstraints? = null) : C {
         this.add(instance, constraints)
         return instance
     }
 
+    private fun <C : JComponent> JScrollPane.addWidget(instance: C) : C {
+        this.setViewportView(instance)
+        return instance
+    }
 
     override fun updateScriptName(scriptName: String) {
-        println("StatusWindow3 - Not yet implemented - updateScriptName")
+        SwingUtilities.invokeLater {
+            scriptNameField.text = scriptName
+        }
     }
 
     override fun setSimulationMode(isSimulation: Boolean) {
-        println("StatusWindow3 - Not yet implemented - setSimulationMode")
-    }
-
-    override fun displaySvgMap(svgDocument: String?, mapUrl: URI) {
-        println("StatusWindow3 - Not yet implemented - displaySvgMap")
-        windowCallback.onWindowSvgLoaded() // TEMP
-    }
-
-    override fun updateUI() {
-        println("StatusWindow3 - Not yet implemented - updateUI")
+        this.isSimulation = isSimulation
+        SwingUtilities.invokeLater {
+            onSimulationModeChanged()
+        }
     }
 
     override fun updateMainLog(logText: String) {
-        println("StatusWindow3 - Not yet implemented - updateMainLog")
+        SwingUtilities.invokeLater {
+            val pos = logField.caretPosition
+            logField.text = logText
+            logField.caretPosition = min(pos, logText.length)
+        }
     }
 
     override fun updateSimuLog(logText: String) {
-        println("StatusWindow3 - Not yet implemented - updateSimuLog")
+        SwingUtilities.invokeLater {
+            val pos = logSimul.caretPosition
+            logSimul.text = logText
+            logSimul.caretPosition = min(pos, logText.length)
+        }
     }
 
     override fun updatePause(isPaused: Boolean) {
-        println("StatusWindow3 - Not yet implemented - updatePause")
+        SwingUtilities.invokeLater {
+            pauseButton.text = if (isPaused) "Continue" else "Pause"
+        }
+    }
+
+    override fun updateUI() {
+        SwingUtilities.invokeLater {
+            mUpdaters.forEach { it.run() }
+        }
     }
 
     override fun clearUpdates() {
-        println("StatusWindow3 - Not yet implemented - clearUpdates")
-    }
-
-    override fun registerThrottles(throttles: MutableList<IThrottleDisplayAdapter>) {
-        println("StatusWindow3 - Not yet implemented - registerThrottles")
-    }
-
-    override fun registerActivables(
-        sensors: MutableList<ISensorDisplayAdapter>,
-        blocks: MutableList<IActivableDisplayAdapter>,
-        turnouts: MutableList<IActivableDisplayAdapter>
-    ) {
-        println("StatusWindow3 - Not yet implemented - registerActivables")
+        SwingUtilities.invokeLater {
+            mUpdaters.clear()
+        }
     }
 
     private fun onReload() {
-        println("StatusWindow3 - Not yet implemented - onReload")
-//        clearUpdates()
-//        clearSvgMap()
-//        registerThrottles(Collections.emptyList())
-//        registerActivables(
-//            /* sensors= */ Collections.emptyList(),
-//            /* blocks= */ Collections.emptyList(),
-//            /* turnouts= */ Collections.emptyList())
-//        mSwingBuilder.doLater {
-//            mWindowCallback.onWindowReload()
-//        }
-//        updatePause(false)
+        clearUpdates()
+        clearSvgMap()
+        registerThrottles(Collections.emptyList())
+        registerActivables(
+            sensors  = Collections.emptyList(),
+            blocks   = Collections.emptyList(),
+            turnouts = Collections.emptyList())
+        SwingUtilities.invokeLater {
+            windowCallback.onWindowReload()
+        }
+        updatePause(false)
     }
 
     private fun onQuit() {
@@ -351,61 +388,366 @@ class StatusWindow3 : IStatusWindow {
     }
 
     private fun onHideOrQuit() {
-        println("StatusWindow3 - Not yet implemented - onHideOrQuit")
-
         if (isSimulation) {
             onQuit()
         } else {
             // Minimize the window
-            changeFrameState(/*rm*/ JFrame.MAXIMIZED_BOTH, /*add*/ JFrame.ICONIFIED)
+            changeFrameState(remove = JFrame.MAXIMIZED_BOTH, add = JFrame.ICONIFIED)
         }
     }
 
     private fun onKioskChanged() {
-        println("StatusWindow3 - Not yet implemented - onKioskChanged")
-//        def isKiosk = mKioskCheck.selected
-//                if (isKiosk) {
-//                    mTopPanel.visible = false
-//                    mSimuScroller.visible = false
-//                    mLogScroller.visible = false
-//                    changeFrameState(/*rm*/ JFrame.ICONIFIED, /*add*/ JFrame.MAXIMIZED_BOTH)
-//                    mFrame.setAlwaysOnTop(true)
-//                } else {
-//                    mTopPanel.visible = true
-//                    mSimuScroller.visible = true
-//                    mLogScroller.visible = true
-//                    onSimulationModeChanged()
-//                    changeFrameState(/*rm*/ JFrame.MAXIMIZED_BOTH, /*add*/ JFrame.NORMAL)
-//                    mFrame.setAlwaysOnTop(false)
-//                }
+        if (kioskCheck.isSelected) {
+            topPanel.isVisible = false
+            simuScroller.isVisible = false
+            logScroller.isVisible = false
+            changeFrameState(remove = JFrame.ICONIFIED, add = JFrame.MAXIMIZED_BOTH)
+            frame.setAlwaysOnTop(true)
+        } else {
+            topPanel.isVisible = true
+            simuScroller.isVisible = true
+            logScroller.isVisible = true
+            onSimulationModeChanged()
+            changeFrameState(remove = JFrame.MAXIMIZED_BOTH, add = JFrame.NORMAL)
+            frame.setAlwaysOnTop(false)
+        }
     }
 
     private fun onFlakyChanged() {
-        println("StatusWindow3 - Not yet implemented - onFlakyChanged")
-//        mWindowCallback.onFlaky(mFlakyCheck.selected)
+        windowCallback.onFlaky(flakyCheck.isSelected)
     }
 
     private fun onSimulationModeChanged() {
-        println("StatusWindow3 - Not yet implemented - onSimulationModeChanged")
-//        mSimuScroller.visible = mIsSimulation
-//        mFlakyCheck.visible = mIsSimulation
-//        mQuitButton.text = mIsSimulation ? "Quit" : "Hide"
+        simuScroller.isVisible = isSimulation
+        flakyCheck.isVisible = isSimulation
+        quitButton.text = if (isSimulation) "Quit" else "Hide"
     }
 
-    private fun changeFrameState(removeState: Int, addState: Int) {
-        println("StatusWindow3 - Not yet implemented - changeFrameState")
+    private fun changeFrameState(remove: Int, add: Int) {
         // Java: state = (mFrame.getExtendedState() | addState) & ~removeState
-        val state = (frame.extendedState or addState) and removeState.inv()
+        val state = (frame.extendedState or add) and remove.inv()
         frame.setExtendedState(state)
     }
 
     override fun enterKioskMode() {
-        println("StatusWindow3 - Not yet implemented - enterKioskMode")
+        SwingUtilities.invokeLater {
+            kioskCheck.isSelected = true
+            onKioskChanged()
+        }
+    }
 
-//        mSwingBuilder.doLater {
-//            mKioskCheck.selected = true
-//            onKioskChanged()
-//        }
+    override fun registerThrottles(throttles: MutableList<IThrottleDisplayAdapter>) {
+        SwingUtilities.invokeLater {
+            if (VERBOSE) println("$TAG registerThrottles # ${throttles.size}")
+            throttlePanel.removeAll()
+            if (throttles.isEmpty()) {
+                // Box Dimensions = MinSize / PreferredSize / MaxSize = given size.
+                throttlePanel.add(javax.swing.Box.createRigidArea(Dimension(midColumnW, 45)))
+            } else {
+                throttles.forEach {
+                    addThrottle(it)
+                }
+            }
+            frame.pack()
+        }
+    }
+
+    private fun addThrottle(throttleAdapter: IThrottleDisplayAdapter) {
+        val context = StyleContext()
+        val doc = DefaultStyledDocument(context)
+
+        val d = context.getStyle(StyleContext.DEFAULT_STYLE)
+        val c = context.addStyle("center", d)
+        c.addAttribute(StyleConstants.Alignment, StyleConstants.ALIGN_CENTER)
+        val b = context.addStyle("bold", c)
+        b.addAttribute(StyleConstants.Bold, true)
+        val f = context.addStyle("fwd", c)
+        f.addAttribute(StyleConstants.Background, Color.GREEN)
+        val r = context.addStyle("rev", c)
+        r.addAttribute(StyleConstants.Background, Color.ORANGE)
+        val l = context.addStyle("light", b)
+        l.addAttribute(StyleConstants.Background, Color.YELLOW)
+        val s = context.addStyle("sound", b)
+        s.addAttribute(StyleConstants.Background, Color.CYAN)
+
+        val wx = JTextPane(doc).apply {
+            text = throttleAdapter.name
+            isOpaque = false
+            isEditable = false
+        }
+        throttlePanel.add(wx)
+        throttlePanel.minimumSize = Dimension(midColumnW, 40)
+        throttlePanel.background = Color.LIGHT_GRAY
+
+        val updater = Runnable { updateThrottlePane(wx, throttleAdapter) }
+        updater.run()
+        mUpdaters.add(updater)
+    }
+
+    private fun updateThrottlePane(textPane: JTextComponent,
+                                   throttleAdapter: IThrottleDisplayAdapter) {
+        val speed = throttleAdapter.speed
+        val fwd = speed > 0
+        val rev = speed < 0
+        val light = throttleAdapter.isLight
+        val sound = throttleAdapter.isSound
+
+        val spanSpeed = String.format(" %s [%d] %s %d \n",
+            throttleAdapter.getName(),
+            throttleAdapter.getDccAddress(),
+            when {
+                speed < 0 -> " < "
+                speed > 0 -> " > "
+                else      -> " = "
+            },
+            speed)
+
+        var spanA = ""
+        if (throttleAdapter.activationsCount >= 0) {
+            spanA = String.format(" #%d • ", throttleAdapter.activationsCount)
+        }
+
+        val spanL = String.format(" L%s ", if (light) "+" else "-")
+        val spanS = String.format(" S%s ", if (sound) "+" else "-")
+
+        try {
+            val doc = textPane.document as StyledDocument
+            doc.remove(0, doc.length)
+            doc.insertString(0, spanSpeed, doc.getStyle(
+                if (fwd) "fwd" else if (rev) "rev" else "center"))
+            if (spanA.isNotEmpty()) {
+                doc.insertString(doc.length, spanA, doc.getStyle("center"))
+            }
+            doc.insertString(doc.length, spanL, doc.getStyle(
+                if (light) "light" else "center"))
+            doc.insertString(doc.length, spanS, doc.getStyle(
+                if (sound) "sound" else "center"))
+            // everything is centered
+            doc.setParagraphAttributes(0, doc.length, doc.getStyle("center"), false /*replace*/)
+        } catch (e: BadLocationException) {
+            throw RuntimeException(e)
+        }
+    }
+
+    override fun registerActivables(sensors: MutableList<ISensorDisplayAdapter>,
+                                    blocks: MutableList<IActivableDisplayAdapter>,
+                                    turnouts: MutableList<IActivableDisplayAdapter>
+    ) {
+        SwingUtilities.invokeLater {
+            if (VERBOSE) println("$TAG register UI Updates.")
+            sensorPanel.removeAll()
+            sensors.forEach  { addSensor(it) }
+            blocks.forEach   { addBlock(it) }
+            turnouts.forEach { addTurnout(it) }
+            frame.pack()
+        }
+    }
+
+    private fun addSensor(adapter: ISensorDisplayAdapter) {
+        val wx = JCheckBox(adapter.name).apply { isSelected = false }
+        sensorPanel.add(wx)
+
+        val updater = Runnable { wx.isSelected = adapter.isActive }
+        updater.run()
+        mUpdaters.add(updater)
+
+        wx.addActionListener { adapter.isActive = wx.isSelected }
+    }
+
+    private fun addBlock(adapter: IActivableDisplayAdapter) {
+        val updater = Runnable {
+            val name = "S-${adapter.name}"
+            setBlockColor(name, adapter.isActive, adapter.blockState)
+        }
+        updater.run()
+        mUpdaters.add(updater)
+    }
+
+    private fun addTurnout(adapter: IActivableDisplayAdapter) {
+        val updater = Runnable {
+            val normal = adapter.isActive
+            val name = "T-${adapter.name}"
+            val N = "${name}N"
+            val R = "${name}R"
+
+            setTurnoutVisible(N,  normal)
+            setTurnoutVisible(R, !normal)
+        }
+        updater.run()
+        mUpdaters.add(updater)
+    }
+
+    private fun clearSvgMap() {
+        svgCanvas.stopProcessing()
+        modifSvgQueue.clear()
+        blockColorMap.clear()
+    }
+
+    /**
+     * Fill SVG using svgDocument (as text).
+     * If svgDocument is null or empty, rely only on mapUrl.
+     * Note: the mapUrl is only used as a string below, however we use java.net.URI
+     * to force callers to provide a valid URI.
+     */
+    override fun displaySvgMap(svgDocument: String?, mapUrl: URI) {
+        svgCanvas.stopProcessing()
+        blockColorMap.clear()
+        // Per documentation in JSVGComponentListener, this is invoked from a background thread.
+        onRenderCompleted = object : GVTTreeRendererAdapter() {
+            override fun gvtRenderingCompleted(e: GVTTreeRendererEvent) {
+                svgCanvas.removeGVTTreeRendererListener(onRenderCompleted)
+                onRenderCompleted = null
+                windowCallback.onWindowSvgLoaded()
+                frame.pack()
+
+                val onClick = EventListener { event ->
+                    // Note: This is called on the SVG UpdateManager thread.
+                    val target = event.target
+                    if (target is SVGElement) {
+                        SwingUtilities.invokeLater {
+                            windowCallback.onWindowSvgClick(target.id)
+                        }
+                    }
+                }
+
+                modifySvg {
+                    val doc = svgCanvas.svgDocument
+                    val element = doc.rootElement
+                    initAllSvgElements(element, onClick)
+                }
+                // updateSvg()
+            }
+        }
+        svgCanvas.addGVTTreeRendererListener(onRenderCompleted)
+
+        XMLResourceDescriptor.setCSSParserClassName(InkscapeCssParser::class.java.name)
+        svgCanvas.setDocumentState(JSVGCanvas.ALWAYS_DYNAMIC)
+
+        if (!svgDocument.isNullOrEmpty()) {
+            // Parse given document and load it. The URL is only informational,
+            // and it could be "" or "file:///" for path-less documents.
+            val parser = XMLResourceDescriptor.getXMLParserClassName()
+            val factory = SAXSVGDocumentFactory(parser)
+            val document: SVGDocument = factory.createSVGDocument(
+                mapUrl.toString(),
+                ByteArrayInputStream(svgDocument.toByteArray(charset("UTF-8"))))
+            svgCanvas.svgDocument = document
+        } else {
+            // Otherwise let the SVG load the given URL (which much be valid)
+            svgCanvas.uri = mapUrl.toString()
+        }
+
+        if (VERBOSE) println("$TAG SVG Map loaded from $mapUrl")
+    }
+
+    fun initAllSvgElements(rootElement : Node?, onClick: EventListener) {
+        var node = rootElement
+        while (node != null) {
+            if (node.firstChild != null) {
+                initAllSvgElements(node.firstChild, onClick)
+            }
+
+            if (node is SVGElement) {
+                val id: String = node.id
+                if (id != null && (id.startsWith("S-") || id.startsWith("T-"))) {
+                    //if (VERBOSE) println(TAG + "Add onClick listener to id = $id") // -- for debugging
+                    node as EventTarget
+                    node.addEventListener("click", onClick, false /* useCapture */)
+                }
+
+                if (id.startsWith("Toggle-T")) {
+                    if (node is SVGStylable) {
+                        node.style?.setProperty("opacity", "0", "")
+                    }
+                }
+            }
+
+            node = node.nextSibling
+        }
+    }
+
+    private fun setBlockColor(id: String,
+                              active: Boolean,
+                              blockState: Optional<IActivableDisplayAdapter.BlockState>) {
+        modifySvg {
+            val doc: SVGDocument? = svgCanvas.svgDocument
+            val elem: Element? = doc?.getElementById(id)
+            // if (VERBOSE) println(TAG + "Set color for block id = $id") // -- for debugging
+            if (elem is SVGStylable) {
+                // Note: setProperty(String propertyName, String value, String priority)
+                val priority = "" // or "important"
+                val style: CSSStyleDeclaration = (elem as SVGStylable).style
+                if (style != null) {
+                    var original = blockColorMap[elem]
+                    if (original == null) {
+                        val stroke = style.getPropertyValue("stroke")
+                        if (stroke.isNotEmpty()) {
+                            blockColorMap[elem] = stroke
+                            original = stroke
+                        }
+                    }
+
+                    //    println "_original_stroke $id = " + original.getClass().getSimpleName() + " " + original
+                    var rgb = if (active) "red" else original
+                    if (blockState.isPresent) {
+                        when (blockState.get()) {
+                            IActivableDisplayAdapter.BlockState.BLOCK_EMPTY -> {
+                                /* no-op */
+                            }
+                            IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED,
+                            IActivableDisplayAdapter.BlockState.BLOCK_TRAILING -> {
+                                rgb = if (active) "red" else "orange"
+                            }
+                        }
+                    }
+
+                    if (rgb != null) {
+                        style.setProperty("stroke", rgb, priority)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setTurnoutVisible(id: String, visible: Boolean) {
+        modifySvg {
+            val doc: SVGDocument? = svgCanvas.svgDocument
+            val elem: Element? = doc?.getElementById(id)
+            //if (VERBOSE) println(TAG + "Set turnout id = $id") // -- for debugging
+            if (elem is SVGStylable) {
+                val display = if (visible) "inline" else "none"
+                elem.style?.setProperty("display", display, "")
+            }
+        }
+    }
+
+    /**
+     * Wrap all modifications to the SVG using this call so that they happen on the UpdateManager.
+     *
+     * According to the javadoc in UpdateManager, all modifications to the SVG should be
+     * done in the UpdateManager's RunnableQueue (cf #getUpdateRunnableQueue()).
+     * The SVG will be automatically repainted as necessary.
+     *
+     *
+     * When the window opens and loads the SVG and the first script at the same time, this may
+     * be called before the SVG Canvas's UpdateManager is available. In this case runnables are
+     * queued and will be added as soon as the update manager exists. That pending list is cleared
+     * when a new SVG is loaded.
+     */
+    private fun modifySvg(block: () -> Unit) {
+        val r = Runnable { block() }
+        val queue = svgCanvas.updateManager?.updateRunnableQueue
+
+        if (queue == null) {
+            modifSvgQueue.add(r)
+            return
+        }
+
+        while (!modifSvgQueue.isEmpty()) {
+            queue.invokeLater(modifSvgQueue.remove())
+        }
+
+        queue.invokeLater(r)
     }
 
 }
