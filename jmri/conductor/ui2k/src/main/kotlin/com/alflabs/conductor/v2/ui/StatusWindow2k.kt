@@ -440,19 +440,30 @@ class StatusWindow2k : IStatusWindow {
         SwingUtilities.invokeLater {
             if (VERBOSE) println("$TAG registerThrottles # ${throttles.size}")
             throttlePanel.removeAll()
+            var height = 0
             if (throttles.isEmpty()) {
                 // Box Dimensions = MinSize / PreferredSize / MaxSize = given size.
                 throttlePanel.add(javax.swing.Box.createRigidArea(Dimension(midColumnW, 45)))
             } else {
                 throttles.forEach {
-                    addThrottle(it)
+                    height = addThrottle(it)
                 }
             }
-            frame.pack()
+
+            throttlePanel.minimumSize = Dimension(midColumnW, 40)
+            if (height > 0) {
+                println("@@@@@@ height = $height")
+                throttlePanel.preferredSize = Dimension(midColumnW, height * throttles.size)
+                throttlePanel.minimumSize = null
+            }
+            println("@@@@@@ throttlePanel.minimumSize = ${throttlePanel.minimumSize}")
+            println("@@@@@@ throttlePanel.preferredSize = ${throttlePanel.preferredSize}")
+            throttlePanel.background = Color.LIGHT_GRAY
+            throttlePanel.topLevelAncestor.validate()
         }
     }
 
-    private fun addThrottle(throttleAdapter: IThrottleDisplayAdapter) {
+    private fun addThrottle(throttleAdapter: IThrottleDisplayAdapter): Int {
         val context = StyleContext()
         val doc = DefaultStyledDocument(context)
 
@@ -476,12 +487,16 @@ class StatusWindow2k : IStatusWindow {
             isEditable = false
         }
         throttlePanel.add(wx)
-        throttlePanel.minimumSize = Dimension(midColumnW, 40)
-        throttlePanel.background = Color.LIGHT_GRAY
+        var height = 0
+        wx.getFontMetrics(wx.font)?.let {
+            height = it.height
+            wx.preferredSize = Dimension(midColumnW, height)
+        }
 
         val updater = Runnable { updateThrottlePane(wx, throttleAdapter) }
         updater.run()
         mUpdaters.add(updater)
+        return height
     }
 
     private fun updateThrottlePane(textPane: JTextComponent,
