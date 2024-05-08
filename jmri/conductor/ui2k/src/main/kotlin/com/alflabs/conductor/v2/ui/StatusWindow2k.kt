@@ -30,6 +30,7 @@ import java.util.Collections
 import java.util.Optional
 import java.util.Queue
 import java.util.concurrent.ConcurrentLinkedQueue
+import javax.swing.BorderFactory
 import javax.swing.BoxLayout
 import javax.swing.JButton
 import javax.swing.JCheckBox
@@ -80,17 +81,18 @@ class StatusWindow2k : IStatusWindow {
     private val blockColorMap = mutableMapOf<Element, String>()
     private val modifSvgQueue: Queue<Runnable> = ConcurrentLinkedQueue()
     private val mUpdaters = mutableListOf<Runnable>()
-    private val midColumnW = 125
 
     companion object {
-        const val VERBOSE = true
+        private const val VERBOSE = true
+        private const val midColumnW = 125
+        private const val midColumnH = 40
     }
 
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
 
         frame = JFrame("Conductor v2.2").apply {
-            preferredSize = Dimension(1000, 500)
+            preferredSize = Dimension(1000, 550)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()
             defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
@@ -100,22 +102,22 @@ class StatusWindow2k : IStatusWindow {
                 }
             })
         }
-        createWidgets()
+        createContent()
         frame.apply {
             pack()
             show(true)
         }
     }
 
-    private fun createWidgets() {
+    private fun createContent() {
         val wsvg = 4
         val wlog = 4
         val wmid = 2
         val wbtn = 3
         val wx = wsvg + wlog + wmid
-        val hthl = 1
-        val hsen = 1
-        val hbtn = 1
+        val hthl = 4
+        val hsen = 3
+        val hbtn = 2
         val hsvg = hthl + hsen + hbtn
         val hy = 1 + hsvg + 1
         val insets5 = Insets(5, 5, 5, 5)
@@ -206,7 +208,7 @@ class StatusWindow2k : IStatusWindow {
                 gridwidth = wsvg + 1
                 gridheight = 1
                 weightx = 1.0
-                weighty = 0.2
+                weighty = 0.15
             }
         ) {
             minimumSize = Dimension(200, 50)
@@ -220,58 +222,74 @@ class StatusWindow2k : IStatusWindow {
         }
 
         // Mid column
-        throttlePanel = frame.addWidget(
-            JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
+        frame.addWidget(
+            JPanel().apply { layout = GridBagLayout() },
             GridBagConstraints().apply {
                 fill = GridBagConstraints.BOTH
-                insets = insets5
                 gridx = wsvg
                 gridy = 1
-                weightx = 0.0
-                weighty = 1.0
-            }
-        ) {
-            addWidget(JTextField("No DCC Throttle").apply { isEditable = false })
-        }
-
-        sensorPanel = frame.addWidget(
-            JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
-            GridBagConstraints().apply {
-                fill = GridBagConstraints.VERTICAL
-                insets = insets5
-                gridx = wsvg
-                gridy = 1 + hthl
                 gridwidth = 1
-                gridheight = hsen
-                weightx = 0.0
-                weighty = 1.0
+                gridheight = hsvg
             }
         ) {
-            addWidget(JCheckBox("No DCC Throttle").apply { isSelected = false })
-        }
+            minimumSize = Dimension(midColumnW, midColumnH)
+            throttlePanel = addWidget(
+                JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
+                GridBagConstraints().apply {
+                    fill = GridBagConstraints.BOTH
+                    insets = insets5
+                    gridx = 0
+                    gridy = 0
+                    gridwidth = 1
+                    gridheight = hthl
+                    weightx = 1.0
+                    weighty = 0.0
+                }
+            ) {
+                border = BorderFactory.createLineBorder(Color.LIGHT_GRAY)
+                addWidget(JTextField("No DCC Throttle").apply { isEditable = false })
+            }
 
-        frame.addWidget(
-            JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
-            GridBagConstraints().apply {
-                fill = GridBagConstraints.VERTICAL
-                anchor = GridBagConstraints.PAGE_END
-                insets = insets5
-                gridx = wsvg
-                gridy = 1 + hthl + hsen
-                gridwidth = 1
-                gridheight = hbtn
-                weightx = 0.0
-                weighty = 0.0
+            sensorPanel = addWidget(
+                JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
+                GridBagConstraints().apply {
+                    fill = GridBagConstraints.BOTH
+                    anchor = GridBagConstraints.LINE_START
+                    insets = insets5
+                    gridx = 0
+                    gridy = hthl
+                    gridwidth = 1
+                    gridheight = hsen
+                    weightx = 1.0
+                    weighty = 1.0
+                }
+            ) {
+                addWidget(JCheckBox("No Sensor").apply { isSelected = false })
             }
-        ) {
-            flakyCheck = addWidget(JCheckBox("Flaky").apply {
-                isSelected = false
-                addActionListener { onFlakyChanged() }
-            })
-            kioskCheck = addWidget(JCheckBox("Kiosk Mode").apply {
-                isSelected = false
-                addActionListener { onKioskChanged() }
-            })
+
+            addWidget(
+                JPanel().apply { layout = BoxLayout(this, BoxLayout.Y_AXIS) },
+                GridBagConstraints().apply {
+                    fill = GridBagConstraints.HORIZONTAL
+                    anchor = GridBagConstraints.LAST_LINE_START
+                    insets = insets5
+                    gridx = 0
+                    gridy = hthl + hsen
+                    gridwidth = 1
+                    gridheight = hbtn
+                    weightx = 1.0
+                    weighty = 0.0
+                }
+            ) {
+                flakyCheck = addWidget(JCheckBox("Flaky").apply {
+                    isSelected = false
+                    addActionListener { onFlakyChanged() }
+                })
+                kioskCheck = addWidget(JCheckBox("Kiosk Mode").apply {
+                    isSelected = false
+                    addActionListener { onKioskChanged() }
+                })
+            }
         }
 
         // Side Log
@@ -313,6 +331,15 @@ class StatusWindow2k : IStatusWindow {
         instance: C,
         constraints: GridBagConstraints? = null) : C {
         this.add(instance, constraints)
+        return instance
+    }
+
+    private fun <C : JPanel> JPanel.addWidget(
+        instance: C,
+        constraints: GridBagConstraints,
+        block: C.() -> Unit) : C {
+        this.add(instance, constraints)
+        instance.block()
         return instance
     }
 
@@ -443,27 +470,30 @@ class StatusWindow2k : IStatusWindow {
             var height = 0
             if (throttles.isEmpty()) {
                 // Box Dimensions = MinSize / PreferredSize / MaxSize = given size.
-                throttlePanel.add(javax.swing.Box.createRigidArea(Dimension(midColumnW, 45)))
+                throttlePanel.add(JTextField("No DCC Throttle").apply { isEditable = false })
             } else {
-                throttles.forEach {
-                    height = addThrottle(it)
+                var bg = true
+                throttles.forEach { th ->
+                    val wx = addThrottle(th)
+                    if (height == 0) {
+                        wx.getFontMetrics(wx.font)?.let { fm -> height = fm.height }
+                    }
+                    if (bg) {
+                        wx.isOpaque = true
+                        wx.background = Color.LIGHT_GRAY
+                    }
+                    bg = !bg
                 }
             }
 
-            throttlePanel.minimumSize = Dimension(midColumnW, 40)
-            if (height > 0) {
-                println("@@@@@@ height = $height")
-                throttlePanel.preferredSize = Dimension(midColumnW, height * throttles.size)
-                throttlePanel.minimumSize = null
-            }
-            println("@@@@@@ throttlePanel.minimumSize = ${throttlePanel.minimumSize}")
-            println("@@@@@@ throttlePanel.preferredSize = ${throttlePanel.preferredSize}")
-            throttlePanel.background = Color.LIGHT_GRAY
+            throttlePanel.minimumSize = Dimension(
+                midColumnW,
+                if (height <= 0) midColumnH else height * throttles.size)
             throttlePanel.topLevelAncestor.validate()
         }
     }
 
-    private fun addThrottle(throttleAdapter: IThrottleDisplayAdapter): Int {
+    private fun addThrottle(throttleAdapter: IThrottleDisplayAdapter): JTextPane {
         val context = StyleContext()
         val doc = DefaultStyledDocument(context)
 
@@ -487,16 +517,11 @@ class StatusWindow2k : IStatusWindow {
             isEditable = false
         }
         throttlePanel.add(wx)
-        var height = 0
-        wx.getFontMetrics(wx.font)?.let {
-            height = it.height
-            wx.preferredSize = Dimension(midColumnW, height)
-        }
 
         val updater = Runnable { updateThrottlePane(wx, throttleAdapter) }
         updater.run()
         mUpdaters.add(updater)
-        return height
+        return wx
     }
 
     private fun updateThrottlePane(textPane: JTextComponent,

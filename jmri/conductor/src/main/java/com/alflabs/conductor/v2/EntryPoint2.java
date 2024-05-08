@@ -223,12 +223,12 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             if (GraphicsEnvironment.isHeadless()) {
                 log("StatusWindow2 skipped: headless graphics environment");
             } else {
-                String uiVers = System.getenv("CONDUCTOR_UI");
+                String uiVers = System.getenv("CONDUCTOR_UI"); // Override for older UI version
 
-                if ("3".equals(uiVers)) {
-                    mWin = new StatusWindow2k();
-                } else {
+                if ("2".equals(uiVers)) {
                     mWin = new StatusWindow2();
+                } else {
+                    mWin = new StatusWindow2k();
                 }
                 mWin.open(this);
                 mWin.updateScriptName("No Script1 Loaded");
