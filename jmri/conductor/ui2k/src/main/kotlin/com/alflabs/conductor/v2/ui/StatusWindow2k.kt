@@ -105,7 +105,7 @@ class StatusWindow2k : IStatusWindow {
         createContent()
         frame.apply {
             pack()
-            show(true)
+            isVisible = true
         }
     }
 
@@ -119,7 +119,6 @@ class StatusWindow2k : IStatusWindow {
         val hsen = 3
         val hbtn = 2
         val hsvg = hthl + hsen + hbtn
-        val hy = 1 + hsvg + 1
         val insets5 = Insets(5, 5, 5, 5)
 
         // Top
@@ -689,7 +688,7 @@ class StatusWindow2k : IStatusWindow {
 
             if (node is SVGElement) {
                 val id: String = node.id
-                if (id != null && (id.startsWith("S-") || id.startsWith("T-"))) {
+                if (id.startsWith("S-") || id.startsWith("T-")) {
                     //if (VERBOSE) println(TAG + "Add onClick listener to id = $id") // -- for debugging
                     node as EventTarget
                     node.addEventListener("click", onClick, false /* useCapture */)
@@ -717,33 +716,31 @@ class StatusWindow2k : IStatusWindow {
                 // Note: setProperty(String propertyName, String value, String priority)
                 val priority = "" // or "important"
                 val style: CSSStyleDeclaration = (elem as SVGStylable).style
-                if (style != null) {
-                    var original = blockColorMap[elem]
-                    if (original == null) {
-                        val stroke = style.getPropertyValue("stroke")
-                        if (stroke.isNotEmpty()) {
-                            blockColorMap[elem] = stroke
-                            original = stroke
+                var original = blockColorMap[elem]
+                if (original == null) {
+                    val stroke = style.getPropertyValue("stroke")
+                    if (stroke.isNotEmpty()) {
+                        blockColorMap[elem] = stroke
+                        original = stroke
+                    }
+                }
+
+                //    println "_original_stroke $id = " + original.getClass().getSimpleName() + " " + original
+                var rgb = if (active) "red" else original
+                if (blockState.isPresent) {
+                    when (blockState.get()) {
+                        IActivableDisplayAdapter.BlockState.BLOCK_EMPTY -> {
+                            /* no-op */
+                        }
+                        IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED,
+                        IActivableDisplayAdapter.BlockState.BLOCK_TRAILING -> {
+                            rgb = if (active) "red" else "orange"
                         }
                     }
+                }
 
-                    //    println "_original_stroke $id = " + original.getClass().getSimpleName() + " " + original
-                    var rgb = if (active) "red" else original
-                    if (blockState.isPresent) {
-                        when (blockState.get()) {
-                            IActivableDisplayAdapter.BlockState.BLOCK_EMPTY -> {
-                                /* no-op */
-                            }
-                            IActivableDisplayAdapter.BlockState.BLOCK_OCCUPIED,
-                            IActivableDisplayAdapter.BlockState.BLOCK_TRAILING -> {
-                                rgb = if (active) "red" else "orange"
-                            }
-                        }
-                    }
-
-                    if (rgb != null) {
-                        style.setProperty("stroke", rgb, priority)
-                    }
+                if (rgb != null) {
+                    style.setProperty("stroke", rgb, priority)
                 }
             }
         }
