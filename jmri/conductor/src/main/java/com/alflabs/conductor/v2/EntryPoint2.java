@@ -27,8 +27,10 @@ import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
 import com.alflabs.conductor.util.Pair;
+import com.alflabs.conductor.v2.ui.IStatusWindow;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
 import com.alflabs.conductor.v2.ui.StatusWindow2;
+import com.alflabs.conductor.v2.ui.StatusWindow2k;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
@@ -53,7 +55,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     private static final String TAG = EntryPoint2.class.getSimpleName();
 
     private boolean mIsSimulation;
-    private StatusWindow2 mWin;
+    private IStatusWindow mWin;
     private Thread mHandleThread;
     private Thread mWinUpdateThread;
     private final ZeroConfController mZeroConf = new ZeroConfController();
@@ -201,7 +203,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         log("Window Update Thread - Start");
 
         while (mKeepRunning.get()) {
-            StatusWindow2 win = mWin;
+            IStatusWindow win = mWin;
             if (win != null) {
                 try {
                     updateWindowLog();
@@ -221,7 +223,13 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             if (GraphicsEnvironment.isHeadless()) {
                 log("StatusWindow2 skipped: headless graphics environment");
             } else {
-                mWin = new StatusWindow2();
+                String uiVers = System.getenv("CONDUCTOR_UI"); // Override for older UI version
+
+                if ("2".equals(uiVers)) {
+                    mWin = new StatusWindow2();
+                } else {
+                    mWin = new StatusWindow2k();
+                }
                 mWin.open(this);
                 mWin.updateScriptName("No Script1 Loaded");
 
@@ -308,7 +316,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             boolean wasRunning = reloaded.mFirst;
             File file = reloaded.mSecond;
 
-            StatusWindow2 win = mWin;
+            IStatusWindow win = mWin;
             if (win != null) {
                 win.updateScriptName(file.getName());
                 loadMap();
@@ -357,7 +365,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onWindowPause() {
         log("onWindowPause");
         mPaused.set(!mPaused.get());
-        StatusWindow2 win = mWin;
+        IStatusWindow win = mWin;
         if (win != null) {
             win.updatePause(mPaused.get());
         }
@@ -366,7 +374,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Override
     public void onWindowSvgLoaded() {
         log("onWindowSvgLoaded");
-        StatusWindow2 win = mWin;
+        IStatusWindow win = mWin;
         if (win == null) return;
         win.setSimulationMode(mIsSimulation);
         if (!mIsSimulation) {
@@ -415,7 +423,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
     /** Executes on the Swing EDT thread. */
     private void updateWindowLog() {
-        StatusWindow2 win = mWin;
+        IStatusWindow win = mWin;
         if (win == null) return;
 
         mStatus.setLength(0);
@@ -470,7 +478,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void registerUiThrottles() {
-        StatusWindow2 win = mWin;
+        IStatusWindow win = mWin;
         if (win == null) { return; }
 
         mAdapter.ifPresent(adapter ->
@@ -478,7 +486,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     }
 
     private void registerUiConditionals() {
-        StatusWindow2 win = mWin;
+        IStatusWindow win = mWin;
         if (win == null) { return; }
 
         mAdapter.ifPresent(adapter ->
