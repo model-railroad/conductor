@@ -85,7 +85,8 @@ class StatusWindow2k : IStatusWindow {
     companion object {
         private const val VERBOSE = true
         private const val midColumnW = 125
-        private const val midColumnH = 40
+        private const val midThrottleH = 40
+        private const val midColumnH = midThrottleH * 4
     }
 
     override fun open(windowCallback: IWindowCallback) {
@@ -514,6 +515,7 @@ class StatusWindow2k : IStatusWindow {
             text = throttleAdapter.name
             isOpaque = false
             isEditable = false
+            minimumSize = Dimension(midColumnW, midThrottleH)
         }
         throttlePanel.add(wx)
 
