@@ -1989,16 +1989,22 @@ data class _TL_Data(
 
     val Delay_Start: Delay      = 5.seconds,
     val Delay_Start2: Delay     = 1.seconds,
-    val Delay_Reverse: Delay    = 43.seconds,
-    val Delay_RevStop: Delay    = 3.seconds,
-    val Delay_RevKludge: Delay  = 3.seconds,
+    /** How long to go Forward on block B. */
+    val Delay_Forward: Delay    = 43.seconds,
+    /** Pause before reversing. */
+    val Delay_RevPause: Delay   = 5.seconds,
+    /** Stop time at the end before the kludge. */
+    val Delay_EndStop: Delay    = 3.seconds,
+    /** The "rev-stop-fwd-stop" kludge timing that (mostly) stops 6885 properly. */
+    val Delay_EndKludge: Delay  = 3.seconds,
+    /** Time before turning off all lights & sounds. */
     val Delay_Off: Delay        = 5.seconds,
 
     val Cycle_Wait: Delay       = 30.seconds,
 
     val Delay_Recovery: Delay   = 600.seconds,
 
-    // for emergencies when train is not working
+    /** For emergencies when train is not working. */
     val Enable_TL: Boolean = true
 )
 
@@ -2009,9 +2015,10 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
 
     Delay_Start     = 5.seconds,
     Delay_Start2    = 1.seconds,
-    Delay_Reverse   = 17.seconds,
-    Delay_RevStop   = 1.seconds,
-    Delay_RevKludge = 1.seconds,
+    Delay_Forward   = 17.seconds,
+    Delay_RevPause  = 5.seconds,
+    Delay_EndStop   = 1.seconds,
+    Delay_EndKludge = 1.seconds,
     Delay_Off       = 5.seconds,
 
     Cycle_Wait      = 120.seconds,
@@ -2131,7 +2138,10 @@ val TL_Shuttle_Route = TL_Route.sequence {
         onEnter {
             TL.sound(On)
             TL.bell(On)
-            after (TL_Data.Delay_Reverse) then {
+            after (TL_Data.Delay_Forward) then {
+                TL.bell(Off)
+                TL.stop()
+            } and_after (TL_Data.Delay_RevPause) then {
                 TL.bell(Off)
                 TL.reverse(TL_Data.Speed)
             }
@@ -2143,14 +2153,14 @@ val TL_Shuttle_Route = TL_Route.sequence {
             TL.bell(On)
             // Note: 6885 needed a short forward(2.speed) kludge here. Still need it?
             TL.reverse(TL_Data.RevSpeed)
-            after (TL_Data.Delay_RevStop) then {
+            after (TL_Data.Delay_EndStop) then {
                 TL.bell(Off)
                 TL.stop()
                 // Engine 6885 will not stop in reverse.
                 // The kludge to force 6885 to stop is to change it to go forward then stop
                 // after a very small delay.
                 TL.forward(2.speed)
-            } and_after (TL_Data.Delay_RevKludge) then {
+            } and_after (TL_Data.Delay_EndKludge) then {
                 TL.stop()
             } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
@@ -2204,14 +2214,14 @@ val TL_Recovery_Route = TL_Route.sequence {
             // Engine 6885 will not stop in reverse.
             // Note: 6885 needed a short forward(2.speed) kludge here. Still need it?
             TL.reverse(TL_Data.RevSpeed)
-            after (TL_Data.Delay_RevStop) then {
+            after (TL_Data.Delay_EndStop) then {
                 TL.bell(Off)
                 TL.stop()
                 // Engine 6885 will not stop in reverse.
                 // The kludge to force 6885 to stop is to change it to go forward then stop
                 // after a very small delay.
                 TL.forward(2.speed)
-            } and_after (TL_Data.Delay_RevKludge) then {
+            } and_after (TL_Data.Delay_EndKludge) then {
                 TL.stop()
             } and_after (TL_Data.Delay_Off) then {
                 TL.sound(Off)
