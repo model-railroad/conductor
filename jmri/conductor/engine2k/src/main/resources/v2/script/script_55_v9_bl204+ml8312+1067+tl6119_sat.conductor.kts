@@ -522,6 +522,10 @@ fun ML_Send_Start_GaEvent() {
         label = ML_Train.name
         user = ML_Start_Counter.toString()
     }
+    jsonEvent {
+        key1 = "Depart"
+        key2 = ML_Train.name
+    }
 }
 
 data class _AM_Data(
@@ -596,25 +600,24 @@ val Passenger_Route = ML_Route.sequence {
 
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Run
-        ML_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:blue}Currently Running:\\n${AM_Data.PSA_Name}"
-        jsonEvent {
-            key1 = "Depart"
-            key2 = "Passenger"
-        }
+        throttle.incActivationCount()
         PA.light(On)
         PA.bell(Off)
         PA.sound(On)
         FR.sound(Off)
-
-        throttle.incActivationCount()
     }
 
     val B503b_start = node(B503b) {
         // After a recovery, the train may be just at the edge of the block.
         // in which case we may be leaving the block just after the horn delay.
         minSecondsOnBlock = 2
+
         onEnter {
+            // Delay the GA/JSON event till train actually moves -- this prevents the event
+            // from being sent when the train is activated and a presence error is detected.
+            ML_Send_Start_GaEvent()
+
             FR.sound(Off)
             PA.horn()
             ML_Passenger_Align_Turnouts()
@@ -867,18 +870,16 @@ val Freight_Route = ML_Route.sequence {
     onActivate {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Run
-        ML_Send_Start_GaEvent()
         exportedVars.rtacPsaText = "{c:#FF008800}Currently Running:\\n${SP_Data.PSA_Name}"
-        jsonEvent {
-            key1 = "Depart"
-            key2 = "Freight"
-        }
-
         throttle.incActivationCount()
     }
 
     val B311_start = node(B311) {
         onEnter {
+            // Delay the GA/JSON event till train actually moves -- this prevents the event
+            // from being sent when the train is activated and a presence error is detected.
+            ML_Send_Start_GaEvent()
+
             FR.light(On)
             FR_marker(On)
             FR.sound(On)
