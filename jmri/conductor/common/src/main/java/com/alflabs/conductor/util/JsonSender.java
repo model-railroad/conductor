@@ -184,16 +184,17 @@ public class JsonSender implements Runnable {
 
     @Override
     public void run() {
-        if (mJsonUrl == null) {
-            mLogger.d(TAG, "JSON Sender: URL not set");
-            return;
-        }
-
         String jsonData = mLatestJson.getAndSet(null);
         if (jsonData == null) {
             mLogger.d(TAG, "JSON Sender: No data to send");
             return;
         }
+
+        if (mJsonUrl == null) {
+            mLogger.d(TAG, "JSON Sender: URL not set. Ignoring payload: " + jsonData);
+            return;
+        }
+
 
         OkHttpClient client = mOkHttpClient;
         HttpUrl url = mJsonUrl;
