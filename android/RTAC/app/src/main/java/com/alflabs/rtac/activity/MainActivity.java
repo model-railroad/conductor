@@ -121,6 +121,10 @@ public class MainActivity extends FragmentActivity {
         getComponent().inject(this);
         mMotionSensorMixin.onCreate();
 
+        if (DEBUG) {
+            Log.d(TAG, "Display Metrics: " + getResources().getDisplayMetrics());
+        }
+
         // Modify UI insets (normally applied using android:fitsSystemWindows="true" in the view layout
         // in order to cancel the insert that the stable layout leaves in place of the bottom nav bar.
         // Combined with the API 21 translucent nav bar, it allows it to be hidden and shown on *top*

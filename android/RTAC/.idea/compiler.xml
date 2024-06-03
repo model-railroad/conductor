@@ -4,6 +4,9 @@
     <bytecodeTargetLevel target="1.8">
       <module name="RTAC.androidsvg" target="17" />
       <module name="RTAC.app" target="17" />
+      <module name="RTAC.LibManifest" target="11" />
+      <module name="RTAC.LibManifest.main" target="11" />
+      <module name="RTAC.LibManifest.test" target="11" />
       <module name="RTAC.LibUtilsAndroid" target="17" />
     </bytecodeTargetLevel>
   </component>
