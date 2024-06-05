@@ -435,6 +435,7 @@ class StatusWindow2k : IStatusWindow {
             simuScroller.isVisible = true
             logScroller.isVisible = true
             onSimulationModeChanged()
+            frame.pack()
             changeFrameState(remove = JFrame.MAXIMIZED_BOTH, add = JFrame.NORMAL)
             frame.setAlwaysOnTop(false)
         }
