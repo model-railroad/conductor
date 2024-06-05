@@ -566,16 +566,24 @@ val AM_Data = if (PA.dccAddress == 8401) _AM_Data(
     Recover_Speed             = 8.speed,
     Delay_B370_Entrance       = 10.seconds,
 ) else if (PA.dccAddress == 3609) _AM_Data(
-    Leaving_Speed = 10.speed,
-    Summit_Speed = 10.speed,
-    Summit_Bridge_Speed = 8.speed,
-    Sonora_Speed = 12.speed,
-    Crossover_Speed = 8.speed,
-    Full_Speed = 16.speed,
-    Recover_Speed = 12.speed,
-    Delay_B330_Up_Resume     = 16.seconds,
-    Delay_B370_Entrance      = 8.seconds,
+    Leaving_Speed           = 10.speed,
+    Summit_Speed            = 10.speed,
+    Summit_Bridge_Speed     = 8.speed,
+    Sonora_Speed            = 12.speed,
+    Crossover_Speed         = 8.speed,
+    Full_Speed              = 16.speed,
+    Recover_Speed           = 12.speed,
+    Delay_B330_Up_Resume    = 16.seconds,
+    Delay_B370_Entrance     = 8.seconds,
 ) else if (PA.dccAddress == 8330) _AM_Data(
+    Leaving_Speed           = 8.speed,
+    Summit_Speed            = 10.speed,
+    Summit_Bridge_Speed     = 8.speed,
+    Sonora_Speed            = 14.speed,
+    Crossover_Speed         = 8.speed,
+    Full_Speed              = 20.speed,
+    Recover_Speed           = 12.speed,
+    Delay_B370_Entrance     = 4.seconds,
 ) else _AM_Data()
 
 
