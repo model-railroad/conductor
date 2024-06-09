@@ -84,7 +84,7 @@ class StatusWindow2k : IStatusWindow {
 
     companion object {
         private const val VERBOSE = true
-        private const val midColumnW = 125
+        private const val midColumnW = 150
         private const val midThrottleH = 40
         private const val midColumnH = midThrottleH * 4
     }
