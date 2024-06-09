@@ -2024,7 +2024,7 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
 
     Delay_Start     = 5.seconds,
     Delay_Start2    = 1.seconds,
-    Delay_Forward   = 17.seconds,
+    Delay_Forward   = 14.seconds,
     Delay_RevPause  = 5.seconds,
     Delay_EndStop   = 1.seconds,
     Delay_EndKludge = 1.seconds,
