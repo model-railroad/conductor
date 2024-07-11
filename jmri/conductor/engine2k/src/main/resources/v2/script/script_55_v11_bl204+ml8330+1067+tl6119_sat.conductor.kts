@@ -1750,6 +1750,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     maxSecondsEnterBlock = 30
 
     val B801_Parked_fwd = node(B801) {
+        // Typical run time: 35 seconds.
         onEnter {
             BL.sound(On)
             BL.horn()
@@ -1764,6 +1765,8 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     val B820_Station_fwd = node(B820) {
+        // Typical run time: 45 seconds.
+        maxSecondsOnBlock = 180 // Expected to be 45+70=115 with B830v deactivated.
         onEnter {
             BL.bell(Off)
             BL.forward(BL_Data.Speed_Station)
@@ -1773,24 +1776,28 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val B830v_fwd = node(B830v) {
-        onEnter {
-            BL.horn()
-
-            // Horn over Canyon bridge
-            after (BL_Data.Delay_Canyon_Horn_Fwd) then {
-                BL.horn()
-            }
-        }
-    }
+    // Usage of the virtual block B830 is currently deactivated. B850 follows B820.
+    //val B830v_fwd = node(B830v) {
+    //    // Typical run time: 70 seconds.
+    //    onEnter {
+    //        BL.horn()
+    //
+    //        // Horn over Canyon bridge
+    //        after (BL_Data.Delay_Canyon_Horn_Fwd) then {
+    //            BL.horn()
+    //        }
+    //    }
+    //}
 
     val B850_Tunnel_fwd = node(B850) {
+        // Typical run time: 25 seconds.
         onEnter {
             BL.horn()
         }
     }
 
     val B860_Reverse_fwd = node(B860) {
+        // Typical run time: 60 seconds.
         onEnter {
             BL.horn()
             BL.bell(On)
@@ -1818,21 +1825,26 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     val B850_Tunnel_rev = node(B850) {
+        // Typical run time: 25 seconds.
+        maxSecondsOnBlock = 180 // Expected to be 25+75=100 with B830v deactivated.
         onEnter {
             BL.horn()
         }
     }
 
-    val B830v_rev = node(B830v) {
-        onEnter {
-            BL.horn()
-            after (BL_Data.Delay_Canyon_Horn_Rev) then {
-                BL.horn()
-            }
-        }
-    }
+    // Usage of the virtual block B830 is currently deactivated. B820 follows B850.
+    //val B830v_rev = node(B830v) {
+    //    // Typical run time: 75 seconds.
+    //    onEnter {
+    //        BL.horn()
+    //        after (BL_Data.Delay_Canyon_Horn_Rev) then {
+    //            BL.horn()
+    //        }
+    //    }
+    //}
 
     val B820_Station_rev = node(B820) {
+        // Typical run time: 65 seconds.
         onEnter {
             BL.bell(On)
             T324.normal()
@@ -1848,6 +1860,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     val B801_Parked_rev = node(B801) {
+        // Typical run time: 20 seconds.
         onEnter {
             after (10.seconds) then {
                 BL.stop()
@@ -1878,9 +1891,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_Recovery_Route.activate()
     }
 
-    sequence = listOf(B801_Parked_fwd, B820_Station_fwd, B830v_fwd, B850_Tunnel_fwd,
+    sequence = listOf(B801_Parked_fwd, B820_Station_fwd, /*B830v_fwd,*/ B850_Tunnel_fwd,
         B860_Reverse_fwd,
-        B850_Tunnel_rev, B830v_rev, B820_Station_rev, B801_Parked_rev)
+        B850_Tunnel_rev, /*B830v_rev,*/ B820_Station_rev, B801_Parked_rev)
 }
 
 val BL_Recovery_Route = BL_Route.sequence {
@@ -2045,7 +2058,7 @@ data class _TL_Data(
     val Delay_Recovery: Delay   = 600.seconds,
 
     /** For emergencies when train is not working. */
-    val Enable_TL: Boolean = false // DEBUG true
+    val Enable_TL: Boolean = true
 )
 
 val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
