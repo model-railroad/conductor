@@ -93,7 +93,7 @@ class StatusWindow2k : IStatusWindow {
         this.windowCallback = windowCallback
 
         frame = JFrame("Conductor v2.2").apply {
-            preferredSize = Dimension(1000, 550)
+            preferredSize = Dimension(1000, 600)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()
             defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
@@ -511,6 +511,8 @@ class StatusWindow2k : IStatusWindow {
         l.addAttribute(StyleConstants.Background, Color.YELLOW)
         val s = context.addStyle("sound", b)
         s.addAttribute(StyleConstants.Background, Color.CYAN)
+        val e = context.addStyle("error", c)
+        e.addAttribute(StyleConstants.Background, Color.RED)
 
         val wx = JTextPane(doc).apply {
             text = throttleAdapter.name
@@ -534,7 +536,7 @@ class StatusWindow2k : IStatusWindow {
         val light = throttleAdapter.isLight
         val sound = throttleAdapter.isSound
 
-        val spanSpeed = String.format(" %s [%d] %s %d \n",
+        val spanSpeed = String.format(" %s [%d] %s %d ",
             throttleAdapter.getName(),
             throttleAdapter.getDccAddress(),
             when {
@@ -552,11 +554,15 @@ class StatusWindow2k : IStatusWindow {
         val spanL = String.format(" L%s ", if (light) "+" else "-")
         val spanS = String.format(" S%s ", if (sound) "+" else "-")
 
+        val spanStatus = " ${throttleAdapter.getStatus()} "
+        val error = spanStatus.contains("error", ignoreCase = true)
+
         try {
             val doc = textPane.document as StyledDocument
             doc.remove(0, doc.length)
             doc.insertString(0, spanSpeed, doc.getStyle(
                 if (fwd) "fwd" else if (rev) "rev" else "center"))
+            doc.insertString(doc.length, "\n", doc.getStyle("center"))
             if (spanA.isNotEmpty()) {
                 doc.insertString(doc.length, spanA, doc.getStyle("center"))
             }
@@ -564,6 +570,9 @@ class StatusWindow2k : IStatusWindow {
                 if (light) "light" else "center"))
             doc.insertString(doc.length, spanS, doc.getStyle(
                 if (sound) "sound" else "center"))
+            doc.insertString(doc.length, "\n", doc.getStyle("center"))
+            doc.insertString(doc.length, spanStatus, doc.getStyle(
+                if (error) "error" else "center"))
             // everything is centered
             doc.setParagraphAttributes(0, doc.length, doc.getStyle("center"), false /*replace*/)
         } catch (e: BadLocationException) {

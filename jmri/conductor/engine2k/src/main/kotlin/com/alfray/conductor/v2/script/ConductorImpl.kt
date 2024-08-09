@@ -32,9 +32,11 @@ import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
 import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
 import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
+import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 import com.alfray.conductor.v2.script.dsl.IOnRule
 import com.alfray.conductor.v2.script.dsl.ISensor
+import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.script.dsl.ISvgMap
 import com.alfray.conductor.v2.script.dsl.ISvgMapBuilder
 import com.alfray.conductor.v2.script.dsl.IThrottle
@@ -53,6 +55,7 @@ import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
+import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
@@ -190,6 +193,20 @@ class ConductorImpl @Inject internal constructor(
         val a = b.create(simulCallback)
         routesContainers.add(a)
         return a
+    }
+
+    /** Finds the first route container controlling this throttle (active or not), or null. */
+    fun routesContainerForThrottle(throttle: IThrottle) : IRoutesContainer? {
+        for (container in routesContainers) {
+            for (route in container.routes) {
+                when (route) {
+                    // All subtypes of IRoute
+                    is ISequenceRoute -> if (route.throttle == throttle) return container
+                    is IIdleRoute -> { /* no-op, an idle route has no associated throttle */ }
+                }
+            }
+        }
+        return null
     }
 
     override fun gaPage(gaPageSpecification: IGaPageBuilder.() -> Unit) {

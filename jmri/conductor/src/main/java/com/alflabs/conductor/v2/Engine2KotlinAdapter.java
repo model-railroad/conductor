@@ -222,6 +222,16 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
                     public int getActivationsCount() {
                         return throttle.getActivationCount();
                     }
+
+                    @Override
+                    public String getStatus() {
+                        IRoutesContainer container = component
+                                .getScript2kLoader()
+                                .getConductorImpl()
+                                .routesContainerForThrottle(throttle);
+                        if (container == null) return "";
+                        return container.getStatus().invoke();
+                    }
                 })));
         return list;
     }

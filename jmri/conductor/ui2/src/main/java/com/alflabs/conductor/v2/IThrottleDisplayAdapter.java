@@ -19,6 +19,7 @@
 package com.alflabs.conductor.v2;
 
 import com.alflabs.annotations.NonNull;
+import com.alflabs.annotations.Null;
 
 public interface IThrottleDisplayAdapter {
     @NonNull
@@ -33,4 +34,7 @@ public interface IThrottleDisplayAdapter {
     boolean isSound();
 
     int getActivationsCount();
+
+    @NonNull
+    String getStatus();
 }

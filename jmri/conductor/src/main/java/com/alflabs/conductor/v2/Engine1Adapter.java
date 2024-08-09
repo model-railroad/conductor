@@ -148,6 +148,12 @@ public class Engine1Adapter implements IEngineAdapter {
                         // Not implemented for Conductor 1.
                         return -1;
                     }
+
+                    @Override
+                    public String getStatus() {
+                        // Not implemented for Conductor 1.
+                        return "";
+                    }
                 })));
         return list;
     }
