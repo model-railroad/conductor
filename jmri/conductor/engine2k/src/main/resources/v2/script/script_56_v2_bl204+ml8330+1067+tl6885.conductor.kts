@@ -1197,8 +1197,10 @@ fun ML_Fn_Try_Recover_Route() {
         return
     }
 
-    val PA_blocks = (Passenger_Route as ISequenceRoute).sequence.map { it.block }.distinct()
-    val FR_blocks = (Freight_Route as ISequenceRoute).sequence.map { it.block }.distinct()
+    val PA_Route = Passenger_Route as ISequenceRoute
+    val FR_Route = Freight_Route as ISequenceRoute
+    val PA_blocks = PA_Route.sequence.map { it.block }.distinct()
+    val FR_blocks = FR_Route.sequence.map { it.block }.distinct()
 
     // Some of these sensors do not register properly if we trains are not moving.
     //    if (PA_blocks.count { it.active } == 0) { PA.reverse(1.speed) }
@@ -1208,21 +1210,21 @@ fun ML_Fn_Try_Recover_Route() {
 
     // x_start: whether there's a train in the "start" block (where it should be when starting).
     // Expected value: 1 for a train waiting at the start block.
-    val PA_start = PA_blocks.first().active
-    val FR_start = FR_blocks.first().active
+    val PA_start = PA_Route.isStartBlockActive()
+    val FR_start = FR_Route.isStartBlockActive()
     // x_occup: Number of blocks active EXCEPT the first one (counted by x_start)
     // Expected value: 0 for a train waiting at the start block.
-    val PA_occup = PA_blocks.subList(1, PA_blocks.size).count { it.active }
-    val FR_occup = FR_blocks.subList(1, FR_blocks.size).count { it.active }
+    val PA_occup = PA_Route.numNonAdjacentBlocksActive(includeFirstBlock = false)
+    val FR_occup = FR_Route.numNonAdjacentBlocksActive(includeFirstBlock = false)
     // x_total: Number of blocks active. Note that PA and FR overlap by 1 block. Includes "start" block.
     // Expected value: 1 for a train waiting at the start block.
-    val PA_total = PA_blocks.count { it.active }
-    val FR_total = FR_blocks.count { it.active }
+    val PA_total = PA_Route.numNonAdjacentBlocksActive(includeFirstBlock = true)
+    val FR_total = FR_Route.numNonAdjacentBlocksActive(includeFirstBlock = true)
     // occup vs total:
     // - If the train has stopped somewhere else on the track, we should have start=false,
     //   and occup = total =1.
-    // - If the train has stopped on a block boundary, we chould have start=false, and
-    //   occup = total = 2.
+    // - If the train has stopped on a block boundary, we could have start=false, and
+    //   occup = total = 1 (because we count adjacent blocks as a single one).
     // - If there's another train occupying the track, we'll have total > 1.
     //   If the train is on its start block, then start=true, occup > 0 (how many extra blocks occupied).
     //   and total = occup + 1 (extra trains + the one on start block).
@@ -1233,12 +1235,12 @@ fun ML_Fn_Try_Recover_Route() {
 
     if (PA_start && (!FR_start || FR_occup == 1)) {
         // PA train is accounted for, where expected.
-        // FR train is not at start but there's one block occupied, so let's assume it's
+        // FR train is not at start but there's one FR block occupied, so let's assume it's
         // our train and try to recover that FR train.
         log("[ML Recovery] Recover Freight")
         ML_Recovery_Freight_Route.activate()
 
-    } else if (FR_start && ((!PA_start && PA_occup in 1..2) || (PA_start && PA_occup == 1))) {
+    } else if (FR_start && ((!PA_start && PA_occup == 1) || (PA_start && PA_occup == 0))) {
         // FR train is accounted for, where expected.
         // PA train is not at start but there's 1~2 block occupied, so let's assume it's
         // our train and try to recover that PA train.
@@ -1258,6 +1260,8 @@ fun ML_Fn_Try_Recover_Route() {
         // Similar to the previous case with the PA train present with the FR missing.
         // If we can't find the FR train, it may be "dead" on B321 which is shared with
         // the PA train, so we're not even trying to recover from that situation.
+        // TBD ==> This test can never be true because it is already matched by the very first
+        // test above (PA_start && !FR_Start --> activate ML_Recovery_Freight_Route).
         log("[ML Recovery] Freight not found. Cannot recover.")
         ML_Error_Route.activate()
 

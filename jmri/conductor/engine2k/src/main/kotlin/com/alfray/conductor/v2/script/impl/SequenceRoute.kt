@@ -487,6 +487,55 @@ internal class SequenceRoute @AssistedInject constructor(
             }
         }
     }
+
+    /**
+     * True if the first defined block of this route is currently active.
+     *
+     * This checks the first block in the route's main sequence block list, which may not be
+     * the same as the route's starting block.
+     *
+     * This relies on the block's sensor activation state, and not the virtual track occupancy.
+     */
+    override fun isStartBlockActive(): Boolean = sequence.firstOrNull()?.block?.active ?: false
+
+    /**
+     * Computes how many "non-adjacent" blocks are active on this route.
+     *
+     * One issue is that a train can be stopped on a block boundary, so it's impossible to
+     * know, when block N and N+1 are active, if these are 2 separate trains or the same train
+     * stopped on the blocks' boundary.
+     *
+     * This computes the number of blocks active on the route, yet discounts consecutive blocks
+     * as being likely being due to a train stopped on a block boundary. So, for example, if block
+     * N and N+1 are active, that counts as 1, but if blocks N, N+1, and N+2 are active, that counts
+     * as 2 instances since no train can be longer than a full block length at any time.
+     *
+     * This relies on the block's sensor activation state, and not the virtual track occupancy.
+     */
+    override fun numNonAdjacentBlocksActive(includeFirstBlock: Boolean): Int {
+        val blocks = sequence.map { it.block }.distinct()
+
+        var occup = 0
+        var firstBlock = true
+        var skipNext = false
+        for (block in blocks) {
+            if (block.active) {
+                if (skipNext) {
+                    skipNext = false
+                } else {
+                    if (!firstBlock || includeFirstBlock) {
+                        occup++
+                    }
+                    skipNext = true
+                }
+            } else {
+                skipNext = false
+            }
+            firstBlock = false
+        }
+
+        return occup
+    }
 }
 
 
