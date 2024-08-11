@@ -31,10 +31,10 @@ val Off = false
 
 val B801         = block ("NS752") named "BLParked"     // 48:1 -- B801
 val B802         = block ("NS753") named "BLParked2"    // 48:2 -- B802
-val B821         = block ("NS755") named "BLStation"    // 48:4 -- B821
+val B821         = block ("NS755") named "BLAngelsCamp" // 48:4 -- B821
 val B830         = block ("NS758") named "BLCanyon"     // 48:7 -- B830 + B840
 val B850         = block ("NS759") named "BLTunnel"     // 48:8 -- B850
-val B860         = block ("NS760") named "BLReverse"    // 48:9 -- B860
+val B860         = block ("NS760") named "BLYouBet"     // 48:9 -- B860
 
 val B310         = block ("NS768") named "B310"         // 49:1
 val B311         = block ("NS769") named "B311"         // 49:2
@@ -487,7 +487,7 @@ val ML_Wait_Route = ML_Route.idle {
     name = "ML Wait"
 
     // Wait 1 minute (or wait 2 if one of the routes is disabled)
-    val ML_Timer_Wait = if (_enable_FR xor _enable_PA) 120.seconds else 60.seconds
+    val ML_Timer_Wait = if (_enable_FR xor _enable_PA) 2.minutes else 1.minutes
 
     onActivate {
         ML_State = EML_State.Wait
@@ -1591,14 +1591,17 @@ data class _BL_Data(
     val Delay_UpToSpeed: Delay          = 10.seconds,
     val Delay_Canyon_Horn_Fwd: Delay    = 23.seconds,
     val Delay_Canyon_Horn_Rev: Delay    = 41.seconds,
-    val Delay_RevStation_Stop: Delay    =  8.seconds,
-    val Delay_RevStation_Pause: Delay   = 25.seconds,
-    val Delay_Station_Stop: Delay       =  6.seconds,
-    val Delay_Station_Rev3: Delay       =  8.seconds,
+    val Delay_YouBet_Stop: Delay        =  8.seconds,
+    val Delay_YouBet_Pause: Delay       = 25.seconds,
+    val Delay_AngelsCamp_Stop: Delay    =  6.seconds,
+    val Delay_AngelsCamp_Rev: Delay     =  8.seconds,
 
-    // 300=5 minutes -- change for debugging
-    val Cycle_Wait: Delay            = 300.seconds,
+    // 5 minutes wait -- change for debugging
+    val Cycle_Wait: Delay            = 5.minutes,
 
+    // whether Angels Camp is the terminus on the way back
+    // (train can start from either BLParked or BLAngelsCamp)
+    val AngelsCampTerminus: Boolean = true,
     // for emergencies when train is not working
     val Enable_BL: Boolean = true,
 )
@@ -1766,7 +1769,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     throttle = BL
     minSecondsOnBlock = 10
     maxSecondsOnBlock = 120 // 2 minutes per block max
-    maxSecondsEnterBlock = 30
+    maxSecondsEnterBlock = 20
 
     val B801_Parked_fwd = node(B801) {
         // Typical run time: 35 seconds.
@@ -1783,7 +1786,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val B821_Station_fwd = node(B821) {
+    val B821_AngelsCamp_fwd = node(B821) {
         // Typical run time: 45 seconds.
         onEnter {
             BL.bell(Off)
@@ -1813,21 +1816,21 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val B860_Reverse_fwd = node(B860) {
+    val B860_YouBet_fwd = node(B860) {
         // Typical run time: 60 seconds.
         onEnter {
             BL.horn()
             BL.bell(On)
-            after (BL_Data.Delay_RevStation_Stop) then {
+            after (BL_Data.Delay_YouBet_Stop) then {
                 // Toggle Stop/Reverse/Stop to turn off the Reverse front light on RDC 10.
-                // Next event should still be the BLReverse Stopped one.
+                // Next event should still be the BLYouBet Stopped one.
                 BL.stop()
                 BL.horn()
                 BL.reverse(1.speed)
                 BL.stop()
             } and_after (BL_Data.Delay_Bell) then {
                 BL.bell(Off)
-            } and_after (BL_Data.Delay_RevStation_Pause) then {
+            } and_after (BL_Data.Delay_YouBet_Pause) then {
                 BL.bell(On)
                 BL.horn()
             } and_after (5.seconds) then {
@@ -1858,18 +1861,35 @@ val BL_Shuttle_Route = BL_Route.sequence {
         }
     }
 
-    val B821_Station_rev = node(B821) {
-        // Typical run time: 65 seconds.
+    fun sequenceTurnOff() {
+        after (10.seconds) then {
+            BL.stop()
+        } and_after (3.seconds) then {
+            BL.bell(Off)
+        } and_after (5.seconds) then {
+            BL.light(Off)
+            BL.sound(Off)
+            BL_Send_Stop_GaEvent()
+            BL_Wait_Route.activate()
+        }
+    }
+
+    val B821_AngelsCamp_rev = node(B821) {
+        // Typical run time: 65 seconds (85 if terminus).
         onEnter {
             BL.bell(On)
             T324.normal()
             BL.reverse(BL_Data.Speed_Station)
-            after (BL_Data.Delay_Station_Stop) then {
+            after (BL_Data.Delay_AngelsCamp_Stop) then {
                 BL.stop()
                 BL.horn()
-            } and_after (BL_Data.Delay_Station_Rev3) then {
-                BL.horn()
-                BL.reverse(BL_Data.Speed_Station)
+            } and_after (BL_Data.Delay_AngelsCamp_Rev) then {
+                if (BL_Data.AngelsCampTerminus) {
+                    sequenceTurnOff()
+                } else {
+                    BL.horn()
+                    BL.reverse(BL_Data.Speed_Station)
+                }
             }
         }
     }
@@ -1877,21 +1897,18 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B801_Parked_rev = node(B801) {
         // Typical run time: 20 seconds.
         onEnter {
-            after (10.seconds) then {
-                BL.stop()
-            } and_after (3.seconds) then {
-                BL.bell(Off)
-            } and_after (5.seconds) then {
-                BL.light(Off)
-                BL.sound(Off)
-                BL_Send_Stop_GaEvent()
-                BL_Wait_Route.activate()
-            }
+            sequenceTurnOff()
         }
     }
 
     onActivate {
         BL_State = EBL_State.Run
+
+        when {
+            B821.active && B801.active ->   route.startNode(B821_AngelsCamp_fwd, trailing=B801_Parked_fwd)
+            B821.active ->                  route.startNode(B821_AngelsCamp_fwd)
+            B801.active ->                  route.startNode(B801_Parked_fwd)
+        }
 
         BL_Send_Start_GaEvent()
         jsonEvent {
@@ -1906,9 +1923,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
         BL_Recovery_Route.activate()
     }
 
-    sequence = listOf(B801_Parked_fwd, B821_Station_fwd, B830_Canyon_fwd, B850_Tunnel_fwd,
-        B860_Reverse_fwd,
-        B850_Tunnel_rev, B830_Canyon_rev, B821_Station_rev, B801_Parked_rev)
+    sequence = listOf(B801_Parked_fwd, B821_AngelsCamp_fwd, B830_Canyon_fwd, B850_Tunnel_fwd,
+        B860_YouBet_fwd,
+        B850_Tunnel_rev, B830_Canyon_rev, B821_AngelsCamp_rev, B801_Parked_rev)
 }
 
 val BL_Recovery_Route = BL_Route.sequence {
@@ -1925,7 +1942,7 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL.reverse(BL_Data.Speed_Station)
     }
 
-    val B860_Reverse_rev = node(B860) {
+    val B860_YouBet_rev = node(B860) {
         onEnter {
             move()
         }
@@ -1943,9 +1960,18 @@ val BL_Recovery_Route = BL_Route.sequence {
         }
     }
 
-    val B821_Station_rev = node(B821) {
+    val B821_AngelsCamp_rev = node(B821) {
         onEnter {
             move()
+        }
+
+        whileOccupied {
+            if (BL_Data.AngelsCampTerminus && !B830.active) {
+                BL.stop()
+                BL.bell(Off)
+                BL.sound(Off)
+                BL_Idle_Route.activate()
+            }
         }
     }
 
@@ -1967,14 +1993,14 @@ val BL_Recovery_Route = BL_Route.sequence {
     onActivate {
         BL_State = EBL_State.Recover
         when {
-            B860.active && B850.active ->   route.startNode(B850_Tunnel_rev, trailing=B860_Reverse_rev)
-            B860.active ->                  route.startNode(B860_Reverse_rev)
+            B860.active && B850.active ->   route.startNode(B850_Tunnel_rev, trailing=B860_YouBet_rev)
+            B860.active ->                  route.startNode(B860_YouBet_rev)
             B850.active && B830.active ->   route.startNode(B830_Canyon_rev, trailing=B850_Tunnel_rev)
             B850.active ->                  route.startNode(B850_Tunnel_rev)
-            B830.active && B821.active ->   route.startNode(B821_Station_rev, trailing=B830_Canyon_rev)
+            B830.active && B821.active ->   route.startNode(B821_AngelsCamp_rev, trailing=B830_Canyon_rev)
             B830.active ->                  route.startNode(B830_Canyon_rev)
-            B821.active && B801.active ->   route.startNode(B801_Parked_rev, trailing=B821_Station_rev)
-            B821.active ->                  route.startNode(B821_Station_rev)
+            B821.active && B801.active ->   route.startNode(B801_Parked_rev, trailing=B821_AngelsCamp_rev)
+            B821.active ->                  route.startNode(B821_AngelsCamp_rev)
             B801.active ->                  route.startNode(B801_Parked_rev)
             else -> {
                 // None of the sensors are active. We don't know where the train is located.
@@ -1989,7 +2015,7 @@ val BL_Recovery_Route = BL_Route.sequence {
         BL_Error_Route.activate()
     }
 
-    sequence = listOf(B860_Reverse_rev, B850_Tunnel_rev, B830_Canyon_rev, B821_Station_rev, B801_Parked_rev)
+    sequence = listOf(B860_YouBet_rev, B850_Tunnel_rev, B830_Canyon_rev, B821_AngelsCamp_rev, B801_Parked_rev)
 }
 
 val BL_Recovery2_Route = BL_Route.idle {
@@ -1997,7 +2023,7 @@ val BL_Recovery2_Route = BL_Route.idle {
     // any of the physical blocks.
     name = "Recovery2"
 
-    val timeout = timer((5 * 60).seconds)
+    val timeout = timer(5.minutes)
 
     onActivate {
         BL_State = EBL_State.Recover
@@ -2009,7 +2035,8 @@ val BL_Recovery2_Route = BL_Route.idle {
     }
 
     onIdle {
-        if (B801.active && !B821.active) {
+        if (   ( BL_Data.AngelsCampTerminus && B821.active && !B830.active)
+            || (!BL_Data.AngelsCampTerminus && B801.active && !B821.active)) {
             BL.stop()
             BL.bell(Off)
             BL.sound(Off)
@@ -2071,10 +2098,10 @@ data class _TL_Data(
 
     val Cycle_Wait: Delay       = 30.seconds,
 
-    val Delay_Recovery: Delay   = 600.seconds,
+    val Delay_Recovery: Delay   = 10.minutes,
 
     /** For emergencies when train is not working. */
-    val Enable_TL: Boolean = true
+    val Enable_TL: Boolean = false
 )
 
 val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
@@ -2090,7 +2117,7 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
     Delay_EndKludge = 1.seconds,
     Delay_Off       = 5.seconds,
 
-    Cycle_Wait      = 120.seconds,
+    Cycle_Wait      = 2.minutes,
 ) else _TL_Data()
 
 fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Recover
