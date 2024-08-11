@@ -53,6 +53,7 @@ val T312 = turnout("NT312")
 
 val MyTimer1 = timer(5.seconds)
 val MyTimer2 = timer(15.seconds)
+val MyTimer3 = timer(2.minutes)
 
 // Throttles
 

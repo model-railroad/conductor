@@ -96,7 +96,11 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(conductorImpl.sensors.keys).containsExactly("NS829")
         assertThat(conductorImpl.turnouts.keys).containsExactly("NT311", "NT312")
         assertThat(conductorImpl.throttles.keys).containsExactly(1001, 2001)
-        assertThat(conductorImpl.timers.map { it.delay }).containsExactly(5.seconds, 15.seconds)
+        assertThat(conductorImpl.timers.map { it.delay }).containsExactly(
+            5.seconds,
+            15.seconds,
+            120.seconds,
+            )
     }
 
 
@@ -384,7 +388,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertResultNoError()
 
         assertThat(conductorImpl.timers.map { it.name }).containsExactly(
-            "@timer@5", "@timer@15")
+            "@timer@5", "@timer@15", "@timer@120")
 
         val t = conductorImpl.timers[0] as Timer
         assertThat(t.name).isEqualTo("@timer@5")
