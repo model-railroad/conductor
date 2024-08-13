@@ -92,7 +92,7 @@ class StatusWindow2k : IStatusWindow {
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
 
-        frame = JFrame("Conductor v2.2").apply {
+        frame = JFrame("Conductor v2.3").apply {
             preferredSize = Dimension(1000, 600)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()

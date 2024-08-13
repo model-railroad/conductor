@@ -2101,7 +2101,7 @@ data class _TL_Data(
     val Delay_Recovery: Delay   = 10.minutes,
 
     /** For emergencies when train is not working. */
-    val Enable_TL: Boolean = false
+    val Enable_TL: Boolean = true
 )
 
 val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
