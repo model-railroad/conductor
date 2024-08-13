@@ -1603,7 +1603,7 @@ data class _BL_Data(
     // (train can start from either BLParked or BLAngelsCamp)
     val AngelsCampTerminus: Boolean = true,
     // for emergencies when train is not working
-    val Enable_BL: Boolean = true,
+    val Enable_BL: Boolean = false,
 )
 
 val BL_Data = _BL_Data()
@@ -2062,9 +2062,10 @@ val BL_Recovery2_Route = BL_Route.idle {
 // Trolley: Orange = 6885 -- Yellow = 6119 -- Thomas = 0001
 val TL = throttle(1) {
     name = "TL"
+    // Disable F1 and F5 on Thomas
     onLight { on -> throttle.f0(on)
-                    throttle.f5(on) }
-    onBell  { on -> throttle.f1(on) }
+                    /* throttle.f5(on) */ }
+    onBell  { on -> /* throttle.f1(on) */ }
     onSound { on -> throttle.f8(on) }
     // no horn
 }
@@ -2077,6 +2078,7 @@ var TL_Start_Counter = 0
 // SDB sensor block timings:
 // 6885: block0 = 0..200, block1: = 300..2000
 // 6119: block0 = 0..400, block1: = 380..2000
+// 0001: block0 = 0..400, block1: = 400..2000
 
 data class _TL_Data(
     // Defaults for Orange Trolley 6885
@@ -2121,11 +2123,11 @@ val TL_Data = if (TL.dccAddress == 6119) _TL_Data(
 ) else if (TL.dccAddress == 1) _TL_Data(
     // Values for Thomas 1
     Speed = 12.speed,
-    RevSpeed = 12.speed,
+    RevSpeed = 10.speed,
 
-    Delay_Start     = 5.seconds,
+    Delay_Start     = 3.seconds,
     Delay_Start2    = 1.seconds,
-    Delay_Forward   = 20.seconds,
+    Delay_Forward   = 19.seconds,
     Delay_RevPause  = 5.seconds,
     Delay_EndStop   = 1.seconds,
     Delay_EndKludge = 1.seconds,
@@ -2253,7 +2255,7 @@ val TL_Shuttle_Route = TL_Route.sequence {
                 TL.stop()
             } and_after (TL_Data.Delay_RevPause) then {
                 TL.bell(Off)
-                TL.reverse(TL_Data.Speed)
+                TL.reverse(TL_Data.RevSpeed)
             }
         }
     }
