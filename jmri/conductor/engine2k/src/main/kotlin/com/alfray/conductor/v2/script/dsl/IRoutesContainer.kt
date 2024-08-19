@@ -41,10 +41,10 @@ interface IRoutesContainer {
     /** True if the current route is in error. Useful as a script on..then condition test. */
     val error : Boolean
 
-    /** Registers a new idle route. */
+    /** Registers a new idle route and adds it to the container. */
     fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute
 
-    /** Registers a new sequence route. */
+    /** Registers a new sequence route and adds it to the container. */
     fun sequence(sequenceRouteSpecification: ISequenceRouteBuilder.() -> Unit): IRoute
 
     /** Returns a string representation of the status of that route. */
