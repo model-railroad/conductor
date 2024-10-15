@@ -817,7 +817,8 @@ data class _SP_Data(
     /// B321 time to station speed: RDC=40, Doodlebug=60, 804=60.
     val Delay_Up_Slow: Delay        = 35.seconds,
     /// Time on slow down before stop
-    val Delay_Up_Stop: Delay        = 17.seconds,
+    // RM DEBUG -- val Delay_Up_Stop: Delay        = 17.seconds,
+    val Delay_Up_Stop: Delay        = 14.seconds,
     /// Time stopped before reverse
     val Delay_Up_Reverse: Delay     = 28.seconds,
     val Delay_Reverse_Horn: Delay   = 2.seconds,
