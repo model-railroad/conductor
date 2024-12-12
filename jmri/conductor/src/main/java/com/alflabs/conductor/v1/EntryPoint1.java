@@ -25,6 +25,7 @@ import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
+import com.alflabs.conductor.util.MqttClientLoop;
 import com.alflabs.conductor.v1.dagger.IEngine1Component;
 import com.alflabs.conductor.v1.dagger.IScript1Component;
 import com.alflabs.conductor.v1.parser.Reporter;
@@ -75,9 +76,9 @@ public class EntryPoint1 implements IEntryPoint {
     @Inject KeyValueServer mKeyValueServer;
     @Inject EventLogger mEventLogger;
     @Inject Analytics mAnalytics;
+    @Inject MqttClientLoop mMqttClient;
     @Inject JsonSender mJsonSender;
-    @Inject
-    Script1Context mScriptContext;
+    @Inject Script1Context mScriptContext;
 
     public Script1 getScript() {
         return mScript;
@@ -229,6 +230,12 @@ public class EntryPoint1 implements IEntryPoint {
             mAnalytics.shutdown();
         } catch (Exception e) {
             mLogger.d(TAG, "Teardown Analytics exception: " + e);
+        }
+
+        try {
+            mMqttClient.shutdown();
+        } catch (Exception e) {
+            mLogger.d(TAG, "Teardown MqttClientLoop exception: " + e);
         }
 
         try {

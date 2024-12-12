@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script.dsl
 
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider
+import com.alflabs.conductor.util.MqttClientLoop
 import com.alflabs.kv.IKeyValue
 import com.alflabs.manifest.Constants
 import com.alfray.conductor.v2.dagger.Script2kScope
@@ -29,6 +30,7 @@ import javax.inject.Inject
 @Script2kScope
 class ExportedVars @Inject internal constructor(
     private val keyValue: IKeyValue,
+    private val mqttClientLoop: MqttClientLoop,
     private val localDateTimeNow: ILocalDateTimeNowProvider,
 ) {
     /** Current time in HHMM format set by the conductor engine. Read-only. */
@@ -60,12 +62,23 @@ class ExportedVars @Inject internal constructor(
      * Written by the script. Sent via the KV Server. */
     var rtacMotion: Boolean = false
 
+    var ambianceInitScript: String = ""
+    var ambianceEventScript: String = ""
+    var ambianceEventTrigger: String = ""
+
     internal fun export() {
+        // KV exports
         keyValue.putValue(Constants.ConductorTime, conductorTime.toString(), true /*broadcast*/)
         keyValue.putValue(Constants.RtacMotion,
             if (rtacMotion) Constants.On else Constants.Off,
             true /*broadcast*/)
         keyValue.putValue(Constants.RtacPsaText, rtacPsaText, true /*broadcast*/)
+
         // gaTrackingId is exported by Analytics.setAnalyticsId(); we don't need to do it here.
+
+        // MQTT exports
+        mqttClientLoop.publish("ambiance/script/init", ambianceInitScript)
+        mqttClientLoop.publish("ambiance/script/event", ambianceEventScript)
+        mqttClientLoop.publish("ambiance/event/trigger", ambianceEventTrigger)
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2024 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,20 +18,20 @@
 
 package com.alflabs.conductor.dagger;
 
+import com.alflabs.conductor.util.MqttClientLoop;
+import com.alflabs.utils.ILogger;
 import dagger.Module;
+import dagger.Provides;
 
-@Module(includes = {
-        ExecutorModule.class,
-        FakeClockModule.class,
-        FakeFileOpsModule.class,
-        FakeKeyValueModule.class,
-        LoggerModule.class,
-        MockAnalyticsModule.class,
-        FakeEventLoggerModule.class,
-        MockHttpClientModule.class,
-        MockMqttClientLoopModule.class,
-        MockJsonSenderModule.class,
-        MockRandomModule.class,
-})
-public abstract class CommonTestModule {
+import javax.inject.Singleton;
+
+import static org.mockito.Mockito.mock;
+
+@Module
+public abstract class MockMqttClientLoopModule {
+    @Singleton
+    @Provides
+    public static MqttClientLoop provideAnalytics(ILogger logger) {
+        return mock(MqttClientLoop.class);
+    }
 }

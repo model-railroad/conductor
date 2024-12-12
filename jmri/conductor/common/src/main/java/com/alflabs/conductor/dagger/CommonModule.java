@@ -27,6 +27,7 @@ import dagger.Module;
         ExecutorModule.class,
         FileOpsModule.class,
         HttpClientModule.class,
+        MqttClientLoopModule.class,
         KeyValueModule.class,
         JsonSenderModule.class,
         LoggerModule.class,

@@ -26,6 +26,7 @@ import com.alflabs.conductor.util.Analytics;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
+import com.alflabs.conductor.util.MqttClientLoop;
 import com.alflabs.conductor.util.Pair;
 import com.alflabs.conductor.v2.ui.IStatusWindow;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
@@ -70,6 +71,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject IClock mClock;
     @Inject ILogger mLogger;
     @Inject Analytics mAnalytics;
+    @Inject MqttClientLoop mMqttClient;
     @Inject JsonSender mJsonSender;
     @Inject EventLogger mEventLogger;
     @Inject KeyValueServer mKeyValueServer;
@@ -275,6 +277,12 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mAnalytics.shutdown();
         } catch (Exception e) {
             mLogger.d(TAG, "Teardown Analytics exception: " + e);
+        }
+
+        try {
+            mMqttClient.shutdown();
+        } catch (Exception e) {
+            mLogger.d(TAG, "Teardown MqttClientLoop exception: " + e);
         }
 
         if (mWinUpdateThread != null) {

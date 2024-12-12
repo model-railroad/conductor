@@ -47,6 +47,7 @@ dependencies {
     implementation "com.google.truth:truth:$vers_truth"
     implementation "com.fasterxml.jackson.core:jackson-databind:$vers_jackson"
     implementation "com.squareup.okhttp3:okhttp:$vers_okhttp"
+    implementation "com.hivemq:hivemq-mqtt-client:$vers_hivemqtt"
 
     implementation                  "com.google.dagger:dagger:$vers_dagger"
     annotationProcessor             "com.google.dagger:dagger-compiler:$vers_dagger"
@@ -61,5 +62,6 @@ dependencies {
     testFixturesImplementation project(":LibUtilsJava")
     testFixturesImplementation "com.google.dagger:dagger:$vers_dagger"
     testFixturesImplementation "com.squareup.okhttp3:okhttp:$vers_okhttp"
+    testFixturesImplementation "com.hivemq:hivemq-mqtt-client:$vers_hivemqtt"
     testFixturesImplementation "org.mockito:mockito-core:$vers_mockito"
 }
