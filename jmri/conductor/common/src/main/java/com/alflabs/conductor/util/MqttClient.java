@@ -90,6 +90,7 @@ public class MqttClient extends ThreadLoop {
     public void stop() throws Exception {
         mLogger.d(TAG, "Stop");
         super.stop();
+        mLogger.d(TAG, "Stopped");
     }
 
     @Override
@@ -104,10 +105,10 @@ public class MqttClient extends ThreadLoop {
             if (jsonConfigFile.startsWith("~") && !mFileOps.isFile(file)) {
                 file = new File(System.getProperty("user.home"), jsonConfigFile.substring(1));
             }
+            mLogger.d(TAG, "Loading MQTT configuration from " + file);
             String content = mFileOps.toString(file, Charsets.UTF_8);
 
-            ObjectMapper mapper = new ObjectMapper();
-            mConfiguration = mapper.readValue(content, Configuration.class);
+            mConfiguration = Configuration.fromJsonString(content);
 
         } catch (Exception e) {
             mLogger.d(TAG, "Error MQTT configure failed: ", e);
@@ -248,7 +249,6 @@ public class MqttClient extends ThreadLoop {
                 .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8)
                 .contentType("text/plain")
                 .qos(MqttQos.AT_LEAST_ONCE)
-                .retain(true)
                 .send();
     }
 

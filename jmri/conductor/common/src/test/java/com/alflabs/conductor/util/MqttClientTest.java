@@ -99,6 +99,8 @@ public class MqttClientTest {
         mMqttClient.shutdown();
         assertThat(mLogger.getString())
                 .contains("MqttClient: Error MQTT.publish() called before MQTT.configure()");
+        assertThat(mLogger.getString())
+                .doesNotContain("MqttClient: Loading MQTT configuration from");
     }
 
     @Test
@@ -122,6 +124,8 @@ public class MqttClientTest {
                 eq(mMockBlockingClient),
                 eq(new MqttClient.Payload("some/topic", "the_message")));
 
+        assertThat(mLogger.getString().replace(File.separatorChar, '/'))
+                .contains("MqttClient: Loading MQTT configuration from /tmp/config.json");
         assertThat(mLogger.getString())
                 .contains("MqttClient: Connected to MQTT Broker 127.0.0.1:1883, user the_user");
         assertThat(mLogger.getString())

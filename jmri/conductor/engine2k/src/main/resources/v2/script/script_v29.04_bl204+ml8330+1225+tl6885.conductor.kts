@@ -98,6 +98,17 @@ exportedVars.jsonUrl = "@~/bin/JMRI/rtac_json_url.txt"
 exportedVars.gaTrackingId = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
 val GA_URL = "http://consist.alfray.com/train/"
 
+// MQTT Broker & Ambiance Setup
+
+mqtt.configure("~/bin/JMRI/rtac_mqtt_conf.json")
+mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10 ; Slide 0.1 80")
+mqtt.publish("ambiance/script/event", "Slide 0.1 80")
+
+var _ambiance_counter = 0
+fun Ambiance_Trigger() {
+    mqtt.publish("ambiance/event/trigger", _ambiance_counter.toString())
+    _ambiance_counter++
+}
 
 
 // -----------------
@@ -627,6 +638,7 @@ val Passenger_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
+            Ambiance_Trigger()
 
             FR.sound(Off)
             PA.horn()
@@ -890,6 +902,7 @@ val Freight_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
+            Ambiance_Trigger()
 
             FR.light(On)
             FR_marker(On)
