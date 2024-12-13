@@ -868,6 +868,8 @@ val SP_Data = if (FR.dccAddress == 5278) _SP_Data(
     Forward_Speed    = 15.speed,
     Reverse_Speed    = 12.speed,
     Station_Speed    = 10.speed,
+    Saturday_Speed   = 12.speed,
+    Delay_Saturday_Into_B321 = 20.seconds,
     Delay_Up_Slow    = 74.seconds,
     Delay_Up_Stop    = 24.seconds,
     Delay_Down_Slow  = 28.seconds,
