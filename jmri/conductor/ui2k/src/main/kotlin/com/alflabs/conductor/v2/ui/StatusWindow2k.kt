@@ -92,7 +92,8 @@ class StatusWindow2k : IStatusWindow {
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
 
-        frame = JFrame("Conductor v2.3").apply {
+        // Version number should match jmri/conductor/gradle.properties
+        frame = JFrame("Conductor v2.4").apply {
             preferredSize = Dimension(1000, 600)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()
