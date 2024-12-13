@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2024 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,22 +16,22 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.dagger;
+package com.alfray.conductor.v2.script.dsl
 
-import dagger.Module;
+import com.alflabs.conductor.util.MqttClient
+import com.alfray.conductor.v2.dagger.Script2kScope
+import javax.inject.Inject
 
-@Module(includes = {
-        ExecutorModule.class,
-        FakeClockModule.class,
-        FakeEventLoggerModule.class,
-        FakeFileOpsModule.class,
-        FakeKeyValueModule.class,
-        LoggerModule.class,
-        MockAnalyticsModule.class,
-        MockHttpClientModule.class,
-        MockJsonSenderModule.class,
-        MockMqttClientModule.class,
-        MockRandomModule.class,
-})
-public abstract class CommonTestModule {
+/** Conductor engine exposed access to the MQTT Client. */
+@Script2kScope
+class MqttPublisher @Inject internal constructor(
+    private val mqttClient: MqttClient,
+) {
+    fun configure(jsonConfigFile: String) {
+        mqttClient.configure(jsonConfigFile)
+    }
+
+    fun publish(topic: String, message: String) {
+        mqttClient.publish(topic, message)
+    }
 }

@@ -18,20 +18,21 @@
 
 package com.alflabs.conductor.dagger;
 
-import com.alflabs.conductor.util.MqttClientLoop;
+import com.alflabs.conductor.util.MqttClient;
+import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
 import dagger.Module;
 import dagger.Provides;
 
 import javax.inject.Singleton;
 
-import static org.mockito.Mockito.mock;
-
 @Module
-public abstract class MockMqttClientLoopModule {
+public abstract class MqttClientModule {
     @Singleton
     @Provides
-    public static MqttClientLoop provideAnalytics(ILogger logger) {
-        return mock(MqttClientLoop.class);
+    public static MqttClient provideMqttClientLoop(
+            ILogger logger,
+            FileOps fileOps) {
+        return new MqttClient(logger, fileOps);
     }
 }

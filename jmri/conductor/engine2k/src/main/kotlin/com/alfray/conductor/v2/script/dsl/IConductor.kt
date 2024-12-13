@@ -23,6 +23,9 @@ package com.alfray.conductor.v2.script.dsl
 /** Base interface for the Conductor script. */
 interface IConductor {
 
+    /** Service to publish MQTT messages. */
+    val mqtt: MqttPublisher
+
     /** Variables exchanged with the Conductor engine and exported via the KV Server. */
     val exportedVars: ExportedVars
 

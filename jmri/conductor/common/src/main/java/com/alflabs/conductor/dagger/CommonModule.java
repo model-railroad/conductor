@@ -27,10 +27,10 @@ import dagger.Module;
         ExecutorModule.class,
         FileOpsModule.class,
         HttpClientModule.class,
-        MqttClientLoopModule.class,
-        KeyValueModule.class,
         JsonSenderModule.class,
+        KeyValueModule.class,
         LoggerModule.class,
+        MqttClientModule.class,
         RandomModule.class,
 })
 public abstract class CommonModule {

@@ -25,8 +25,6 @@ import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.ExecContext.Reason
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
-import com.alfray.conductor.v2.script.dsl.IRoutesContainer
-import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
@@ -35,6 +33,8 @@ import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 import com.alfray.conductor.v2.script.dsl.IOnRule
+import com.alfray.conductor.v2.script.dsl.IRoutesContainer
+import com.alfray.conductor.v2.script.dsl.IRoutesContainerBuilder
 import com.alfray.conductor.v2.script.dsl.ISensor
 import com.alfray.conductor.v2.script.dsl.ISequenceRoute
 import com.alfray.conductor.v2.script.dsl.ISvgMap
@@ -43,6 +43,7 @@ import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.IThrottleBuilder
 import com.alfray.conductor.v2.script.dsl.ITimer
 import com.alfray.conductor.v2.script.dsl.ITurnout
+import com.alfray.conductor.v2.script.dsl.MqttPublisher
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
@@ -55,7 +56,6 @@ import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
 import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
-import com.alfray.conductor.v2.script.impl.Throttle
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
@@ -65,6 +65,7 @@ class ConductorImpl @Inject internal constructor(
         private val logger: ILogger,
         private val factory: Factory,
         private val analytics: Analytics,
+        override val mqtt: MqttPublisher,
         private val jsonSender: JsonSender,
         private val eStopHandler: EStopHandler,
         override val exportedVars: ExportedVars,
