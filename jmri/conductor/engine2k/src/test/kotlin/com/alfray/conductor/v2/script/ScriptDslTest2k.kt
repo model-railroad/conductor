@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.util.MqttClient
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.dsl.IBlock
@@ -37,6 +38,9 @@ import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
 import com.google.common.truth.Truth.assertThat
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -46,6 +50,7 @@ import javax.inject.Inject
 class ScriptDslTest2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
+    @Inject lateinit var mockMqttClient: MqttClient
     @Inject internal lateinit var currentContext: CurrentContext
     private val testContext = ExecContext(ExecContext.Reason.GLOBAL_RULE)
 
@@ -1279,5 +1284,22 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         execEngine.onExecHandle()
         assertThat(sensor1.active).isFalse()
         assertThat(keyValue.getValue("V/conductor-time")).isEqualTo("1650")
+    }
+
+    @Test
+    fun testMqtt() {
+        loadScriptFromText(scriptText =
+        """
+        mqtt.configure("/tmp/mqtt/config/json/path")
+        mqtt.publish("some/topic1", "message1")
+        mqtt.publish("some/topic2", "message2")
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        verify(mockMqttClient).configure(eq("/tmp/mqtt/config/json/path"))
+        verify(mockMqttClient).publish("some/topic1", "message1")
+        verify(mockMqttClient).publish("some/topic2", "message2")
+        verifyNoMoreInteractions(mockMqttClient)
     }
 }

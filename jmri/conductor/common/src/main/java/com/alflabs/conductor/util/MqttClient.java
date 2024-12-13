@@ -38,10 +38,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MqttClient extends ThreadLoop {
-    private static final String TAG = Analytics.class.getSimpleName();
+    private static final String TAG = MqttClient.class.getSimpleName();
 
     private static final long IDLE_SLEEP_MS = 1000 / 10;
     private static final int NUM_CONNECT_RETRIES = 3;
@@ -49,6 +53,8 @@ public class MqttClient extends ThreadLoop {
     private final ILogger mLogger;
     private final FileOps mFileOps;
     private final ConcurrentLinkedDeque<Payload> mPayloads = new ConcurrentLinkedDeque<>();
+    private final AtomicBoolean mCleanShutdownRequested = new AtomicBoolean(false);
+    private final CountDownLatch mLatchEndLoop = new CountDownLatch(1);
     private final Map<String, String> mPublishCache = new HashMap<>();
 
     private Configuration mConfiguration;
@@ -64,13 +70,14 @@ public class MqttClient extends ThreadLoop {
     }
 
     /**
-     * Requests termination. Pending tasks will be executed, no new task is allowed.
-     * Waiting time is 10 seconds max.
-     * <p/>
-     * Side effect: The executor is now a dagger singleton. This affects other classes that
-     * use the same executor, e.g. {@link JsonSender}.
+     * Performs a clean shutdown, trying to wait up to 10 seconds. The wait ends when the
+     * message queue is empty or at the first publish error.
      */
     public void shutdown() throws Exception {
+        if (mThread != null) {
+            mCleanShutdownRequested.set(true);
+            mLatchEndLoop.await(10, TimeUnit.SECONDS);
+        }
         stop();
     }
 
@@ -83,6 +90,12 @@ public class MqttClient extends ThreadLoop {
     public void stop() throws Exception {
         mLogger.d(TAG, "Stop");
         super.stop();
+    }
+
+    @Override
+    protected void _afterThreadLoop() {
+        mLogger.d(TAG, "End Loop");
+        mLatchEndLoop.countDown();
     }
 
     public void configure(@NonNull String jsonConfigFile) {
@@ -124,7 +137,11 @@ public class MqttClient extends ThreadLoop {
 
     @Override
     protected void _runInThreadLoop() throws EndLoopException {
-        if (!mPayloads.isEmpty()) {
+        if (mPayloads.isEmpty()) {
+            if (mCleanShutdownRequested.get()) {
+                throw new EndLoopException();
+            }
+        } else {
             if (mMqtt5Client == null) {
                 // Start the client (this handles retries and errors).
                 mMqtt5Client = createClient();
@@ -134,15 +151,7 @@ public class MqttClient extends ThreadLoop {
                 Payload payload = mPayloads.pollFirst();
                 if (payload != null) {
                     try {
-                        mMqtt5Client
-                                .publishWith()
-                                .topic(payload.mTopic)
-                                .payload(payload.mMessage.getBytes(Charsets.UTF_8))
-                                .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8)
-                                .contentType("text/plain")
-                                .qos(MqttQos.AT_LEAST_ONCE)
-                                .retain(true)
-                                .send();
+                        _publishPayload(mMqtt5Client, payload);
                         // This loop iteration succeeded.
                         mLogger.d(TAG, "Published " + payload.mTopic + " = " + payload.mMessage);
                         return;
@@ -159,6 +168,11 @@ public class MqttClient extends ThreadLoop {
                     }
                 }
             }
+
+            // Any error flushes the message queue in case of a publish exception.
+            if (mCleanShutdownRequested.get()) {
+                throw new EndLoopException();
+            }
         }
 
         try {
@@ -171,34 +185,23 @@ public class MqttClient extends ThreadLoop {
     }
 
     @Null
-    @VisibleForTesting
-    Mqtt5BlockingClient createClient() {
+    private Mqtt5BlockingClient createClient() {
         if (mMqttConnectRetries <= 0) {
             // We have exhausted the retry count.
             return null;
         }
 
         if (mConfiguration == null) {
-            mLogger.d(TAG, "Error: MQTT.publish() called before MQTT.configure().");
+            mLogger.d(TAG, "Error MQTT.publish() called before MQTT.configure().");
             mMqttConnectRetries = 0;
             return null;
         }
 
         try {
-            Mqtt5BlockingClient mqtt5Client = Mqtt5Client
-                    .builder()
-                    .identifier("conductor2")
-                    .serverHost(mConfiguration.mIp)
-                    .serverPort(mConfiguration.mPort)
-                    .buildBlocking();
-            mqtt5Client
-                    .connectWith()
-                    .cleanStart(true)
-                    .simpleAuth()
-                    .username(mConfiguration.mUser)
-                    .password(mConfiguration.mPassword.getBytes(Charsets.UTF_8))
-                    .applySimpleAuth()
-                    .send();
+            Mqtt5BlockingClient mqtt5Client = _createBlockingClient(mConfiguration);
+            mLogger.d(TAG, "Connected to MQTT Broker "
+                    + mConfiguration.mIp + ":" + mConfiguration.mPort
+                    + ", user " + mConfiguration.mUser);
 
             // On success, we reset the retry count in case we need to try to reconnect.
             mMqttConnectRetries = NUM_CONNECT_RETRIES;
@@ -211,12 +214,45 @@ public class MqttClient extends ThreadLoop {
         }
     }
 
-    @Override
-    protected void _afterThreadLoop() {
-        mLogger.d(TAG, "End Loop");
+    /**
+     * Builds a new Mqtt5BlockingClient.
+     * This is designed to be overriden by unit tests to use a mock.
+     * All error and exception handling is done by the caller.
+     */
+    @NonNull
+    @VisibleForTesting
+    protected Mqtt5BlockingClient _createBlockingClient(@NonNull Configuration configuration) {
+        Mqtt5BlockingClient mqtt5Client = Mqtt5Client
+                .builder()
+                .identifier("conductor2")
+                .serverHost(configuration.mIp)
+                .serverPort(configuration.mPort)
+                .buildBlocking();
+        mqtt5Client
+                .connectWith()
+                .cleanStart(true)
+                .simpleAuth()
+                .username(configuration.mUser)
+                .password(configuration.mPassword.getBytes(Charsets.UTF_8))
+                .applySimpleAuth()
+                .send();
+        return mqtt5Client;
     }
 
-    private static class Payload {
+    @VisibleForTesting
+    protected void _publishPayload(@NonNull Mqtt5BlockingClient mqtt5Client, @NonNull Payload payload) {
+        mqtt5Client
+                .publishWith()
+                .topic(payload.mTopic)
+                .payload(payload.mMessage.getBytes(Charsets.UTF_8))
+                .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8)
+                .contentType("text/plain")
+                .qos(MqttQos.AT_LEAST_ONCE)
+                .retain(true)
+                .send();
+    }
+
+    protected static class Payload {
         public final String mTopic;
         public final String mMessage;
 
@@ -224,10 +260,34 @@ public class MqttClient extends ThreadLoop {
             mTopic = topic;
             mMessage = message;
         }
+
+        @Override
+        public String toString() {
+            return "Payload{" +
+                    "mTopic='" + mTopic + '\'' +
+                    ", mMessage='" + mMessage + '\'' +
+                    '}';
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Payload)) return false;
+
+            Payload payload = (Payload) o;
+            return Objects.equals(mTopic, payload.mTopic) && Objects.equals(mMessage, payload.mMessage);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hashCode(mTopic);
+            result = 31 * result + Objects.hashCode(mMessage);
+            return result;
+        }
     }
 
     /** A configuration imported from a JSON config file. */
-    private static class Configuration {
+    protected static class Configuration {
         @JsonProperty("ip")
         public final String mIp;
         @JsonProperty("port")
@@ -239,10 +299,10 @@ public class MqttClient extends ThreadLoop {
 
         @JsonCreator
         public Configuration(
-                @NonNull String ip,
-                int port,
-                @NonNull String user,
-                @NonNull String password) {
+                @JsonProperty("ip") @NonNull String ip,
+                @JsonProperty("port") int port,
+                @JsonProperty("user") @NonNull String user,
+                @JsonProperty("password") @NonNull String password) {
             mIp = ip;
             mPort = port;
             mUser = user;
@@ -252,6 +312,34 @@ public class MqttClient extends ThreadLoop {
         public static Configuration fromJsonString(@NonNull String content) throws IOException {
             ObjectMapper mapper = new ObjectMapper();
             return mapper.readValue(content, Configuration.class);
+        }
+
+        @Override
+        public String toString() {
+            return "Configuration{" +
+                    "mIp='" + mIp + '\'' +
+                    ", mPort=" + mPort +
+                    ", mUser='" + mUser + '\'' +
+                    ", mPassword='" + mPassword + '\'' +
+                    '}';
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Configuration)) return false;
+
+            Configuration that = (Configuration) o;
+            return mPort == that.mPort && Objects.equals(mIp, that.mIp) && Objects.equals(mUser, that.mUser) && Objects.equals(mPassword, that.mPassword);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hashCode(mIp);
+            result = 31 * result + mPort;
+            result = 31 * result + Objects.hashCode(mUser);
+            result = 31 * result + Objects.hashCode(mPassword);
+            return result;
         }
     }
 }

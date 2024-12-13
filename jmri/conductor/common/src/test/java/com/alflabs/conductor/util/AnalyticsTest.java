@@ -19,7 +19,6 @@
 package com.alflabs.conductor.util;
 
 import com.alflabs.kv.IKeyValue;
-import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
