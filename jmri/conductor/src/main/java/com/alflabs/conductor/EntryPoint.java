@@ -19,7 +19,6 @@
 package com.alflabs.conductor;
 
 import com.alflabs.conductor.jmri.IJmriProvider;
-import com.alflabs.conductor.v1.EntryPoint1;
 import com.alflabs.conductor.v2.EntryPoint2;
 
 /** Interface controlled by Conductor.py */
@@ -37,7 +36,7 @@ public class EntryPoint implements IEntryPoint2 {
      */
     @Override
     public boolean setup(IJmriProvider jmriProvider, String scriptPath) {
-        int version = 1;
+        int version = 2;
         try {
             String vers = System.getenv("CONDUCTOR_VERSION");
             if (vers != null) {
@@ -61,13 +60,11 @@ public class EntryPoint implements IEntryPoint2 {
         }
         switch (version) {
         case 1:
-            mImplementation = new EntryPoint1();
-            break;
         case 2:
             mImplementation = new EntryPoint2();
             break;
         default:
-            throw new IllegalStateException("CONDUCTOR_VERSION should be 1 or 2.");
+            throw new IllegalStateException("CONDUCTOR_VERSION should be 2.");
         }
         System.out.println("Conductor setup for v" + version);
         return mImplementation.setup(jmriProvider, scriptPath);

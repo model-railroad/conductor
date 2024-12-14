@@ -42,7 +42,6 @@ version = "artifact_vers".v()
 
 dependencies {
     implementation(project(":common"))
-    implementation(project(":engine1"))
     implementation(project(":engine2k"))
     implementation(project(":ui2"))
     implementation(project(":ui2k"))
@@ -68,7 +67,6 @@ dependencies {
     testAnnotationProcessor("com.google.dagger:dagger-compiler:"  + "vers_dagger".v())
 
     testImplementation(testFixtures(project(":common")))
-    testImplementation(testFixtures(project(":engine1")))
     testImplementation("junit:junit:"  + "vers_junit".v())
     testImplementation("com.google.truth:truth:"  + "vers_truth".v())
     testImplementation("org.mockito:mockito-core:"  + "vers_mockito".v())

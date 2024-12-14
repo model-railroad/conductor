@@ -49,7 +49,6 @@ dependencies {
     implementation "org.apache.xmlgraphics:batik-swing:$vers_batik"
 
     testImplementation testFixtures(project(":common"))
-    testImplementation testFixtures(project(":engine1"))
     testImplementation "junit:junit:$vers_junit"
     testImplementation "com.google.truth:truth:$vers_truth"
     testImplementation "org.mockito:mockito-core:$vers_mockito"

@@ -37,7 +37,6 @@ include "LibManifest"
 project(":LibManifest").projectDir = new File(rootProject.projectDir, "../../android/RTAC/LibManifest")
 
 include "common"
-include "engine1"
 include "engine2k"
 include "ui2"
 include "ui2k"

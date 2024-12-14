@@ -98,14 +98,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
         String mode = guessEngineMode(scriptFile);
 
         if ("legacy".equals(mode)) {
-            Engine1Adapter adapter = new Engine1Adapter();
-            mAdapter = Optional.of(adapter);
-            Engine1Adapter.LocalComponent1 component = DaggerEngine1Adapter_LocalComponent1
-                    .factory()
-                    .createComponent(jmriProvider);
-            // Do not use any injected field before this call
-            component.inject(this);
-            component.inject(adapter);
+            throw new IllegalArgumentException("Conductor1 script is not supported.");
 
         } else if ("groovy".equals(mode)) {
             throw new IllegalArgumentException("Groovy Conductor2 script is not supported.");
@@ -116,7 +109,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             Engine2KotlinAdapter.LocalComponent2k component = DaggerEngine2KotlinAdapter_LocalComponent2k
                     .factory()
                     .createComponent(jmriProvider);
-            // Do not use any injected field before this call
+            // Do not use any injected fields before this call
             component.inject(this);
             component.inject(adapter);
             adapter.setSimulator(mSimul2kComponent.orElse(null));
