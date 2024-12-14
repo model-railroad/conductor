@@ -20,6 +20,8 @@
 
 package com.alfray.conductor.v2.script.dsl
 
+import java.time.LocalDateTime
+
 /** Base interface for the Conductor script. */
 interface IConductor {
 
@@ -29,7 +31,10 @@ interface IConductor {
     /** Variables exchanged with the Conductor engine and exported via the KV Server. */
     val exportedVars: ExportedVars
 
-    /** Logs a string to the console and the recorded log. */
+    /** Returns the current date time. */
+    fun now(): LocalDateTime
+
+        /** Logs a string to the console and the recorded log. */
     fun log(message: String)
 
     /** Registers a new sensor with the given system name.

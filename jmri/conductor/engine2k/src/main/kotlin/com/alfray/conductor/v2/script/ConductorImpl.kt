@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.Analytics
+import com.alflabs.conductor.util.ILocalDateTimeNowProvider
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
@@ -58,18 +59,20 @@ import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @Script2kScope
 class ConductorImpl @Inject internal constructor(
-        private val logger: ILogger,
-        private val factory: Factory,
-        private val analytics: Analytics,
-        override val mqtt: MqttPublisher,
-        private val jsonSender: JsonSender,
-        private val eStopHandler: EStopHandler,
-        override val exportedVars: ExportedVars,
-        private val currentContext: CurrentContext,
+    private val logger: ILogger,
+    private val factory: Factory,
+    private val analytics: Analytics,
+    override val mqtt: MqttPublisher,
+    private val jsonSender: JsonSender,
+    private val eStopHandler: EStopHandler,
+    override val exportedVars: ExportedVars,
+    private val currentContext: CurrentContext,
+    private val localDateTimeNow: ILocalDateTimeNowProvider,
 ) : IConductor {
     private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
@@ -87,6 +90,10 @@ class ConductorImpl @Inject internal constructor(
         private set
     internal val contextTimers = mutableSetOf<ExecContext>()
     private var simulCallback: ISimulCallback? = null
+
+    override fun now(): LocalDateTime {
+        return localDateTimeNow.now;
+    }
 
     override fun log(message: String) {
         logger.d("Script", message)

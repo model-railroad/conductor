@@ -19,6 +19,7 @@
 
 @file:Suppress("FunctionName", "LocalVariableName", "PropertyName", "ClassName", "UNUSED_PARAMETER")
 
+import java.time.Month
 import com.alfray.conductor.v2.script.dsl.*
 
 
@@ -101,8 +102,27 @@ val GA_URL = "http://consist.alfray.com/train/"
 // MQTT Broker & Ambiance Setup
 
 mqtt.configure("~/bin/JMRI/rtac_mqtt_conf.json")
-mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10 ; Slide 0.1 80")
-mqtt.publish("ambiance/script/event", "Slide 0.1 80")
+
+val _ambianceMonth = now().month
+log("[Ambiance] Light effect for ${_ambianceMonth}")
+
+when (_ambianceMonth) {
+    Month.NOVEMBER -> {
+        // Halloween Ambience Light
+        mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #FF1000 40 #FF4000 10")
+        mqtt.publish("ambiance/script/event", "Slide 0.1 100")
+    }
+    Month.DECEMBER -> {
+        // Xmas Ambiance Light
+        mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10")
+        mqtt.publish("ambiance/script/event", "Slide 0.1 80")
+    }
+    else -> {
+        // Default Warm Lights
+        mqtt.publish("ambiance/script/init", "Fill ##000000 1 ; SlowFill 0.1 #FFA020 40 #FF7000 10")
+        mqtt.publish("ambiance/script/event", "Slide -0.05 100")
+    }
+}
 
 var _ambiance_counter = 0
 fun Ambiance_Trigger() {

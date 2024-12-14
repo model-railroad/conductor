@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script
 import com.alflabs.conductor.util.MqttClient
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
+import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.SvgMapTarget
@@ -1301,5 +1302,47 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         verify(mockMqttClient).publish("some/topic1", "message1")
         verify(mockMqttClient).publish("some/topic2", "message2")
         verifyNoMoreInteractions(mockMqttClient)
+    }
+
+    @Test
+    fun testLog() {
+        loadScriptFromText(scriptText =
+        """
+        log("This is a log message from the script")
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(logger.string).contains("Script: This is a log message from the script")
+    }
+
+    @Test
+    fun testNow() {
+        loadScriptFromText(scriptText =
+        """
+        val _now = now()
+        log("Date Time now is "  + _now)
+        log("Year now is "  + _now.year)
+        log("Month now is "  + _now.month)
+        log("February now is "  + (_now.month == java.time.Month.FEBRUARY))
+        log("Day now is "  + _now.dayOfMonth)
+        log("Hour now is "  + _now.hour)
+        log("Min now is "  + _now.minute)
+        log("Sec now is "  + _now.second)
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        assertThat(logger.string)
+            .contains(
+                "Script: Date Time now is 1901-02-03T13:42:43\n" +
+                "Script: Year now is 1901\n" +
+                "Script: Month now is FEBRUARY\n" +
+                "Script: February now is true\n" +
+                "Script: Day now is 3\n" +
+                "Script: Hour now is 13\n" +
+                "Script: Min now is 42\n" +
+                "Script: Sec now is 43"
+            )
     }
 }
