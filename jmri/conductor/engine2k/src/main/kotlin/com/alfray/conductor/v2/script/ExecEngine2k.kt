@@ -85,7 +85,6 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun initFromExportedVars() {
-        configureAnalyticsId()
         configureJsonSenderUrl()
     }
 
@@ -299,23 +298,6 @@ class ExecEngine2k @Inject internal constructor(
         }
         error?.let {
             logger.d(TAG, "jsonUrl: $error")
-        }
-    }
-
-    /** Configure the Analytics ID from ExportedVars. */
-    private fun configureAnalyticsId() {
-        var error: String? = null
-        val idOrFile = conductor.exportedVars.gaTrackingId
-        try {
-            analytics.analyticsId = idOrFile
-        } catch (e: Exception) {
-            error = "Failed to read '$idOrFile', $e"
-        }
-        if (analytics.analyticsId == null) {
-            error = "exportedVars.gaTrackingId must be defined before the first gaPage/gaEvent call."
-        }
-        error?.let {
-            logger.d(TAG, "gaTrackingId: $error")
         }
     }
 }

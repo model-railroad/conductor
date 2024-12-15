@@ -18,19 +18,17 @@
 
 package com.alfray.conductor.v2.script
 
-import com.alflabs.conductor.util.Analytics
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
 import com.alfray.conductor.v2.script.ExecContext.Reason
+import com.alfray.conductor.v2.script.dsl.AnalyticsPublisher
 import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.ExportedVars
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
-import com.alfray.conductor.v2.script.dsl.IGaEventBuilder
-import com.alfray.conductor.v2.script.dsl.IGaPageBuilder
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 import com.alfray.conductor.v2.script.dsl.IOnRule
@@ -48,10 +46,6 @@ import com.alfray.conductor.v2.script.dsl.MqttPublisher
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.script.impl.After
 import com.alfray.conductor.v2.script.impl.Factory
-import com.alfray.conductor.v2.script.impl.GaEvent
-import com.alfray.conductor.v2.script.impl.GaEventBuilder
-import com.alfray.conductor.v2.script.impl.GaPage
-import com.alfray.conductor.v2.script.impl.GaPageBuilder
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
 import com.alfray.conductor.v2.script.impl.Node
@@ -66,7 +60,7 @@ import javax.inject.Inject
 class ConductorImpl @Inject internal constructor(
     private val logger: ILogger,
     private val factory: Factory,
-    private val analytics: Analytics,
+    override val analytics: AnalyticsPublisher,
     override val mqtt: MqttPublisher,
     private val jsonSender: JsonSender,
     private val eStopHandler: EStopHandler,
@@ -82,10 +76,6 @@ class ConductorImpl @Inject internal constructor(
     val svgMaps = mutableListOf<ISvgMap>()
     val timers = mutableListOf<ITimer>()
     val routesContainers = mutableListOf<IRoutesContainer>()
-    var lastGaPage: GaPage? = null
-        private set
-    var lastGaEvent: GaEvent? = null
-        private set
     var lastJsonEvent: JsonEvent? = null
         private set
     internal val contextTimers = mutableSetOf<ExecContext>()
@@ -215,22 +205,6 @@ class ConductorImpl @Inject internal constructor(
             }
         }
         return null
-    }
-
-    override fun gaPage(gaPageSpecification: IGaPageBuilder.() -> Unit) {
-        val builder = GaPageBuilder()
-        builder.gaPageSpecification()
-        val pg = builder.create()
-        analytics.sendPage(pg.url, pg.path, pg.user)
-        lastGaPage = pg
-    }
-
-    override fun gaEvent(gaEventSpecification: IGaEventBuilder.() -> Unit) {
-        val builder = GaEventBuilder()
-        builder.gaEventSpecification()
-        val ev = builder.create()
-        analytics.sendEvent(ev.category, ev.action, ev.label, ev.user)
-        lastGaEvent = ev
     }
 
     override fun jsonEvent(jsonEventSpecification: IJsonEventBuilder.() -> Unit) {

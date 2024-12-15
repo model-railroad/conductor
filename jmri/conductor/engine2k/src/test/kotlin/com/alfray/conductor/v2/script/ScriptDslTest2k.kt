@@ -21,20 +21,18 @@ package com.alfray.conductor.v2.script
 import com.alflabs.conductor.util.MqttClient
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
-import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.SvgMapTarget
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
-import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.Block
 import com.alfray.conductor.v2.script.impl.FBits
 import com.alfray.conductor.v2.script.impl.GaEvent
-import com.alfray.conductor.v2.script.impl.GaPage
+import com.alfray.conductor.v2.script.impl.IdleRoute
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.RouteBase
-import com.alfray.conductor.v2.script.impl.IdleRoute
+import com.alfray.conductor.v2.script.impl.RoutesContainer
 import com.alfray.conductor.v2.script.impl.SequenceRoute
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.script.impl.Timer
@@ -424,25 +422,11 @@ class ScriptDslTest2k : ScriptTest2kBase() {
     }
 
     @Test
-    fun testGaPage() {
-        loadScriptFromFile("script_test1")
-        assertResultNoError()
-
-        assertThat(conductorImpl.lastGaPage).isEqualTo(
-            GaPage(
-                url = "TheUrl",
-                path = "SomePath",
-                user = "SomeValue",
-            )
-        )
-    }
-
-    @Test
     fun testGaEvent() {
         loadScriptFromFile("script_test1")
         assertResultNoError()
 
-        assertThat(conductorImpl.lastGaEvent).isEqualTo(
+        assertThat(conductorImpl.analytics.lastGaEvent).isEqualTo(
             GaEvent(
                 category = "Motion",
                 action = "Stop",

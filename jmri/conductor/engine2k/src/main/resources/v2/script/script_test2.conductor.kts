@@ -82,7 +82,7 @@ exportedVars.jsonUrl = "@~/bin/JMRI/rtac_json_url.txt"
 
 // GA Tracking
 
-exportedVars.gaTrackingId = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+analytics.configure("@~/bin/JMRI/rtac_ga_tracking_id.txt")
 val GA_URL = "http://consist.alfray.com/train/"
 
 // -----------------
@@ -94,7 +94,7 @@ var AIU_Motion_Counter = 0
 on { AIU_Motion } then {
     exportedVars.rtacMotion = On
     AIU_Motion_Counter += 1
-    gaEvent {
+    analytics.gaEvent {
         category = "Motion"
         action = "Start"
         label = "AIU"
@@ -104,7 +104,7 @@ on { AIU_Motion } then {
 
 on { !AIU_Motion } then {
     exportedVars.rtacMotion = Off
-    gaEvent {
+    analytics.gaEvent {
         category = "Motion"
         action = "Stop"
         label = "AIU"
@@ -172,7 +172,7 @@ val PA_Routes = routes {
         SP.stop()
         AM.sound(Off) ; AM.light(Off) ; AM.f1(Off)
         SP.sound(Off) ; SP.light(Off) ; SP.f1(Off) ; SP.f5(Off)
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Error"
             label = "Passenger"
@@ -379,7 +379,7 @@ val Passenger_Route = PA_Routes.sequence {
                 AM.horn()
                 AM.f1(Off)
             } and_after (AM_Timer_Down_Station_Lights_Off) then {
-                gaEvent {
+                analytics.gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = PA_Train.name
@@ -526,7 +526,7 @@ val Freight_Route = PA_Routes.sequence {
             } and_after(SP_Sound_Stopped) then {
                 SP.sound(Off)
                 AM.sound(On)
-                gaEvent {
+                analytics.gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = PA_Train.name
@@ -580,7 +580,7 @@ on { !PA_Toggle } then {
 }
 
 on { PA_Toggle  } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "On"
         label = "Passenger"
@@ -593,7 +593,7 @@ on { PA_Toggle  } then {
     }
 }
 on { !PA_Toggle } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "Off"
         label = "Passenger"
@@ -639,12 +639,7 @@ on { PA_Train == EPA_Train.Freight
 
 on { PA_State == EPA_State.Shuttle } then {
     PA_Start_Counter += 1
-    gaPage {
-        url = GA_URL
-        path = PA_Train.name
-        user = PA_Start_Counter.toString()
-    }
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "Start"
         label = PA_Train.name
@@ -698,7 +693,7 @@ var BL_State = EBL_State.Start
 var BL_Start_Counter = 0
 
 on { BL_Toggle.active } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "On"
         label = "Branchline"
@@ -711,7 +706,7 @@ on { BL_Toggle.active } then {
     }
 }
 on { !BL_Toggle } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "Off"
         label = "Branchline"
@@ -734,7 +729,7 @@ val BL_Routes = routes {
         BL.repeat(1.seconds)
         BL.stop()
         BL.sound(Off)
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Error"
             label = "Branchline"

@@ -46,12 +46,6 @@ class ExportedVars @Inject internal constructor(
      * The JSON server is inactive till this defined. */
     var jsonUrl: String = ""
 
-    /** ID for the GA server. Written by the script.
-     * GA Events are not sent until this is defined.
-     * For GA4, format is 'GA-ID|Client-ID|AppSecret'.
-     */
-    var gaTrackingId: String = ""
-
     /** Announcement text sent to the remote RTAC tablet android software.
      * Written by the script. Sent via the KV Server. */
     var rtacPsaText: String = ""
@@ -67,7 +61,5 @@ class ExportedVars @Inject internal constructor(
             if (rtacMotion) Constants.On else Constants.Off,
             true /*broadcast*/)
         keyValue.putValue(Constants.RtacPsaText, rtacPsaText, true /*broadcast*/)
-
-        // gaTrackingId is exported by Analytics.setAnalyticsId(); we don't need to do it here.
     }
 }

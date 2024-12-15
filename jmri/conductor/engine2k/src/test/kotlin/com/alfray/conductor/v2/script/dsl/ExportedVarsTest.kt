@@ -37,7 +37,6 @@ class ExportedVarsTest: ScriptTest2kBase() {
     fun testExported() {
         assertThat(exportedVars.conductorTime).isEqualTo(1342)
         exportedVars.jsonUrl = "json://url"    // not exported
-        exportedVars.gaTrackingId = "AB-cdEF" // exported by Analytics, not Vars.
         exportedVars.rtacPsaText = "Automation Running"
         exportedVars.rtacMotion = true
 

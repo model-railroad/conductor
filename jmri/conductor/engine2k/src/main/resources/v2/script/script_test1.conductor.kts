@@ -151,13 +151,7 @@ on { MyTimer2 } then {
 }
 // Events Logging
 
-gaPage {
-    url = "TheUrl"
-    path = "SomePath"
-    user = "SomeValue"
-}
-
-gaEvent {
+analytics.gaEvent {
     category = "Motion"
     action = "Stop"
     label = "AIU"

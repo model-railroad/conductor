@@ -93,7 +93,7 @@ exportedVars.jsonUrl = "@~/bin/JMRI/rtac_json_url.txt"
 
 // GA Tracking
 
-exportedVars.gaTrackingId = "@~/bin/JMRI/rtac_ga_tracking_id.txt"
+analytics.configure("@~/bin/JMRI/rtac_ga_tracking_id.txt")
 val GA_URL = "http://consist.alfray.com/train/"
 
 
@@ -119,7 +119,7 @@ var AIU_Motion_Counter = 0
 on { AIU_Motion } then {
     exportedVars.rtacMotion = On
     AIU_Motion_Counter += 1
-    gaEvent {
+    analytics.gaEvent {
         category = "Motion"
         action = "Start"
         label = "AIU"
@@ -129,7 +129,7 @@ on { AIU_Motion } then {
 
 on { !AIU_Motion } then {
     exportedVars.rtacMotion = Off
-    gaEvent {
+    analytics.gaEvent {
         category = "Motion"
         action = "Stop"
         label = "AIU"
@@ -168,7 +168,7 @@ on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM } then {
 // ---------------------
 
 on { ML_Toggle  } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "On"
         label = "Passenger"
@@ -181,7 +181,7 @@ on { ML_Toggle  } then {
     }
 }
 on { !ML_Toggle } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "Off"
         label = "Passenger"
@@ -382,7 +382,7 @@ val ML_Route = routes {
         FR.stop()
         PA.sound(Off) ; PA.light(Off) ; PA.bell(Off)
         FR.sound(Off) ; FR.light(Off) ; FR.bell(Off) ; FR_marker(Off)
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Error"
             label = "Mainline"
@@ -456,12 +456,7 @@ val ML_Error_Route = ML_Route.idle {
 // Helper method to send start GA event for both mainline routes.
 fun ML_Send_Start_GaEvent() {
     ML_Start_Counter++
-    gaPage {
-        url = GA_URL
-        path = ML_Train.name
-        user = ML_Start_Counter.toString()
-    }
-    gaEvent {
+    analytics.gaEvent {
         category = "Activation"
         action = "Start"
         label = ML_Train.name
@@ -696,7 +691,7 @@ val Passenger_Route = ML_Route.sequence {
                 PA.bell(Off)
                 PA_beacon(Off)
             } and_after (AM_Data.Delay_Down_Station_Lights_Off) then {
-                gaEvent {
+                analytics.gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = ML_Train.name
@@ -873,7 +868,7 @@ val Freight_Route = ML_Route.sequence {
             } and_after (SP_Data.Delay_Sound_Stopped) then {
                 FR.sound(Off)
                 PA.sound(On)
-                gaEvent {
+                analytics.gaEvent {
                     category = "Activation"
                     action = "Stop"
                     label = ML_Train.name
@@ -960,7 +955,7 @@ fun ML_Fn_Try_Recover_Route() {
 
         val names = PA_names.plus(FR_names).map { it.name }.distinct()
         exportedVars.rtacPsaText = "{b:blue}{c:white}Automation Warning\\nCheck Track $names"
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Warning"
             label = "Passenger"
@@ -1295,12 +1290,7 @@ fun BL_is_Idle_State() = BL_State != EBL_State.Run && BL_State != EBL_State.Reco
 
 fun BL_Send_Start_GaEvent() {
     BL_Start_Counter++
-    gaPage {
-        url = GA_URL
-        path = "BL"
-        user = ML_Start_Counter.toString()
-    }
-    gaEvent {
+    analytics.gaEvent {
         category = "Activation"
         action = "Start"
         label = "BL"
@@ -1309,7 +1299,7 @@ fun BL_Send_Start_GaEvent() {
 }
 
 fun BL_Send_Stop_GaEvent() {
-    gaEvent {
+    analytics.gaEvent {
         category = "Activation"
         action = "Stop"
         label = "BL"
@@ -1335,7 +1325,7 @@ on { BL_is_Idle_State() && !BL_Toggle } then {
 // Send GA activation/toggle state events
 
 on { BL_Toggle.active } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "On"
         label = "Branchline"
@@ -1349,7 +1339,7 @@ on { BL_Toggle.active } then {
 }
 
 on { !BL_Toggle } then {
-    gaEvent {
+    analytics.gaEvent {
         category = "Automation"
         action = "Off"
         label = "Branchline"
@@ -1397,7 +1387,7 @@ val BL_Route = routes {
         // The current route will trigger the corresponding BL_Recover_Route.
         BL.stop()
         BL.sound(Off)
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Error"
             label = "Branchline"
@@ -1714,12 +1704,7 @@ fun TL_is_Idle_State() = TL_State != ETL_State.Run && TL_State != ETL_State.Reco
 
 fun TL_Send_Start_GaEvent() {
     TL_Start_Counter++
-    gaPage {
-        url = GA_URL
-        path = "TL"
-        user = ML_Start_Counter.toString()
-    }
-    gaEvent {
+    analytics.gaEvent {
         category = "Activation"
         action = "Start"
         label = "TL"
@@ -1728,7 +1713,7 @@ fun TL_Send_Start_GaEvent() {
 }
 
 fun TL_Send_Stop_GaEvent() {
-    gaEvent {
+    analytics.gaEvent {
         category = "Activation"
         action = "Stop"
         label = "TL"
@@ -1746,7 +1731,7 @@ val TL_Route = routes {
         // The current route will trigger the corresponding TL_Recover_Route.
         TL.stop()
         TL.sound(Off)
-        gaEvent {
+        analytics.gaEvent {
             category = "Automation"
             action = "Error"
             label = "Trolley"

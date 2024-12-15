@@ -25,6 +25,9 @@ import java.time.LocalDateTime
 /** Base interface for the Conductor script. */
 interface IConductor {
 
+    /** Service to publish Analytics events. */
+    val analytics: AnalyticsPublisher
+
     /** Service to publish MQTT messages. */
     val mqtt: MqttPublisher
 
@@ -85,14 +88,6 @@ interface IConductor {
 
     /** Creates a new RoutesContainer to select between multiple routes. */
     fun routes(routesContainerSpecification: IRoutesContainerBuilder.() -> Unit): IRoutesContainer
-
-    /** Sends a GA Page statistic.
-     * No-op till GA ID & URL are defined. */
-    fun gaPage(gaPageSpecification: IGaPageBuilder.() -> Unit)
-
-    /** Sends a GA Event statistic.
-     * No-op till GA ID & URL are defined. */
-    fun gaEvent(gaEventSpecification: IGaEventBuilder.() -> Unit)
 
     /** Sends a JSON status.
      * No-op till the JSON URL is defined. */
