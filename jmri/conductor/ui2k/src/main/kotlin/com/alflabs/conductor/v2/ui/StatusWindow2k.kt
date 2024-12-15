@@ -93,7 +93,7 @@ class StatusWindow2k : IStatusWindow {
         this.windowCallback = windowCallback
 
         // Version number should match jmri/conductor/gradle.properties
-        frame = JFrame("Conductor v2.4").apply {
+        frame = JFrame("Conductor v2.5").apply {
             preferredSize = Dimension(1000, 600)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()
