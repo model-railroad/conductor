@@ -109,17 +109,17 @@ log("[Ambiance] Light effect for ${_ambianceMonth}")
 when (_ambianceMonth) {
     Month.NOVEMBER -> {
         // Halloween Ambience Light
-        mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #FF1000 40 #FF4000 10")
-        mqtt.publish("ambiance/script/event", "Slide 0.1 100")
+        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #FF1000 40 #FF4000 10")
+        mqtt.publish("ambiance/script/event", "Slide -0.05 100")
     }
     Month.DECEMBER -> {
         // Xmas Ambiance Light
-        mqtt.publish("ambiance/script/init", "Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10")
+        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10")
         mqtt.publish("ambiance/script/event", "Slide 0.1 80")
     }
     else -> {
         // Default Warm Lights
-        mqtt.publish("ambiance/script/init", "Fill ##000000 1 ; SlowFill 0.1 #FFA020 40 #FF7000 10")
+        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #FFA020 40 #FF7000 10")
         mqtt.publish("ambiance/script/event", "Slide -0.05 100")
     }
 }
