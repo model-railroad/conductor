@@ -48,7 +48,6 @@ import static org.mockito.Mockito.verify;
 public class MqttClientTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
-
     @Mock private Mqtt3BlockingClient mMockBlockingClient;
 
     private final FileOps mFileOps = new FakeFileOps();
