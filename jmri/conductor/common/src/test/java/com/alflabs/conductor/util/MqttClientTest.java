@@ -22,7 +22,7 @@ import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.StringLogger;
 import com.google.common.base.Charsets;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,7 +49,7 @@ public class MqttClientTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
 
-    @Mock private Mqtt5BlockingClient mMockBlockingClient;
+    @Mock private Mqtt3BlockingClient mMockBlockingClient;
 
     private final FileOps mFileOps = new FakeFileOps();
     private final StringLogger mLogger = new StringLogger();

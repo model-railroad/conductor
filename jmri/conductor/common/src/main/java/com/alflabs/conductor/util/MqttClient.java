@@ -29,9 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.exceptions.MqttClientStateException;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5BlockingClient;
-import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
-import com.hivemq.client.mqtt.mqtt5.message.publish.Mqtt5PayloadFormatIndicator;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3Client;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -58,7 +57,7 @@ public class MqttClient extends ThreadLoop {
     private final Map<String, String> mPublishCache = new HashMap<>();
 
     private Configuration mConfiguration;
-    private Mqtt5BlockingClient mMqtt5Client;
+    private Mqtt3BlockingClient mBlockingClient;
     private int mMqttConnectRetries = NUM_CONNECT_RETRIES;
 
     @Inject
@@ -143,16 +142,16 @@ public class MqttClient extends ThreadLoop {
                 throw new EndLoopException();
             }
         } else {
-            if (mMqtt5Client == null) {
+            if (mBlockingClient == null) {
                 // Start the client (this handles retries and errors).
-                mMqtt5Client = createClient();
+                mBlockingClient = createClient();
             }
 
-            if (mMqtt5Client != null) {
+            if (mBlockingClient != null) {
                 Payload payload = mPayloads.pollFirst();
                 if (payload != null) {
                     try {
-                        _publishPayload(mMqtt5Client, payload);
+                        _publishPayload(mBlockingClient, payload);
                         // This loop iteration succeeded.
                         mLogger.d(TAG, "Published " + payload.mTopic + " = " + payload.mMessage);
                         return;
@@ -160,8 +159,9 @@ public class MqttClient extends ThreadLoop {
                         mLogger.d(TAG, "Error MQTT publish failed: ", e);
                         // Remove the MQTT client and try again with the same payload.
                         mPayloads.offerFirst(payload);
-                        mMqtt5Client.disconnectWith().send();
-                        mMqtt5Client = null;
+                        mBlockingClient.disconnect();               // MQTT 3
+                        // mBlockingClient.disconnectWith().send(); -- MQTT 5
+                        mBlockingClient = null;
                     } catch (Exception e) {
                         mLogger.d(TAG, "Error MQTT publish failed: ", e);
                         // Try again with the same payload.
@@ -186,7 +186,7 @@ public class MqttClient extends ThreadLoop {
     }
 
     @Null
-    private Mqtt5BlockingClient createClient() {
+    private Mqtt3BlockingClient createClient() {
         if (mMqttConnectRetries <= 0) {
             // We have exhausted the retry count.
             return null;
@@ -199,7 +199,7 @@ public class MqttClient extends ThreadLoop {
         }
 
         try {
-            Mqtt5BlockingClient mqtt5Client = _createBlockingClient(mConfiguration);
+            Mqtt3BlockingClient blockingClient = _createBlockingClient(mConfiguration);
             mLogger.d(TAG, "Connected to MQTT Broker "
                     + mConfiguration.mIp + ":" + mConfiguration.mPort
                     + ", user " + mConfiguration.mUser);
@@ -207,7 +207,7 @@ public class MqttClient extends ThreadLoop {
             // On success, we reset the retry count in case we need to try to reconnect.
             mMqttConnectRetries = NUM_CONNECT_RETRIES;
 
-            return mqtt5Client;
+            return blockingClient;
         } catch (Exception e) {
             mLogger.d(TAG, "Error MQTT connect failed: ", e);
             mMqttConnectRetries--;
@@ -222,32 +222,32 @@ public class MqttClient extends ThreadLoop {
      */
     @NonNull
     @VisibleForTesting
-    protected Mqtt5BlockingClient _createBlockingClient(@NonNull Configuration configuration) {
-        Mqtt5BlockingClient mqtt5Client = Mqtt5Client
+    protected Mqtt3BlockingClient _createBlockingClient(@NonNull Configuration configuration) {
+        Mqtt3BlockingClient blockingClient = Mqtt3Client
                 .builder()
                 .identifier("conductor2")
                 .serverHost(configuration.mIp)
                 .serverPort(configuration.mPort)
                 .buildBlocking();
-        mqtt5Client
+        blockingClient
                 .connectWith()
-                .cleanStart(true)
+                // .cleanStart(true) -- only in MQTT5
                 .simpleAuth()
                 .username(configuration.mUser)
                 .password(configuration.mPassword.getBytes(Charsets.UTF_8))
                 .applySimpleAuth()
                 .send();
-        return mqtt5Client;
+        return blockingClient;
     }
 
     @VisibleForTesting
-    protected void _publishPayload(@NonNull Mqtt5BlockingClient mqtt5Client, @NonNull Payload payload) {
+    protected void _publishPayload(@NonNull Mqtt3BlockingClient mqtt5Client, @NonNull Payload payload) {
         mqtt5Client
                 .publishWith()
                 .topic(payload.mTopic)
                 .payload(payload.mMessage.getBytes(Charsets.UTF_8))
-                .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8)
-                .contentType("text/plain")
+                // .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8) -- only MQTT 5
+                // .contentType("text/plain") -- only MQTT5
                 .qos(MqttQos.AT_LEAST_ONCE)
                 .send();
     }
