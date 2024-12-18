@@ -115,7 +115,7 @@ when (_ambianceMonth) {
     Month.DECEMBER -> {
         // Xmas Ambiance Light
         mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10")
-        mqtt.publish("ambiance/script/event", "Slide 0.1 80")
+        mqtt.publish("ambiance/script/event", "Slide -0.1 80")
     }
     else -> {
         // Default Warm Lights
@@ -128,6 +128,10 @@ var _ambiance_counter = 0
 fun Ambiance_Trigger() {
     mqtt.publish("ambiance/event/trigger", _ambiance_counter.toString())
     _ambiance_counter++
+}
+
+fun Ambiance_Off() {
+    mqtt.publish("ambiance/script/init", "Brightness 0.5 ; SlowFill 0.25 #000000 1")
 }
 
 
@@ -178,6 +182,7 @@ val End_Of_Day_HHMM = 1650
 
 on { ML_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
     ML_Toggle.active(Off)
+    Ambiance_Off()
 }
 
 on { BL_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
@@ -653,7 +658,6 @@ val Passenger_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
-            Ambiance_Trigger()
 
             FR.sound(Off)
             PA.horn()
@@ -663,6 +667,7 @@ val Passenger_Route = ML_Route.sequence {
             after (AM_Data.Delay_Horn) then {
                 PA.horn()
                 PA.forward(AM_Data.Leaving_Speed)
+                Ambiance_Trigger()
             }
         }
     }
@@ -919,7 +924,6 @@ val Freight_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
-            Ambiance_Trigger()
 
             FR.light(On)
             FR_marker(On)
@@ -931,6 +935,7 @@ val Freight_Route = ML_Route.sequence {
                 FR.bell(Off)
                 FR.forward(SP_Data.Station_Speed)
                 ML_Freight_Align_Turnouts()
+                Ambiance_Trigger()
             } and_after (SP_Data.Delay_Up_Station) then {
                 FR.forward(SP_Data.Forward_Speed)
                 FR.horn()
