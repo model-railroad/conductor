@@ -231,7 +231,7 @@ public class MqttClient extends ThreadLoop {
                 .buildBlocking();
         blockingClient
                 .connectWith()
-                // .cleanStart(true) -- only in MQTT5
+                .cleanSession(true)
                 .simpleAuth()
                 .username(configuration.mUser)
                 .password(configuration.mPassword.getBytes(Charsets.UTF_8))
@@ -241,13 +241,11 @@ public class MqttClient extends ThreadLoop {
     }
 
     @VisibleForTesting
-    protected void _publishPayload(@NonNull Mqtt3BlockingClient mqtt5Client, @NonNull Payload payload) {
-        mqtt5Client
+    protected void _publishPayload(@NonNull Mqtt3BlockingClient blockingClient, @NonNull Payload payload) {
+        blockingClient
                 .publishWith()
                 .topic(payload.mTopic)
                 .payload(payload.mMessage.getBytes(Charsets.UTF_8))
-                // .payloadFormatIndicator(Mqtt5PayloadFormatIndicator.UTF_8) -- only MQTT 5
-                // .contentType("text/plain") -- only MQTT5
                 .qos(MqttQos.AT_LEAST_ONCE)
                 .send();
     }
