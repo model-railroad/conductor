@@ -95,11 +95,39 @@ internal data class RouteGraph(
         return output
     }
 
-    /** Computes all outgoing nodes out of the provided one. */
+    /**
+     * Computes all immediate outgoing nodes out of the provided one.
+     *
+     * This only returns the set of nodes immediately out of the provided node.
+     * To get the set of all nodes beyond the current node, use [forward].
+     */
     fun outgoing(node: INode): Set<INode> {
         val nodeEdges = edges[node.block]
         if (nodeEdges == null) return emptySet()
         return nodeEdges.filter { it.from === node }.map { it.to }.toSet()
+    }
+
+    /**
+     * Computes all the forward (outgoing and beyond) nodes reachable out of the provided one.
+     *
+     * To get the set of nodes immediately after the current node, use [outgoing].
+     */
+    fun forward(node: INode): Set<INode> {
+        val fwd = mutableSetOf<INode>()
+        val visit = mutableSetOf(node)
+
+        while (visit.isNotEmpty()) {
+            val n = visit.first()
+            visit.remove(n)
+            outgoing(n).forEach {
+                if (fwd.add(it)) {
+                    // Only visit if newly added to the fwd set
+                    visit.add(it)
+                }
+            }
+        }
+
+        return fwd.toSet()
     }
 
     override fun toString(): String {
