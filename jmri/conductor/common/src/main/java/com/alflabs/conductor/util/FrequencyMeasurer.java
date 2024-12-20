@@ -23,38 +23,42 @@ import com.alflabs.utils.IClock;
 public class FrequencyMeasurer {
 
     private final IClock mClock;
-    private long mLastPingMs;
-    private long mDelayMs;
-    private long mWorkMs;
+    private long mLastPingNanos;
+    private long mDelayNanos;
+    private long mWorkNanos;
+    private float mFreqActual;
+    private float mFreqMax;
 
     public FrequencyMeasurer(IClock clock) {
         mClock = clock;
     }
 
     public void startWork() {
-        long now = mClock.elapsedRealtime();
-        if (mLastPingMs != 0) {
-            long delay = now - mLastPingMs;
-            // simple averaging: 1/3rd last delay, 2/3rd new delay
-            mDelayMs = mDelayMs <= 0 ? delay : (mDelayMs + 2 * delay) / 3;
+        long nowNanos = mClock.nanoTime();
+        if (mLastPingNanos != 0) {
+            mDelayNanos = nowNanos - mLastPingNanos;
         }
-        mLastPingMs = now;
+        mLastPingNanos = nowNanos;
     }
 
     public void endWork() {
-        if (mLastPingMs != 0) {
-            long now = mClock.elapsedRealtime();
-            long delay = now - mLastPingMs;
-            // simple averaging: 1/3rd last delay, 2/3rd new delay
-            mWorkMs = mWorkMs <= 0 ? delay : (mWorkMs + 2 * delay) / 3;
+        if (mLastPingNanos != 0) {
+            long nowNanos = mClock.nanoTime();
+            mWorkNanos = nowNanos - mLastPingNanos;
         }
     }
 
     public float getActualFrequency() {
-        return mDelayMs <= 0 ? 0 : (1000.0f / mDelayMs);
+        float delayFreq = mDelayNanos <= 0 ? 0 : (float) ((double)1e9 / mDelayNanos);
+        // simple averaging: 1/3rd last value, 2/3rd new value
+        mFreqActual = mFreqActual <= 0 ? delayFreq : (mFreqActual + 2 * delayFreq) / 3;
+        return mFreqActual;
     }
 
     public float getMaxFrequency() {
-        return mWorkMs <= 0 ? 0 : (1000.0f / mWorkMs);
+        float workFreq = mWorkNanos <= 0 ? 0 : (float) ((double)1e9 / mWorkNanos);
+        // simple averaging: 1/3rd last value, 2/3rd new value
+        mFreqMax = mFreqMax <= 0 ? workFreq : (mFreqMax + 2 * workFreq) / 3;
+        return mFreqMax;
     }
 }

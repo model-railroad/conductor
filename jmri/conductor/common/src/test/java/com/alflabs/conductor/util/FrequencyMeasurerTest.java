@@ -38,45 +38,65 @@ public class FrequencyMeasurerTest {
     @Test
     public void testFreq1() throws Exception {
         assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(0.f).of(0.f);
 
         mFreq.startWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(0.f).of(0.f);
 
         mClock.add(1000);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(1.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(1.f);
 
         mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(2.5f);
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(7.0f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(7.0f);
 
         mClock.add(100);
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(5.f);
-
-        mClock.add(100);
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(7.5f);
-
-        mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.0f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.0f);
 
         mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.7f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.7f);
 
         mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.9f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.9f);
 
         mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
 
         mClock.add(100);
+        mFreq.endWork();
         mFreq.startWork();
         assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
+
+        mClock.add(100);
+        mFreq.endWork();
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
+
+        mClock.add(100);
+        mFreq.endWork();
+        mFreq.startWork();
+        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
+        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
     }
 }
