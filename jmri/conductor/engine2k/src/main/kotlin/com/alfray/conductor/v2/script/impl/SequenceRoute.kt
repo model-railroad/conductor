@@ -347,7 +347,14 @@ internal class SequenceRoute @AssistedInject constructor(
 
             // Any other blocks other than current, trailing, or outgoing cannot be active.
             // Note that we really want to match blocks here, not nodes.
-            val extraBlocksActive = allActiveBlocks
+            // Update: we now only check blocks for nodes that are _forward_ of the current node.
+            // E.g. we don't care if a block activates by error when it's not reachable from the
+            // current point.
+            val fwdActiveBlocks = graph.forward(currentNode_)
+                .map { it.block }
+                .filter { it.active }
+                .toSet()
+            val extraBlocksActive = fwdActiveBlocks
                 .minus(currentNode_.block)
                 .minus(trailingBlocks)
                 .minus(outgoingNodes.map { it.block }.toSet())
