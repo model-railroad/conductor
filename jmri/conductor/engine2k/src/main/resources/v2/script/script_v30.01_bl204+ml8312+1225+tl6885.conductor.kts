@@ -325,6 +325,7 @@ var ML_State = EML_State.Ready
 var ML_Train = EML_Train.Passenger
 var ML_Saturday = EML_Saturday.Init
 var ML_Start_Counter = 0
+var ML_Requires_Wait_After_Run = false
 
 /** Indicates that the Mainline automation is not running or in active recovery.
  *  This does not check the Saturday mode. */
@@ -527,6 +528,7 @@ val ML_Wait_Route = ML_Route.idle {
 
     onActivate {
         ML_State = EML_State.Wait
+        ML_Requires_Wait_After_Run = false
 
         after (ML_Timer_Wait) then {
             ML_Idle_Route.activate()
@@ -658,6 +660,7 @@ val Passenger_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
+            ML_Requires_Wait_After_Run = true
 
             FR.sound(Off)
             PA.horn()
@@ -924,6 +927,7 @@ val Freight_Route = ML_Route.sequence {
             // Delay the GA/JSON event till train actually moves -- this prevents the event
             // from being sent when the train is activated and a presence error is detected.
             ML_Send_Start_GaEvent()
+            ML_Requires_Wait_After_Run = true
 
             FR.light(On)
             FR_marker(On)
@@ -1290,7 +1294,12 @@ fun ML_Fn_Try_Recover_Route() {
         // In that case we can still run the FR route because it's a subset of the large route,
         // and we verified the route is not occupied.
         log("[ML Recovery] Ignore Passenger, Activate Freight")
-        Freight_Route.activate()
+        if (ML_Requires_Wait_After_Run) {
+            ML_Train = EML_Train.Freight
+            ML_Wait_Route.activate()
+        } else {
+            Freight_Route.activate()
+        }
 
     } else if (PA_start && !FR_start && PA_occup == 0) {
         // Similar to the previous case with the PA train present with the FR missing.
