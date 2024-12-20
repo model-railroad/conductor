@@ -1212,7 +1212,7 @@ val SaturdayReset_Route = ML_Route.sequence {
                 PA.sound(Off)
                 ML_Train = EML_Train.Passenger
                 ML_Saturday = EML_Saturday.Off
-                ML_Idle_Route.activate()
+                ML_Wait_Route.activate()
             }
         }
     }
@@ -1419,7 +1419,8 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                 } and_after (5.seconds) then {
                     PA.sound(Off)
                 } and_after (2.seconds) then {
-                    ML_Idle_Route.activate()
+                    ML_Train = EML_Train.Freight
+                    ML_Wait_Route.activate()
                 }
             } else {
                 log("ML PA Recovery: Enter B503 with monitor B503a")
@@ -1428,7 +1429,8 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                 after (5.seconds) then {
                     PA.sound(Off)
                 } and_after (2.seconds) then {
-                    ML_Idle_Route.activate()
+                    ML_Train = EML_Train.Freight
+                    ML_Wait_Route.activate()
                 }
             }
         }
@@ -1527,7 +1529,8 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
                 FR.bell(Off)
                 FR.sound(Off)
             } and_after (2.seconds) then {
-                ML_Idle_Route.activate()
+                ML_Train = EML_Train.Passenger
+                ML_Wait_Route.activate()
             }
         }
 
