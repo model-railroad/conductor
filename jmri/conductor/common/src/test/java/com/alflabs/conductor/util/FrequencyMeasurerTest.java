@@ -22,6 +22,12 @@ import com.alflabs.utils.FakeClock;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+
 import static com.google.common.truth.Truth.assertThat;
 
 public class FrequencyMeasurerTest {
@@ -37,66 +43,53 @@ public class FrequencyMeasurerTest {
 
     @Test
     public void testFreq1() throws Exception {
-        assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(0.f).of(0.f);
+        List<Float> actFreqs = new ArrayList<>();
+        List<Float> maxFreqs = new ArrayList<>();
 
-        mFreq.startWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(0.f).of(0.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(0.f).of(0.f);
+        Callable<Void> collect = () -> {
+            actFreqs.add(mFreq.getActualFrequency());
+            maxFreqs.add(mFreq.getMaxFrequency());
+            return null;
+        };
 
-        mClock.add(1000);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(1.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(1.f);
 
-        mClock.add(100);
-        mFreq.endWork();
+        collect.call();
         mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(7.0f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(7.0f);
 
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.0f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.0f);
+        for (int i = 0; i < 10; i++) {
+            mClock.add(10);
+            mFreq.startWork();
+            mClock.add(10);
+            mFreq.endWork();
+            collect.call();
+        }
 
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.7f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.7f);
+        assertThat(actFreqs.stream()
+                .map(f -> String.format(Locale.US,  "%.1f", f))
+                .collect(Collectors.joining(", ")))
+                .isEqualTo("0.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 55.0");
+        assertThat(maxFreqs.stream()
+                .map(f -> String.format(Locale.US,  "%.1f", f))
+                .collect(Collectors.joining(", ")))
+                .isEqualTo("0.0, 50.0, 66.7, 75.0, 80.0, 83.3, 85.7, 87.5, 88.9, 90.0, 100.0");
 
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(9.9f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(9.9f);
+        actFreqs.clear();
+        maxFreqs.clear();
+        for (int i = 0; i < 12; i++) {
+            mClock.add(100);
+            mFreq.startWork();
+            mClock.add(100);
+            mFreq.endWork();
+            collect.call();
+        }
 
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
-
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
-
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
-
-        mClock.add(100);
-        mFreq.endWork();
-        mFreq.startWork();
-        assertThat(mFreq.getActualFrequency()).isWithin(.1f).of(10.f);
-        assertThat(mFreq.getMaxFrequency()   ).isWithin(.1f).of(10.f);
+        assertThat(actFreqs.stream()
+                .map(f -> String.format(Locale.US,  "%.1f", f))
+                .collect(Collectors.joining(", ")))
+                .isEqualTo("45.9, 41.4, 36.9, 32.4, 27.9, 23.4, 18.9, 14.4, 9.9, 5.4, 5.0, 5.0");
+        assertThat(maxFreqs.stream()
+                .map(f -> String.format(Locale.US,  "%.1f", f))
+                .collect(Collectors.joining(", ")))
+                .isEqualTo("91.0, 82.0, 73.0, 64.0, 55.0, 46.0, 37.0, 28.0, 19.0, 10.0, 10.0, 10.0");
     }
 }

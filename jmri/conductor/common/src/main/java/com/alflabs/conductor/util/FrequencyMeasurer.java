@@ -21,13 +21,15 @@ package com.alflabs.conductor.util;
 import com.alflabs.utils.IClock;
 
 public class FrequencyMeasurer {
+    private final static int AVG_WINDOW = 10;
 
     private final IClock mClock;
     private long mLastPingNanos;
     private long mDelayNanos;
     private long mWorkNanos;
-    private float mFreqActual;
-    private float mFreqMax;
+    private final AvgWindow mFreqActual = new AvgWindow(AVG_WINDOW);
+    private final AvgWindow mFreqMax = new AvgWindow(AVG_WINDOW);
+
 
     public FrequencyMeasurer(IClock clock) {
         mClock = clock;
@@ -50,15 +52,45 @@ public class FrequencyMeasurer {
 
     public float getActualFrequency() {
         float delayFreq = mDelayNanos <= 0 ? 0 : (float) ((double)1e9 / mDelayNanos);
-        // simple averaging: 1/3rd last value, 2/3rd new value
-        mFreqActual = mFreqActual <= 0 ? delayFreq : (mFreqActual + 2 * delayFreq) / 3;
-        return mFreqActual;
+        mFreqActual.fill(delayFreq);
+        return mFreqActual.average();
     }
 
     public float getMaxFrequency() {
         float workFreq = mWorkNanos <= 0 ? 0 : (float) ((double)1e9 / mWorkNanos);
-        // simple averaging: 1/3rd last value, 2/3rd new value
-        mFreqMax = mFreqMax <= 0 ? workFreq : (mFreqMax + 2 * workFreq) / 3;
-        return mFreqMax;
+        mFreqMax.fill(workFreq);
+        return mFreqMax.average();
+    }
+
+    private static class AvgWindow {
+        private final float[] mValues;
+        private int mFill;
+        private int mDiv;
+
+        public AvgWindow(int size) {
+            mValues = new float[size];
+        }
+
+        public void fill(float newVal) {
+            mValues[mFill++] = newVal;
+            int size = mValues.length;
+            if (mDiv < size) {
+                mDiv++;
+            }
+            if (mFill == size) {
+                mFill = 0;
+            }
+        }
+
+        public float average() {
+            if (mDiv <= 0) {
+                return 0;
+            }
+            float v = 0;
+            for (int i = 0; i < mDiv; i++) {
+                v += mValues[i];
+            }
+            return v / mDiv;
+        }
     }
 }
