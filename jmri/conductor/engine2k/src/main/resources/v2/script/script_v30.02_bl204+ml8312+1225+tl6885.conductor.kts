@@ -563,7 +563,7 @@ fun ML_Send_Start_GaEvent() {
 }
 
 data class _AM_Data(
-    // Default values for UP 8312 or 8330
+    // Default values for legacy UP 8312 or 8330 ESU Essentials Decoder
     val Leaving_Speed: DccSpeed             = 20.speed,
     val Summit_Speed: DccSpeed              = 22.speed,
     val Summit_Bridge_Speed: DccSpeed       = 16.speed,
@@ -609,7 +609,8 @@ val AM_Data = if (PA.dccAddress == 8401) _AM_Data(
     Recover_Speed           = 12.speed,
     Delay_B330_Up_Resume    = 16.seconds,
     Delay_B370_Entrance     = 8.seconds,
-) else if (PA.dccAddress == 8330) _AM_Data(
+) else if (PA.dccAddress == 8330 || PA.dccAddress == 8312) _AM_Data(
+    // Default values for UP 8312 or 8330 with new LS5 using S0822 sound project.
     Leaving_Speed           = 8.speed,
     Summit_Speed            = 10.speed,
     Summit_Bridge_Speed     = 8.speed,
