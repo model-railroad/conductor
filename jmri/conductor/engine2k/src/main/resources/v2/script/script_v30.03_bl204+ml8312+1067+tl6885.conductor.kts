@@ -356,7 +356,7 @@ val PA = throttle(8312) {
 }
 // FR is Beeline 1067 or 1072
 // FR is 1225 for Polar Express
-val FR = throttle(1225) {
+val FR = throttle(1067) {
     // Short mainline route -- Freight.
     name = "FR"
     onBell  { on -> throttle.f1(on) }
