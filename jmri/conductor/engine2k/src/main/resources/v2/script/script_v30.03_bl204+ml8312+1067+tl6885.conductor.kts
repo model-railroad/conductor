@@ -107,14 +107,12 @@ fun Ambiance_On() {
     val _ambianceMonth = now().month
     log("[Ambiance] Light effect for ${_ambianceMonth}")
 
-    mqtt.publish("ambiance/script/init", "SlowFill 0.025 #000000 1 ; Brightness 1 ; ")
-
     when (_ambianceMonth) {
         Month.NOVEMBER -> {
             // Halloween Ambience Light
             mqtt.publish(
                 "ambiance/script/init",
-                "Brightness 0.5 ; SlowFill 0.1 #FF1000 40 #FF4000 10"
+                "SlowFill 0.025 #000000 1 ; Brightness 0.5 ; SlowFill 0.1 #FF1000 40 #FF4000 10"
             )
             mqtt.publish(
                 "ambiance/script/event",
@@ -125,7 +123,7 @@ fun Ambiance_On() {
             // Xmas Ambiance Light
             mqtt.publish(
                 "ambiance/script/init",
-                "Brightness 0.5 ; SlowFill 0.1 #00FF00 10 #FF0000 10"
+                "SlowFill 0.025 #000000 1 ; Brightness 0.5 ; SlowFill 0.1 #00FF00 10 #FF0000 10"
             )
             mqtt.publish(
                 "ambiance/script/event",
@@ -136,7 +134,7 @@ fun Ambiance_On() {
             // Default Yellowish Warm Lights with accent on where trains are parked
             mqtt.publish(
                 "ambiance/script/init",
-                "Brightness 0.75 ; SlowFill 0.025 #080300 13 #FF4000 25 #080300 70"
+                "SlowFill 0.025 #000000 1 ; Brightness 0.75 ; SlowFill 0.025 #080300 13 #FF4000 25 #080300 70"
             )
             mqtt.publish(
                 "ambiance/script/event",
