@@ -103,35 +103,58 @@ val GA_URL = "http://consist.alfray.com/train/"
 
 mqtt.configure("~/bin/JMRI/rtac_mqtt_conf.json")
 
-val _ambianceMonth = now().month
-log("[Ambiance] Light effect for ${_ambianceMonth}")
+fun Ambiance_On() {
+    val _ambianceMonth = now().month
+    log("[Ambiance] Light effect for ${_ambianceMonth}")
 
-when (_ambianceMonth) {
-    Month.NOVEMBER -> {
-        // Halloween Ambience Light
-        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #FF1000 40 #FF4000 10")
-        mqtt.publish("ambiance/script/event", "Slide -0.05 100")
+    when (_ambianceMonth) {
+        Month.NOVEMBER -> {
+            // Halloween Ambience Light
+            mqtt.publish(
+                "ambiance/script/init",
+                "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #FF1000 40 #FF4000 10"
+            )
+            mqtt.publish(
+                "ambiance/script/event",
+                "Slide -0.05 100")
+        }
+
+        Month.DECEMBER -> {
+            // Xmas Ambiance Light
+            mqtt.publish(
+                "ambiance/script/init",
+                "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10"
+            )
+            mqtt.publish(
+                "ambiance/script/event",
+                "Slide -0.1 80")
+        }
+
+        else -> {
+            // Default Yellowish Warm Lights with accent on where trains are parked
+            mqtt.publish(
+                "ambiance/script/init",
+                "Brightness 0.75 ; Fill #000000 1 ; SlowFill 0.025 #080300 13 #FF4000 25 #080300 70"
+            )
+            mqtt.publish(
+                "ambiance/script/event",
+                "Slide -0.05 200")
+        }
     }
-    Month.DECEMBER -> {
-        // Xmas Ambiance Light
-        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #00FF00 10 #FF0000 10")
-        mqtt.publish("ambiance/script/event", "Slide -0.1 80")
-    }
-    else -> {
-        // Default Warm Lights
-        mqtt.publish("ambiance/script/init", "Brightness 0.5 ; Fill #000000 1 ; SlowFill 0.1 #FFA020 40 #FF7000 10")
-        mqtt.publish("ambiance/script/event", "Slide -0.05 100")
-    }
+}
+
+Ambiance_On()
+
+fun Ambiance_Off() {
+    log("[Ambiance] Off")
+    mqtt.publish("ambiance/script/init", "Brightness 0.5 ; SlowFill 0.25 #000000 1")
 }
 
 var _ambiance_counter = 0
 fun Ambiance_Trigger() {
+    log("[Ambiance] Trigger")
     mqtt.publish("ambiance/event/trigger", _ambiance_counter.toString())
     _ambiance_counter++
-}
-
-fun Ambiance_Off() {
-    mqtt.publish("ambiance/script/init", "Brightness 0.5 ; SlowFill 0.25 #000000 1")
 }
 
 
@@ -211,6 +234,7 @@ on { !ML_Saturday.isOff() && exportedVars.conductorTime != End_Of_Day_HHMM } the
 // ---------------------
 
 on { ML_Toggle  } then {
+    Ambiance_On()
     analytics.gaEvent {
         category = "Automation"
         action = "On"
