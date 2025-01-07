@@ -374,9 +374,9 @@ val PA = throttle(8749) {
     name = "PA"
     onBell  { on -> throttle.f1(on) }
     // LokSound Sound for 8330/8312 or 3609
-    onSound { on -> throttle.f8(on) }
-    // Tsunami Sound for 8401
-    // onSound { on -> throttle.f8(!on) }
+    // onSound { on -> throttle.f8(on) }
+    // Tsunami Sound for 8401, 8749, 8736
+    onSound { on -> throttle.f8(!on) }
 }
 // FR is Beeline 1067 or 1072
 // FR is 1225 for Polar Express
@@ -653,9 +653,11 @@ val AM_Data = if (PA.dccAddress == 8401) _AM_Data(
     Full_Speed              = 12.speed,
     Recover_Speed           = 8.speed,
     Delay_B370_Entrance     = 4.seconds,
-    Delay_B340_Up_Horn      = 5.seconds,
-    Delay_B321_Down_Crossover = 27.seconds,
-    Delay_B503b_Down_Stop   = 20.seconds,
+    Delay_B370_Forward_Stop = 14.seconds,
+    Delay_B360_Full_Reverse = 20.seconds,
+    Delay_B340_Up_Horn      = 10.seconds,
+    // Delay_B321_Down_Crossover = 27.seconds,
+    Delay_B503b_Down_Stop   = 10.seconds,
 ) else _AM_Data()
 
 
