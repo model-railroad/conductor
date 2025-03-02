@@ -1,6 +1,6 @@
 [submodule "android/RTAC/LibUtils"]
 	path = android/RTAC/LibUtils
-	url = git@bitbucket.org:ralfoide/libutils.git
+	url = git@github.com:ralfoide/libutils.git
 [submodule "android/RTAC/androidsvg"]
 	path = android/RTAC/androidsvg
 	url = git@github.com:ralfoide/androidsvg.git
