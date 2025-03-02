@@ -196,6 +196,19 @@ Solution from SO:
 - For JRE 1.8, find the JRE/bin/java.exe > Properties > Compatibility > override dpi scaling. Meh.
 - My solution is to just run it under Linux and avoid Windows' broken DPI scaling.
 
+Issue: "LinkageError occurred while loading main class" when running from IJ.
+This means different modules are compiled by different Java version (e.g. Java 11 vs Java 17)
+To fix:
+- Open File > Settings > Build > Compilers > Java Compiler
+  - Project Bytecode Version = Same as language level.
+  - Make sure all the modules use the same Target Bytecode Version (typically 11 for Conductor).
+- Open File > Settings > Build > Tools > Gradle
+  - Gradle JVM = set to Project JDK
+- File > Project Structure.
+  - Project Settings > Project "conductor" > SDK = set to 11.
+- Rebuild project.
+(C.f. map from Java version to Class File Version at https://javaalmanac.io/bytecode/versions/)
+
 
 ## Installation and Usage with JMRI
 

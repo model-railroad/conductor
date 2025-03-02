@@ -18,8 +18,6 @@
 
 package com.alflabs.conductor.v2.ui;
 
-import com.alflabs.annotations.NonNull;
-import com.alflabs.annotations.Null;
 import com.alflabs.conductor.v2.IActivableDisplayAdapter;
 import com.alflabs.conductor.v2.ISensorDisplayAdapter;
 import com.alflabs.conductor.v2.IThrottleDisplayAdapter;

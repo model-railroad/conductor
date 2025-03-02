@@ -45,12 +45,13 @@ compileJava {
 
 dependencies {
     implementation project(":common")
-    implementation project(":ui2")      // For shared interfaces
     implementation project(":LibManifest")
     implementation project(":LibUtilsJava")
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$vers_kotlin"
     implementation "org.apache.xmlgraphics:batik-swing:$vers_batik"
+    // For Java @Nonnull and @Nullable
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
 
     testImplementation testFixtures(project(":common"))
     testImplementation "junit:junit:$vers_junit"

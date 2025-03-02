@@ -30,7 +30,6 @@ import com.alflabs.conductor.util.MqttClient;
 import com.alflabs.conductor.util.Pair;
 import com.alflabs.conductor.v2.ui.IStatusWindow;
 import com.alflabs.conductor.v2.ui.IWindowCallback;
-import com.alflabs.conductor.v2.ui.StatusWindow2;
 import com.alflabs.conductor.v2.ui.StatusWindow2k;
 import com.alflabs.kv.KeyValueServer;
 import com.alflabs.utils.IClock;
@@ -218,13 +217,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             if (GraphicsEnvironment.isHeadless()) {
                 log("StatusWindow2 skipped: headless graphics environment");
             } else {
-                String uiVers = System.getenv("CONDUCTOR_UI"); // Override for older UI version
-
-                if ("2".equals(uiVers)) {
-                    mWin = new StatusWindow2();
-                } else {
-                    mWin = new StatusWindow2k();
-                }
+                mWin = new StatusWindow2k();
                 mWin.open(this);
                 mWin.updateScriptName("No Script1 Loaded");
 

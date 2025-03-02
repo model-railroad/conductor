@@ -43,7 +43,6 @@ version = "artifact_vers".v()
 dependencies {
     implementation(project(":common"))
     implementation(project(":engine2k"))
-    implementation(project(":ui2"))
     implementation(project(":ui2k"))
     implementation(project(":simul2k"))
     implementation(project(":LibManifest"))
