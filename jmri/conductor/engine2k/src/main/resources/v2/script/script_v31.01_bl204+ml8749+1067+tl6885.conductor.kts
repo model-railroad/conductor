@@ -1672,7 +1672,7 @@ data class _BL_Data(
     val Has_Gyro: Boolean = false,
 
     val Speed: DccSpeed                 = 6.speed,
-    val Speed_Station: DccSpeed         = 4.speed,
+    val Speed_Station: DccSpeed         = 3.speed,
 
     val Delay_Start: Delay              =  8.seconds,
     val Delay_Bell: Delay               =  5.seconds,
@@ -1689,7 +1689,7 @@ data class _BL_Data(
 
     // whether Angels Camp is the terminus on the way back
     // (train can start from either BLParked or BLAngelsCamp)
-    val AngelsCampTerminus: Boolean = true,
+    val AngelsCampTerminus: Boolean = false,
     // for emergencies when train is not working
     val Enable_BL: Boolean = true,
 )
