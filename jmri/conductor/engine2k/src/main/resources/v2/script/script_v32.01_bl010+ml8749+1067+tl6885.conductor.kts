@@ -1684,20 +1684,30 @@ data class _BL_Data(
     val Delay_AngelsCamp_Stop: Delay    =  6.seconds,
     val Delay_AngelsCamp_Rev: Delay     =  8.seconds,
 
+    val MinSecondsOnBlock: Int          = 10,
+    val MaxSecondsEnterBlock: Int       = 20,
+
     // 5 minutes wait -- change for debugging
     val Cycle_Wait: Delay               = 5.minutes,
 
     // whether Angels Camp is the terminus on the way back
     // (train can start from either BLParked or BLAngelsCamp)
-    val AngelsCampTerminus: Boolean = false,
+    val AngelsCampTerminus: Boolean = true,
     // for emergencies when train is not working
     val Enable_BL: Boolean = true,
 )
 
 val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Has_Gyro = false,
-    Speed = 10.speed,
-    Speed_Station = 6.speed,
+    Speed                   = 8.speed,
+    Speed_Station           = 4.speed,
+    Delay_Start             = 10.seconds,
+    Delay_Canyon_Horn_Fwd   = 22.seconds,
+    Delay_Canyon_Horn_Rev   = 36.seconds,
+    Delay_YouBet_Stop       = 6.seconds,
+    Delay_AngelsCamp_Stop   = 8.seconds,
+    MinSecondsOnBlock       = 10,
+    MaxSecondsEnterBlock    = 4,
 ) else _BL_Data()
 
 
@@ -1855,9 +1865,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
     // The normal "shuttle sequence" for the branchline train.
     name = "Shuttle"
     throttle = BL
-    minSecondsOnBlock = 10
-    maxSecondsOnBlock = 120 // 2 minutes per block max
-    maxSecondsEnterBlock = 20
+    minSecondsOnBlock = BL_Data.MinSecondsOnBlock
+    maxSecondsOnBlock = 120   // 2 minutes per block max
+    maxSecondsEnterBlock = BL_Data.MaxSecondsEnterBlock
 
     var BLStartDone = false
     fun doStart() {
@@ -1870,6 +1880,8 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
             BL.light(On)
             BL.forward(BL_Data.Speed_Station)
+        } and_after (BL_Data.Delay_UpToSpeed) then {
+            BL.forward(BL_Data.Speed)
         }
     }
 
@@ -1882,24 +1894,28 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B821_AngelsCamp_fwd = node(B821) {
         // Typical run time: 45 seconds.
+        // RM TEMP DEBUG minSecondsOnBlock = if (BLStartDone) 10 else 0
+        minSecondsOnBlock = 0
+        maxSecondsEnterBlock = 0
         onEnter {
             if (BLStartDone) {
                 BL.bell(Off)
+                after (BL_Data.Delay_UpToSpeed) then {
+                    BL.forward(BL_Data.Speed)
+                }
             } else {
                 doStart()
-            }
-            BL.forward(BL_Data.Speed_Station)
-            after (BL_Data.Delay_UpToSpeed) then {
-                BL.forward(BL_Data.Speed)
             }
         }
     }
 
     val B830_Canyon_fwd = node(B830) {
         // Typical run time: 70 seconds.
+        maxSecondsEnterBlock = 10
         onEnter {
             BL.bell(Off)
             BL.horn()
+            BL.forward(BL_Data.Speed)
 
             // Horn over Canyon bridge
             after (BL_Data.Delay_Canyon_Horn_Fwd) then {
@@ -1910,6 +1926,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B850_Tunnel_fwd = node(B850) {
         // Typical run time: 25 seconds.
+        minSecondsOnBlock = 5
+        maxSecondsOnBlock = 40
+        maxSecondsEnterBlock = 10
         onEnter {
             BL.horn()
         }
@@ -2034,6 +2053,7 @@ val BL_Recovery_Route = BL_Route.sequence {
     throttle = BL
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max
+    maxSecondsEnterBlock = 0
 
     fun move() {
         BL.bell(On)
@@ -2070,7 +2090,7 @@ val BL_Recovery_Route = BL_Route.sequence {
                 BL.stop()
                 BL.bell(Off)
                 BL.sound(Off)
-                BL_Idle_Route.activate()
+                BL_Wait_Route.activate()
             }
         }
     }
@@ -2085,7 +2105,7 @@ val BL_Recovery_Route = BL_Route.sequence {
                 BL.stop()
                 BL.bell(Off)
                 BL.sound(Off)
-                BL_Idle_Route.activate()
+                BL_Wait_Route.activate()
             }
         }
     }
@@ -2142,7 +2162,7 @@ val BL_Recovery2_Route = BL_Route.idle {
             BL.sound(Off)
             timeout.reset()
             // We have recovered
-            BL_Idle_Route.activate()
+            BL_Wait_Route.activate()
         } else if (timeout.active) {
             BL.stop()
             BL.bell(Off)
