@@ -1894,9 +1894,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B821_AngelsCamp_fwd = node(B821) {
         // Typical run time: 45 seconds.
-        // RM TEMP DEBUG minSecondsOnBlock = if (BLStartDone) 10 else 0
-        minSecondsOnBlock = 0
-        maxSecondsEnterBlock = 0
+        minSecondsOnBlock = if (BLStartDone) BL_Data.MinSecondsOnBlock else 1
         onEnter {
             if (BLStartDone) {
                 BL.bell(Off)

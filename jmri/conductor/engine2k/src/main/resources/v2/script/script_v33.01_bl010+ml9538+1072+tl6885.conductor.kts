@@ -668,21 +668,6 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
 ) else if (PA.dccAddress == 8749 || PA.dccAddress == 8736) _PA_Data(
     // Values for Athearn UP 8749 or 8736.
     F8_is_Mute                = true, // Tsunami
-    Leaving_Speed           = 10.speed,
-    Summit_Speed            = 10.speed,
-    Summit_Bridge_Speed     = 8.speed,
-    Sonora_Speed            = 14.speed,
-    Crossover_Speed         = 8.speed,
-    Full_Speed              = 16.speed,
-    Recover_Speed           = 14.speed,
-    Delay_B370_Entrance     = 4.seconds,
-    Delay_B370_Forward_Stop = 14.seconds,
-    Delay_B360_Full_Reverse = 20.seconds,
-    Delay_B340_Up_Horn      = 10.seconds,
-    Delay_B503b_Down_Stop   = 10.seconds,
-) else if (PA.dccAddress == 9538) _PA_Data(
-    // Values for Bachmann UP 9538.
-    F8_is_Mute                = true, // TCS WoW Diesel
     Leaving_Speed           = 6.speed,
     Summit_Speed            = 6.speed,
     Summit_Bridge_Speed     = 4.speed,
@@ -694,8 +679,23 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
     Delay_B370_Forward_Stop = 14.seconds,
     Delay_B360_Full_Reverse = 20.seconds,
     Delay_B340_Up_Horn      = 10.seconds,
-    // Delay_B321_Down_Crossover = 27.seconds,
     Delay_B503b_Down_Stop   = 10.seconds,
+) else if (PA.dccAddress == 9538) _PA_Data(
+    // Values for Bachmann UP 9538.
+    F8_is_Mute                = true, // TCS WoW Diesel
+    Leaving_Speed           = 10.speed,
+    Summit_Speed            = 10.speed,
+    Summit_Bridge_Speed     = 8.speed,
+    Sonora_Speed            = 14.speed,
+    Crossover_Speed         = 8.speed,
+    Full_Speed              = 16.speed,
+    Recover_Speed           = 14.speed,
+    Delay_B370_Entrance     = 4.seconds,
+    Delay_B370_Forward_Stop = 14.seconds,
+    Delay_B360_Full_Reverse = 20.seconds,
+    Delay_B340_Up_Horn      = 10.seconds,
+    // Delay_B321_Down_Crossover = 27.seconds,
+    Delay_B503b_Down_Stop   = 8.seconds,
 ) else _PA_Data()
 
 
@@ -957,7 +957,17 @@ data class _FR_Data(
     val B321_maxSecondsOnBlock: Int = 3*60,
 )
 
-val FR_Data = if (FR.dccAddress == 5278) _FR_Data(
+val FR_Data = if (FR.dccAddress == 1067) _FR_Data(
+    // Customize slow-to-stop speed at Sonora for Freight 1067
+    Station_Speed    = 2.speed,
+    Delay_Up_Slow    = 35.seconds,
+    Delay_Up_Stop    = 14.seconds,
+) else if (FR.dccAddress == 1072) _FR_Data(
+    // Customize slow-to-stop speed at Sonora for Freight 1072
+    Station_Speed    = 3.speed,
+    Delay_Up_Slow    = 40.seconds,
+    Delay_Up_Stop    = 15.seconds,
+) else if (FR.dccAddress == 5278) _FR_Data(
     // Polar Express 5278
     F8_is_Mute       = true, // BLI
     Forward_Speed    = 16.speed,
@@ -1948,9 +1958,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
 
     val B821_AngelsCamp_fwd = node(B821) {
         // Typical run time: 45 seconds.
-        // RM TEMP DEBUG minSecondsOnBlock = if (BLStartDone) 10 else 0
-        minSecondsOnBlock = 0
-        maxSecondsEnterBlock = 0
+        minSecondsOnBlock = if (BLStartDone) BL_Data.MinSecondsOnBlock else 1
         onEnter {
             if (BLStartDone) {
                 BL.bell(Off)
