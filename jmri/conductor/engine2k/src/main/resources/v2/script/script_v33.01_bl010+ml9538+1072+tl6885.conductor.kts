@@ -377,7 +377,7 @@ val PA = throttle(9538) {
 }
 // FR is Beeline 1067 or 1072
 // FR is 1225 for Polar Express
-val FR = throttle(1067) {
+val FR = throttle(1072) {
     // Short mainline route -- Freight.
     name = "FR"
     onBell  { on -> throttle.f1(on) }
@@ -668,13 +668,13 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
 ) else if (PA.dccAddress == 8749 || PA.dccAddress == 8736) _PA_Data(
     // Values for Athearn UP 8749 or 8736.
     F8_is_Mute                = true, // Tsunami
-    Leaving_Speed           = 6.speed,
-    Summit_Speed            = 6.speed,
-    Summit_Bridge_Speed     = 4.speed,
-    Sonora_Speed            = 8.speed,
-    Crossover_Speed         = 4.speed,
-    Full_Speed              = 12.speed,
-    Recover_Speed           = 8.speed,
+    Leaving_Speed           = 10.speed,
+    Summit_Speed            = 10.speed,
+    Summit_Bridge_Speed     = 8.speed,
+    Sonora_Speed            = 14.speed,
+    Crossover_Speed         = 8.speed,
+    Full_Speed              = 16.speed,
+    Recover_Speed           = 14.speed,
     Delay_B370_Entrance     = 4.seconds,
     Delay_B370_Forward_Stop = 14.seconds,
     Delay_B360_Full_Reverse = 20.seconds,
