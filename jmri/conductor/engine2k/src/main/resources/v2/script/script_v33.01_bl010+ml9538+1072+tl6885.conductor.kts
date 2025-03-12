@@ -364,8 +364,8 @@ fun EML_Saturday.isOff() = ML_Saturday == EML_Saturday.Off
  *  the train can be in storage or at its normal position, but it's not moving. */
 fun EML_Saturday.isIdle() = ML_Saturday == EML_Saturday.Off || ML_Saturday == EML_Saturday.On
 
-val _enable_FR = true       // for emergencies when one of the trains is not working
-val _enable_PA = true
+val _enable_FR = true       // For emergencies when one of the trains is not working
+val _enable_PA = true       // Warning: see ML_Fn_Try_Recover_Route() for special recovery cases.
 val _enable_Saturday = true
 
 // PA is UP 722 or 712 or 3609 or 8312 or 8330 or 8749
@@ -717,7 +717,10 @@ val Passenger_Route = ML_Route.sequence {
             // If the Freight train is not on block B311, we don't know where it is,
             // and we may collide with it. In this case enter error mode right away.
             log("[ML Passenger] Freight missing in B311.")
-            ML_Fn_Try_Recover_Route()
+            if (_enable_FR) {
+                // This action is deactivated if the Freight train has been deactivated.
+                ML_Fn_Try_Recover_Route()
+            }
         }
 
         ML_Train = EML_Train.Passenger
@@ -1367,18 +1370,27 @@ fun ML_Fn_Try_Recover_Route() {
     log("[ML Recovery] FR start=$FR_start occup=$FR_occup total=$FR_total $FR_blocks")
 
 
-    if (PA_start && (!FR_start || FR_occup == 1)) {
+    if (_enable_FR && PA_start && (!FR_start || FR_occup == 1)) {
         // PA train is accounted for, where expected.
         // FR train is not at start but there's one FR block occupied, so let's assume it's
         // our train and try to recover that FR train.
         log("[ML Recovery] Recover Freight")
         ML_Recovery_Freight_Route.activate()
 
-    } else if (FR_start && ((!PA_start && PA_occup == 1) || (PA_start && PA_occup == 0))) {
+    } else if (_enable_PA && FR_start && ((!PA_start && PA_occup == 1) || (PA_start && PA_occup == 0))) {
         // FR train is accounted for, where expected.
         // PA train is not at start but there's 1~2 block occupied, so let's assume it's
         // our train and try to recover that PA train.
         log("[ML Recovery] Recover Passenger")
+        ML_Recovery_Passenger_Route.activate()
+
+    } else if (_enable_PA && !_enable_FR && !FR_start && (!PA_start && PA_occup == 1)) {
+        // FR train is NOT accounted for, but it is also knowingly disabled.
+        // PA train is not at start but there's 1~2 block occupied, so let's assume it's
+        // our train and try to recover that PA train.
+        // Normally we would not want to recover (in case the freight train is on a dead block
+        // in the way), but here we explicitely turned the freight train off, so we allow this.
+        log("[ML Recovery] Recover Passenger, Ignore Freight missing and disabled")
         ML_Recovery_Passenger_Route.activate()
 
     } else if (FR_start && !PA_start && FR_occup == 0) {
@@ -1391,7 +1403,7 @@ fun ML_Fn_Try_Recover_Route() {
         if (ML_Requires_Wait_After_Run) {
             ML_Train = EML_Train.Freight
             ML_Wait_Route.activate()
-        } else {
+        } else if (_enable_FR) {
             Freight_Route.activate()
         }
 
