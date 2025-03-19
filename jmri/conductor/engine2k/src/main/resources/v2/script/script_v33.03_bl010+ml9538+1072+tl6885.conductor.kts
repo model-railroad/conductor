@@ -158,6 +158,19 @@ fun Ambiance_Trigger() {
 }
 
 
+// MQTT Setup for Turnout LED Displays
+
+mqtt.publish("turnout/t330/script/init", "Brightness 0.1 ; Fill #FFFFFF 1")
+
+fun Turnout_LED_Red() {
+    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #FF0000 1; Trigger")
+}
+
+fun Turnout_LED_Green() {
+    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #00FF00 1; Trigger")
+}
+
+
 // -----------------
 // DS64 Turnouts
 // -----------------
@@ -2585,6 +2598,12 @@ val TL_Recovery_Route = TL_Route.sequence {
 
 on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 &&  B320.active && !B321 } then { T330.normal() }
 on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
+
+
+// The T330 LED is GREEN when the junction B320 --> B330 via T330 Normal is ready.
+
+on {  T330.normal } then { Turnout_LED_Green() }
+on { !T330.normal } then { Turnout_LED_Red()   }
 
 
 // ---------
