@@ -375,6 +375,7 @@ val PA = throttle(9538) {
     onBell  { on -> throttle.f1(on) }
     onSound { on -> PA_sound(on) }
 }
+
 // FR is Beeline 1067 or 1072
 // FR is 1225 for Polar Express
 val FR = throttle(1072) {
@@ -382,6 +383,14 @@ val FR = throttle(1072) {
     name = "FR"
     onBell  { on -> throttle.f1(on) }
     onSound { on -> FR_sound(on) }
+}
+
+
+fun PA_startup_sound() {
+    // TCS WOW Diesel: F6=1 to have prime mover sound.
+    if (PA.dccAddress == 9538) {
+        PA.f6(On)
+    }
 }
 
 fun PA_sound(on: Boolean) {
@@ -616,6 +625,7 @@ data class _PA_Data(
     val Recover_Speed: DccSpeed             = 16.speed,
 
     val Delay_Horn: Delay                   = 2.seconds,
+    val Delay_Startup_Sound: Delay          = 8.seconds,
     val Delay_Leaving_To_Full_Speed: Delay  = 15.seconds,
     val Delay_B321_Up_Doppler: Delay        = 27.seconds,
     val Delay_B330_Up_Resume: Delay         = 12.seconds,
@@ -729,6 +739,7 @@ val Passenger_Route = ML_Route.sequence {
         throttle.incActivationCount()
         PA.light(On)
         PA.bell(Off)
+        PA_startup_sound()
         PA.sound(On)
         FR.sound(Off)
     }
@@ -749,7 +760,7 @@ val Passenger_Route = ML_Route.sequence {
             ML_Passenger_Align_Turnouts()
             PA.bell(On)
             PA_beacon(On)
-            after (PA_Data.Delay_Horn) then {
+            after (PA_Data.Delay_Startup_Sound) then {
                 PA.horn()
                 PA.forward(PA_Data.Leaving_Speed)
                 Ambiance_Trigger()
@@ -1455,6 +1466,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
 
     fun initSound() {
         PA.bell(On)
+        PA_startup_sound()
         PA.sound(On)
         PA.horn()
     }
