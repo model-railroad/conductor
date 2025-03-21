@@ -3,6 +3,7 @@ set -e
 cd $(dirname "$0")
 cd .
 
+REPO_ORG="ralfoide"
 DRY=echo
 if [[ "$1" == "-f" ]]; then
 	DRY=""
@@ -24,7 +25,11 @@ GIT_USER=$(sed -n '/email = /s/.*= \(.*\)@.*/\1/p' ~/.gitconfig)
 if [[ -z $GIT_USER ]]; then set +x; echo "Git user not found"; exit 1; fi
 
 if [[ ! -d $ROOT/LibUtils ]]; then
-  $DRY git submodule add git@bitbucket.org:$GIT_USER/libutils.git $ROOT/LibUtils
+  if [[ "$GIT_USER" == "$REPO_ORG"]]; then
+    $DRY git submodule add "git@github.com:$GIT_USER/libutils.git" "$ROOT/LibUtils"
+  else
+    $DRY git submodule add "https://github.com/$REPO_ORG/libutils.git" "$ROOT/LibUtils"
+  fi
 fi
 
 $DRY git submodule update --init $ROOT/LibUtils
@@ -37,6 +42,10 @@ LIB_BRANCH="android-lib-v3"
 )
 
 if [[ ! -d $ROOT/androidsvg ]]; then
-  $DRY git submodule add git@github.com:ralfoide/androidsvg.git $ROOT/androidsvg
+  if [[ "$GIT_USER" == "$REPO_ORG"]]; then
+    $DRY git submodule add "git@github.com:$GIT_USER/androidsvg.git" "$ROOT/androidsvg"
+  else
+    $DRY git submodule add "https://github.com/$REPO_ORG/androidsvg.git" "$ROOT/androidsvg"
+  fi
 fi
 $DRY git submodule update --init $ROOT/androidsvg

@@ -30,7 +30,7 @@ automation.
 __RTAC__ is an Android application designed for tablets with API 19 or greater.
 The XML layout files are optimized for 10 inch tablets.
 
-It uses __Dagger__ and __[LibUtils](https://bitbucket.org/ralfoide/libutils)' RX__ (my own implementation of RX Java).
+It uses __Dagger__ and __[LibUtils](https://github.com/ralfoide/libutils)' RX__ (my own implementation of RX Java).
 
 Communication with __Conductor__ is done using the __KV Client/Server__
 available in LibUtils using regular TCP sockets over wifi.
@@ -68,7 +68,7 @@ expand the features of the application as the project matures.
 
 __RTAC__ depends on 2 additional git submodules:
 
-- The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
+- The [LibUtils](https://github.com/ralfoide/libutils) module.
 - A fork of the [AndroidSVG](https://github.com/ralfoide/androidsvg) project.
 
 
@@ -79,7 +79,7 @@ Before building, the git submodules must be imported:
     $ android/RTAC/_init.sh
 
 This script will checkout the
-[LibUtils](https://bitbucket.org/ralfoide/libutils) submodule which
+[LibUtils](https://github.com/ralfoide/libutils) submodule which
 is used by both __RTAC__ and __Conductor__.
 
 

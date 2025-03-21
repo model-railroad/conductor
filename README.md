@@ -41,7 +41,7 @@ For documentation on the Randall Museum Model Railroad, please consult:
 * The [__Presentation & Automation__ of the
 Randall Museum Model Railroad](https://www.alfray.com/trains/randall/about.html)
 
-* The [__Documentation__ git repository](https://bitbucket.org/randall-railroad/documentation),
+* The [__Documentation__ git repository](https://github.com/model-railroad/documentation),
   with manuals, maps, and schemas related to the layout.
 
 
@@ -49,7 +49,7 @@ Randall Museum Model Railroad](https://www.alfray.com/trains/randall/about.html)
 
 __Conductor__ and __RTAC__ depend on 2 additional git submodules:
 
-- The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
+- The [LibUtils](https://github.com/ralfoide/libutils) module.
 - A fork of the [AndroidSVG](https://github.com/ralfoide/androidsvg) project.
 
 ## License

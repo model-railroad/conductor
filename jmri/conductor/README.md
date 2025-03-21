@@ -64,20 +64,20 @@ __Conductor__ is a Java application designed to run on computers, not mobile.
 It needs JMRI to get access to the block detectors or other sensors, the
 DCC throttles and the DCC turnouts.
 
-It uses __Dagger__ and __[LibUtils](https://bitbucket.org/ralfoide/libutils)' RX__ (my own implementation of RX Java).
+It uses __Dagger__ and __[LibUtils](https://github.com/ralfoide/libutils)' RX__ (my own implementation of RX Java).
 
 The __Conductor__ scripting language is implemented using __ANTRL v4__.
 The grammar is available in
-[src/antlr/antlr/Conductor.g4](https://bitbucket.org/randall-railroad/automation/src/HEAD/jmri/conductor/src/antlr/antlr/Conductor.g4)
+[src/antlr/antlr/Conductor.g4](https://github.com/model-railroad/conductor/src/HEAD/jmri/conductor/src/antlr/antlr/Conductor.g4)
 and here is an example of actual script as being run on the Randall layout:
-[resources/v2/script.txt](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/script_pa+bl_11.txt).
+[resources/v2/script.txt](https://github.com/model-railroad/conductor/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/script_pa+bl_11.txt).
 
 The __Conductor__ simulation language does not have its own grammar file yet.
 The syntax is trivial enough to be handled by a
-[handwritten parser](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/main/java/com/alflabs/conductor/simulator/Simulator.java?#Simulator.java-118)
+[handwritten parser](https://github.com/model-railroad/conductor/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/main/java/com/alflabs/conductor/simulator/Simulator.java?#Simulator.java-118)
 in a few lines of Java.
 Here is an example simulation script:
-[resources/v2/simul1.txt](https://bitbucket.org/randall-railroad/automation/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/simul1.txt).
+[resources/v2/simul1.txt](https://github.com/model-railroad/conductor/src/ed80d43f218daaef0a3e18b08506b630a99da705/jmri/conductor/src/test/resources/v2/simul1.txt).
 
 
 Communication with __RTAC__ is done using the __KV Client/Server__
@@ -104,7 +104,7 @@ expand the features of the application as the project matures.
 
 __Conductor__ depends on one additional git submodule:
 
-- The [LibUtils](https://bitbucket.org/ralfoide/libutils) module.
+- The [LibUtils](https://github.com/ralfoide/libutils) module.
 
 
 ## License
@@ -138,7 +138,7 @@ Before building, the git submodules must be imported:
     $ android/RTAC/_init.sh -f
 
 This script will checkout the
-[LibUtils](https://bitbucket.org/ralfoide/libutils) submodule which
+[LibUtils](https://github.com/ralfoide/libutils) submodule which
 is used by both __RTAC__ and __Conductor__.
 
 Verify that android/RTAC/LibUtils is using the branch `android-lib-v3`.
@@ -219,7 +219,7 @@ __Conductor__ is a plugin for JMRI. First, Java and JMRI need to be installed fo
 
 Next, build __Conductor__:
 
-    $ git clone git clone https://bitbucket.org/randall-railroad/automation.git
+    $ git clone git clone https://github.com/model-railroad/conductor.git
     $ cd automation
     $ ./_init.sh -f
     $ ./gradlew assemble fatJar
