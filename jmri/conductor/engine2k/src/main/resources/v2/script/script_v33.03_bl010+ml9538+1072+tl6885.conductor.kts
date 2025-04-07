@@ -162,14 +162,6 @@ fun Ambiance_Trigger() {
 
 mqtt.publish("turnout/t330/script/init", "Brightness 0.1 ; Fill #FFFFFF 1")
 
-fun Turnout_LED_Red() {
-    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #FF0000 1; Trigger")
-}
-
-fun Turnout_LED_Green() {
-    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #00FF00 1; Trigger")
-}
-
 
 // -----------------
 // DS64 Turnouts
@@ -2602,8 +2594,28 @@ on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 && !B320 &
 
 // The T330 LED is GREEN when the junction B320 --> B330 via T330 Normal is ready.
 
-on {  T330.normal } then { Turnout_LED_Green() }
-on { !T330.normal } then { Turnout_LED_Red()   }
+on {  T330.normal } then {
+    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #00FF00 1; Trigger")
+    // Turnout state name must match the JSON keys used in the "states" dictionary.
+    mqtt.publish("turnout/t330/state", "normal")
+}
+
+on { !T330.normal } then {
+    mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #FF0000 1; Trigger")
+    // Turnout state name must match the JSON keys used in the "states" dictionary.
+    mqtt.publish("turnout/t330/state", "reverse")
+}
+
+listOf(B320, B321, B330).forEach { block ->
+    // Blocks and state names must match the JSON keys used in the "blocks" dictionary.
+    on {  block.occupied } then {
+        mqtt.publish("block/${block.name.lowercase()}/state", "active")
+    }
+
+    on { !block.occupied } then {
+        mqtt.publish("block/${block.name.lowercase()}/state", "inactive")
+    }
+}
 
 
 // ---------
