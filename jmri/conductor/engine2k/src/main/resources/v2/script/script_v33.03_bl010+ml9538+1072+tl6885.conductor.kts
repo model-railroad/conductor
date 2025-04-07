@@ -775,7 +775,7 @@ val Passenger_Route = ML_Route.sequence {
 
     val B503a_fwd = node(B503a) {
         // Time in block fluctuates around 10 seconds.
-        minSecondsOnBlock = 5
+        minSecondsOnBlock = 4
         maxSecondsOnBlock = 30
         maxSecondsEnterBlock = 10
         onEnter {
@@ -902,7 +902,7 @@ val Passenger_Route = ML_Route.sequence {
 
     val B503a_rev = node(B503a) {
         // Time in block fluctuates around 10 seconds.
-        minSecondsOnBlock = 5
+        minSecondsOnBlock = 4
         maxSecondsOnBlock = 30
         maxSecondsEnterBlock = 10
         onEnter {
@@ -981,11 +981,13 @@ val FR_Data = if (FR.dccAddress == 1067) _FR_Data(
     Station_Speed    = 2.speed,
     Delay_Up_Slow    = 35.seconds,
     Delay_Up_Stop    = 14.seconds,
+    B321_maxSecondsOnBlock = 3*60,
 ) else if (FR.dccAddress == 1072) _FR_Data(
     // Customize slow-to-stop speed at Sonora for Freight 1072
     Station_Speed    = 3.speed,
     Delay_Up_Slow    = 40.seconds,
     Delay_Up_Stop    = 15.seconds,
+    B321_maxSecondsOnBlock = 4*60,
 ) else if (FR.dccAddress == 5278) _FR_Data(
     // Polar Express 5278
     F8_is_Mute       = true, // BLI
@@ -1785,7 +1787,7 @@ data class _BL_Data(
 
     // whether Angels Camp is the terminus on the way back
     // (train can start from either BLParked or BLAngelsCamp)
-    val AngelsCampTerminus: Boolean = true,
+    val AngelsCampTerminus: Boolean = false,
     // for emergencies when train is not working
     val Enable_BL: Boolean = true,
 )
