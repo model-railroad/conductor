@@ -902,7 +902,7 @@ val Passenger_Route = ML_Route.sequence {
 
     val B503a_rev = node(B503a) {
         // Time in block fluctuates around 10 seconds.
-        minSecondsOnBlock = 4
+        minSecondsOnBlock = 3
         maxSecondsOnBlock = 30
         maxSecondsEnterBlock = 10
         onEnter {
@@ -2600,22 +2600,30 @@ on {  T330.normal } then {
     mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #00FF00 1; Trigger")
     // Turnout state name must match the JSON keys used in the "states" dictionary.
     mqtt.publish("turnout/t330/state", "normal")
+    // All update the surrounding blocks
+    mqtt.publish("block/b320/state", if (B320.active) "active" else "inactive")
+    mqtt.publish("block/b321/state", if (B321.active) "active" else "inactive")
+    mqtt.publish("block/b330/state", if (B330.active) "active" else "inactive")
 }
 
 on { !T330.normal } then {
     mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #FF0000 1; Trigger")
     // Turnout state name must match the JSON keys used in the "states" dictionary.
     mqtt.publish("turnout/t330/state", "reverse")
+    // All update the surrounding blocks
+    mqtt.publish("block/b320/state", if (B320.active) "active" else "inactive")
+    mqtt.publish("block/b321/state", if (B321.active) "active" else "inactive")
+    mqtt.publish("block/b330/state", if (B330.active) "active" else "inactive")
 }
 
-listOf(B320, B321, B330).forEach { block ->
+listOf(B320, B321, B330).forEach { b ->
     // Blocks and state names must match the JSON keys used in the "blocks" dictionary.
-    on {  block.occupied } then {
-        mqtt.publish("block/${block.name.lowercase()}/state", "active")
+    on {  b.active } then {
+        mqtt.publish("block/${b.name.lowercase()}/state", "active")
     }
 
-    on { !block.occupied } then {
-        mqtt.publish("block/${block.name.lowercase()}/state", "inactive")
+    on { !b.active } then {
+        mqtt.publish("block/${b.name.lowercase()}/state", "inactive")
     }
 }
 
