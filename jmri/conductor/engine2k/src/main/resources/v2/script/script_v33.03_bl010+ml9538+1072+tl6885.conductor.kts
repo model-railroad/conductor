@@ -2594,38 +2594,39 @@ on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 &&  B320.a
 on { ML_State.isIdle() && ML_Saturday.isIdle() && !ML_Toggle && !B330 && !B320 &&  B321.active } then { T330.reverse() }
 
 
+// --------------
+// Distant Signal
+// --------------
+
 // The T330 LED is GREEN when the junction B320 --> B330 via T330 Normal is ready.
 
 on {  T330.normal } then {
     mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #00FF00 1; Trigger")
-    // Turnout state name must match the JSON keys used in the "states" dictionary.
-    mqtt.publish("turnout/t330/state", "normal")
-    // All update the surrounding blocks
-    mqtt.publish("block/b320/state", if (B320.active) "active" else "inactive")
-    mqtt.publish("block/b321/state", if (B321.active) "active" else "inactive")
-    mqtt.publish("block/b330/state", if (B330.active) "active" else "inactive")
+    DistantSignal_UpdateT330AndBlocks()
 }
 
 on { !T330.normal } then {
     mqtt.publish("turnout/t330/script/event", "Brightness 0.75; Fill #FF0000 1; Trigger")
-    // Turnout state name must match the JSON keys used in the "states" dictionary.
-    mqtt.publish("turnout/t330/state", "reverse")
-    // All update the surrounding blocks
-    mqtt.publish("block/b320/state", if (B320.active) "active" else "inactive")
-    mqtt.publish("block/b321/state", if (B321.active) "active" else "inactive")
-    mqtt.publish("block/b330/state", if (B330.active) "active" else "inactive")
+    DistantSignal_UpdateT330AndBlocks()
 }
 
 listOf(B320, B321, B330).forEach { b ->
-    // Blocks and state names must match the JSON keys used in the "blocks" dictionary.
     on {  b.active } then {
-        mqtt.publish("block/${b.name.lowercase()}/state", "active")
+        DistantSignal_UpdateT330AndBlocks()
     }
 
     on { !b.active } then {
-        mqtt.publish("block/${b.name.lowercase()}/state", "inactive")
+        DistantSignal_UpdateT330AndBlocks()
     }
 }
 
+fun DistantSignal_UpdateT330AndBlocks() {
+    // Turnout state name must match the JSON keys used in DistantSignal "states" dictionary.
+    mqtt.publish("turnout/t330/state",  if (T330.normal) "normal" else "reverse")
+    // Blocks and state names must match the JSON keys used in DistantSignal "blocks" dictionary.
+    mqtt.publish("block/b320/state",    if (B320.active) "active" else "inactive")
+    mqtt.publish("block/b321/state",    if (B321.active) "active" else "inactive")
+    mqtt.publish("block/b330/state",    if (B330.active) "active" else "inactive")
+}
 
 // ---------
