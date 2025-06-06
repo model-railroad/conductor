@@ -76,7 +76,7 @@ public class WakeWifiLockMixin extends ServiceMixin<RtacService> {
     private void lockWake() {
         if (mWakeLock != null) return;
         try {
-            mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "RTAC Service");
+            mWakeLock = mPowerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "RTAC:Service");
             mWakeLock.acquire();
             if (DEBUG) Log.d(TAG, "Wake Lock Acquire");
         } catch (Throwable e) {

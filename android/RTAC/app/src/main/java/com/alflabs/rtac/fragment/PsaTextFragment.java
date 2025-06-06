@@ -47,7 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Fragment showing PSA (Public Service Annoucement) text for the "Information" tab.
+ * Fragment showing PSA (Public Service Announcement) text for the "Information" tab.
  */
 public class PsaTextFragment extends Fragment {
 
@@ -57,6 +57,7 @@ public class PsaTextFragment extends Fragment {
     @Inject DataClientMixin mDataClientMixin;
 
     private boolean mIsConnected;
+    private View mRoot;
     private TextView mMainText;
 
     public static PsaTextFragment newInstance() {
@@ -100,10 +101,10 @@ public class PsaTextFragment extends Fragment {
                              Bundle savedInstanceState) {
         if (DEBUG) Log.d(TAG, "onCreateView activity=" + getActivity());
         // Inflate the layout for this fragment
-        View root = inflater.inflate(R.layout.psa_text_fragment, container, false);
-        mMainText = (TextView) root.findViewById(R.id.main_text);
+        mRoot = inflater.inflate(R.layout.psa_text_fragment, container, false);
+        mMainText = (TextView) mRoot.findViewById(R.id.main_text);
 
-        return root;
+        return mRoot;
     }
 
     @Override
@@ -129,7 +130,7 @@ public class PsaTextFragment extends Fragment {
             listener[0] = new View.OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(View v) {
-                    mMainText.removeOnAttachStateChangeListener(listener[0]);
+                    mRoot.removeOnAttachStateChangeListener(listener[0]);
                     mKeyChangedSubscriber.onReceive(mDataClientMixin.getKeyChangedStream(), Constants.RtacPsaText);
                 }
 
@@ -137,7 +138,7 @@ public class PsaTextFragment extends Fragment {
                 public void onViewDetachedFromWindow(View v) {
                 }
             };
-            mMainText.addOnAttachStateChangeListener(listener[0]);
+            mRoot.addOnAttachStateChangeListener(listener[0]);
         }
     }
 
@@ -174,21 +175,22 @@ public class PsaTextFragment extends Fragment {
     };
 
     @SuppressWarnings("RegExpRedundantEscape")  // lint warning is wrong, the "redundant escape" of } is necessary.
-    private static Pattern sAttribRe = Pattern.compile("^\\{([a-z]):([^}]+)\\}(.*)");
+    private static Pattern sAttribRe = Pattern.compile("^\\{([a-z]{1,2}):([^}]+)\\}(.*)");
 
     @SuppressLint("SetTextI18n")
     private void updateText(@Null String text) {
         if (!isVisible() || isDetached() || getView() == null) return;
-        if (mMainText == null) return;
+        if (mRoot == null || mMainText == null) return;
 
         if (text == null || !mIsConnected) {
-            text = "{b:red}{c:white}Automation Not Working";
+            text = "{bg:black}{b:red}{c:white}Automation Not Working";
         }
 
         String originalText = text;
 
         int txColor = Color.BLACK;
         int bgColor = Color.TRANSPARENT;
+        int rootColor = Color.WHITE;
 
         while (!text.isEmpty()) {
             text = text.trim();
@@ -201,15 +203,20 @@ public class PsaTextFragment extends Fragment {
             text = m.group(3);
 
             try {
-                int col = Color.parseColor(val);
+                int col = Color.parseColor(val); // Parses an HTM color name (e.g. "#RRGGBB" or "black")
 
                 switch (key) {
                 case "c":
+                    // Text area font color -- defaults to black.
                     txColor = col;
                     break;
                 case "b":
+                    // Text area background color -- defaults to transparent.
                     bgColor = col;
                     break;
+                case "bg":
+                    // Root view background color -- defaults to white.
+                    rootColor = col;
                 default:
                     Log.d(TAG, "Ignoring invalid PSA text formatter {" + key + "} in " + originalText);
                 }
@@ -221,8 +228,9 @@ public class PsaTextFragment extends Fragment {
         // Reminder: search pattern is a regex so "\" must be escaped twice.
         text = text.replaceAll("\\\\n", "\n");
 
-        mMainText.setTextColor(txColor);
+        mRoot.setBackgroundColor(rootColor);
         mMainText.setBackgroundColor(bgColor);
+        mMainText.setTextColor(txColor);
         mMainText.setText(text);
     }
 }
