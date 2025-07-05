@@ -1,0 +1,24 @@
+import {GIT_HASH_STR, GIT_LONG_STR, VERSION_MAJOR, VERSION_MINOR} from "./GitBuild.tsx";
+import {Navbar} from "react-bootstrap";
+
+function AppHeader() {
+  return (
+    <>
+        <Navbar bg="dark" data-bs-theme="dark" >
+            <Navbar.Brand className="ms-3 pe-3">
+                Randall Train Cameras
+            </Navbar.Brand>
+            <Navbar.Collapse className="justify-content-end">
+                <Navbar.Text className="navbar-detail">
+                    <a href="https://github.com/model-railroad/conductor" target="_blank">https://github.com/model-railroad/conductor/</a>
+                    <br/>
+                    {`v${VERSION_MAJOR}.${VERSION_MINOR}, `} { ' ' }
+                    <span className="gitinfo" title={GIT_LONG_STR}>build {GIT_HASH_STR}</span>
+                </Navbar.Text>
+            </Navbar.Collapse>
+        </Navbar>
+    </>
+  )
+}
+
+export default AppHeader
