@@ -3,7 +3,7 @@
 
 body {
   margin: 0px;
-  /*background-color: beige;*/
+  background-color: #AAA;
 }
 
 
@@ -22,9 +22,35 @@ body {
 }
 
 .navbar-detail {
-  font-size: 0.5em;
+  font-size: 0.65em;
   margin-right: 1em;
+  text-align: end;
 }
+
+/* ----- SYSTEM TABLE ----- */
+
+.wazz-table {
+  margin: 0.5em;
+  width: 98%;
+  border-radius: 15px;
+  border-collapse: collapse;
+  overflow: hidden;
+  font-size: smaller;
+}
+
+td.wazz-status-text {
+  text-transform: capitalize;
+}
+
+td.wazz-indent-true {
+  padding-left: 2em;
+}
+
+.wazz-btn {
+  font-size: xx-small;
+}
+
+/* ----- ROUTES TABLE ----- */
 
 /* ~~ */
 
