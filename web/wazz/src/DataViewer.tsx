@@ -25,6 +25,18 @@ interface ToggleDict {
     [key: string]: TimestampValue;
 }
 
+interface RouteJsonData {
+    ts: DateTime;
+    name: string;
+    th: string;
+    act: number;
+    err: boolean;
+    nodes: {
+        n: string;
+        ms: number;
+    }[];
+}
+
 interface RouteStatsDict {
     [key: string]: TimestampValue;
 }
@@ -140,6 +152,34 @@ function DataViewer(): ReactElement {
         _appendTsValue("depart", "branchline");
         _appendTsValue("depart", "trolley");
 
+
+        function _appendRoute(data: RouteJsonData) {
+            let nodes = "";
+            for(const n of data.nodes) {
+                if (nodes !== "") nodes += " > ";
+                nodes += n.n + " = " + (n.ms / 1000).toFixed(1);
+            }
+
+            const entry : WazzRouteEntry = {
+                ts: data.ts,
+                name: `${data.name} [${data.th}]`,
+                error: data.err,
+                runs: data.act,
+                nodes: nodes,
+            };
+
+            result.routes.push(entry);
+        }
+
+        const rt_dict = rtac["route_stats"] as RouteStatsDict;
+        const rt_list = Object.values(rt_dict).map((e) => {
+            const rt_data = JSON.parse(e.value) as RouteJsonData;
+            rt_data.ts = DateTime.fromISO(e.ts);
+            return rt_data;
+        });
+        rt_list.sort( (a, b) => b.ts.valueOf() - a.ts.valueOf() );
+        rt_list.forEach(entry => _appendRoute(entry));
+
         return result;
     }
 
@@ -153,23 +193,29 @@ function DataViewer(): ReactElement {
         const relativeToNow = pacificDt.toRelative();
 
         return (
-            <span title={dateTime.toISO( {
+            <>
+            <span className="wazz-date" title={dateTime.toISO( {
                 format: "extended",
                 suppressMilliseconds: true
             })}>
-                {dateString2} ({relativeToNow})
+                {dateString2}
             </span>
+                { ' ' }
+            <span className="wazz-rel-date">
+                ({relativeToNow})
+            </span>
+            </>
         )
     }
 
-    function formatButtonOnOff(state?: boolean) {
+    function formatStateButton(state: boolean|undefined, onLabel: string, offLabel: string) {
         if (state === undefined) {
             return <></>;
         }
         if (state) {
-            return <Button className="wazz-btn" variant="success" size="sm">ON</Button>
+            return <Button className="wazz-btn" variant="success" size="sm">{onLabel}</Button>
         } else {
-            return <Button className="wazz-btn" variant="danger" size="sm">OFF</Button>
+            return <Button className="wazz-btn" variant="danger" size="sm">{offLabel}</Button>
         }
     }
 
@@ -191,7 +237,7 @@ function DataViewer(): ReactElement {
                     <tr key={index}>
                         <td className={`wazz-status-text wazz-indent-${entry.indent}`}> { entry.label } </td>
                         <td className="wazz-status-text"> { entry.sublabel } </td>
-                        <td> { formatButtonOnOff(entry.state) } </td>
+                        <td> { formatStateButton(entry.state, "ON", "OFF") } </td>
                         <td> { formatDate(entry.ts) } </td>
                     </tr>
                 )) }
@@ -219,10 +265,10 @@ function DataViewer(): ReactElement {
                 <tbody>
                 { wazzData.routes.map((entry, index) => (
                     <tr key={index}>
-                        <td> { entry.ts.toLocaleString() } </td>
-                        <td> { entry.name } </td>
+                        <td> { formatDate(entry.ts) } </td>
+                        <td className="wazz-route-name"> { entry.name } </td>
                         <td> { entry.runs } </td>
-                        <td> { entry.error } </td>
+                        <td> { formatStateButton(!entry.error, "OK", "ERR") } </td>
                         <td> { entry.nodes } </td>
                     </tr>
                 )) }

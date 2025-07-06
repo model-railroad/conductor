@@ -54,6 +54,14 @@ td.wazz-indent-true {
   font-size: xx-small;
 }
 
+.wazz-date, .wazz-rel-date {
+  white-space: nowrap;
+}
+
+.wazz-route-name {
+  white-space: nowrap;
+}
+
 /* ----- ROUTES TABLE ----- */
 
 /* ~~ */
