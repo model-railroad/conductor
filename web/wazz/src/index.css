@@ -70,11 +70,21 @@ td.wazz-indent-true {
   white-space: nowrap;
 }
 
+/* ----- ROUTES TABLE ----- */
+
 .wazz-route-name {
   white-space: nowrap;
 }
 
-/* ----- ROUTES TABLE ----- */
+tr.wazz-route-old-true td {
+  color: darkgray;
+}
+
+tr.wazz-route-recovery-true td {
+  --bs-table-bg-type: var(--bs-danger-bg-subtle);
+  --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+  --bs-table-hover-bg: var(--bs-danger-bg-subtle);
+}
 
 /* ~~ */
 

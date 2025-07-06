@@ -6,6 +6,7 @@ const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
 const FAKE_JSON_URL = "fake_data.json"
 const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
 
+const ROUTE_OLD_DAYS = 7;
 
 // -- Interface from the JSON payload
 
@@ -61,6 +62,8 @@ interface WazzRouteEntry {
     runs: number;
     error: boolean;
     nodes: string;
+    old: boolean;
+    recovery: boolean;
 }
 
 interface WazzData {
@@ -166,6 +169,8 @@ function DataViewer(): ReactElement {
                 error: data.err,
                 runs: data.act,
                 nodes: nodes,
+                old: data.ts.diffNow("days").days <= -ROUTE_OLD_DAYS,
+                recovery: data.name.includes("Recovery"),
             };
 
             result.routes.push(entry);
@@ -264,7 +269,7 @@ function DataViewer(): ReactElement {
                 </thead>
                 <tbody>
                 { wazzData.routes.map((entry, index) => (
-                    <tr key={index}>
+                    <tr key={index} className={`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery}`}>
                         <td> { formatDate(entry.ts) } </td>
                         <td className="wazz-route-name"> { entry.name } </td>
                         <td> { entry.runs } </td>
