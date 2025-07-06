@@ -3,8 +3,7 @@ import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 
 const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
-const FAKE_JSON_URL = "fake_data.json"
-const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
+const JSON_URL = RTAC_JSON_URL // PLACEHOLDER inject mock here for testing
 
 const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
