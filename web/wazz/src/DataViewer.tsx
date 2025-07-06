@@ -1,10 +1,12 @@
-import {type ReactElement, useEffect, useState} from "react";
+import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 
 const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
-const JSON_URL = RTAC_JSON_URL // PLACEHOLDER inject mock here for testing
+const FAKE_JSON_URL = "mock_data.json"
+const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
 
+const REFRESH_DATA_MINUTES = 10;
 const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
 
@@ -68,6 +70,7 @@ interface WazzRouteEntry {
 }
 
 interface WazzData {
+    refresh?: DateTime;
     status: WazzStatusEntry[];
     routes: WazzRouteEntry[];
 }
@@ -77,24 +80,72 @@ function DataViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [wazzData, setWazzData] = useState<WazzData>({routes: [], status: []});
+    const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
+    const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
         fetchData();
+
+        // Setup refresh & monitor visibility
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        startRefreshTimer();
+
+        // Cleanup when component unmounts
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            stopRefreshTimer();
+        };
     }, []);
+
+    function handleVisibilityChange() {
+        const newVisibility = document.visibilityState === "visible";
+        setIsTabVisible(newVisibility);
+        console.log(`@@ Visibility changed to ${newVisibility}`);
+
+        // Start-stop refresh based on tab visibility
+        if (newVisibility) {
+            startRefreshTimer();
+        } else {
+            stopRefreshTimer();
+        }
+    }
+
+    function startRefreshTimer() {
+        console.log(`@@ startRefreshTimer. Tab Visible: ${isTabVisible}`);
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+        }
+
+        if (isTabVisible) {
+            const intervalMs = REFRESH_DATA_MINUTES * 60 * 1000;
+            intervalRef.current = window.setInterval(fetchData, intervalMs);
+        }
+    }
+
+    function stopRefreshTimer() {
+        console.log("@@ stopRefreshTimer");
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }
 
     async function fetchData() {
         try {
+            console.log("@@ fetchData");
             const jsonData = await fetch(JSON_URL);
             if (!jsonData.ok) {
                 throw new Error(`Error reading data: ${jsonData.status}`);
             }
             const data = await jsonData.json() as RtacJsonData;
             const wazz = transformData(data);
+            wazz.refresh = DateTime.now();
             setWazzData(wazz);
             setStatus("");
             setLoading(false);
 
         } catch (err) {
+            console.error(err);
             setStatus(stringifyError(err));
             setLoading(false);
         }
@@ -115,41 +166,47 @@ function DataViewer(): ReactElement {
         }
 
         function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
-            // 2021-08-27 adjust computer names: "computer" alone is legacy for "computer-consist".
-            let label = key1;
-            if (label === "computer") {
-                label = "computer-consist";
+            try {
+                // 2021-08-27 adjust computer names: "computer" alone is legacy for "computer-consist".
+                let label = key1;
+                if (label === "computer") {
+                    label = "computer-consist";
+                }
+                label = label.replaceAll("-", " ");
+                const indent = (label === "depart");
+
+                let data = rtac[key1] as never;
+                if (key2 !== undefined) {
+                    data = data[key2];
+                }
+                const ts = data as Timestamp;
+                const dt = DateTime.fromISO(ts.ts);
+
+                const state: boolean | undefined = ("value" in data)
+                    ? String(data["value"]).toLowerCase() === "on"
+                    : undefined;
+
+                const warning: boolean | undefined = running
+                    ? dt.diffNow("minutes").minutes <= -WARNING_MINUTES
+                    : undefined;
+
+                const entry: WazzStatusEntry = {
+                    ts: dt,
+                    indent: indent,
+                    state: state,
+                    warning: warning,
+                    label: label,
+                    sublabel: key2,
+                };
+
+                result.status.push(entry);
+
+                return state ?? false;
+            } catch (err) {
+                console.error(err);
+                setStatus(stringifyError(err));
+                return false;
             }
-            label = label.replaceAll("-" , " ");
-            const indent = (label === "depart");
-
-            let data = rtac[key1] as never;
-            if (key2 !== undefined) {
-                data = data[key2];
-            }
-            const ts = data as Timestamp;
-            const dt = DateTime.fromISO(ts.ts);
-
-            const state: boolean|undefined = ("value" in data)
-                ? String(data["value"]).toLowerCase() === "on"
-                : undefined;
-
-            const warning: boolean|undefined = running
-                ? dt.diffNow("minutes").minutes <= -WARNING_MINUTES
-                : undefined;
-
-            const entry: WazzStatusEntry = {
-                ts: dt,
-                indent: indent,
-                state: state,
-                warning: warning,
-                label: label,
-                sublabel: key2,
-            };
-
-            result.status.push(entry);
-
-            return state ?? false;
         }
 
         _appendTsValue("computer");
@@ -197,12 +254,12 @@ function DataViewer(): ReactElement {
     }
 
     function generateStatusLine() {
-        return <div className="pcs-status"> {status} </div>;
+        return <div className="wazz-status-text"> {status} </div>;
     }
 
     function formatDate(dateTime: DateTime) {
         const pacificDt = dateTime.setZone("America/Los_Angeles"); // PST or PDT
-        const dateString2 = pacificDt.toLocaleString(DateTime.DATETIME_FULL);
+        const dateString2 = pacificDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
         const relativeToNow = pacificDt.toRelative();
 
         return (
@@ -295,6 +352,11 @@ function DataViewer(): ReactElement {
         { generateStatusLine() }
         { generateSystemStatus() }
         { generateRouteStatus() }
+        <div className="wazz-last-update-text">Data Updated {
+            wazzData.refresh
+                ? wazzData.refresh.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)
+                : "--"
+        }</div>
     </>
     )
 }

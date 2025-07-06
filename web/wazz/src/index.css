@@ -15,6 +15,19 @@ body {
 }
 
 
+/* ----- MISC ----- */
+
+.wazz-status-text {
+  padding-left: 1em;
+  color: var(--bs-danger);
+}
+
+
+.wazz-last-update-text {
+  padding-left: 1em;
+  font-size: 0.75em;
+}
+
 /* ----- APP HEADER ----- */
 
 .header {
