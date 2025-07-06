@@ -38,6 +38,10 @@ body {
   font-size: smaller;
 }
 
+.wazz-table th {
+  background-color: var(--bs-primary-bg-subtle);
+}
+
 td.wazz-status-text {
   text-transform: capitalize;
 }

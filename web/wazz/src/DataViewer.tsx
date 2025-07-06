@@ -179,7 +179,7 @@ function DataViewer(): ReactElement {
         }
 
         return (
-            <Table striped bordered hover className="wazz-table wazz-system-table">
+            <Table striped bordered hover variant="light" className="wazz-table wazz-system-table">
                 <thead>
                 <tr>
                     <th colSpan={3}>System Status</th>
@@ -206,7 +206,7 @@ function DataViewer(): ReactElement {
         }
 
         return (
-            <Table striped bordered hover className="wazz-table wazz-routes-table">
+            <Table striped bordered hover variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr>
                     <th>Finished At</th>
