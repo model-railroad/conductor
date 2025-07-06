@@ -6,14 +6,18 @@ function AppHeader() {
     <>
         <Navbar bg="dark" data-bs-theme="dark" >
             <Navbar.Brand className="ms-3 pe-3">
-                Randall Train Cameras
+                Randall Trains Status
             </Navbar.Brand>
             <Navbar.Collapse className="justify-content-end">
                 <Navbar.Text className="navbar-detail">
-                    <a href="https://github.com/model-railroad/conductor" target="_blank">https://github.com/model-railroad/conductor/</a>
+                    <a href="https://www.alfray.com/trains/randall/" target="_blank">The Randall Museum Model Railroad</a>
                     <br/>
                     {`v${VERSION_MAJOR}.${VERSION_MINOR}, `} { ' ' }
-                    <span className="gitinfo" title={GIT_LONG_STR}>build {GIT_HASH_STR}</span>
+                    <span className="gitinfo" title={GIT_LONG_STR}>
+                        <a href="https://github.com/model-railroad/conductor" target="_blank">
+                            build {GIT_HASH_STR}
+                        </a>
+                    </span>
                 </Navbar.Text>
             </Navbar.Collapse>
         </Navbar>

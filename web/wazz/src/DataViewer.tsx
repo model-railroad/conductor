@@ -4,7 +4,7 @@ import {DateTime} from "luxon";
 
 const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
 const FAKE_JSON_URL = "fake_data.json"
-const JSON_URL = FAKE_JSON_URL
+const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
 
 
 // -- Interface from the JSON payload
@@ -197,7 +197,7 @@ function DataViewer(): ReactElement {
             <span className="wazz-date" title={dateTime.toISO( {
                 format: "extended",
                 suppressMilliseconds: true
-            })}>
+            }) ?? ""}>
                 {dateString2}
             </span>
                 { ' ' }

@@ -22,9 +22,21 @@ body {
 }
 
 .navbar-detail {
-  font-size: 0.65em;
   margin-right: 1em;
   text-align: end;
+}
+
+.gitinfo {
+  font-size: 0.75em;
+}
+
+.gitinfo a {
+  text-decoration: none;
+  color: var(--bs-navbar-color);
+}
+
+.gitinfo a:hover {
+  text-decoration: underline;
 }
 
 /* ----- SYSTEM TABLE ----- */
