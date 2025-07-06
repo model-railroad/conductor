@@ -6,6 +6,7 @@ const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
 const FAKE_JSON_URL = "fake_data.json"
 const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
 
+const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
 
 // -- Interface from the JSON payload
@@ -49,11 +50,12 @@ interface RtacJsonData {
 // -- Interface for display in Wazz
 
 interface WazzStatusEntry {
+    ts: DateTime;
     indent: boolean;
-    state?: boolean;    // (on, off) state, or just a timestamp
+    state?: boolean;
     label: string;
     sublabel?: string;
-    ts: DateTime;
+    warning?: boolean;
 }
 
 interface WazzRouteEntry {
@@ -113,7 +115,7 @@ function DataViewer(): ReactElement {
             status: [],
         }
 
-        function _appendTsValue(key1: string, key2?: string) {
+        function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
             // 2021-08-27 adjust computer names: "computer" alone is legacy for "computer-consist".
             let label = key1;
             if (label === "computer") {
@@ -133,27 +135,34 @@ function DataViewer(): ReactElement {
                 ? String(data["value"]).toLowerCase() === "on"
                 : undefined;
 
+            const warning: boolean|undefined = running
+                ? dt.diffNow("minutes").minutes <= -WARNING_MINUTES
+                : undefined;
+
             const entry: WazzStatusEntry = {
+                ts: dt,
                 indent: indent,
                 state: state,
+                warning: warning,
                 label: label,
                 sublabel: key2,
-                ts: dt,
             };
 
             result.status.push(entry);
+
+            return state ?? false;
         }
 
         _appendTsValue("computer");
         _appendTsValue("computer-vision");
-        _appendTsValue("conductor");
+        const cond = _appendTsValue("conductor");
 
-        _appendTsValue("toggle", "passenger");
-        _appendTsValue("depart", "passenger");
-        _appendTsValue("depart", "freight");
-        _appendTsValue("toggle", "branchline");
-        _appendTsValue("depart", "branchline");
-        _appendTsValue("depart", "trolley");
+        let tog = _appendTsValue("toggle", "passenger");
+        _appendTsValue("depart", "passenger", cond && tog);
+        _appendTsValue("depart", "freight", cond && tog);
+        tog = _appendTsValue("toggle", "branchline");
+        _appendTsValue("depart", "branchline", cond && tog);
+        _appendTsValue("depart", "trolley", cond && tog);
 
 
         function _appendRoute(data: RouteJsonData) {
@@ -230,7 +239,7 @@ function DataViewer(): ReactElement {
         }
 
         return (
-            <Table striped bordered hover variant="light" className="wazz-table wazz-system-table">
+            <Table striped bordered variant="light" className="wazz-table wazz-system-table">
                 <thead>
                 <tr>
                     <th colSpan={3}>System Status</th>
@@ -239,7 +248,7 @@ function DataViewer(): ReactElement {
                 </thead>
                 <tbody>
                 { wazzData.status.map((entry, index) => (
-                    <tr key={index}>
+                    <tr key={index} className={`wazz-status-warning-${entry.warning ?? "undef"}`}>
                         <td className={`wazz-status-text wazz-indent-${entry.indent}`}> { entry.label } </td>
                         <td className="wazz-status-text"> { entry.sublabel } </td>
                         <td> { formatStateButton(entry.state, "ON", "OFF") } </td>
@@ -257,7 +266,7 @@ function DataViewer(): ReactElement {
         }
 
         return (
-            <Table striped bordered hover variant="light" className="wazz-table wazz-routes-table">
+            <Table striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr>
                     <th>Finished At</th>

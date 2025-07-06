@@ -70,6 +70,16 @@ td.wazz-indent-true {
   white-space: nowrap;
 }
 
+tr.wazz-status-warning-false {
+  --bs-table-bg-type:    var(--bs-success-bg-subtle);
+  --bs-table-striped-bg: var(--bs-success-bg-subtle);
+}
+
+tr.wazz-status-warning-true {
+  --bs-table-bg-type:    var(--bs-danger-bg-subtle);
+  --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+}
+
 /* ----- ROUTES TABLE ----- */
 
 .wazz-route-name {
@@ -81,9 +91,8 @@ tr.wazz-route-old-true td {
 }
 
 tr.wazz-route-recovery-true td {
-  --bs-table-bg-type: var(--bs-danger-bg-subtle);
+  --bs-table-bg-type:    var(--bs-danger-bg-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);
-  --bs-table-hover-bg: var(--bs-danger-bg-subtle);
 }
 
 /* ~~ */
