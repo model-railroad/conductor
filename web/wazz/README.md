@@ -1,69 +1,49 @@
-# React + TypeScript + Vite
+# Wazz: Randall Trains Status
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[Wazz](https://ralf.alfray.com/trains/randall/wazz/)
+is a React-TypeScript single-page website
+that displays the status of the trains at the
+[Randall Museum Model Railroad](https://www.alfray.com/trains/randall/).
 
-Currently, two official plugins are available:
+The Randall Museum in San Francisco hosts a large HO-scale model train layout.
+The layout is fully operating in DCC with some parts of the track featuring
+train running automatically under the supervision of the
+[Randall Train Automation Controller](http://ralf.alfray.com/trains/randall_rtac.html).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+The [Conductor](http://ralf.alfray.com/trains/randall_rtac.html) automation software
+exports its status via JSON, which [Wazz](https://ralf.alfray.com/trains/randall/wazz/)
+displays.
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Building
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Wazz uses:
+- [Node JS](https://nodejs.org/): 24.0.0,
+- [React with TypeScript](https://react.dev/learn/typescript),
+- [Vite](https://vite.dev/) for build and deployment.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+To build and run the dev server:
+```(shell)
+# setup node.js environment, e.g. something like:
+$ nvm use
+$ fnm use
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# build and run:
+$ npm install
+$ npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+To build the production site:
+```(shell)
+$ npm install
+$ npm run build
 ```
+
+
+## License
+
+Wazz is licensed under the
+[GNU GPL v3 license](https://opensource.org/license/gpl-3-0).
+See the [LICENSE.txt](./LICENSE.txt) file for details.
+
+~~
