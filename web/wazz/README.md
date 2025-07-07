@@ -1,6 +1,6 @@
 # Wazz: Randall Trains Status
 
-[Wazz](https://ralf.alfray.com/trains/randall/wazz/)
+[Wazz](https://www.alfray.com/trains/randall/wazz/)
 is a React-TypeScript single-page website
 that displays the status of the trains at the
 [Randall Museum Model Railroad](https://www.alfray.com/trains/randall/).
@@ -8,10 +8,10 @@ that displays the status of the trains at the
 The Randall Museum in San Francisco hosts a large HO-scale model train layout.
 The layout is fully operating in DCC with some parts of the track featuring
 train running automatically under the supervision of the
-[Randall Train Automation Controller](http://ralf.alfray.com/trains/randall_rtac.html).
+[Randall Train Automation Controller](http://www.alfray.com/trains/randall_rtac.html).
 
-The [Conductor](http://ralf.alfray.com/trains/randall_rtac.html) automation software
-exports its status via JSON, which [Wazz](https://ralf.alfray.com/trains/randall/wazz/)
+The [Conductor](http://www.alfray.com/trains/randall_rtac.html) automation software
+exports its status via JSON, which [Wazz](https://www.alfray.com/trains/randall/wazz/)
 displays.
 
 

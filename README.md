@@ -5,7 +5,7 @@
 This repository holds various projects used for the automation of the
 HO-scale model train layout at the Randall Museum in San Francisco.
 
-More info can be found here: http://ralf.alfray.com/trains/rtac
+More info can be found here: http://www.alfray.com/trains/rtac
 
 
 ## Content

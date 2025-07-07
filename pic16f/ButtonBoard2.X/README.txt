@@ -5,7 +5,7 @@ Summary:
 This is intended to reprogram an NCE Button Board's PIC16F microcontroller
 to properly support non-momentary contacts (e.g. rotary switches).
 
-More information at http://ralf.alfray.com/trains/nce_button_board.html
+More information at http://www.alfray.com/trains/nce_button_board.html
 
 -----------
 Disclaimer:
