@@ -1,12 +1,13 @@
 import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
+import {fetchJsonFromSimpleCache, getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
 
 const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
 const FAKE_JSON_URL = "mock_data.json"
 const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
-
-const REFRESH_DATA_MINUTES = 10;
+const REFRESH_KEY = "refresh"
+const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
 
@@ -84,11 +85,11 @@ function DataViewer(): ReactElement {
     const intervalRef = useRef<number | null>(null);
 
     useEffect(() => {
-        fetchData();
-
-        // Setup refresh & monitor visibility
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        startRefreshTimer();
+        fetchData().then(() => {
+            // Setup refresh & monitor visibility
+            document.addEventListener("visibilitychange", handleVisibilityChange);
+            startRefreshTimer();
+        });
 
         // Cleanup when component unmounts
         return () => {
@@ -116,10 +117,16 @@ function DataViewer(): ReactElement {
             clearInterval(intervalRef.current);
         }
 
-        if (isTabVisible) {
-            const intervalMs = REFRESH_DATA_MINUTES * 60 * 1000;
-            intervalRef.current = window.setInterval(fetchData, intervalMs);
+        if (!isTabVisible) return;
+
+        // If we reopen this tab after the elapsed refresh time, force a data fetch.
+        const lastRefresh : DateTime|undefined = getFromSimpleCache(REFRESH_KEY);
+        if (lastRefresh === undefined || lastRefresh.diffNow("minutes").minutes < -REFRESH_DATA_MINUTES) {
+            fetchData();
         }
+
+        const intervalMs = REFRESH_DATA_MINUTES * 60 * 1000;
+        intervalRef.current = window.setInterval(fetchData, intervalMs);
     }
 
     function stopRefreshTimer() {
@@ -133,13 +140,13 @@ function DataViewer(): ReactElement {
     async function fetchData() {
         try {
             console.log("@@ fetchData");
-            const jsonData = await fetch(JSON_URL);
-            if (!jsonData.ok) {
-                throw new Error(`Error reading data: ${jsonData.status}`);
-            }
-            const data = await jsonData.json() as RtacJsonData;
-            const wazz = transformData(data);
+
+            const jsonData = await fetchJsonFromSimpleCache(JSON_URL, JSON_URL) as RtacJsonData;
+            const wazz = transformData(jsonData);
+
             wazz.refresh = DateTime.now();
+            storeInSimpleCache(REFRESH_KEY, wazz.refresh);
+
             setWazzData(wazz);
             setStatus("");
             setLoading(false);
@@ -347,16 +354,32 @@ function DataViewer(): ReactElement {
         )
     }
 
+    function generateRefreshStatus() {
+        const dt = wazzData.refresh;
+
+        if (dt === undefined) {
+            return ( <div className="wazz-last-update-text"> -- </div> )
+        }
+
+        const dt2 = dt.setZone("America/Los_Angeles");
+
+        return (
+            <div className="wazz-last-update-text">
+                Data Updated
+                { ' ' }
+                { dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+                { ' // ' }
+                { dt2.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+            </div>
+        );
+    }
+
     return (
     <>
         { generateStatusLine() }
+        { generateRefreshStatus() }
         { generateSystemStatus() }
         { generateRouteStatus() }
-        <div className="wazz-last-update-text">Data Updated {
-            wazzData.refresh
-                ? wazzData.refresh.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)
-                : "--"
-        }</div>
     </>
     )
 }
