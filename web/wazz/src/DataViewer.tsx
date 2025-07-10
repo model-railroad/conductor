@@ -3,9 +3,9 @@ import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {fetchJsonFromSimpleCache, getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
 
-const RTAC_JSON_URL = "https://www.alfray.com/cgi/rtac_status.py"
+const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py"
 const FAKE_JSON_URL = "mock_data.json"
-const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : RTAC_JSON_URL
+const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : WAZZ_JSON_URL
 const REFRESH_KEY = "refresh"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARNING_MINUTES = 30;
