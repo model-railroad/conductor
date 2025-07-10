@@ -3,9 +3,10 @@ import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {fetchJsonFromSimpleCache, getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
 
-const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py"
-const FAKE_JSON_URL = "mock_data.json"
-const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : WAZZ_JSON_URL
+const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py";
+const FAKE_JSON_URL = "mock_data.json";
+const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : WAZZ_JSON_URL;
+const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARNING_MINUTES = 30;
@@ -265,9 +266,9 @@ function DataViewer(): ReactElement {
     }
 
     function formatDate(dateTime: DateTime) {
-        const pacificDt = dateTime.setZone("America/Los_Angeles"); // PST or PDT
-        const dateString2 = pacificDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
-        const relativeToNow = pacificDt.toRelative();
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const dateString2 = serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
+        const relativeToNow = serverDt.toRelative();
 
         return (
             <>
@@ -361,15 +362,17 @@ function DataViewer(): ReactElement {
             return ( <div className="wazz-last-update-text"> -- </div> )
         }
 
-        const dt2 = dt.setZone("America/Los_Angeles");
+        const serverDt =
+            dt.zoneName === SERVER_TZ
+            ? dt
+            : dt.setZone(SERVER_TZ);
 
         return (
             <div className="wazz-last-update-text">
                 Data Updated
                 { ' ' }
-                { dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
-                { ' // ' }
-                { dt2.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+                { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+                { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
             </div>
         );
     }
