@@ -1,54 +1,20 @@
 import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
-import {fetchJsonFromSimpleCache, getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
+import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
+import {
+    fetchStatusData,
+    type RouteJsonData, type RouteStatsDict,
+    type RtacJsonData,
+    type Timestamp
+} from "./StatusData.ts";
 
-const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py";
-const FAKE_JSON_URL = "mock_data.json";
-const JSON_URL = import.meta.env.DEV ? FAKE_JSON_URL : WAZZ_JSON_URL;
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
 
-// -- Interface from the JSON payload
-
-interface Timestamp {
-    "ts": string;       // ISO date
-}
-
-interface TimestampValue extends Timestamp{
-    "value": string;
-}
-
-interface DepartDict {
-    [key: string]: Timestamp;
-}
-
-interface ToggleDict {
-    [key: string]: TimestampValue;
-}
-
-interface RouteJsonData {
-    ts: DateTime;
-    name: string;
-    th: string;
-    act: number;
-    err: boolean;
-    nodes: {
-        n: string;
-        ms: number;
-    }[];
-}
-
-interface RouteStatsDict {
-    [key: string]: TimestampValue;
-}
-
-interface RtacJsonData {
-    [key: string]: TimestampValue|DepartDict|ToggleDict|RouteStatsDict;
-}
 
 // -- Interface for display in Wazz
 
@@ -140,12 +106,13 @@ function StatusViewer(): ReactElement {
 
     async function fetchData() {
         try {
-            console.log("@@ fetchData");
+            const refresh = DateTime.now();
+            console.log(`@@ fetchData ${refresh}`);
 
-            const jsonData = await fetchJsonFromSimpleCache(JSON_URL, JSON_URL) as RtacJsonData;
+            const jsonData = await fetchStatusData();
             const wazz = transformData(jsonData);
 
-            wazz.refresh = DateTime.now();
+            wazz.refresh = refresh;
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
 
             setWazzData(wazz);
