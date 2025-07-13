@@ -1,11 +1,11 @@
 import AppHeader from "./AppHeader.tsx";
-import DataViewer from "./DataViewer.tsx";
+import StatusViewer from "./StatusViewer.tsx";
 
 function App() {
   return (
     <>
         <AppHeader/>
-        <DataViewer/>
+        <StatusViewer/>
     </>
   )
 }

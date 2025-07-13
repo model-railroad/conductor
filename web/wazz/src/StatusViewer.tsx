@@ -78,7 +78,7 @@ interface WazzData {
 }
 
 
-function DataViewer(): ReactElement {
+function StatusViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [wazzData, setWazzData] = useState<WazzData>({routes: [], status: []});
@@ -395,4 +395,4 @@ function DataViewer(): ReactElement {
     )
 }
 
-export default DataViewer
+export default StatusViewer
