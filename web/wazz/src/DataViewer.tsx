@@ -187,6 +187,10 @@ function DataViewer(): ReactElement {
                 if (key2 !== undefined) {
                     data = data[key2];
                 }
+                if (data === undefined) {
+                    console.log(`@@ transformData: ${key1}/${key2} not present. Skipping.`);
+                    return false;
+                }
                 const ts = data as Timestamp;
                 const dt = DateTime.fromISO(ts.ts);
 
@@ -297,10 +301,12 @@ function DataViewer(): ReactElement {
         }
     }
 
-    function generateSystemStatus() {
+    function generateSystemStatus(data: WazzData) {
         if (loading) {
             return <span className="wazz-loading">...</span>;
         }
+
+        const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
 
         return (
             <Table striped bordered variant="light" className="wazz-table wazz-system-table">
@@ -311,8 +317,8 @@ function DataViewer(): ReactElement {
                 </tr>
                 </thead>
                 <tbody>
-                { wazzData.status.map((entry, index) => (
-                    <tr key={index} className={`wazz-status-warning-${entry.warning ?? "undef"}`}>
+                { data.status.map((entry, index) => (
+                    <tr key={`st-${epoch}-${index}`} className={`wazz-status-warning-${entry.warning ?? "undef"}`}>
                         <td className={`wazz-status-text wazz-indent-${entry.indent}`}> { entry.label } </td>
                         <td className="wazz-status-text"> { entry.sublabel } </td>
                         <td> { formatStateButton(entry.state, "ON", "OFF") } </td>
@@ -324,10 +330,12 @@ function DataViewer(): ReactElement {
         )
     }
 
-    function generateRouteStatus() {
+    function generateRouteStatus(data: WazzData) {
         if (loading) {
             return <span className="wazz-loading">...</span>;
         }
+
+        const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
 
         return (
             <Table striped bordered variant="light" className="wazz-table wazz-routes-table">
@@ -341,8 +349,8 @@ function DataViewer(): ReactElement {
                 </tr>
                 </thead>
                 <tbody>
-                { wazzData.routes.map((entry, index) => (
-                    <tr key={index} className={`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery}`}>
+                { data.routes.map((entry, index) => (
+                    <tr key={`rt-${epoch}-${index}`} className={`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery}`}>
                         <td> { formatDate(entry.ts) } </td>
                         <td className="wazz-route-name"> { entry.name } </td>
                         <td> { entry.runs } </td>
@@ -355,8 +363,8 @@ function DataViewer(): ReactElement {
         )
     }
 
-    function generateRefreshStatus() {
-        const dt = wazzData.refresh;
+    function generateRefreshStatus(data: WazzData) {
+        const dt = data.refresh;
 
         if (dt === undefined) {
             return ( <div className="wazz-last-update-text"> -- </div> )
@@ -380,9 +388,9 @@ function DataViewer(): ReactElement {
     return (
     <>
         { generateStatusLine() }
-        { generateRefreshStatus() }
-        { generateSystemStatus() }
-        { generateRouteStatus() }
+        { generateRefreshStatus(wazzData) }
+        { generateSystemStatus(wazzData) }
+        { generateRouteStatus(wazzData) }
     </>
     )
 }
