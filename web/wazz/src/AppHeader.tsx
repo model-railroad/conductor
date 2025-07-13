@@ -1,4 +1,4 @@
-import {GIT_HASH_STR, GIT_LONG_STR, VERSION_MAJOR, VERSION_MINOR} from "./GitBuild.tsx";
+import {GIT_HASH_STR, GIT_LONG_STR, VERSION_MAJOR, VERSION_MINOR} from "./GitBuild.ts";
 import {Navbar} from "react-bootstrap";
 
 function AppHeader() {
