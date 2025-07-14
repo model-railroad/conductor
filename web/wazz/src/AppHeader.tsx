@@ -1,4 +1,10 @@
-import {GIT_HASH_STR, GIT_LONG_STR, VERSION_MAJOR, VERSION_MINOR} from "./GitBuild.ts";
+import {
+    GIT_BRANCH_STR,
+    GIT_HASH_STR,
+    GIT_LONG_STR,
+    VERSION_MAJOR,
+    VERSION_MINOR
+} from "./GitBuild.ts";
 import {Navbar} from "react-bootstrap";
 
 function AppHeader() {
@@ -14,8 +20,12 @@ function AppHeader() {
                     <br/>
                     {`v${VERSION_MAJOR}.${VERSION_MINOR}, `} { ' ' }
                     <span className="gitinfo" title={GIT_LONG_STR}>
-                        <a href="https://github.com/model-railroad/conductor" target="_blank">
-                            build {GIT_HASH_STR}
+                        <a href={`https://github.com/model-railroad/conductor/tree/${GIT_BRANCH_STR}`} target="_blank">
+                            build {GIT_BRANCH_STR}
+                        </a>
+                        { " @ " }
+                        <a href={`https://github.com/model-railroad/conductor/commit/${GIT_HASH_STR}`} target="_blank">
+                            {GIT_HASH_STR}
                         </a>
                     </span>
                 </Navbar.Text>
