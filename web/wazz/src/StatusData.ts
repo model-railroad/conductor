@@ -1,5 +1,4 @@
 import {DateTime} from "luxon";
-import {fetchJsonFromSimpleCache, getFromSimpleCache} from "./SimpleCache.ts";
 
 const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py";
 const FAKE_JSON_URL = "mock_data.json";
