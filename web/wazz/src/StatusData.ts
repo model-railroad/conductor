@@ -1,5 +1,5 @@
 import {DateTime} from "luxon";
-import {fetchJsonFromSimpleCache} from "./SimpleCache.ts";
+import {fetchJsonFromSimpleCache, getFromSimpleCache} from "./SimpleCache.ts";
 
 const WAZZ_JSON_URL = "https://www.alfray.com/cgi/wazz_status.py";
 const FAKE_JSON_URL = "mock_data.json";
@@ -44,7 +44,11 @@ export interface RtacJsonData {
 }
 
 export async function fetchStatusData() : Promise<RtacJsonData> {
-    const data = await fetchJsonFromSimpleCache(JSON_URL, JSON_URL) as RtacJsonData;
+    const jsonData = await fetch(JSON_URL);
+    if (!jsonData.ok) {
+        throw new Error(`Error reading data: ${jsonData.status}`);
+    }
+    const data = await jsonData.json();
 
     if (import.meta.env.DEV) {
         // Mock data for dev purposes
@@ -57,4 +61,3 @@ export async function fetchStatusData() : Promise<RtacJsonData> {
 
     return data;
 }
-

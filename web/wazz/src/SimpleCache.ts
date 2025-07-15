@@ -37,3 +37,6 @@ export async function fetchTextFromSimpleCache(cacheKey: string, url: string): P
     return data;
 }
 
+export function clearSimpleCache(cacheKey: string) {
+    simpleCache.delete(cacheKey);
+}
