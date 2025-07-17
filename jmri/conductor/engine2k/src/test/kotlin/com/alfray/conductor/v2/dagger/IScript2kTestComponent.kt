@@ -21,6 +21,7 @@ import com.alfray.conductor.v2.script.CondCacheTest
 import com.alfray.conductor.v2.script.impl.TimerTest
 import com.alfray.conductor.v2.script.ScriptDslTest2k
 import com.alfray.conductor.v2.script.ScriptTest2Test2k
+import com.alfray.conductor.v2.script.ScriptTest3Test2k
 import com.alfray.conductor.v2.script.impl.ThrottleTest
 import com.alfray.conductor.v2.script.impl.RouteGraphTest
 import com.alfray.conductor.v2.script.dsl.ExportedVarsTest
@@ -38,6 +39,7 @@ interface IScript2kTestComponent: IScript2kComponent {
     fun inject(routeGraphTest: RouteGraphTest)
     fun inject(exportedVarsTest: ExportedVarsTest)
     fun inject(scriptTest2Test2K: ScriptTest2Test2k)
+    fun inject(scriptTest3Test2K: ScriptTest3Test2k)
     fun inject(validateScriptsSyntax2K: ValidateScriptsSyntax2k)
     fun inject(sequenceRouteManagerTest: SequenceRouteManagerTest)
 

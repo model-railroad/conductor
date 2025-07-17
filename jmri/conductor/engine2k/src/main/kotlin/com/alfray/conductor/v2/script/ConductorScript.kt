@@ -51,5 +51,7 @@ object ConductorScriptConfiguration : ScriptCompilationConfiguration({
     }
     compilerOptions.append("-Xadd-modules=ALL-MODULE-PATH")
     // defaultImports {}
-})
+}) {
+    private fun readResolve(): Any = ConductorScriptConfiguration
+}
 

@@ -23,7 +23,6 @@ import com.alflabs.conductor.jmri.IJmriThrottle
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
-import com.alflabs.utils.ILogger
 import com.alflabs.utils.MockClock
 import com.alfray.conductor.v2.dagger.Script2kIsSimulation
 import com.alfray.conductor.v2.script.CondCache
@@ -38,12 +37,10 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.reset
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
-import dagger.internal.InstanceFactory
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
-import javax.inject.Provider
 
 class ThrottleTest : ScriptTest2kBase() {
     @Inject internal lateinit var currentContext: CurrentContext

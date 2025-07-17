@@ -21,8 +21,9 @@
 package com.alfray.conductor.v2.script.dsl
 
 import java.time.LocalDateTime
+import kotlin.script.experimental.annotations.KotlinScript
 
-/** Base interface for the Conductor script. */
+/** Base interface for the [com.alfray.conductor.v2.script.ConductorScript]. */
 interface IConductor {
 
     /** Service to publish Analytics events. */

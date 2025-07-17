@@ -209,6 +209,12 @@ To fix:
 - Rebuild project.
 (C.f. map from Java version to Class File Version at https://javaalmanac.io/bytecode/versions/)
 
+Kotlin Scripting:
+- Open File > Settings > Languages & Frameworks > Kotlin > Kotlin Scripting
+  - "Manage Script Definitions" should have an entry "ConductorScript > .conductor.kts"
+  - It should be enabled.
+
+
 
 ## Installation and Usage with JMRI
 
