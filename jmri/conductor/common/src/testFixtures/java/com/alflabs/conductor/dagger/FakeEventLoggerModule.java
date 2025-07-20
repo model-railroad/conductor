@@ -27,40 +27,12 @@ import dagger.Provides;
 
 import javax.inject.Singleton;
 
-import java.io.File;
-
 /** Provides a dummy EventLogger that writes to the main ILogger. */
 @Module
 public abstract class FakeEventLoggerModule {
     @Singleton
     @Provides
     public static EventLogger provideEventLogger(ILogger logger, FileOps fileOps, ILocalDateTimeNowProvider localDateTimeNow) {
-        return new EventLogger(logger, fileOps, localDateTimeNow) {
-            @Override
-            public ILogger getLogger() {
-                return super.getLogger();
-            }
-
-            @Override
-            public void logAsync(Type type, String name, String value) {
-                String msg = String.format("<timestamp> - %c - %s - %s",
-                        type.name().charAt(0),
-                        name,
-                        value);
-
-                logger.d("EventLogger", msg);
-            }
-
-            @Override
-            public String start(File logDirectory) {
-                // Path does not denote a real file since this doesn't write.
-                return "/tmp/_fake_event_log.txt";
-            }
-
-            @Override
-            public void shutdown() throws InterruptedException {
-                // no-op
-            }
-        };
+        return new FakeEventLogger(logger, fileOps, localDateTimeNow);
     }
 }

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.dagger.FakeEventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.impl.SequenceRoute
@@ -30,6 +31,7 @@ import javax.inject.Inject
 class ScriptTest3Test2k : ScriptTest2kBase() {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var keyValue: IKeyValue
+    @Inject lateinit var eventLogger: FakeEventLogger
 
     @Before
     fun setUp() {
@@ -47,6 +49,8 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             fileOps.toFile("v2", "script", "src", "test", "resources", "v2", "Conductor Map Mainline 1.svg"))
         loadScriptFromFile("script_test3")
         assertResultNoError()
+
+        assertThat(eventLogger.eventLogGetAndClear()).isEqualTo("")
 
 //        assertThat(conductorImpl.blocks.keys).containsExactly(
 //            "NS752", "NS753", "NS754", "NS755", "NS765", "NS768", "NS769", "NS770", "NS771", "NS773", "NS774", "NS775", "NS776", "NS786", "NS787")
