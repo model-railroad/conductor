@@ -36,6 +36,8 @@ java {
 
 kapt {
     correctErrorTypes = true
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
 }
 
 compileKotlin {

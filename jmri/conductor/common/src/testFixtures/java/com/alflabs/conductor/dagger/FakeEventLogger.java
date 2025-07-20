@@ -21,22 +21,28 @@ package com.alflabs.conductor.dagger;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Provides a dummy EventLogger that writes to the main ILogger. */
 public class FakeEventLogger extends EventLogger {
 
-    private StringBuffer mLogs = new StringBuffer();
+    private final IClock mClock;
+    private final ArrayList<String> mLogs = new ArrayList<>();
 
     @Inject
     public FakeEventLogger(
+            IClock clock,
             ILogger logger,
             FileOps fileOps,
             ILocalDateTimeNowProvider localDateTimeNow) {
         super(logger, fileOps, localDateTimeNow);
+        mClock = clock;
     }
 
     @Override
@@ -46,13 +52,17 @@ public class FakeEventLogger extends EventLogger {
 
     @Override
     public void logAsync(Type type, String name, String value) {
-        String msg = String.format("<timestamp> - %c - %s - %s",
+        String msg = String.format("<clock %d> - %c - %s - %s",
+                mClock.elapsedRealtime(),
                 type.name().charAt(0),
                 name,
                 value);
 
         getLogger().d("EventLogger", msg);
-        mLogs.append(msg).append('\n');
+        synchronized (mLogs) {
+            System.out.println("@@ LOG ADD to " + this);
+            mLogs.add(msg);
+        }
     }
 
     @Override
@@ -66,10 +76,11 @@ public class FakeEventLogger extends EventLogger {
         // no-op
     }
 
-    public String eventLogGetAndClear() {
-        String s = mLogs.toString();
-        mLogs.delete(0, mLogs.length());
-        return s;
+    public List<String> eventLogGetAndClear() {
+        System.out.println("@@ LOG READ from " + this);
+        ArrayList<String> copy = new ArrayList<>(mLogs);
+        mLogs.clear();
+        return copy;
     }
 }
 

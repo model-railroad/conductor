@@ -21,6 +21,7 @@ package com.alflabs.conductor.dagger;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider;
 import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import dagger.Module;
 import dagger.Provides;
@@ -32,7 +33,14 @@ import javax.inject.Singleton;
 public abstract class FakeEventLoggerModule {
     @Singleton
     @Provides
-    public static EventLogger provideEventLogger(ILogger logger, FileOps fileOps, ILocalDateTimeNowProvider localDateTimeNow) {
-        return new FakeEventLogger(logger, fileOps, localDateTimeNow);
+    public static EventLogger provideEventLogger(IClock clock, ILogger logger, FileOps fileOps, ILocalDateTimeNowProvider localDateTimeNow) {
+        FakeEventLogger e = new FakeEventLogger(clock, logger, fileOps, localDateTimeNow);
+        return e;
+    }
+
+    @Singleton
+    @Provides
+    public static FakeEventLogger provideFakeEventLogger(EventLogger eventLogger) {
+        return (FakeEventLogger) eventLogger;
     }
 }

@@ -34,7 +34,6 @@ val Off = false
 
 val B311         = block ("NS769") named "B311"         // 49:2
 val B321         = block ("NS771") named "B321"         // 49:4
-val B330         = block ("NS773") named "B330"         // 49:6
 
 val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 
@@ -74,7 +73,6 @@ on { !ML_Toggle } then {
 // --------------------
 
 
-var ML_Start_Counter = 0
 var ML_Requires_Wait_After_Run = false
 
 // FR is Beeline 1067 or 1072
@@ -253,27 +251,6 @@ val Freight_Route = ML_Route.sequence {
         }
     }
 
-    val B330_fwd = node(B330) {
-        // Error case: we should never reach block B330.
-        // If we do, reverse and act on B321_rev
-        minSecondsOnBlock = 0
-        onEnter {
-            FR.reverse(FR_Data.Reverse_Speed)
-            FR.bell(On)
-        }
-    }
-
-    val B321_rev = node(B321) {
-        // Error case coming back to B321 after overshooting in B330
-        maxSecondsOnBlock = 180
-        onEnter {
-            FR.horn()
-            after (FR_Data.Delay_Reverse_Horn) then {
-                FR.horn()
-            }
-        }
-    }
-
     val B311_rev = node(B311) {
         onEnter {
             after (FR_Data.Delay_Down_Slow) then {
@@ -295,7 +272,6 @@ val Freight_Route = ML_Route.sequence {
     }
 
     sequence = listOf(B311_start, B321_fwd, B311_rev)
-    branches += listOf(B321_fwd, B330_fwd, B321_rev, B311_rev)
 }
 
 
