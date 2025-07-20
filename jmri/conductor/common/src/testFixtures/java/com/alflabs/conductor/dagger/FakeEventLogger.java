@@ -60,7 +60,6 @@ public class FakeEventLogger extends EventLogger {
 
         getLogger().d("EventLogger", msg);
         synchronized (mLogs) {
-            System.out.println("@@ LOG ADD to " + this);
             mLogs.add(msg);
         }
     }
@@ -77,9 +76,11 @@ public class FakeEventLogger extends EventLogger {
     }
 
     public List<String> eventLogGetAndClear() {
-        System.out.println("@@ LOG READ from " + this);
-        ArrayList<String> copy = new ArrayList<>(mLogs);
-        mLogs.clear();
+        ArrayList<String> copy;
+        synchronized (mLogs) {
+            copy = new ArrayList<>(mLogs);
+            mLogs.clear();
+        }
         return copy;
     }
 }

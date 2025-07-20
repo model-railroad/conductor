@@ -29,7 +29,7 @@ import dagger.Module;
         LoggerModule.class,
         MockAnalyticsModule.class,
         MockHttpClientModule.class,
-        MockJsonSenderModule.class,
+        FakeJsonSenderModule.class,
         MockMqttClientModule.class,
         MockRandomModule.class,
 })

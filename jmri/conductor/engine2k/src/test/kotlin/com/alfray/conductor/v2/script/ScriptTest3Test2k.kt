@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.dagger.FakeEventLogger
+import com.alflabs.conductor.dagger.FakeJsonSender
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.impl.Block
@@ -32,6 +33,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
     @Inject lateinit var clockMillis: FakeClock
     @Inject lateinit var keyValue: IKeyValue
     @Inject lateinit var eventLogger: FakeEventLogger
+    @Inject lateinit var jsonSender: FakeJsonSender
 
     @Before
     fun setUp() {
@@ -46,6 +48,9 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
 
         val mlToggle = conductorImpl.sensors["NS829"]!!
         val b311 = conductorImpl.blocks["NS769"]!! as Block
+        val b321 = conductorImpl.blocks["NS771"]!! as Block
+
+        assertThat(jsonSender.eventsGetAndClear()).isEmpty()
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 1000> - S - S/NS769 B311 - OFF",
@@ -55,6 +60,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
 
         // Engine starts on B311
         b311.internalActive(true)
+        b321.internalActive(false)
 
         // Simulate about 1 second.
         repeat(10) {
@@ -69,6 +75,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 1100> - R - Idle Mainline #0 ML Ready - ACTIVE"
         ).inOrder()
 
+        // Simulate an activation but turning the toggle on-off for 100ms
         mlToggle.active(true)
         execEngine.onExecHandle()
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
@@ -77,29 +84,158 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 2000> - R - Sequence Mainline #2 Freight (1072) - ACTIVATED"
         ).inOrder()
 
+        clockMillis.add(100)
+        mlToggle.active(false)
+
         // The route takes about 5 minutes, aka 300 seconds, at 0.1sec intervals
+        // First the train leaves from the start block...
+        repeat(1*60*10) {
+            clockMillis.add(100)
+            execEngine.onExecHandle()
+        }
+        assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
+            "<clock 2233> - S - S/NS829 ML-Toggle - OFF",
+            "<clock 2233> - B - S/NS769 B311 - OCCUPIED",
+            "<clock 2233> - R - Sequence Mainline #2 Freight (1072) - ACTIVE",
+            "<clock 2333> - D - 1072 - Light ON",
+            "<clock 2333> - D - 1072 - Sound ON",
+            "<clock 2333> - D - 1072 - F8 OFF",
+            "<clock 2433> - T - @timer@2 - start:2",
+            "<clock 4433> - T - @timer@2 - activated",
+            "<clock 4433> - T - @timer@10 - start:10",
+            "<clock 4433> - D - 1072 - Horn",
+            "<clock 4433> - D - 1072 - Light ON",
+            "<clock 4433> - D - 1072 - Bell OFF",
+            "<clock 4433> - D - 1072 - F1 OFF",
+            "<clock 4433> - D - 1072 - 2",
+            "<clock 14433> - T - @timer@10 - activated",
+            "<clock 14433> - D - 1072 - 8",
+            "<clock 14433> - D - 1072 - Horn"
+        ).inOrder()
+
+        // Simulate train progress by changing blocks B311->B321
+        b321.internalActive(true)
+        clockMillis.add(100)
+        execEngine.onExecHandle()
+        b311.internalActive(false)
+        clockMillis.add(100)
+        execEngine.onExecHandle()
+
+        assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
+            "<clock 62233> - S - S/NS771 B321 - ON",
+            "<clock 62233> - B - S/NS769 B311 - TRAILING after 60.00 seconds",
+            "<clock 62233> - B - S/NS771 B321 - OCCUPIED",
+            "<clock 62333> - S - S/NS769 B311 - OFF",
+            "<clock 62333> - T - @timer@35 - start:35"
+        ).inOrder()
+
+        // Train stops at the station before reversing back
         repeat(2*60*10) {
             clockMillis.add(100)
             execEngine.onExecHandle()
         }
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
-            "<clock 2133> - B - S/NS769 B311 - OCCUPIED",
-            "<clock 2133> - R - Sequence Mainline #2 Freight (1072) - ACTIVE",
-            "<clock 2233> - D - 1072 - Light ON",
-            "<clock 2233> - D - 1072 - Sound ON",
-            "<clock 2233> - D - 1072 - F8 OFF",
-            "<clock 2333> - T - @timer@2 - start:2",
-            "<clock 4333> - T - @timer@2 - activated",
-            "<clock 4333> - T - @timer@10 - start:10",
-            "<clock 4333> - D - 1072 - Horn",
-            "<clock 4333> - D - 1072 - Light ON",
-            "<clock 4333> - D - 1072 - Bell OFF",
-            "<clock 4333> - D - 1072 - F1 OFF",
-            "<clock 4333> - D - 1072 - 2",
-            "<clock 14333> - T - @timer@10 - activated",
-            "<clock 14333> - D - 1072 - 8",
-            "<clock 14333> - D - 1072 - Horn"
+            "<clock 97333> - T - @timer@35 - activated",
+            "<clock 97333> - T - @timer@14 - start:14",
+            "<clock 97333> - D - 1072 - Horn",
+            "<clock 97333> - D - 1072 - Bell ON",
+            "<clock 97333> - D - 1072 - F1 ON",
+            "<clock 97333> - D - 1072 - 2",
+            "<clock 111333> - T - @timer@14 - activated",
+            "<clock 111333> - T - @timer@1 - start:1",
+            "<clock 111333> - D - 1072 - Horn",
+            "<clock 111333> - D - 1072 - 0",
+            "<clock 111333> - D - 1072 - Bell OFF",
+            "<clock 111333> - D - 1072 - F1 OFF",
+            "<clock 112333> - T - @timer@1 - activated",
+            "<clock 112333> - T - @timer@1 - start:1",
+            "<clock 113333> - T - @timer@1 - activated",
+            "<clock 113333> - T - @timer@28 - start:28",
+            "<clock 141333> - T - @timer@28 - activated",
+            "<clock 141333> - T - @timer@2 - start:2",
+            "<clock 141333> - D - 1072 - Horn",
+            "<clock 141333> - D - 1072 - -4",
+            "<clock 141333> - D - 1072 - Bell ON",
+            "<clock 141333> - D - 1072 - F1 ON",
+            "<clock 143333> - T - @timer@2 - activated",
+            "<clock 143333> - T - @timer@2 - start:2",
+            "<clock 143333> - D - 1072 - Horn",
+            "<clock 145333> - T - @timer@2 - activated",
+            "<clock 145333> - D - 1072 - Horn",
+            "<clock 145333> - D - 1072 - Bell OFF",
+            "<clock 145333> - D - 1072 - F1 OFF"
         ).inOrder()
 
+        // Simulate train progress by changing blocks B321->B311
+        b311.internalActive(true)
+        clockMillis.add(100)
+        execEngine.onExecHandle()
+        b321.internalActive(false)
+        clockMillis.add(100)
+        execEngine.onExecHandle()
+
+        assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
+            "<clock 182433> - S - S/NS769 B311 - ON",
+            "<clock 182433> - B - S/NS769 B311 - EMPTY after 120.20 seconds",
+            "<clock 182433> - B - S/NS771 B321 - TRAILING after 120.20 seconds",
+            "<clock 182433> - B - S/NS769 B311 - OCCUPIED after 0.00 seconds",
+            "<clock 182533> - S - S/NS771 B321 - OFF",
+            "<clock 182533> - T - @timer@24 - start:24"
+        ).inOrder()
+
+        // Train arrives back at start point and stops
+        repeat(1*60*10) {
+            clockMillis.add(100)
+            execEngine.onExecHandle()
+        }
+        assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
+            "<clock 206533> - T - @timer@24 - activated",
+            "<clock 206533> - T - @timer@6 - start:6",
+            "<clock 206533> - D - 1072 - Bell ON",
+            "<clock 206533> - D - 1072 - F1 ON",
+            "<clock 212533> - T - @timer@6 - activated",
+            "<clock 212533> - T - @timer@20 - start:20",
+            "<clock 212533> - D - 1072 - Bell OFF",
+            "<clock 212533> - D - 1072 - F1 OFF",
+            "<clock 212533> - D - 1072 - Horn",
+            "<clock 212533> - D - 1072 - 0",
+            "<clock 232533> - T - @timer@20 - activated",
+            "<clock 232533> - T - @timer@2 - start:2",
+            "<clock 232533> - D - 1072 - Horn",
+            "<clock 232533> - D - 1072 - Bell OFF",
+            "<clock 232533> - D - 1072 - F1 OFF",
+            "<clock 232533> - D - 1072 - Light OFF",
+            "<clock 234533> - T - @timer@2 - activated",
+            "<clock 234533> - D - 1072 - Sound OFF",
+            "<clock 234533> - D - 1072 - F8 ON",
+            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - IDLE",
+            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - {\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"nodes\":[{\"n\":\"B311.1\",\"ms\":60000},{\"n\":\"B321\",\"ms\":120200},{\"n\":\"B311.2\",\"ms\":52100}]}",
+            "<clock 234533> - B - S/NS771 B321 - EMPTY after 52.10 seconds",
+            "<clock 234533> - R - Idle Mainline #1 ML Wait - ACTIVATED",
+            "<clock 234633> - R - Idle Mainline #1 ML Wait - ACTIVE",
+            "<clock 234733> - T - @timer@60 - start:60",
+        ).inOrder()
+
+        // Train has a 60-second wait pause before being ready for the next activation
+        repeat(1*60*10) {
+            clockMillis.add(100)
+            execEngine.onExecHandle()
+        }
+        assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
+            "<clock 294733> - T - @timer@60 - activated",
+            "<clock 294733> - R - Idle Mainline #1 ML Wait - IDLE",
+            "<clock 294733> - R - Idle Mainline #0 ML Ready - ACTIVATED",
+            "<clock 294833> - D - 1072 - Light ON",
+            "<clock 294833> - D - 1072 - Bell OFF",
+            "<clock 294833> - D - 1072 - F1 OFF",
+            "<clock 294833> - R - Idle Mainline #0 ML Ready - ACTIVE"
+        ).inOrder()
+
+        assertThat(jsonSender.eventsGetAndClear()).containsExactly(
+            "<clock 1100> - Toggle/Passenger = Off",
+            "<clock 2000> - Toggle/Passenger = On",
+            "<clock 2233> - Toggle/Passenger = Off",
+            "<clock 234533> - route_stats/Freight_FR = {\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"nodes\":[{\"n\":\"B311.1\",\"ms\":60000},{\"n\":\"B321\",\"ms\":120200},{\"n\":\"B311.2\",\"ms\":52100}]}"
+        ).inOrder()
     }
 }
