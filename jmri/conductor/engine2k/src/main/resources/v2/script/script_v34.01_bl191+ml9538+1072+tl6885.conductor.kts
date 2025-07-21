@@ -1734,7 +1734,7 @@ Caboose UP 25520 --> DCC 2552
 - F3 on for green rear marker, F4 on for green front marker.
 */
 
-val BL = throttle(10) {
+val BL = throttle(191) {
     name = "BL"
     onBell  { on -> throttle.f1(on) }
     onSound { on -> BL_sound(on) }
@@ -1805,8 +1805,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     MaxSecondsEnterBlock    = 4,
 ) else if (BL.dccAddress == 191) _BL_Data(
     Has_Gyro = false,
-    Speed                   = 10.speed,
-    Speed_Station           = 6.speed,
+    Speed                   = 8.speed,
+    Speed_Station           = 4.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Horn_Fwd   = 22.seconds,
     Delay_Canyon_Horn_Rev   = 36.seconds,
