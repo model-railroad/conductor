@@ -20,8 +20,14 @@ package com.alfray.conductor.v2.script
 
 import com.alfray.conductor.v2.script.dsl.IConductor
 import kotlin.script.experimental.annotations.KotlinScript
+import kotlin.script.experimental.api.ScriptAcceptedLocation
 import kotlin.script.experimental.api.ScriptCompilationConfiguration
+import kotlin.script.experimental.api.acceptedLocations
 import kotlin.script.experimental.api.compilerOptions
+import kotlin.script.experimental.api.defaultImports
+import kotlin.script.experimental.api.ide
+import kotlin.script.experimental.dependencies.DependsOn
+import kotlin.script.experimental.dependencies.Repository
 import kotlin.script.experimental.jvm.dependenciesFromClassContext
 import kotlin.script.experimental.jvm.jvm
 
@@ -38,20 +44,24 @@ import kotlin.script.experimental.jvm.jvm
 )
 abstract class ConductorScript(conductor: IConductor) : IConductor by conductor
 
-object ConductorScriptConfiguration : ScriptCompilationConfiguration({
+class ConductorScriptConfiguration : ScriptCompilationConfiguration({
+    defaultImports(DependsOn::class, Repository::class)
     jvm {
         dependenciesFromClassContext(
             ConductorScript::class,
             // add libraries here
+            "java",
             "kotlin-stdlib",
             "kotlin-scripting-dependencies",
             "kotlin-reflect",
             "engine2k",
+            // this needs to be false if kotlin.script.classpath == null
+            wholeClasspath = false,
         )
     }
-    compilerOptions.append("-Xadd-modules=ALL-MODULE-PATH")
-    // defaultImports {}
-}) {
-    private fun readResolve(): Any = ConductorScriptConfiguration
-}
+    compilerOptions("-jvm-target", "11", "-Xadd-modules=ALL-MODULE-PATH")
+    ide {
+        acceptedLocations(ScriptAcceptedLocation.Everywhere)
+    }
+})
 

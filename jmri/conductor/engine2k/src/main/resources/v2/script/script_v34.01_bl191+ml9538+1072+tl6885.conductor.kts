@@ -1,7 +1,7 @@
 /* vim: set ai ts=4 sts=4 et sw=4 */
 /*
  * Project: Conductor
- * Copyright (C) 2023 alf.labs gmail com,
+ * Copyright (C) 2025 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
