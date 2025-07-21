@@ -121,7 +121,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         }
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 2233> - S - S/NS829 ML-Toggle - OFF",
-            "<clock 2233> - B - S/NS769 B311 - OCCUPIED",
+            "<clock 2233> - B - S/NS769 B311 - Now OCCUPIED",
             "<clock 2233> - R - Sequence Mainline #2 Freight (1072) - ACTIVE",
             "<clock 2333> - D - 1072 - Light ON",
             "<clock 2333> - D - 1072 - Sound ON",
@@ -162,8 +162,8 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 62233> - S - S/NS771 B321 - ON",
-            "<clock 62233> - B - S/NS769 B311 - TRAILING after 60.00 seconds",
-            "<clock 62233> - B - S/NS771 B321 - OCCUPIED",
+            "<clock 62233> - B - S/NS769 B311 - Was OCCUPIED for 60.00 seconds; Now TRAILING",
+            "<clock 62233> - B - S/NS771 B321 - Now OCCUPIED",
             "<clock 62333> - S - S/NS769 B311 - OFF",
             "<clock 62333> - T - @timer@35 - start:35",
         ).inOrder()
@@ -215,9 +215,9 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 182433> - S - S/NS769 B311 - ON",
-            "<clock 182433> - B - S/NS769 B311 - EMPTY after 120.20 seconds",
-            "<clock 182433> - B - S/NS771 B321 - TRAILING after 120.20 seconds",
-            "<clock 182433> - B - S/NS769 B311 - OCCUPIED after 0.00 seconds",
+            "<clock 182433> - B - S/NS769 B311 - Was TRAILING for 120.20 seconds; Now EMPTY",
+            "<clock 182433> - B - S/NS771 B321 - Was OCCUPIED for 120.20 seconds; Now TRAILING",
+            "<clock 182433> - B - S/NS769 B311 - Was EMPTY for 0.00 seconds; Now OCCUPIED",
             "<clock 182533> - S - S/NS771 B321 - OFF",
             "<clock 182533> - T - @timer@24 - start:24",
         ).inOrder()
@@ -268,7 +268,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 234533> - D - 1072 - F8 ON",
             "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - IDLE",
             "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - $expectedRouteJson",
-            "<clock 234533> - B - S/NS771 B321 - EMPTY after 52.10 seconds",
+            "<clock 234533> - B - S/NS771 B321 - Was TRAILING for 52.10 seconds; Now EMPTY",
             "<clock 234533> - R - Idle Mainline #1 ML Wait - ACTIVATED",
             "<clock 234633> - R - Idle Mainline #1 ML Wait - ACTIVE",
             "<clock 234733> - T - @timer@60 - start:60",

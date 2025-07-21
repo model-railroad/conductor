@@ -101,15 +101,15 @@ class BlockTest {
 
         clock.add(2543)
         block.changeState(IBlock.State.OCCUPIED)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "OCCUPIED after 2.54 seconds")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "Was EMPTY for 2.54 seconds; Now OCCUPIED")
 
         clock.add(2543)
         block.changeState(IBlock.State.TRAILING)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "TRAILING after 2.54 seconds")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "Was OCCUPIED for 2.54 seconds; Now TRAILING")
 
         clock.add(2543)
         block.changeState(IBlock.State.EMPTY)
-        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "EMPTY after 2.54 seconds")
+        verify(eventLogger).logAsync(EventLogger.Type.Block, "S/jmriName Block-Name", "Was TRAILING for 2.54 seconds; Now EMPTY")
     }
 
     @Test

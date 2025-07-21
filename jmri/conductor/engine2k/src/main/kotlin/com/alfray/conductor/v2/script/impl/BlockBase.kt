@@ -70,11 +70,13 @@ internal abstract class BlockBase(
         val nowMs = clock.elapsedRealtime()
         if (state != newState) {
             val deltaMs = if (stateTS == 0L) -1 else nowMs - stateTS
+            // Desired output: "S/NS773 B330 : Was OCCUPIED for 21.18 seconds; Now TRAILING"
             eventLogger.logAsync(
                     EventLogger.Type.Block,
                     "$keyName $name",
-                    if (deltaMs < 0) newState.name else String.format("%s after %.2f seconds",
-                        newState.name, deltaMs.toDouble() / 1000.0))
+                    if (deltaMs < 0) String.format("Now %s", newState.name)
+                    else String.format("Was %s for %.2f seconds; Now %s",
+                        state.name, deltaMs.toDouble() / 1000.0, newState.name))
         }
         state = newState
         stateTS = nowMs
