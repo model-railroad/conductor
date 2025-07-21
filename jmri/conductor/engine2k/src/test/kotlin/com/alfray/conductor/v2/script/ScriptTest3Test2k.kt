@@ -72,7 +72,20 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 1100> - D - 1072 - Light ON",
             "<clock 1100> - D - 1072 - Bell OFF",
             "<clock 1100> - D - 1072 - F1 OFF",
-            "<clock 1100> - R - Idle Mainline #0 ML Ready - ACTIVE"
+            "<clock 1100> - R - Idle Mainline #0 ML Ready - ACTIVE",
+        ).inOrder()
+
+        assertThat(jsonSender.eventsGetAndClear()).containsExactly(
+            """
+                <clock 1100> - {
+                  "toggle" : {
+                    "passenger" : {
+                      "ts" : "1970-01-01T00:00:01Z",
+                      "value" : "Off"
+                    }
+                  }
+                }
+            """.trimIndent(),
         ).inOrder()
 
         // Simulate an activation but turning the toggle on-off for 100ms
@@ -81,7 +94,20 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 2000> - S - S/NS829 ML-Toggle - ON",
             "<clock 2000> - R - Idle Mainline #0 ML Ready - IDLE",
-            "<clock 2000> - R - Sequence Mainline #2 Freight (1072) - ACTIVATED"
+            "<clock 2000> - R - Sequence Mainline #2 Freight (1072) - ACTIVATED",
+        ).inOrder()
+
+        assertThat(jsonSender.eventsGetAndClear()).containsExactly(
+            """
+                <clock 2000> - {
+                  "toggle" : {
+                    "passenger" : {
+                      "ts" : "1970-01-01T00:00:02Z",
+                      "value" : "On"
+                    }
+                  }
+                }
+            """.trimIndent(),
         ).inOrder()
 
         clockMillis.add(100)
@@ -110,7 +136,20 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 4433> - D - 1072 - 2",
             "<clock 14433> - T - @timer@10 - activated",
             "<clock 14433> - D - 1072 - 8",
-            "<clock 14433> - D - 1072 - Horn"
+            "<clock 14433> - D - 1072 - Horn",
+        ).inOrder()
+
+        assertThat(jsonSender.eventsGetAndClear()).containsExactly(
+            """
+                <clock 2233> - {
+                  "toggle" : {
+                    "passenger" : {
+                      "ts" : "1970-01-01T00:00:02Z",
+                      "value" : "Off"
+                    }
+                  }
+                }
+            """.trimIndent(),
         ).inOrder()
 
         // Simulate train progress by changing blocks B311->B321
@@ -126,7 +165,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 62233> - B - S/NS769 B311 - TRAILING after 60.00 seconds",
             "<clock 62233> - B - S/NS771 B321 - OCCUPIED",
             "<clock 62333> - S - S/NS769 B311 - OFF",
-            "<clock 62333> - T - @timer@35 - start:35"
+            "<clock 62333> - T - @timer@35 - start:35",
         ).inOrder()
 
         // Train stops at the station before reversing back
@@ -163,7 +202,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 145333> - T - @timer@2 - activated",
             "<clock 145333> - D - 1072 - Horn",
             "<clock 145333> - D - 1072 - Bell OFF",
-            "<clock 145333> - D - 1072 - F1 OFF"
+            "<clock 145333> - D - 1072 - F1 OFF",
         ).inOrder()
 
         // Simulate train progress by changing blocks B321->B311
@@ -180,7 +219,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 182433> - B - S/NS771 B321 - TRAILING after 120.20 seconds",
             "<clock 182433> - B - S/NS769 B311 - OCCUPIED after 0.00 seconds",
             "<clock 182533> - S - S/NS771 B321 - OFF",
-            "<clock 182533> - T - @timer@24 - start:24"
+            "<clock 182533> - T - @timer@24 - start:24",
         ).inOrder()
 
         // Train arrives back at start point and stops
@@ -188,6 +227,25 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             clockMillis.add(100)
             execEngine.onExecHandle()
         }
+
+        val expectedRouteJson = """ {
+            "name": "Freight",
+            "th": "FR",
+            "act": 1,
+            "err": false,
+            "nodes": [ { 
+                    "n": "B311.1",
+                    "ms": 60000
+                }, {
+                    "n": "B321",
+                    "ms": 120200
+                }, {
+                    "n": "B311.2",
+                    "ms": 52100
+                }
+            ]}
+        """.replace("\\s".toRegex(), "")
+
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 206533> - T - @timer@24 - activated",
             "<clock 206533> - T - @timer@6 - start:6",
@@ -209,7 +267,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 234533> - D - 1072 - Sound OFF",
             "<clock 234533> - D - 1072 - F8 ON",
             "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - IDLE",
-            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - {\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"nodes\":[{\"n\":\"B311.1\",\"ms\":60000},{\"n\":\"B321\",\"ms\":120200},{\"n\":\"B311.2\",\"ms\":52100}]}",
+            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - $expectedRouteJson",
             "<clock 234533> - B - S/NS771 B321 - EMPTY after 52.10 seconds",
             "<clock 234533> - R - Idle Mainline #1 ML Wait - ACTIVATED",
             "<clock 234633> - R - Idle Mainline #1 ML Wait - ACTIVE",
@@ -228,14 +286,26 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 294833> - D - 1072 - Light ON",
             "<clock 294833> - D - 1072 - Bell OFF",
             "<clock 294833> - D - 1072 - F1 OFF",
-            "<clock 294833> - R - Idle Mainline #0 ML Ready - ACTIVE"
+            "<clock 294833> - R - Idle Mainline #0 ML Ready - ACTIVE",
         ).inOrder()
 
         assertThat(jsonSender.eventsGetAndClear()).containsExactly(
-            "<clock 1100> - Toggle/Passenger = Off",
-            "<clock 2000> - Toggle/Passenger = On",
-            "<clock 2233> - Toggle/Passenger = Off",
-            "<clock 234533> - route_stats/Freight_FR = {\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"nodes\":[{\"n\":\"B311.1\",\"ms\":60000},{\"n\":\"B321\",\"ms\":120200},{\"n\":\"B311.2\",\"ms\":52100}]}"
+            """
+                <clock 234533> - {
+                  "route_stats" : {
+                    "freight_fr" : {
+                      "ts" : "1970-01-01T00:03:54Z",
+                      "value" : "${expectedRouteJson.replace("\"", "\\\"")}"
+                    }
+                  },
+                  "toggle" : {
+                    "passenger" : {
+                      "ts" : "1970-01-01T00:00:02Z",
+                      "value" : "Off"
+                    }
+                  }
+                }
+            """.trimIndent(),
         ).inOrder()
     }
 }

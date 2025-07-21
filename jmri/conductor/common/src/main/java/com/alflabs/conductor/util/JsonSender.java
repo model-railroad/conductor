@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import okhttp3.Authenticator;
 import okhttp3.Credentials;
@@ -68,7 +69,8 @@ public class JsonSender implements Runnable {
     private final ScheduledExecutorService mExecutor;
     @SuppressWarnings("unchecked")
     private final TreeMap<String, Object> mKeyValues = new TreeMap();
-    private final AtomicReference<String> mLatestJson = new AtomicReference<>();
+    @VisibleForTesting
+    protected final AtomicReference<String> mLatestJson = new AtomicReference<>();
 
     private long mRetryDelay;
     @Null private HttpUrl mJsonUrl;
@@ -125,7 +127,7 @@ public class JsonSender implements Runnable {
 
         if (mLatestJson.get() != null) {
             mRetryDelay = 0;
-            mExecutor.execute(this);
+            scheduleSend();
         }
     }
 
@@ -160,12 +162,17 @@ public class JsonSender implements Runnable {
         try {
             mLatestJson.set(toJsonString());
             mRetryDelay = 0;
-            mExecutor.execute(this);
+            scheduleSend();
         } catch (JsonProcessingException e) {
             mLogger.d(TAG, "JSON Sender: Error creating JSON entry", e);
         } catch (Exception e) {
             mLogger.d(TAG, "JSON Sender: Unexpected Error", e);
         }
+    }
+
+    @VisibleForTesting
+    protected void scheduleSend() {
+        mExecutor.execute(this);
     }
 
     public String toJsonString() throws JsonProcessingException {

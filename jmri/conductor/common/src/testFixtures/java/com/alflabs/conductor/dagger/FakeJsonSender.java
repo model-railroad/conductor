@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ScheduledExecutorService;
 
 /** Provides a dummy EventLogger that writes to the main ILogger. */
@@ -71,14 +72,23 @@ public class FakeJsonSender extends JsonSender {
 
     @Override
     public void sendEvent(String key1, String key2, String value) {
-        // Do not log to the main logger (this results in duplicates in testing).
-        String msg = String.format("<clock %d> - %s/%s = %s",
-                mClock.elapsedRealtime(),
-                key1,
-                key2,
-                value);
-        synchronized (mEvents) {
-            mEvents.add(msg);
+        // We actually do not override sendEvent, to let the original
+        // class perform all its (overcomplicated) behavior.
+        // Instead, this will set mLatestJson and then call scheduleSend()
+        // which we intercept below.
+        super.sendEvent(key1, key2, value);
+    }
+
+    @Override
+    protected void scheduleSend() {
+        String jsonData = mLatestJson.getAndSet(null);
+        if (jsonData != null) {
+            String msg = String.format("<clock %d> - %s",
+                    mClock.elapsedRealtime(),
+                    jsonData);
+            synchronized (mEvents) {
+                mEvents.add(msg);
+            }
         }
     }
 
