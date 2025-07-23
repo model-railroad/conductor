@@ -52,6 +52,34 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Sends JSON status for the Wazz dashboard.
+ * <br/>
+ * The status data is essentially a key-value map, with the specificity that
+ * it's really "key1 / key2 -> { timestamp + status payload }".
+ * Timestamps is an ISO 8601 string.
+ * Ststus payload is a string.
+ * <br/>
+ * The receiver maintains two dictionaries, one for the outer "key1" with an inner one for "key2"
+ * and simply overwrites the latest status entry with the timestamp/payload.
+ * <br/>
+ * One peculiarity of this sender is that we accumulate all keys on this side and then send
+ * them all every time, instead of just the last one provided by 'sendEvent'. The original
+ * design goal was that, if we miss sending one event, the next one will have the accumulation
+ * of all previous statuses.
+ * <br/>
+ * The executor has an exponential retry delay and keeps trying to send the last message on
+ * failure. Since each message is an accumulation of everything sent before, a new event
+ * resets the retry count/delay and the message to send.
+ * <br/>
+ * One drawback is that as the program runs, the message sent increases as it accumulates all
+ * previous key entries. However, this is bounded: we only accumulate the last entry for every key,
+ * the number of keys is bounded in the Conductor script (about 4~6 of them), and the Conductor
+ * program is always running in a limited 10AM-5PM time window at best. The design is thus sound
+ * for this particular application, and not made to be generic.
+ * <br/>
+ * See "engine2k/src/test/.../v2/script/ScriptTest3Test2k.kt" for an example of real payloads.
+ */
 public class JsonSender implements Runnable {
     private static final String TAG = JsonSender.class.getSimpleName();
 
