@@ -31,7 +31,7 @@ dependencies {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    // useJUnitPlatform() is needed only for JUnit5 with Gradle. We use JUnit4 here.
 }
 
 tasks.withType<Jar> {

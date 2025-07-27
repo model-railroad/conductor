@@ -9,7 +9,7 @@ echo
 echo "---- Build desired toolchain is Java $JV"
 
 if ! grep -qs "$JV" $(java -version 2>&1) ; then
-  if [[ $(uname) =~ CYGWIN_.* || $(uname) =~ MSYS_.* ]]; then
+  if [[ $(uname) =~ (CYGWIN_|MSYS_|MINGW).* ]]; then
     PF=$(cygpath "$PROGRAMFILES")
     JS=$(find "$PF/Java" -type f -name javac.exe | grep "$JV" | sort -r | head -n 1)
     JS=$(cygpath -w "${JS//\/bin*/}")
