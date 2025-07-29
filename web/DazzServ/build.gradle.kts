@@ -1,33 +1,48 @@
 import kotlin.io.path.fileSize
 
 plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    // Note: the build.gradle.kts plugins block has a special syntax and cannot directly use
+    // variables from gradle.properties -- specify these in settings.gradle.kts instead.
+    java
     kotlin("jvm")
+    application     // provides "run" task: "gradlew run --args="foo --bar"
+    distribution    // provides "assembleDist" task, generates build/distribution/*.tar+zip
+    id("com.github.johnrengelman.shadow")  // task "shadowJar" for single JAR
 }
 
-val vers_java: String by project
-val artifact_vers: String by project
-val artifact_group: String by project
-val vers_junit: String by project
-val vers_truth: String by project
+// Values from gradle.properties
+val propArtifactVers: String by project
+val propArtifactGroup: String by project
+val propVersJava: String by project
+val propVersJunit: String by project
+val propVersTruth: String by project
 
-group   = artifact_group
-version = artifact_vers
+group   = propArtifactGroup
+version = propArtifactVers
 
 repositories {
     mavenCentral()
 }
 
 kotlin {
-    jvmToolchain(vers_java.toInt())
+    jvmToolchain(propVersJava.toInt())
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+application {
+    mainClass = "com.alfray.dazzserv.DazzServ"
 }
 
 dependencies {
     implementation(project(":LibManifest"))
 
     testImplementation(kotlin("test"))
-    testImplementation("junit:junit:$vers_junit")
-    testImplementation("com.google.truth:truth:$vers_truth")
+    testImplementation("junit:junit:$propVersJunit")
+    testImplementation("com.google.truth:truth:$propVersTruth")
 }
 
 tasks.test {

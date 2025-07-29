@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Parse properties
-JV=$(sed -n -e "/vers_java/s/.*=\(.*\)/\\1/p" gradle.properties)
-ARTIFACT=$(sed -n -e "/artifact_vers/s/.*=\(.*\)/\\1/p" gradle.properties)
+JV=$(sed -n -e "/propVersJava/s/.*=\(.*\)/\\1/p" gradle.properties)
+ARTIFACT=$(sed -n -e "/propArtifactVers/s/.*=\(.*\)/\\1/p" gradle.properties)
 
 # Detect which version of Java we need
 echo
@@ -25,7 +25,7 @@ if ! grep -qs "$JV" $(java -version 2>&1) ; then
   echo "---- JAVA_HOME = $JAVA_HOME"
 fi
 
-GRADLE_CMD="shadowJar"
+GRADLE_CMD="assembleDist shadowJar"
 if [[ "$1" == "--skip-tests" ]]; then
   shift
 else
@@ -39,4 +39,4 @@ echo "---- Building with gradle..."
 
 echo
 echo "---- Result ${ARTIFACT} files..."
-ls -lah build/libs/DazzServ-${ARTIFACT}-all.jar
+ls -lah build/distributions/DazzServ-${ARTIFACT}.* build/libs/DazzServ-${ARTIFACT}-all.jar
