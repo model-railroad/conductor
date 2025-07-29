@@ -14,6 +14,7 @@ plugins {
 val propArtifactVers: String by project
 val propArtifactGroup: String by project
 val propVersJava: String by project
+val propVersClikt: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
 
@@ -39,6 +40,7 @@ application {
 
 dependencies {
     implementation(project(":LibManifest"))
+    implementation("com.github.ajalt.clikt:clikt:$propVersClikt")
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
