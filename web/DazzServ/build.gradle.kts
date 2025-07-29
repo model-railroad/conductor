@@ -15,6 +15,7 @@ val propArtifactVers: String by project
 val propArtifactGroup: String by project
 val propVersJava: String by project
 val propVersClikt: String by project
+val propVersJetty: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
 
@@ -30,8 +31,8 @@ kotlin {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 application {
@@ -41,6 +42,7 @@ application {
 dependencies {
     implementation(project(":LibManifest"))
     implementation("com.github.ajalt.clikt:clikt:$propVersClikt")
+    implementation("org.eclipse.jetty:jetty-server:$propVersJetty")
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
