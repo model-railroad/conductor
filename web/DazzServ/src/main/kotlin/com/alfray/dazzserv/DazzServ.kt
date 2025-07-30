@@ -1,5 +1,6 @@
 package com.alfray.dazzserv
 
+import com.alflabs.utils.ILogger
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
@@ -12,33 +13,49 @@ import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
 
+private const val LOGGER_NAME = "com.alfray.DazzServer"
+
 /**
  * Main entry point for DazzServ.
  *
  * @param autoStartServer Set to false during tests to avoid running actual web server.
  */
 class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
+    lateinit var server: Server
     val port by option(help = "Server Port").int().default(8080)
     val host by option(help = "Server Bind IP").default("127.0.0.1")
 
     companion object {
+        const val TAG = "DazzServ"
+
         @JvmStatic
         fun main(args: Array<String>) = DazzServ().main(args)
     }
 
-    override fun run() {
-        echo("DazzServ configured for $host port $port")
-
-        val server = createServer()
-        if (autoStartServer) {
-            runServer(server)
+    val logger: ILogger = object : ILogger {
+        override fun d(tag: String?, message: String?) {
+            echo("$tag: $message")
         }
 
-        echo("DazzServ end")
+        override fun d(tag: String?, message: String?, tr: Throwable?) {
+            echo("$tag: $message: $tr")
+        }
     }
 
-    private fun createServer(): Server {
-        val server = Server()
+    override fun run() {
+        logger.d(TAG, "Configured for $host port $port")
+
+        createServer()
+        if (autoStartServer) {
+            runServer()
+        }
+
+        logger.d(TAG, "End")
+    }
+
+    private fun createServer() {
+        server = Server()
+
         val connector = ServerConnector(server)
         connector.port = port
         connector.host = host
@@ -55,7 +72,12 @@ class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
         server.stopTimeout = 2_000  // seconds for current handlers to terminate on shutdown
 
         // DazzRestHandler is our REST API handler.
-        gracefulHandler.handler = DazzRestHandler()
+        gracefulHandler.handler = DazzRestHandler(
+            logger,
+            quitMethod = {
+                quitServer(server)
+            }
+        )
 
         // Sets the RequestLog to log to an SLF4J logger named
         // "org.eclipse.jetty.server.RequestLog" at INFO level.
@@ -64,21 +86,24 @@ class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
             Slf4jRequestLogWriter(),
             CustomRequestLog.EXTENDED_NCSA_FORMAT
         )
-
-        return server
     }
 
-    private fun runServer(server: Server) {
+    private fun runServer() {
         try {
             server.start()
-            echo("REST Server started on http://$host:$port")
+            logger.d(TAG, "REST Server started on http://$host:$port")
             server.join()
         } catch (e: Exception) {
-            echo("REST Server error: $e")
+            logger.d(TAG, "REST Server error: $e")
             server.stop()
         } finally {
-            echo("REST Server shutdown")
+            logger.d(TAG, "REST Server shutdown")
             server.destroy()
         }
+    }
+
+    private fun quitServer(server: Server) {
+        logger.d(TAG, "REST Server quit requested")
+        server.stop()
     }
 }

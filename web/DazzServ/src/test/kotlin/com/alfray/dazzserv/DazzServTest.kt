@@ -12,8 +12,8 @@ class DazzServTest {
         assertThat(ds.port).isEqualTo(8080)
         assertThat(result.stdout).isEqualTo(
             """
-               DazzServ configured for 127.0.0.1 port 8080
-               DazzServ end
+               DazzServ: Configured for 127.0.0.1 port 8080
+               DazzServ: End
 
             """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)
@@ -26,8 +26,8 @@ class DazzServTest {
         assertThat(ds.port).isEqualTo(9090)
         assertThat(result.stdout).isEqualTo(
             """
-               DazzServ configured for 0.0.0.0 port 9090
-               DazzServ end
+               DazzServ: Configured for 0.0.0.0 port 9090
+               DazzServ: End
 
             """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)

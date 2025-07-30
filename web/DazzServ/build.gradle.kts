@@ -16,6 +16,7 @@ val propArtifactGroup: String by project
 val propVersJava: String by project
 val propVersClikt: String by project
 val propVersJetty: String by project
+val propVersSLF4J: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
 
@@ -40,9 +41,11 @@ application {
 }
 
 dependencies {
+    implementation(project(":LibUtilsJava"))
     implementation(project(":LibManifest"))
     implementation("com.github.ajalt.clikt:clikt:$propVersClikt")
     implementation("org.eclipse.jetty:jetty-server:$propVersJetty")
+    implementation("org.slf4j:slf4j-simple:$propVersSLF4J")
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
