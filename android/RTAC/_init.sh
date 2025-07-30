@@ -25,7 +25,7 @@ GIT_USER=$(sed -n '/email = /s/.*= \(.*\)@.*/\1/p' ~/.gitconfig)
 if [[ -z $GIT_USER ]]; then set +x; echo "Git user not found"; exit 1; fi
 
 if [[ ! -d $ROOT/LibUtils ]]; then
-  if [[ "$GIT_USER" == "$REPO_ORG"]]; then
+  if [[ "$GIT_USER" == "$REPO_ORG" ]]; then
     $DRY git submodule add "git@github.com:$GIT_USER/libutils.git" "$ROOT/LibUtils"
   else
     $DRY git submodule add "https://github.com/$REPO_ORG/libutils.git" "$ROOT/LibUtils"
@@ -42,7 +42,7 @@ LIB_BRANCH="android-lib-v3"
 )
 
 if [[ ! -d $ROOT/androidsvg ]]; then
-  if [[ "$GIT_USER" == "$REPO_ORG"]]; then
+  if [[ "$GIT_USER" == "$REPO_ORG" ]]; then
     $DRY git submodule add "git@github.com:$GIT_USER/androidsvg.git" "$ROOT/androidsvg"
   else
     $DRY git submodule add "https://github.com/$REPO_ORG/androidsvg.git" "$ROOT/androidsvg"
