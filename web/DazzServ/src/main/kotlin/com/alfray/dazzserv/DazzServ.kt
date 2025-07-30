@@ -12,10 +12,14 @@ import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
 
-
-class DazzServ : CliktCommand() {
+/**
+ * Main entry point for DazzServ.
+ *
+ * @param autoStartServer Set to false during tests to avoid running actual web server.
+ */
+class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
     val port by option(help = "Server Port").int().default(8080)
-    val host by option(help = "Server Bind IP").default("0.0.0.0")
+    val host by option(help = "Server Bind IP").default("127.0.0.1")
 
     companion object {
         @JvmStatic
@@ -23,15 +27,17 @@ class DazzServ : CliktCommand() {
     }
 
     override fun run() {
-        echo("DazzServ running on port $port")
+        echo("DazzServ configured for $host port $port")
 
-        startServer()
+        val server = createServer()
+        if (autoStartServer) {
+            runServer(server)
+        }
 
         echo("DazzServ end")
     }
 
-    private fun startServer() {
-        // TBD move to creator method with a plan for testing
+    private fun createServer(): Server {
         val server = Server()
         val connector = ServerConnector(server)
         connector.port = port
@@ -59,15 +65,19 @@ class DazzServ : CliktCommand() {
             CustomRequestLog.EXTENDED_NCSA_FORMAT
         )
 
+        return server
+    }
+
+    private fun runServer(server: Server) {
         try {
             server.start()
-            echo("Jetty Server started on port $port")
+            echo("REST Server started on http://$host:$port")
             server.join()
         } catch (e: Exception) {
-            echo("Jetty Server error: $e")
+            echo("REST Server error: $e")
             server.stop()
         } finally {
-            echo("Jetty Server shutdown")
+            echo("REST Server shutdown")
             server.destroy()
         }
     }

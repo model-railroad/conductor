@@ -7,19 +7,29 @@ import org.junit.Test
 class DazzServTest {
     @Test
     fun testArgDefaults() {
-        val ds = DazzServ()
+        val ds = DazzServ(autoStartServer = false)
         val result = ds.test("")
         assertThat(ds.port).isEqualTo(8080)
-        assertThat(result.stdout).isEqualTo("DazzServ running on port 8080\n")
+        assertThat(result.stdout).isEqualTo(
+            """
+               DazzServ configured for 127.0.0.1 port 8080
+               DazzServ end
+
+            """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)
     }
 
     @Test
     fun testArgPort() {
-        val ds = DazzServ()
-        val result = ds.test("--port 9090")
+        val ds = DazzServ(autoStartServer = false)
+        val result = ds.test("--port 9090 --host 0.0.0.0")
         assertThat(ds.port).isEqualTo(9090)
-        assertThat(result.stdout).isEqualTo("DazzServ running on port 9090\n")
+        assertThat(result.stdout).isEqualTo(
+            """
+               DazzServ configured for 0.0.0.0 port 9090
+               DazzServ end
+
+            """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)
     }
 }
