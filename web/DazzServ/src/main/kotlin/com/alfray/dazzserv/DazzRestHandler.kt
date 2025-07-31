@@ -10,8 +10,8 @@ import org.eclipse.jetty.server.Response
 import org.eclipse.jetty.util.Callback
 
 class DazzRestHandler(
-    val logger: ILogger,
-    val quitMethod: Runnable
+    private val logger: ILogger,
+    private val quitMethod: Runnable,
 ) : Handler.Abstract() {
 
     companion object {

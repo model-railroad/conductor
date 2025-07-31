@@ -5,6 +5,7 @@ plugins {
     // variables from gradle.properties -- specify these in settings.gradle.kts instead.
     java
     kotlin("jvm")
+    kotlin("plugin.serialization")
     application     // provides "run" task: "gradlew run --args="foo --bar"
     distribution    // provides "assembleDist" task, generates build/distribution/*.tar+zip
     id("com.github.johnrengelman.shadow")  // task "shadowJar" for single JAR
@@ -17,6 +18,7 @@ val propVersJava: String by project
 val propVersClikt: String by project
 val propVersJetty: String by project
 val propVersSLF4J: String by project
+val propVersKtxJson: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
 
@@ -46,6 +48,7 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:$propVersClikt")
     implementation("org.eclipse.jetty:jetty-server:$propVersJetty")
     implementation("org.slf4j:slf4j-simple:$propVersSLF4J")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$propVersKtxJson")
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
