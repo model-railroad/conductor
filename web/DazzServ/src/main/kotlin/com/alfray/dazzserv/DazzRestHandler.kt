@@ -2,6 +2,7 @@ package com.alfray.dazzserv
 
 import com.alflabs.utils.ILogger
 import org.eclipse.jetty.http.HttpHeader
+import org.eclipse.jetty.http.HttpMethod
 import org.eclipse.jetty.io.Content
 import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.server.Request
@@ -18,10 +19,15 @@ class DazzRestHandler(
     }
 
     // Handler API: https://jetty.org/docs/jetty/12/programming-guide/server/http.html#handler-impl
+    // Note that each handler executes asynchronously in their own thread. Synchronization is
+    // needed when accessing central resources.
     override fun handle(request: Request?, response: Response?, callback: Callback?): Boolean {
         val path = Request.getPathInContext(request)
+        val isPost = HttpMethod.POST.`is`(request?.method)
+        val isGet = HttpMethod.GET.`is`(request?.method)
+
         if (request != null && response != null && callback != null) {
-            if (path.startsWith("/quitquitquit")) {
+            if (isPost && path.startsWith("/quitquitquit")) {
                 logger.d(TAG, "Handling $path")
                 reply200(
                     response,
@@ -30,7 +36,7 @@ class DazzRestHandler(
                         $path acknowledged
                     """.trimIndent())
                 quitMethod.run()
-            } else if (path.startsWith("/example")) {
+            } else if (isGet && path.startsWith("/example")) {
                 logger.d(TAG, "Handling $path")
                 reply200(
                     response,
