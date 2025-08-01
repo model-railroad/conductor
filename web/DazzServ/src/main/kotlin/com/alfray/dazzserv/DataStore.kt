@@ -1,15 +1,31 @@
 package com.alfray.dazzserv
 
 import com.alflabs.utils.ILogger
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.elementDescriptors
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.TreeMap
 
 class DataStore(
     private val logger: ILogger,
-    ) {
+) {
     val data = mutableMapOf<String, DataEntryList>()
+
+    @OptIn(ExperimentalSerializationApi::class)
+    val jsonFormat = Json {
+        prettyPrint = true
+        prettyPrintIndent = "  "
+    }
 
     fun add(entry: DataEntry) {
         val key = entry.key
@@ -19,6 +35,10 @@ class DataStore(
             }
             data[key]!!.add(entry)
         }
+    }
+
+    internal fun toJson(): String {
+        return jsonFormat.encodeToString(data)
     }
 
     fun loadFrom(file: File) {
@@ -48,10 +68,28 @@ data class DataEntry(
 
 @Serializable
 class DataEntryList {
-    val entries = mutableListOf<DataEntry>()
+    @Serializable(with = TreeMapSerializer::class)
+    private val entries = TreeMap<String, DataEntry>()
 
     fun add(entry: DataEntry) {
-        entries.add(entry)
-        entries.sortBy { it.isoTimestamp }
+        entries[entry.isoTimestamp] = entry
+    }
+}
+
+internal object TreeMapSerializer : KSerializer<TreeMap<String, DataEntry>> {
+    private val delegateSerializer = MapSerializer(String.serializer(), DataEntry.serializer())
+
+    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("TreeMap") {
+        delegateSerializer.descriptor.elementDescriptors.forEach {
+            element(it.serialName, it)
+        }
+    }
+
+    override fun serialize(encoder: Encoder, value: TreeMap<String, DataEntry>) {
+        delegateSerializer.serialize(encoder, value)
+    }
+
+    override fun deserialize(decoder: Decoder): TreeMap<String, DataEntry> {
+        return TreeMap(delegateSerializer.deserialize(decoder))
     }
 }
