@@ -20,6 +20,7 @@ val propVersSLF4J: String by project
 val propVersJackson: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
+val propVersMockitoKotlin: String by project
 
 group   = propArtifactGroup
 version = propArtifactVers
@@ -52,6 +53,7 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
     testImplementation("com.google.truth:truth:$propVersTruth")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$propVersMockitoKotlin")
 }
 
 tasks.test {
