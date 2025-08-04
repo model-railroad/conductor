@@ -1,5 +1,6 @@
 package com.alfray.dazzserv
 
+import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
@@ -20,8 +21,14 @@ private const val LOGGER_NAME = "com.alfray.DazzServer"
  *
  * @param autoStartServer Set to false during tests to avoid running actual web server.
  */
-class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
-    lateinit var server: Server
+class DazzServ(
+    private val fileOps: FileOps = FileOps(),
+    val autoStartServer: Boolean = true,
+) : CliktCommand() {
+    private lateinit var server: Server
+    private lateinit var dataStore: DataStore
+
+    // Command Line Options
     val port by option(help = "Server Port").int().default(8080)
     val host by option(help = "Server Bind IP").default("127.0.0.1")
 
@@ -32,7 +39,7 @@ class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
         fun main(args: Array<String>) = DazzServ().main(args)
     }
 
-    val logger: ILogger = object : ILogger {
+    private val logger: ILogger = object : ILogger {
         override fun d(tag: String?, message: String?) {
             echo("$tag: $message")
         }
@@ -55,6 +62,7 @@ class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
 
     private fun createServer() {
         server = Server()
+        dataStore = DataStore(logger, fileOps)
 
         val connector = ServerConnector(server)
         connector.port = port
@@ -74,9 +82,8 @@ class DazzServ(val autoStartServer: Boolean = true) : CliktCommand() {
         // DazzRestHandler is our REST API handler.
         gracefulHandler.handler = DazzRestHandler(
             logger,
-            quitMethod = {
-                quitServer(server)
-            }
+            dataStore,
+            quitMethod = { quitServer(server) }
         )
 
         // Sets the RequestLog to log to an SLF4J logger named

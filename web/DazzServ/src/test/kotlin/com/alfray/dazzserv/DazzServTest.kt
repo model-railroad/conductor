@@ -1,13 +1,16 @@
 package com.alfray.dazzserv
 
+import com.alflabs.utils.FakeFileOps
 import com.github.ajalt.clikt.testing.test
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
 class DazzServTest {
+    private val fileOps = FakeFileOps()
+
     @Test
     fun testArgDefaults() {
-        val ds = DazzServ(autoStartServer = false)
+        val ds = DazzServ(fileOps, autoStartServer = false)
         val result = ds.test("")
         assertThat(ds.port).isEqualTo(8080)
         assertThat(result.stdout).isEqualTo(
@@ -21,7 +24,7 @@ class DazzServTest {
 
     @Test
     fun testArgPort() {
-        val ds = DazzServ(autoStartServer = false)
+        val ds = DazzServ(fileOps, autoStartServer = false)
         val result = ds.test("--port 9090 --host 0.0.0.0")
         assertThat(ds.port).isEqualTo(9090)
         assertThat(result.stdout).isEqualTo(
