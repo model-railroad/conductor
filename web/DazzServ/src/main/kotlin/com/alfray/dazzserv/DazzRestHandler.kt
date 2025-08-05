@@ -23,6 +23,9 @@ class DazzRestHandler(
     // Handler API: https://jetty.org/docs/jetty/12/programming-guide/server/http.html#handler-impl
     // Note that each handler executes asynchronously in their own thread. Synchronization is
     // needed when accessing central resources.
+    // Request is typically an HttpChannelState.ChannelRequest.
+    // Response is typically an HttpChannelState.ChannelResponse.
+    // Callback is typically an HttpChannelState.ChannelCallback.
     override fun handle(request: Request?, response: Response?, callback: Callback?): Boolean {
         val path = Request.getPathInContext(request)
         val isPost = HttpMethod.POST.`is`(request?.method)
@@ -31,7 +34,7 @@ class DazzRestHandler(
         if (request != null && response != null && callback != null) {
             if (isPost && path.startsWith("/quitquitquit")) {
                 return doPostQuit(path, response, callback)
-            } else if (isGet && path.startsWith("/store")) {
+            } else if (isPost && path.startsWith("/store")) {
                 return doPostStore(path, request, response, callback)
             }
         }
@@ -75,7 +78,7 @@ class DazzRestHandler(
         reply(
             response,
             callback,
-            "$path acknowledged",
+            "$path ${if (ok) "acknowledged" else "rejected"}",
             if (ok) HttpStatus.OK_200 else HttpStatus.BAD_REQUEST_400
         )
         return true

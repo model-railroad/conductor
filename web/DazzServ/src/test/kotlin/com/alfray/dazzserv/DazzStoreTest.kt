@@ -8,8 +8,8 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 class DazzStoreTest {
-    private val fileOps = FakeFileOps()
     private val logger = StringLogger()
+    private val fileOps = FakeFileOps()
     private val ds = DataStore(logger, fileOps)
 
     @Test
