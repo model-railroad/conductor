@@ -5,6 +5,7 @@ pluginManagement {
         val propVersKotlin: String by settings
         val propVersShadow: String by settings
         id("org.jetbrains.kotlin.jvm") version propVersKotlin
+        id("org.jetbrains.kotlin.kapt") version propVersKotlin
         id("com.github.johnrengelman.shadow") version propVersShadow
     }
 }

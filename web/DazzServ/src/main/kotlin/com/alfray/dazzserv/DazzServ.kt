@@ -1,12 +1,9 @@
 package com.alfray.dazzserv
 
-import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
-import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.int
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import org.eclipse.jetty.server.CustomRequestLog
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
@@ -14,55 +11,22 @@ import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
 
-private const val LOGGER_NAME = "com.alfray.DazzServer"
+// -- obsolete -- private const val LOGGER_NAME = "com.alfray.DazzServer"
 
-/**
- * Main entry point for DazzServ.
- *
- * @param autoStartServer Set to false during tests to avoid running actual web server.
- */
-class DazzServ(
-    private val fileOps: FileOps = FileOps(),
-    val autoStartServer: Boolean = true,
-) : CliktCommand() {
+class DazzServ @AssistedInject constructor(
+    private val logger: ILogger,
+    private val dataStore: DataStore,
+    @Assisted val host: String,
+    @Assisted val port: Int,
+) {
     private lateinit var server: Server
-    private lateinit var dataStore: DataStore
-
-    // Command Line Options
-    val port by option(help = "Server Port").int().default(8080)
-    val host by option(help = "Server Bind IP").default("127.0.0.1")
 
     companion object {
         const val TAG = "DazzServ"
-
-        @JvmStatic
-        fun main(args: Array<String>) = DazzServ().main(args)
     }
 
-    private val logger: ILogger = object : ILogger {
-        override fun d(tag: String?, message: String?) {
-            echo("$tag: $message")
-        }
-
-        override fun d(tag: String?, message: String?, tr: Throwable?) {
-            echo("$tag: $message: $tr")
-        }
-    }
-
-    override fun run() {
-        logger.d(TAG, "Configured for $host port $port")
-
-        createServer()
-        if (autoStartServer) {
-            runServer()
-        }
-
-        logger.d(TAG, "End")
-    }
-
-    private fun createServer() {
+    fun createServer() {
         server = Server()
-        dataStore = DataStore(logger, fileOps)
 
         val connector = ServerConnector(server)
         connector.port = port
@@ -95,7 +59,7 @@ class DazzServ(
         )
     }
 
-    private fun runServer() {
+    fun runServer() {
         try {
             server.start()
             logger.d(TAG, "REST Server started on http://$host:$port")
@@ -109,8 +73,16 @@ class DazzServ(
         }
     }
 
-    private fun quitServer(server: Server) {
+    fun quitServer(server: Server) {
         logger.d(TAG, "REST Server quit requested")
         server.stop()
     }
+}
+
+@AssistedFactory
+interface DazzServFactory {
+    fun create(
+        host: String,
+        port: Int,
+    ) : DazzServ
 }

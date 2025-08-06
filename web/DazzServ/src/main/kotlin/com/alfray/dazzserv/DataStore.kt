@@ -12,9 +12,12 @@ import java.io.File
 import java.util.Deque
 import java.util.TreeMap
 import java.util.concurrent.ConcurrentLinkedDeque
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Suppress("FoldInitializerAndIfToElvis")
-class DataStore(
+@Singleton
+class DataStore @Inject constructor(
     private val logger: ILogger,
     private val fileOps: FileOps,
 ) {

@@ -5,6 +5,7 @@ plugins {
     // variables from gradle.properties -- specify these in settings.gradle.kts instead.
     java
     kotlin("jvm")
+    kotlin("kapt")
     application     // provides "run" task: "gradlew run --args="foo --bar"
     distribution    // provides "assembleDist" task, generates build/distribution/*.tar+zip
     id("com.github.johnrengelman.shadow")  // task "shadowJar" for single JAR
@@ -14,6 +15,7 @@ plugins {
 val propArtifactVers: String by project
 val propArtifactGroup: String by project
 val propVersJava: String by project
+val propVersDagger: String by project
 val propVersClikt: String by project
 val propVersJetty: String by project
 val propVersSLF4J: String by project
@@ -49,6 +51,10 @@ dependencies {
     implementation("org.eclipse.jetty:jetty-server:$propVersJetty")
     implementation("org.slf4j:slf4j-simple:$propVersSLF4J")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$propVersJackson")
+
+    implementation("com.google.dagger:dagger:$propVersDagger")
+    kapt("com.google.dagger:dagger-compiler:$propVersDagger")
+    kaptTest("com.google.dagger:dagger-compiler:$propVersDagger")
 
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
