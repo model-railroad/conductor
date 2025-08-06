@@ -1,6 +1,9 @@
 package com.alfray.dazzserv
 
 import com.alflabs.utils.ILogger
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import org.eclipse.jetty.http.HttpHeader
 import org.eclipse.jetty.http.HttpMethod
 import org.eclipse.jetty.http.HttpStatus
@@ -10,10 +13,10 @@ import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Response
 import org.eclipse.jetty.util.Callback
 
-class DazzRestHandler(
+class DazzRestHandler @AssistedInject constructor(
     private val logger: ILogger,
     private val dataStore: DataStore,
-    private val quitMethod: Runnable,
+    @Assisted private val quitMethod: Runnable,
 ) : Handler.Abstract() {
 
     companion object {
@@ -101,4 +104,9 @@ class DazzRestHandler(
             callback
         )
     }
+}
+
+@AssistedFactory
+interface DazzRestHandlerFactory {
+    fun create(quitMethod: Runnable) : DazzRestHandler
 }

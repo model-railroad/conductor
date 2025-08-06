@@ -1,7 +1,7 @@
 package com.alfray.dazzserv
 
-import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
+import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
 import org.eclipse.jetty.http.HttpFields
 import org.eclipse.jetty.http.HttpMethod
@@ -18,6 +18,7 @@ import org.eclipse.jetty.server.Session
 import org.eclipse.jetty.server.TunnelSupport
 import org.eclipse.jetty.util.Attributes
 import org.eclipse.jetty.util.Callback
+import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -30,13 +31,21 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
+import javax.inject.Inject
 
 
 class DazzRestHandlerTest {
-    private val logger = StringLogger()
-    private val fileOps = FakeFileOps()
-    private val ds = DataStore(logger, fileOps)
-    private val handler = DazzRestHandler(logger, ds, quitMethod = {})
+    @Inject lateinit var logger: StringLogger
+    @Inject lateinit var ds: DataStore
+    @Inject lateinit var dazzRestHandlerFactory: DazzRestHandlerFactory
+    private lateinit var handler: DazzRestHandler
+
+    @Before
+    fun setUp() {
+        val component = DaggerIMainTestComponent.factory().createComponent()
+        component.inject(this)
+        handler = dazzRestHandlerFactory.create { }
+    }
 
     @Test
     fun testGetExample() {

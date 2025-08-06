@@ -16,8 +16,9 @@ import org.eclipse.jetty.server.handler.GracefulHandler
 class DazzServ @AssistedInject constructor(
     private val logger: ILogger,
     private val dataStore: DataStore,
-    @Assisted val host: String,
-    @Assisted val port: Int,
+    private val dazzRestHandlerFactory: DazzRestHandlerFactory,
+    @Assisted private val host: String,
+    @Assisted private val port: Int,
 ) {
     private lateinit var server: Server
 
@@ -44,11 +45,10 @@ class DazzServ @AssistedInject constructor(
         server.stopTimeout = 2_000  // seconds for current handlers to terminate on shutdown
 
         // DazzRestHandler is our REST API handler.
-        gracefulHandler.handler = DazzRestHandler(
-            logger,
-            dataStore,
-            quitMethod = { quitServer(server) }
-        )
+        gracefulHandler.handler = dazzRestHandlerFactory.create {
+            quitServer(server)
+        }
+
 
         // Sets the RequestLog to log to an SLF4J logger named
         // "org.eclipse.jetty.server.RequestLog" at INFO level.
@@ -73,7 +73,7 @@ class DazzServ @AssistedInject constructor(
         }
     }
 
-    fun quitServer(server: Server) {
+    private fun quitServer(server: Server) {
         logger.d(TAG, "REST Server quit requested")
         server.stop()
     }

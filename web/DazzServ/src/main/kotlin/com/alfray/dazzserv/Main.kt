@@ -9,12 +9,6 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
-import org.eclipse.jetty.server.CustomRequestLog
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.server.ServerConnector
-import org.eclipse.jetty.server.Slf4jRequestLogWriter
-import org.eclipse.jetty.server.handler.DefaultHandler
-import org.eclipse.jetty.server.handler.GracefulHandler
 import javax.inject.Inject
 
 private const val LOGGER_NAME = "com.alfray.DazzServer"
@@ -24,7 +18,7 @@ private const val LOGGER_NAME = "com.alfray.DazzServer"
  *
  * @param autoStartServer Set to false during tests to avoid running actual web server.
  */
-class Main(
+open class Main(
     val autoStartServer: Boolean = true,
 ) : CliktCommand() {
     private lateinit var component: IMainComponent
@@ -32,9 +26,7 @@ class Main(
     @Inject lateinit var fileOps: FileOps
     @Inject lateinit var dataStore: DataStore
     @Inject lateinit var dazzServFactory: DazzServFactory
-    lateinit var server: DazzServ
-
-
+    private lateinit var server: DazzServ
 
     // Command Line Options
     val port by option(help = "Server Port").int().default(8080)
@@ -47,10 +39,11 @@ class Main(
         fun main(args: Array<String>) = Main().main(args)
     }
 
+    open fun createComponent() = DaggerIMainComponent.factory().createComponent(this)
 
     override fun run() {
         // Initialize dagger stuff
-        component = DaggerIMainComponent.factory().createComponent(this)
+        component = createComponent()
         component.inject(this)
 
         // Dagger objects can now be used.
@@ -64,5 +57,6 @@ class Main(
 
         logger.d(TAG, "End")
     }
+
 }
 

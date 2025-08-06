@@ -1,16 +1,24 @@
 package com.alfray.dazzserv
 
 import com.alflabs.utils.FakeFileOps
-import com.alflabs.utils.StringLogger
+import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
+import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.nio.charset.StandardCharsets
+import javax.inject.Inject
+
 
 class DazzStoreTest {
-    private val logger = StringLogger()
-    private val fileOps = FakeFileOps()
-    private val ds = DataStore(logger, fileOps)
+    @Inject lateinit var fileOps: FakeFileOps
+    @Inject lateinit var ds: DataStore
+
+    @Before
+    fun setUp() {
+        val component = DaggerIMainTestComponent.factory().createComponent()
+        component.inject(this)
+    }
 
     @Test
     fun testEntryToJson() {

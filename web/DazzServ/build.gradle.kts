@@ -41,7 +41,7 @@ java {
 }
 
 application {
-    mainClass = "com.alfray.dazzserv.DazzServ"
+    mainClass = "com.alfray.dazzserv.Main"
 }
 
 dependencies {
@@ -68,7 +68,7 @@ tasks.test {
 
 tasks.withType<Jar> {
     manifest {
-        attributes["Main-Class"] = "com.alfray.dazzserv.DazzServ"
+        attributes["Main-Class"] = "com.alfray.dazzserv.Main"
     }
 }
 

@@ -58,7 +58,7 @@ class DataStore @Inject constructor(
         TODO()
     }
 
-    /// Appends all new entries tro the given file, if any.
+    /// Appends all new entries to the given file, if any.
     fun saveTo(file: File) {
         if (newEntries.isEmpty()) {
             return
