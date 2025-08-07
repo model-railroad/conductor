@@ -40,3 +40,4 @@ echo "---- Building with gradle..."
 echo
 echo "---- Result ${ARTIFACT} files..."
 ls -lah build/distributions/DazzServ-${ARTIFACT}.* build/libs/DazzServ-${ARTIFACT}-all.jar
+unzip -p build/libs/DazzServ-${ARTIFACT}-all.jar META-INF/MANIFEST.MF

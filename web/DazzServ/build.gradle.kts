@@ -67,12 +67,6 @@ tasks.test {
 }
 
 tasks.withType<Jar> {
-    manifest {
-        attributes["Main-Class"] = "com.alfray.dazzserv.Main"
-    }
-}
-
-tasks.withType<Jar> {
     doFirst {
         val elems = project.configurations.runtimeClasspath.get().elements.get()
         println("## $name: Packaging ${elems.size} libraries")
