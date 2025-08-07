@@ -39,6 +39,8 @@ class DazzRestHandler @AssistedInject constructor(
                 return doPostQuit(path, response, callback)
             } else if (isPost && path.startsWith("/store")) {
                 return doPostStore(path, request, response, callback)
+            } else if (isGet && path.startsWith("/query/")) {
+                return doGetQuery(path, request, response, callback)
             }
         }
 
@@ -53,6 +55,10 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doPostQuit: $path")
+
+        // Command to trigger/test this:
+        // $ wget --no-verbose -O - --post-data="" http://localhost:8080/quitquitquit
+        // $ curl --data "" http://localhost:8080/quitquitquit
 
         reply(
             response,
@@ -84,6 +90,28 @@ class DazzRestHandler @AssistedInject constructor(
             "$path ${if (ok) "acknowledged" else "rejected"}",
             if (ok) HttpStatus.OK_200 else HttpStatus.BAD_REQUEST_400
         )
+        return true
+    }
+
+    private fun doGetQuery(
+        path: String,
+        request: Request,
+        response: Response,
+        callback: Callback
+    ): Boolean {
+        logger.d(TAG, "doGetQuery: $path")
+
+        val query = path.removePrefix("/query/")
+
+        val content = dataStore.query(query)
+
+        reply(
+            response,
+            callback,
+            content,
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
+        )
+
         return true
     }
 

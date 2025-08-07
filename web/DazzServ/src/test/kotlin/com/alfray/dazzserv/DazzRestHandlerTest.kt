@@ -115,8 +115,51 @@ class DazzRestHandlerTest {
                     }
                   }
                 }
-            """.trimIndent()
-        )
+            """.trimIndent())
+    }
+
+    @Test
+    fun testGetQuery_NoPayload() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        val request = createRequest(HttpMethod.GET, "/query/")
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(404)
+        assertThat(response.getBuffer()).isEmpty()
+    }
+
+    @Test
+    fun testGetQuery_CorrectPayload() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        val request = createRequest(HttpMethod.GET, "/query/toggles/**1")
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(200)
+        assertThat(response.getBuffer()).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-01T00:04:37Z": {"key": "toggles/entry1", "ts": "1970-01-01T00:04:37Z", "st": true, "d": "payload 3"}, 
+                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
+                    }
+                  }
+                }
+            """.trimIndent())
     }
 
     // -- test helpers --

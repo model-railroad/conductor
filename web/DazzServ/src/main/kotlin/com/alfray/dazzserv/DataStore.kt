@@ -49,9 +49,8 @@ class DataStore @Inject constructor(
         return mapper.writeValueAsString(entry)
     }
 
-    /// This method exists solely for unit tests.
-    fun storeToJson(): String {
-        return mapper.writer(CustomPrettyPrinter()).writeValueAsString(data)
+    fun storeToJson(entries: Map<String, DataEntryMap>? = null): String {
+        return mapper.writer(CustomPrettyPrinter()).writeValueAsString(entries ?: data)
     }
 
     fun loadFrom(file: File) {
@@ -92,6 +91,40 @@ class DataStore @Inject constructor(
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)
             return false
+        }
+    }
+
+    /// Returns data for the key or keys denoted by the query.
+    /// Returns an empty string on error (caller is the HTTP REST handler and doesn't care about
+    /// error details, they would be logged here instead.)
+    fun query(keyQuery: String): String {
+
+        val selectedKeys = mutableSetOf<String>()
+
+        if (keyQuery.contains("*") || keyQuery.contains("**")) {
+            // Treat the keyQuery as a glob matcher
+            val keys = data.keys
+
+            // Transform for the glob query into a regexp query
+            // ** --> .+
+            // *  --> [^/]+
+            val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
+
+            val filtered = keys.filter { key -> pattern.matcher(key).matches() }
+            selectedKeys.addAll(filtered)
+        } else {
+            // Treat the keyQuery as a single key
+            selectedKeys.add(keyQuery)
+        }
+
+        // Create a shallow copy of the data store with only the selected keys
+
+        val filteredMap = data.filterKeys { key -> selectedKeys.contains(key) }
+
+        return if (filteredMap.isNotEmpty()) {
+            storeToJson(filteredMap)
+        } else {
+            "" // error or no data
         }
     }
 }

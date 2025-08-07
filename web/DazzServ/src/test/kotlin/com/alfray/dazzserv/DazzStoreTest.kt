@@ -161,4 +161,58 @@ class DazzStoreTest {
         assertThat(fileOps.isFile(file)).isFalse()
     }
 
+    @Test
+    fun testQuery() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        assertThat(ds.query("blah")).isEmpty()
+        assertThat(ds.query("toggles/")).isEmpty()
+
+        assertThat(ds.query("toggles/entry1")).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-01T00:04:37Z": {"key": "toggles/entry1", "ts": "1970-01-01T00:04:37Z", "st": true, "d": "payload 3"}, 
+                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
+                    }
+                  }
+                }
+            """.trimIndent())
+
+
+        assertThat(ds.query("*/entry2")).isEqualTo(
+            """
+                {
+                  "toggles/entry2": {
+                    "entries": {
+                      "1970-01-02T00:03:26Z": {"key": "toggles/entry2", "ts": "1970-01-02T00:03:26Z", "st": true, "d": "payload 4"}, 
+                      "1970-01-03T00:05:48Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:05:48Z", "st": true, "d": "payload 2"}
+                    }
+                  }
+                }
+            """.trimIndent())
+
+        assertThat(ds.query("to**")).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-01T00:04:37Z": {"key": "toggles/entry1", "ts": "1970-01-01T00:04:37Z", "st": true, "d": "payload 3"}, 
+                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
+                    }
+                  }, 
+                  "toggles/entry2": {
+                    "entries": {
+                      "1970-01-02T00:03:26Z": {"key": "toggles/entry2", "ts": "1970-01-02T00:03:26Z", "st": true, "d": "payload 4"}, 
+                      "1970-01-03T00:05:48Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:05:48Z", "st": true, "d": "payload 2"}
+                    }
+                  }
+                }
+            """.trimIndent())
+    }
+
 }
