@@ -116,33 +116,34 @@ class DataStore @Inject constructor(
     /// Returns an empty string on error (caller is the HTTP REST handler and doesn't care about
     /// error details, they would be logged here instead.)
     fun query(keyQuery: String): String {
+        synchronized(data) {
+            val selectedKeys = mutableSetOf<String>()
 
-        val selectedKeys = mutableSetOf<String>()
+            if (keyQuery.contains("*") || keyQuery.contains("**")) {
+                // Treat the keyQuery as a glob matcher
+                val keys = data.keys
 
-        if (keyQuery.contains("*") || keyQuery.contains("**")) {
-            // Treat the keyQuery as a glob matcher
-            val keys = data.keys
+                // Transform for the glob query into a regexp query
+                // ** --> .+
+                // *  --> [^/]+
+                val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
 
-            // Transform for the glob query into a regexp query
-            // ** --> .+
-            // *  --> [^/]+
-            val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
+                val filtered = keys.filter { key -> pattern.matcher(key).matches() }
+                selectedKeys.addAll(filtered)
+            } else {
+                // Treat the keyQuery as a single key
+                selectedKeys.add(keyQuery)
+            }
 
-            val filtered = keys.filter { key -> pattern.matcher(key).matches() }
-            selectedKeys.addAll(filtered)
-        } else {
-            // Treat the keyQuery as a single key
-            selectedKeys.add(keyQuery)
-        }
+            // Create a shallow copy of the data store with only the selected keys
 
-        // Create a shallow copy of the data store with only the selected keys
+            val filteredMap = data.filterKeys { key -> selectedKeys.contains(key) }
 
-        val filteredMap = data.filterKeys { key -> selectedKeys.contains(key) }
-
-        return if (filteredMap.isNotEmpty()) {
-            storeToJson(filteredMap)
-        } else {
-            "" // error or no data
+            return if (filteredMap.isNotEmpty()) {
+                storeToJson(filteredMap)
+            } else {
+                "" // error or no data
+            }
         }
     }
 }
