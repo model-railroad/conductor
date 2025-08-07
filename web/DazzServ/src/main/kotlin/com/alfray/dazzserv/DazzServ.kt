@@ -1,3 +1,21 @@
+/*
+ * Project: DazzServ
+ * Copyright (C) 2025 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.alfray.dazzserv
 
 import com.alflabs.utils.ILogger
@@ -11,11 +29,8 @@ import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
 
-// -- obsolete -- private const val LOGGER_NAME = "com.alfray.DazzServer"
-
 class DazzServ @AssistedInject constructor(
     private val logger: ILogger,
-    private val dataStore: DataStore,
     private val dazzRestHandlerFactory: DazzRestHandlerFactory,
     @Assisted private val host: String,
     @Assisted private val port: Int,
