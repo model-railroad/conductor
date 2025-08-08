@@ -115,7 +115,7 @@ class DataStore @Inject constructor(
     /// Returns data for the key or keys denoted by the query.
     /// Returns an empty string on error (caller is the HTTP REST handler and doesn't care about
     /// error details, they would be logged here instead.)
-    fun query(keyQuery: String): String {
+    fun queryToJson(keyQuery: String): String {
         synchronized(data) {
             val selectedKeys = mutableSetOf<String>()
 
@@ -145,6 +145,14 @@ class DataStore @Inject constructor(
                 "" // error or no data
             }
         }
+    }
+
+    fun liveToJson(version: Int): String {
+        return "" // error or no data
+    }
+
+    fun historyToJson(): String {
+        return "" // error or no data
     }
 }
 

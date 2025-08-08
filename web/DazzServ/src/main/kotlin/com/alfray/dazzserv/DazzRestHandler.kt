@@ -59,6 +59,10 @@ class DazzRestHandler @AssistedInject constructor(
                 return doPostStore(path, request, response, callback)
             } else if (isGet && path.startsWith("/query/")) {
                 return doGetQuery(path, request, response, callback)
+            } else if (isGet && path.startsWith("/live/v")) {
+                return doGetLive(path, request, response, callback)
+            } else if (isGet && path.startsWith("/history")) {
+                return doGetHistory(path, request, response, callback)
             }
         }
 
@@ -121,7 +125,54 @@ class DazzRestHandler @AssistedInject constructor(
 
         val query = path.removePrefix("/query/")
 
-        val content = dataStore.query(query)
+        val content = dataStore.queryToJson(query)
+
+        reply(
+            response,
+            callback,
+            content,
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
+        )
+
+        return true
+    }
+
+    private fun doGetLive(
+        path: String,
+        request: Request,
+        response: Response,
+        callback: Callback
+    ): Boolean {
+        logger.d(TAG, "doGetLive: $path")
+
+        val version = path.removePrefix("/live/v").toIntOrNull()
+
+        val content =
+            if (version != null && (version == 1 || version == 2)) {
+                 dataStore.liveToJson(version)
+            } else {
+                ""
+            }
+
+        reply(
+            response,
+            callback,
+            content,
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
+        )
+
+        return true
+    }
+
+    private fun doGetHistory(
+        path: String,
+        request: Request,
+        response: Response,
+        callback: Callback
+    ): Boolean {
+        logger.d(TAG, "doGetHistory: $path")
+
+        val content = dataStore.historyToJson()
 
         reply(
             response,
