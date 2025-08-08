@@ -180,16 +180,16 @@ class DazzStoreTest {
     }
 
     @Test
-    fun testQuery() {
+    fun testQueryToJson() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
         ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
 
-        assertThat(ds.query("blah")).isEmpty()
-        assertThat(ds.query("toggles/")).isEmpty()
+        assertThat(ds.queryToJson("blah")).isEmpty()
+        assertThat(ds.queryToJson("toggles/")).isEmpty()
 
-        assertThat(ds.query("toggles/entry1")).isEqualTo(
+        assertThat(ds.queryToJson("toggles/entry1")).isEqualTo(
             """
                 {
                   "toggles/entry1": {
@@ -202,7 +202,7 @@ class DazzStoreTest {
             """.trimIndent())
 
 
-        assertThat(ds.query("*/entry2")).isEqualTo(
+        assertThat(ds.queryToJson("*/entry2")).isEqualTo(
             """
                 {
                   "toggles/entry2": {
@@ -214,7 +214,7 @@ class DazzStoreTest {
                 }
             """.trimIndent())
 
-        assertThat(ds.query("to**")).isEqualTo(
+        assertThat(ds.queryToJson("to**")).isEqualTo(
             """
                 {
                   "toggles/entry1": {
@@ -231,6 +231,36 @@ class DazzStoreTest {
                   }
                 }
             """.trimIndent())
+    }
+
+    @Test
+    fun testLiveV1ToJson() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        assertThat(ds.liveToJson(1)).isEmpty()
+    }
+
+    @Test
+    fun testLiveV2ToJson() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        assertThat(ds.liveToJson(2)).isEmpty()
+    }
+
+    @Test
+    fun testHistoryToJson() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        assertThat(ds.historyToJson()).isEmpty()
     }
 
 }

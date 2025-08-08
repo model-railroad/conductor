@@ -180,6 +180,57 @@ class DazzRestHandlerTest {
             """.trimIndent())
     }
 
+    @Test
+    fun testGetLive_V1_CorrectPayload() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        val request = createRequest(HttpMethod.GET, "/live/v1")
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(404)
+        assertThat(response.getBuffer()).isEmpty()
+    }
+
+    @Test
+    fun testGetLive_V2_CorrectPayload() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        val request = createRequest(HttpMethod.GET, "/live/v2")
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(404)
+        assertThat(response.getBuffer()).isEmpty()
+    }
+
+    @Test
+    fun testGetHistory_CorrectPayload() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+
+        val request = createRequest(HttpMethod.GET, "/history")
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(404)
+        assertThat(response.getBuffer()).isEmpty()
+    }
+
     // -- test helpers --
 
     private fun createRequestFromUri(
