@@ -27,6 +27,7 @@ import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
+import java.util.Collections
 import java.util.Deque
 import java.util.TreeMap
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -166,10 +167,12 @@ data class DataEntry(
     @JsonProperty("d")  val payload: String = "",
 )
 
-/// A map of all the entries for a given key. The entries are sorted by ISO timestamp (as strings).
+/// A map of all the entries for a given key.
+/// The entries are sorted by ISO timestamp (as strings) in reverse order (most recent first).
 /// There can (obviously) be only one entry per timestamp.
 data class DataEntryMap(
-    val entries: TreeMap<String, DataEntry> = TreeMap<String, DataEntry>()
+    val entries: TreeMap<String, DataEntry> =
+        TreeMap<String, DataEntry>(Collections.reverseOrder())
 ) {
     /// Adds an entry if it's new (e.g. a timestamp never seen before).
     /// Already seen timestamps are ignored and not updated.
