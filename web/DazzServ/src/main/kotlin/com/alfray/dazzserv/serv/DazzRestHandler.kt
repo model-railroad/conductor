@@ -149,7 +149,7 @@ class DazzRestHandler @AssistedInject constructor(
         val version = path.removePrefix("/live/v").toIntOrNull()
 
         val content =
-            if (version != null && (version == 1 || version == 2)) {
+            if (version != null && version == 2) {
                  dataStore.liveToJson(version)
             } else {
                 ""

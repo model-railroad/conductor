@@ -183,7 +183,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_V1_CorrectPayload() {
+    fun testGetLiveV1_NotSupported() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
@@ -200,7 +200,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_V2_CorrectPayload() {
+    fun testGetLiveV2_CorrectPayload() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
