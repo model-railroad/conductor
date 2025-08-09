@@ -18,6 +18,7 @@
 
 package com.alfray.dazzserv.store
 
+import com.alflabs.dazzserv.store.DataEntry
 import java.util.Collections
 import java.util.TreeMap
 

@@ -18,13 +18,13 @@
 
 package com.alfray.dazzserv.store
 
+import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -62,7 +62,7 @@ class DataStore @Inject constructor(
     }
 
     fun entryToJson(entry: DataEntry): String {
-        return mapper.writeValueAsString(entry)
+        return entry.toJsonString(mapper)
     }
 
     fun storeToJson(entries: Map<String, DataEntryMap>? = null): String {
@@ -99,7 +99,7 @@ class DataStore @Inject constructor(
     /// error will only be detailed via the logs and not in the HTTP response.
     fun store(jsonPayload: String): Boolean {
         try {
-            val entry = mapper.readValue<DataEntry>(jsonPayload)
+            val entry = DataEntry.parseJson(mapper, jsonPayload)
             if (add(entry)) {
                 newEntries.addLast(entry)
             }

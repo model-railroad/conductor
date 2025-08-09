@@ -18,9 +18,9 @@
 
 package com.alfray.dazzserv.serv
 
+import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
-import com.alfray.dazzserv.store.DataEntry
 import com.alfray.dazzserv.store.DataStore
 import com.google.common.truth.Truth.assertThat
 import org.eclipse.jetty.http.HttpFields

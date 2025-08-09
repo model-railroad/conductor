@@ -56,6 +56,7 @@ dependencies {
     kapt("com.google.dagger:dagger-compiler:$propVersDagger")
     kaptTest("com.google.dagger:dagger-compiler:$propVersDagger")
 
+    testImplementation(project(":LibManifest"))
     testImplementation(kotlin("test"))
     testImplementation("junit:junit:$propVersJunit")
     testImplementation("com.google.truth:truth:$propVersTruth")

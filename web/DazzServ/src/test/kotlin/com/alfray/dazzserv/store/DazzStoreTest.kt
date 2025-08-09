@@ -18,6 +18,7 @@
 
 package com.alfray.dazzserv.store
 
+import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.FakeFileOps
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
@@ -157,8 +158,7 @@ class DazzStoreTest {
             """.trimIndent()
 
         assertThat(ds.store(inputJson)).isFalse()
-
-
+        
         // Timestamp is mandatory
         inputJson = """
                 {
