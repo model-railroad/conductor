@@ -147,8 +147,41 @@ class DataStore @Inject constructor(
         }
     }
 
-    fun liveToJson(version: Int): String {
-        return "" // error or no data
+    fun liveToJson(): String {
+        // Wazz Logic to serve live data:
+        // - For each key, return all entries till we report one success entries.
+        // - If the next one also is a success entry, report it too.
+        // TBD optional: key glob filter via CGI param or URI Path.
+        // TBD optional: configure max num success entries via CGI param.
+
+        val liveData = mutableMapOf<String, DataEntryMap>()
+
+        synchronized(data) {
+            if (data.isEmpty()) {
+                return "" // no data
+            }
+
+            data.forEach { (key, entries) ->
+                val newEntries = DataEntryMap()
+                var countSuccess = 0
+                for(entry in entries.entries.values) {
+                    val isSuccess = entry.isState
+                    if (isSuccess) {
+                        countSuccess++
+                    } else if (countSuccess >= 1) {
+                        break
+                    }
+                    if (countSuccess <= 2) {
+                        newEntries.add(entry)
+                    } else {
+                        break
+                    }
+                }
+                liveData[key] = newEntries
+            }
+        }
+
+        return storeToJson(liveData)
     }
 
     fun historyToJson(): String {

@@ -234,47 +234,118 @@ class DazzStoreTest {
     }
 
     @Test
-    fun testLiveV1ToJson() {
-        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+    fun testLiveToJson() {
+        ds.add(DataEntry("entryA", "ts0001", true , "run A.01 ok"))
+        ds.add(DataEntry("entryA", "ts0002", true , "run A.02 ok"))
+        ds.add(DataEntry("entryA", "ts0003", true , "run A.03 ok"))
+        ds.add(DataEntry("entryA", "ts0004", true , "run A.04 ok"))
 
-        assertThat(ds.liveToJson(1)).isEmpty()
-    }
+        ds.add(DataEntry("entryB", "ts0012", true , "run B.08 ok"))
+        ds.add(DataEntry("entryB", "ts0013", true , "run B.09 ok"))
+        ds.add(DataEntry("entryB", "ts0014", true , "run B.10 ok"))
+        ds.add(DataEntry("entryB", "ts0015", true , "run B.11 ok"))
+        ds.add(DataEntry("entryB", "ts0016", false, "run B.12 fail"))
+        ds.add(DataEntry("entryB", "ts0017", false, "run B.13 fail"))
+        ds.add(DataEntry("entryB", "ts0018", false, "run B.14 fail"))
 
-    @Test
-    fun testLiveV2ToJson() {
-        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+        ds.add(DataEntry("entryC", "ts0001", true , "run C.01 ok"))
+        ds.add(DataEntry("entryC", "ts0003", true , "run C.02 ok"))
+        ds.add(DataEntry("entryC", "ts0004", false, "run C.02 fail"))
+        ds.add(DataEntry("entryC", "ts0005", false, "run C.02 fail"))
+        ds.add(DataEntry("entryC", "ts0007", true , "run C.04 ok"))
+        ds.add(DataEntry("entryC", "ts0008", false, "run C.04 fail"))
+        ds.add(DataEntry("entryC", "ts0009", false, "run C.04 fail"))
 
-        assertThat(ds.liveToJson(2)).isEmpty()
+        assertThat(ds.liveToJson()).isEqualTo(
+            """
+                {
+                  "entryA": {
+                    "entries": {
+                      "ts0004": {"key": "entryA", "ts": "ts0004", "st": true, "d": "run A.04 ok"}, 
+                      "ts0003": {"key": "entryA", "ts": "ts0003", "st": true, "d": "run A.03 ok"}
+                    }
+                  }, 
+                  "entryB": {
+                    "entries": {
+                      "ts0018": {"key": "entryB", "ts": "ts0018", "st": false, "d": "run B.14 fail"}, 
+                      "ts0017": {"key": "entryB", "ts": "ts0017", "st": false, "d": "run B.13 fail"}, 
+                      "ts0016": {"key": "entryB", "ts": "ts0016", "st": false, "d": "run B.12 fail"}, 
+                      "ts0015": {"key": "entryB", "ts": "ts0015", "st": true, "d": "run B.11 ok"}, 
+                      "ts0014": {"key": "entryB", "ts": "ts0014", "st": true, "d": "run B.10 ok"}
+                    }
+                  }, 
+                  "entryC": {
+                    "entries": {
+                      "ts0009": {"key": "entryC", "ts": "ts0009", "st": false, "d": "run C.04 fail"}, 
+                      "ts0008": {"key": "entryC", "ts": "ts0008", "st": false, "d": "run C.04 fail"}, 
+                      "ts0007": {"key": "entryC", "ts": "ts0007", "st": true, "d": "run C.04 ok"}
+                    }
+                  }
+                }
+            """.trimIndent())
     }
 
     @Test
     fun testHistoryToJson() {
-        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", false, "payload 4"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
+        ds.add(DataEntry("entryA", "ts0001", true , "run A.01 ok"))
+        ds.add(DataEntry("entryA", "ts0002", false, "run A.01 fail"))
+        ds.add(DataEntry("entryA", "ts0003", true , "run A.02 ok"))
+        ds.add(DataEntry("entryA", "ts0004", false, "run A.02 fail"))
+        ds.add(DataEntry("entryA", "ts0005", false, "run A.02 fail"))
+        ds.add(DataEntry("entryA", "ts0006", true , "run A.03 ok"))
+        ds.add(DataEntry("entryA", "ts0007", true , "run A.04 ok"))
+        ds.add(DataEntry("entryA", "ts0008", true , "run A.05 ok"))
+        ds.add(DataEntry("entryA", "ts0009", true , "run A.06 ok"))
+        ds.add(DataEntry("entryA", "ts0010", true , "run A.07 ok"))
+        ds.add(DataEntry("entryA", "ts0011", true , "run A.08 ok"))
+        ds.add(DataEntry("entryA", "ts0012", true , "run A.09 ok"))
+        ds.add(DataEntry("entryA", "ts0013", true , "run A.10 ok"))
+        ds.add(DataEntry("entryA", "ts0014", true , "run A.11 ok"))
+
+        ds.add(DataEntry("entryB", "ts0005", true , "run B.01 ok"))
+        ds.add(DataEntry("entryB", "ts0006", true , "run B.02 ok"))
+        ds.add(DataEntry("entryB", "ts0007", true , "run B.03 ok"))
+        ds.add(DataEntry("entryB", "ts0008", true , "run B.04 ok"))
+        ds.add(DataEntry("entryB", "ts0009", true , "run B.05 ok"))
+        ds.add(DataEntry("entryB", "ts0010", true , "run B.06 ok"))
+        ds.add(DataEntry("entryB", "ts0011", true , "run B.07 ok"))
+        ds.add(DataEntry("entryB", "ts0012", true , "run B.08 ok"))
+        ds.add(DataEntry("entryB", "ts0013", true , "run B.09 ok"))
+        ds.add(DataEntry("entryB", "ts0014", true , "run B.10 ok"))
+        ds.add(DataEntry("entryB", "ts0015", true , "run B.11 ok"))
+        ds.add(DataEntry("entryB", "ts0016", false, "run B.12 fail"))
+        ds.add(DataEntry("entryB", "ts0017", false, "run B.13 fail"))
+        ds.add(DataEntry("entryB", "ts0018", false, "run B.14 fail"))
 
         assertThat(ds.historyToJson()).isEqualTo(
             """
                 {
-                  "toggles/entry1": {
+                  "entryA": {
                     "entries": {
-                      "1970-01-05T00:06:89Z": {"key": "toggles/entry1", "ts": "1970-01-05T00:06:89Z", "st": true, "d": "payload 5"}, 
-                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
+                      "ts0014": {"key": "entryA", "ts": "ts0014", "st": true, "d": "run A.11 ok"}, 
+                      "ts0013": {"key": "entryA", "ts": "ts0013", "st": true, "d": "run A.10 ok"}, 
+                      "ts0012": {"key": "entryA", "ts": "ts0012", "st": true, "d": "run A.09 ok"}, 
+                      "ts0011": {"key": "entryA", "ts": "ts0011", "st": true, "d": "run A.08 ok"}, 
+                      "ts0010": {"key": "entryA", "ts": "ts0010", "st": true, "d": "run A.07 ok"}, 
+                      "ts0009": {"key": "entryA", "ts": "ts0009", "st": true, "d": "run A.06 ok"}, 
+                      "ts0008": {"key": "entryA", "ts": "ts0008", "st": true, "d": "run A.05 ok"}, 
+                      "ts0007": {"key": "entryA", "ts": "ts0007", "st": true, "d": "run A.04 ok"}, 
+                      "ts0006": {"key": "entryA", "ts": "ts0006", "st": true, "d": "run A.03 ok"}, 
+                      "ts0003": {"key": "entryA", "ts": "ts0003", "st": true, "d": "run A.02 ok"}
                     }
                   }, 
-                  "toggles/entry2": {
+                  "entryB": {
                     "entries": {
-                      "1970-01-06T00:07:89Z": {"key": "toggles/entry2", "ts": "1970-01-06T00:07:89Z", "st": true, "d": "payload 6"}, 
-                      "1970-01-03T00:05:48Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:05:48Z", "st": true, "d": "payload 2"}
+                      "ts0015": {"key": "entryB", "ts": "ts0015", "st": true, "d": "run B.11 ok"}, 
+                      "ts0014": {"key": "entryB", "ts": "ts0014", "st": true, "d": "run B.10 ok"}, 
+                      "ts0013": {"key": "entryB", "ts": "ts0013", "st": true, "d": "run B.09 ok"}, 
+                      "ts0012": {"key": "entryB", "ts": "ts0012", "st": true, "d": "run B.08 ok"}, 
+                      "ts0011": {"key": "entryB", "ts": "ts0011", "st": true, "d": "run B.07 ok"}, 
+                      "ts0010": {"key": "entryB", "ts": "ts0010", "st": true, "d": "run B.06 ok"}, 
+                      "ts0009": {"key": "entryB", "ts": "ts0009", "st": true, "d": "run B.05 ok"}, 
+                      "ts0008": {"key": "entryB", "ts": "ts0008", "st": true, "d": "run B.04 ok"}, 
+                      "ts0007": {"key": "entryB", "ts": "ts0007", "st": true, "d": "run B.03 ok"}, 
+                      "ts0006": {"key": "entryB", "ts": "ts0006", "st": true, "d": "run B.02 ok"}
                     }
                   }
                 }

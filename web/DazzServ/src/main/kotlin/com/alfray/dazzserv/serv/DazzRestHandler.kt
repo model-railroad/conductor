@@ -60,7 +60,7 @@ class DazzRestHandler @AssistedInject constructor(
                 return doPostStore(path, request, response, callback)
             } else if (isGet && path.startsWith("/query/")) {
                 return doGetQuery(path, request, response, callback)
-            } else if (isGet && path.startsWith("/live/v")) {
+            } else if (isGet && path.startsWith("/live")) {
                 return doGetLive(path, request, response, callback)
             } else if (isGet && path.startsWith("/history")) {
                 return doGetHistory(path, request, response, callback)
@@ -146,14 +146,7 @@ class DazzRestHandler @AssistedInject constructor(
     ): Boolean {
         logger.d(TAG, "doGetLive: $path")
 
-        val version = path.removePrefix("/live/v").toIntOrNull()
-
-        val content =
-            if (version != null && (version == 1 || version == 2)) {
-                 dataStore.liveToJson(version)
-            } else {
-                ""
-            }
+        val content = dataStore.liveToJson()
 
         reply(
             response,

@@ -183,13 +183,8 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_V1_CorrectPayload() {
-        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
-
-        val request = createRequest(HttpMethod.GET, "/live/v1")
+    fun testGetLive_NoData() {
+        val request = createRequest(HttpMethod.GET, "/live")
 
         val response = FakeResponse(request)
         val callback = mock<Callback>()
@@ -200,20 +195,23 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_V2_CorrectPayload() {
+    fun testGetLive_CorrectData() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", false, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
 
-        val request = createRequest(HttpMethod.GET, "/live/v2")
+        val request = createRequest(HttpMethod.GET, "/live")
 
         val response = FakeResponse(request)
         val callback = mock<Callback>()
 
         assertThat(handler.handle(request, response, callback)).isTrue()
-        assertThat(response.status).isEqualTo(404)
-        assertThat(response.getBuffer()).isEmpty()
+        assertThat(response.status).isEqualTo(200)
+        // Note: this is about testing the REST call. We don't want to dup the DataStore test here.
+        assertThat(response.getBuffer()).isNotEmpty()
     }
 
     @Test
@@ -244,23 +242,8 @@ class DazzRestHandlerTest {
 
         assertThat(handler.handle(request, response, callback)).isTrue()
         assertThat(response.status).isEqualTo(200)
-        assertThat(response.getBuffer()).isEqualTo(
-            """
-                {
-                  "toggles/entry1": {
-                    "entries": {
-                      "1970-01-05T00:06:89Z": {"key": "toggles/entry1", "ts": "1970-01-05T00:06:89Z", "st": true, "d": "payload 5"}, 
-                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
-                    }
-                  }, 
-                  "toggles/entry2": {
-                    "entries": {
-                      "1970-01-06T00:07:89Z": {"key": "toggles/entry2", "ts": "1970-01-06T00:07:89Z", "st": true, "d": "payload 6"}, 
-                      "1970-01-03T00:05:48Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:05:48Z", "st": true, "d": "payload 2"}
-                    }
-                  }
-                }
-            """.trimIndent())
+        // Note: this is about testing the REST call. We don't want to dup the DataStore test here.
+        assertThat(response.getBuffer()).isNotEmpty()
     }
 
     // -- test helpers --
