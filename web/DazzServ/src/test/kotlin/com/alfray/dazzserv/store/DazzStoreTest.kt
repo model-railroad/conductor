@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv
+package com.alfray.dazzserv.store
 
 import com.alflabs.utils.FakeFileOps
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent

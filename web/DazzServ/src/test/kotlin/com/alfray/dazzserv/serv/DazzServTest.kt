@@ -16,9 +16,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv
+package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.StringLogger
+import com.alfray.dazzserv.Main
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.alfray.dazzserv.dagger.IMainComponent
 import com.github.ajalt.clikt.testing.test

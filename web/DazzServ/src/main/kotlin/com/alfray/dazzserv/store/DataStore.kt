@@ -16,20 +16,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv
+package com.alfray.dazzserv.store
 
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
-import java.util.Collections
 import java.util.Deque
-import java.util.TreeMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -154,45 +151,6 @@ class DataStore @Inject constructor(
 
     fun historyToJson(): String {
         return "" // error or no data
-    }
-}
-
-/// One data entry unit: key (category) -> ISO timestamp --> boolean state --> opaque payload.
-data class DataEntry(
-    /// The key is expected to be a path-like structure (item1/item2/.../itemN) and never empty.
-    val key: String,
-    /// The timestamp MUST be in ISO 8601 format: .e.g "1970-01-01T00:03:54Z"
-    /// Consistency is important across all entries as string natural sorting is used to
-    /// order the timestamps. This avoids having to decode the ISO timestamp in the store.
-    @JsonProperty("ts") val isoTimestamp: String,
-    /// The "state" is a boolean which meaning depends on the key and the application.
-    /// Pretty much all the data items handled by Wazz incorporate a boolean state, although its
-    /// meaning depends on the context of the data. It is thus extracted from the payload.
-    @JsonProperty("st") val state: Boolean = false,
-    /// The payload is an opaque string which the DataStore doesn't need to decode. It can be
-    /// empty if needed. Most of the time it will be application-specific stringified JSON.
-    /// Keeping it opaque means we clumsily encode a JSON String into a JSON, but OTOH it means
-    /// the DataStore and the REST server does not need to be updated with the application.
-    @JsonProperty("d")  val payload: String = "",
-)
-
-/// A map of all the entries for a given key.
-/// The entries are sorted by ISO timestamp (as strings) in reverse order (most recent first).
-/// There can (obviously) be only one entry per timestamp.
-data class DataEntryMap(
-    val entries: TreeMap<String, DataEntry> =
-        TreeMap<String, DataEntry>(Collections.reverseOrder())
-) {
-    /// Adds an entry if it's new (e.g. a timestamp never seen before).
-    /// Already seen timestamps are ignored and not updated.
-    /// Returns true if the entry was new and added, false if already seen.
-    fun add(entry: DataEntry): Boolean {
-        val ts = entry.isoTimestamp
-        if (entries.containsKey(ts)) {
-            return false
-        }
-        entries[ts] = entry
-        return true
     }
 }
 

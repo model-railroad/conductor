@@ -16,10 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv
+package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
+import com.alfray.dazzserv.store.DataEntry
+import com.alfray.dazzserv.store.DataStore
 import com.google.common.truth.Truth.assertThat
 import org.eclipse.jetty.http.HttpFields
 import org.eclipse.jetty.http.HttpMethod

@@ -18,9 +18,9 @@
 
 package com.alfray.dazzserv.dagger
 
-import com.alfray.dazzserv.DazzRestHandlerTest
-import com.alfray.dazzserv.DazzServTest
-import com.alfray.dazzserv.DazzStoreTest
+import com.alfray.dazzserv.serv.DazzRestHandlerTest
+import com.alfray.dazzserv.serv.DazzServTest
+import com.alfray.dazzserv.store.DazzStoreTest
 import dagger.Component
 import javax.inject.Singleton
 

@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv
+package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.ILogger
 import dagger.assisted.Assisted
