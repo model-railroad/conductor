@@ -158,7 +158,7 @@ class DazzStoreTest {
             """.trimIndent()
 
         assertThat(ds.store(inputJson)).isFalse()
-        
+
         // Timestamp is mandatory
         inputJson = """
                 {
@@ -257,10 +257,28 @@ class DazzStoreTest {
     fun testHistoryToJson() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
-        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
-        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", false, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
 
-        assertThat(ds.historyToJson()).isEmpty()
+        assertThat(ds.historyToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-05T00:06:89Z": {"key": "toggles/entry1", "ts": "1970-01-05T00:06:89Z", "st": true, "d": "payload 5"}, 
+                      "1970-01-04T00:06:59Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:06:59Z", "st": true, "d": "payload 1"}
+                    }
+                  }, 
+                  "toggles/entry2": {
+                    "entries": {
+                      "1970-01-06T00:07:89Z": {"key": "toggles/entry2", "ts": "1970-01-06T00:07:89Z", "st": true, "d": "payload 6"}, 
+                      "1970-01-03T00:05:48Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:05:48Z", "st": true, "d": "payload 2"}
+                    }
+                  }
+                }
+            """.trimIndent())
     }
 
 }

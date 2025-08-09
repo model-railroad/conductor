@@ -46,6 +46,7 @@ class DataStore @Inject constructor(
 
     companion object {
         const val TAG = "DataStore"
+        const val HISTORY_NUM_ENTRIES = 10
     }
 
     /// Adds an entry if it's new (e.g. a key/timestamp never seen before).
@@ -118,12 +119,13 @@ class DataStore @Inject constructor(
             val selectedKeys = mutableSetOf<String>()
 
             if (keyQuery.contains("*") || keyQuery.contains("**")) {
-                // Treat the keyQuery as a glob matcher
                 val keys = data.keys
 
-                // Transform for the glob query into a regexp query
+                // Treat the keyQuery as a glob matcher
+                // Transform the glob query into a regexp query
                 // ** --> .+
                 // *  --> [^/]+
+                // TBD optional: regex-escape all other special characters except / ?
                 val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
 
                 val filtered = keys.filter { key -> pattern.matcher(key).matches() }
@@ -150,7 +152,34 @@ class DataStore @Inject constructor(
     }
 
     fun historyToJson(): String {
-        return "" // error or no data
+        // Wazz Logic to serve history data:
+        // - For each key, return up to 10 success entries
+        // - Ignore the failed ones.
+        // TBD optional: key glob filter via CGI param or URI Path.
+        // TBD optional: configure max num entries via CGI param.
+
+        val historyData = mutableMapOf<String, DataEntryMap>()
+
+        synchronized(data) {
+            if (data.isEmpty()) {
+                return "" // no data
+            }
+
+            data.forEach { (key, entries) ->
+                val newEntries = DataEntryMap()
+                for(entry in entries.entries.values) {
+                    if (entry.isState) {
+                        newEntries.add(entry)
+                        if (newEntries.entries.size >= HISTORY_NUM_ENTRIES) {
+                            break
+                        }
+                    }
+                }
+                historyData[key] = newEntries
+            }
+        }
+
+        return storeToJson(historyData)
     }
 }
 
