@@ -90,7 +90,11 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
-        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear()).containsExactly(
+            """
+                {"key":"toggle/passenger","ts":"1970-01-01T00:00:01Z","st":false,"d":""}
+            """.trimIndent()
+        )
 
         // Simulate an activation but turning the toggle on-off for 100ms
         mlToggle.active(true)
@@ -113,7 +117,11 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
-        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear()).containsExactly(
+            """
+                {"key":"toggle/passenger","ts":"1970-01-01T00:00:02Z","st":true,"d":""}
+            """.trimIndent()
+        )
 
         clockMillis.add(100)
         mlToggle.active(false)
@@ -156,7 +164,11 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
-        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear()).containsExactly(
+            """
+                {"key":"toggle/passenger","ts":"1970-01-01T00:00:02Z","st":false,"d":""}
+            """.trimIndent()
+        )
 
         // Simulate train progress by changing blocks B311->B321
         b321.internalActive(true)

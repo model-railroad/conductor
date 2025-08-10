@@ -164,6 +164,11 @@ jsonEvent {
     value = "value"
 }
 
+dazzEvent {
+    key = "route/depart/passenger"
+    state = true
+}
+
 enum class EPA_State { Idle, Running, Wait }
 var PA_State = EPA_State.Idle
 

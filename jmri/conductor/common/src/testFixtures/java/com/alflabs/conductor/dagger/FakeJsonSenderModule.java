@@ -63,10 +63,11 @@ public abstract class FakeJsonSenderModule {
     public static DazzSender provideDazzSender(
             ILogger logger,
             FileOps fileOps,
+            IClock clock,
             OkHttpClient okHttpClient,
             @Named("JsonDateFormat") DateFormat jsonDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new FakeDazzSender(logger, fileOps, okHttpClient, jsonDateFormat, executor);
+        return new FakeDazzSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
     }
 
     @Singleton

@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.ILogger
@@ -29,6 +30,7 @@ import com.alfray.conductor.v2.script.dsl.ExportedVars
 import com.alfray.conductor.v2.script.dsl.IAfter
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IConductor
+import com.alfray.conductor.v2.script.dsl.IDazzEventBuilder
 import com.alfray.conductor.v2.script.dsl.IIdleRoute
 import com.alfray.conductor.v2.script.dsl.IJsonEventBuilder
 import com.alfray.conductor.v2.script.dsl.IOnRule
@@ -45,6 +47,8 @@ import com.alfray.conductor.v2.script.dsl.ITurnout
 import com.alfray.conductor.v2.script.dsl.MqttPublisher
 import com.alfray.conductor.v2.script.dsl.TCondition
 import com.alfray.conductor.v2.script.impl.After
+import com.alfray.conductor.v2.script.impl.DazzEvent
+import com.alfray.conductor.v2.script.impl.DazzEventBuilder
 import com.alfray.conductor.v2.script.impl.Factory
 import com.alfray.conductor.v2.script.impl.JsonEvent
 import com.alfray.conductor.v2.script.impl.JsonEventBuilder
@@ -53,6 +57,7 @@ import com.alfray.conductor.v2.script.impl.OnRuleKey
 import com.alfray.conductor.v2.script.impl.SvgMapBuilder
 import com.alfray.conductor.v2.simulator.ISimulCallback
 import com.alfray.conductor.v2.utils.assertOrThrow
+import com.google.common.annotations.VisibleForTesting
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -63,6 +68,7 @@ class ConductorImpl @Inject internal constructor(
     override val analytics: AnalyticsPublisher,
     override val mqtt: MqttPublisher,
     private val jsonSender: JsonSender,
+    private val dazzSender: DazzSender,
     private val eStopHandler: EStopHandler,
     override val exportedVars: ExportedVars,
     private val currentContext: CurrentContext,
@@ -76,7 +82,11 @@ class ConductorImpl @Inject internal constructor(
     val svgMaps = mutableListOf<ISvgMap>()
     val timers = mutableListOf<ITimer>()
     val routesContainers = mutableListOf<IRoutesContainer>()
+    @VisibleForTesting
     var lastJsonEvent: JsonEvent? = null
+        private set
+    @VisibleForTesting
+    var lastDazzEvent: DazzEvent? = null
         private set
     internal val contextTimers = mutableSetOf<ExecContext>()
     private var simulCallback: ISimulCallback? = null
@@ -213,6 +223,14 @@ class ConductorImpl @Inject internal constructor(
         val ev = builder.create()
         jsonSender.sendEvent(ev.key1, ev.key2, ev.value)
         lastJsonEvent = ev
+    }
+
+    override fun dazzEvent(dazzEventSpecification: IDazzEventBuilder.() -> Unit) {
+        val builder = DazzEventBuilder()
+        builder.dazzEventSpecification()
+        val ev = builder.create()
+        dazzSender.sendEvent(ev.key, ev.state)
+        lastDazzEvent = ev
     }
 
     override fun eStop() {

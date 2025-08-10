@@ -83,6 +83,8 @@ class StatusWindow2k : IStatusWindow {
     private val mUpdaters = mutableListOf<Runnable>()
 
     companion object {
+        // Version number should match jmri/conductor/gradle.properties
+        private const val VERSION = "2.7"
         private const val VERBOSE = true
         private const val midColumnW = 150
         private const val midThrottleH = 40
@@ -92,8 +94,7 @@ class StatusWindow2k : IStatusWindow {
     override fun open(windowCallback: IWindowCallback) {
         this.windowCallback = windowCallback
 
-        // Version number should match jmri/conductor/gradle.properties
-        frame = JFrame("Conductor v2.5").apply {
+        frame = JFrame("Conductor v$VERSION").apply {
             preferredSize = Dimension(1000, 600)
             minimumSize = Dimension(300, 300)
             layout = GridBagLayout()

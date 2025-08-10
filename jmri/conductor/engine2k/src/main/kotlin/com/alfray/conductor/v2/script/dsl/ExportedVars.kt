@@ -46,6 +46,10 @@ class ExportedVars @Inject internal constructor(
      * The JSON server is inactive till this defined. */
     var jsonUrl: String = ""
 
+    /** URL to the Dazz server. Written by the script.
+     * The Dazz server is inactive till this defined. */
+    var dazzUrl: String = ""
+
     /** Announcement text sent to the remote RTAC tablet android software.
      * Written by the script. Sent via the KV Server. */
     var rtacPsaText: String = ""

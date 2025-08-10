@@ -27,6 +27,7 @@ import com.alfray.conductor.v2.script.dsl.SvgMapTarget
 import com.alfray.conductor.v2.script.dsl.seconds
 import com.alfray.conductor.v2.script.dsl.speed
 import com.alfray.conductor.v2.script.impl.Block
+import com.alfray.conductor.v2.script.impl.DazzEvent
 import com.alfray.conductor.v2.script.impl.FBits
 import com.alfray.conductor.v2.script.impl.GaEvent
 import com.alfray.conductor.v2.script.impl.IdleRoute
@@ -446,6 +447,19 @@ class ScriptDslTest2k : ScriptTest2kBase() {
                 key1 = "Depart",
                 key2 = "Passenger",
                 value = "value",
+            )
+        )
+    }
+
+    @Test
+    fun testDazzEvent() {
+        loadScriptFromFile("script_test1")
+        assertResultNoError()
+
+        assertThat(conductorImpl.lastDazzEvent).isEqualTo(
+            DazzEvent(
+                key = "route/depart/passenger",
+                state = true,
             )
         )
     }

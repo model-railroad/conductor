@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.Analytics
+import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.FrequencyMeasurer
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.conductor.util.RateLimiter
@@ -57,6 +58,7 @@ class ExecEngine2k @Inject internal constructor(
     private val condCache: CondCache,
     private val analytics: Analytics,
     private val jsonSender: JsonSender,
+    private val dazzSender: DazzSender,
     private val eStopHandler: EStopHandler,
     private val scriptSource: Script2kSource,
     private val scriptErrors: Script2kErrors,
@@ -86,6 +88,7 @@ class ExecEngine2k @Inject internal constructor(
 
     private fun initFromExportedVars() {
         configureJsonSenderUrl()
+        configureDazzSenderUrl()
     }
 
     private fun exportMaps() {
@@ -298,6 +301,23 @@ class ExecEngine2k @Inject internal constructor(
         }
         error?.let {
             logger.d(TAG, "jsonUrl: $error")
+        }
+    }
+
+    /** Configure the Dazz Sender URL from ExportedVars. */
+    private fun configureDazzSenderUrl() {
+        var error: String? = null
+        val urlOrFile = conductor.exportedVars.dazzUrl
+        try {
+            dazzSender.setDazzUrl(urlOrFile)
+        } catch (e: Exception) {
+            error = "Failed to read '$urlOrFile', $e"
+        }
+        if (dazzSender.dazzUrl == null) {
+            error = "exportedVars.dazzUrl must be defined before the first dazzEvent call."
+        }
+        error?.let {
+            logger.d(TAG, "dazzUrl: $error")
         }
     }
 }

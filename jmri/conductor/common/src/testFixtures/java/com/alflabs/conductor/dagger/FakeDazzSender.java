@@ -21,6 +21,7 @@ package com.alflabs.conductor.dagger;
 import com.alflabs.dazzserv.store.DataEntry;
 import com.alflabs.conductor.util.DazzSender;
 import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.HttpUrl;
@@ -43,10 +44,11 @@ public class FakeDazzSender extends DazzSender {
     public FakeDazzSender(
             ILogger logger,
             FileOps fileOps,
+            IClock clock,
             OkHttpClient okHttpClient,
             @Named("JsonDateFormat") DateFormat jsonDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        super(logger, fileOps, okHttpClient, jsonDateFormat, executor);
+        super(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
     }
 
     @Override

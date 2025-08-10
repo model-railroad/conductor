@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.util;
 
+import com.alflabs.utils.FakeClock;
 import com.alflabs.utils.FakeFileOps;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.ILogger;
@@ -65,11 +66,12 @@ public class DazzSenderTest {
     @Mock private OkHttpClient mOkHttpClient;
     @Mock private ScheduledExecutorService mExecutor;
 
+    private final FakeClock mFakeClock = new FakeClock(1000);
     private final FileOps mFileOps = new FakeFileOps();
     private DazzSender mSender;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Mock the executor so that it executes all tasks immediately
         when(mExecutor.schedule(ArgumentMatchers.any(Runnable.class), ArgumentMatchers.anyLong(), ArgumentMatchers.any(TimeUnit.class)))
                 .thenAnswer((Answer<ScheduledFuture<?>>) invocation -> {
@@ -85,7 +87,7 @@ public class DazzSenderTest {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-        mSender = new DazzSender(mLogger, mFileOps, mOkHttpClient, df, mExecutor);
+        mSender = new DazzSender(mLogger, mFileOps, mFakeClock, mOkHttpClient, df, mExecutor);
     }
 
     @After
@@ -222,13 +224,13 @@ public class DazzSenderTest {
 
         mSender.setDazzUrl(url);
 
-        mSender.sendEvent("computer/conductor", /*timestampMs=*/ 1000, /*state=*/ true);
-        mSender.sendEvent("conductor",          /*timestampMs=*/ 2000, /*state=*/ false);
-        mSender.sendEvent("toggles/passenger",  /*timestampMs=*/ 3000, /*state=*/ true);
-        mSender.sendEvent("toggles/branchline", /*timestampMs=*/ 4000, /*state=*/ false);
-        mSender.sendEvent("routes/passenger",   /*timestampMs=*/ 5000, /*state=*/ true, "payload 1");
-        mSender.sendEvent("routes/freight",     /*timestampMs=*/ 6000, /*state=*/ true, "payload 2");
-        mSender.sendEvent("routes/branchline",  /*timestampMs=*/ 7000, /*state=*/ true, "payload 3");
+        mSender.sendEvent("conductor",                                 /*state=*/ false);
+        mSender.sendEvent("computer/consist",   /*timestampMs=*/ 2000, /*state=*/ true);
+        mSender.sendEvent("toggle/passenger",   /*timestampMs=*/ 3000, /*state=*/ true);
+        mSender.sendEvent("toggle/branchline",  /*timestampMs=*/ 4000, /*state=*/ false);
+        mSender.sendEvent("route/passenger",    /*timestampMs=*/ 5000, /*state=*/ true, "payload 1");
+        mSender.sendEvent("route/freight",      /*timestampMs=*/ 6000, /*state=*/ true, "payload 2");
+        mSender.sendEvent("route/branchline",   /*timestampMs=*/ 7000, /*state=*/ true, "payload 3");
 
         // our mock executor executes immediately (all expected calls are done right here).
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
@@ -251,13 +253,13 @@ public class DazzSenderTest {
                     .append('\n');
         }
         assertThat(responses.toString()).isEqualTo(
-                "req 1: {\"key\":\"computer/conductor\",\"ts\":\"1970-01-01T00:00:01Z\",\"st\":true,\"d\":\"\"}\n" +
-                "req 2: {\"key\":\"conductor\",\"ts\":\"1970-01-01T00:00:02Z\",\"st\":false,\"d\":\"\"}\n" +
-                "req 3: {\"key\":\"toggles/passenger\",\"ts\":\"1970-01-01T00:00:03Z\",\"st\":true,\"d\":\"\"}\n" +
-                "req 4: {\"key\":\"toggles/branchline\",\"ts\":\"1970-01-01T00:00:04Z\",\"st\":false,\"d\":\"\"}\n" +
-                "req 5: {\"key\":\"routes/passenger\",\"ts\":\"1970-01-01T00:00:05Z\",\"st\":true,\"d\":\"payload 1\"}\n" +
-                "req 6: {\"key\":\"routes/freight\",\"ts\":\"1970-01-01T00:00:06Z\",\"st\":true,\"d\":\"payload 2\"}\n" +
-                "req 7: {\"key\":\"routes/branchline\",\"ts\":\"1970-01-01T00:00:07Z\",\"st\":true,\"d\":\"payload 3\"}\n"
+                "req 1: {\"key\":\"conductor\",\"ts\":\"1970-01-01T00:00:01Z\",\"st\":false,\"d\":\"\"}\n" +
+                "req 2: {\"key\":\"computer/consist\",\"ts\":\"1970-01-01T00:00:02Z\",\"st\":true,\"d\":\"\"}\n" +
+                "req 3: {\"key\":\"toggle/passenger\",\"ts\":\"1970-01-01T00:00:03Z\",\"st\":true,\"d\":\"\"}\n" +
+                "req 4: {\"key\":\"toggle/branchline\",\"ts\":\"1970-01-01T00:00:04Z\",\"st\":false,\"d\":\"\"}\n" +
+                "req 5: {\"key\":\"route/passenger\",\"ts\":\"1970-01-01T00:00:05Z\",\"st\":true,\"d\":\"payload 1\"}\n" +
+                "req 6: {\"key\":\"route/freight\",\"ts\":\"1970-01-01T00:00:06Z\",\"st\":true,\"d\":\"payload 2\"}\n" +
+                "req 7: {\"key\":\"route/branchline\",\"ts\":\"1970-01-01T00:00:07Z\",\"st\":true,\"d\":\"payload 3\"}\n"
         );
     }
 }

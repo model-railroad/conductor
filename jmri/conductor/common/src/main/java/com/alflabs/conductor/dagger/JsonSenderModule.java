@@ -63,9 +63,10 @@ public abstract class JsonSenderModule {
     public static DazzSender provideDazzSender(
             ILogger logger,
             FileOps fileOps,
+            IClock clock,
             OkHttpClient okHttpClient,
             @Named("JsonDateFormat") DateFormat jsonDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new DazzSender(logger, fileOps, okHttpClient, jsonDateFormat, executor);
+        return new DazzSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
     }
 }

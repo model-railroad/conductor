@@ -70,7 +70,7 @@ public class JsonSenderTest {
     private JsonSender mSender;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // Mock the executor so that it executes all tasks immediately
         when(mExecutor.schedule(ArgumentMatchers.any(Runnable.class), ArgumentMatchers.anyLong(), ArgumentMatchers.any(TimeUnit.class)))
                 .thenAnswer((Answer<ScheduledFuture<?>>) invocation -> {

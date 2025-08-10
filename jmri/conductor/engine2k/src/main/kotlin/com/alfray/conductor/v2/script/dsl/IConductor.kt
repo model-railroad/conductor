@@ -93,4 +93,8 @@ interface IConductor {
     /** Sends a JSON status.
      * No-op till the JSON URL is defined. */
     fun jsonEvent(jsonEventSpecification: IJsonEventBuilder.() -> Unit)
+
+    /** Sends a Dazz Event.
+     * No-op till the Dazz URL is defined. */
+    fun dazzEvent(dazzEventSpecification: IDazzEventBuilder.() -> Unit)
 }

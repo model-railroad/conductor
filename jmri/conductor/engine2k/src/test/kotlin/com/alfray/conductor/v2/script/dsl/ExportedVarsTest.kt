@@ -37,6 +37,7 @@ class ExportedVarsTest: ScriptTest2kBase() {
     fun testExported() {
         assertThat(exportedVars.conductorTime).isEqualTo(1342)
         exportedVars.jsonUrl = "json://url"    // not exported
+        exportedVars.dazzUrl = "dazz://store"    // not exported
         exportedVars.rtacPsaText = "Automation Running"
         exportedVars.rtacMotion = true
 

@@ -46,6 +46,7 @@ val ML_Toggle    = sensor("NS829") named "ML-Toggle"    // 52:14
 // JSON tracking
 
 exportedVars.jsonUrl = "invalid url for testing"
+exportedVars.dazzUrl = "invalid url for testing"
 
 
 // ---------------------
@@ -58,12 +59,20 @@ on { ML_Toggle  } then {
         key2 = "Passenger"
         value = "On"
     }
+    dazzEvent {
+        key = "toggle/passenger"
+        state = true
+    }
 }
 on { !ML_Toggle } then {
     jsonEvent {
         key1 = "Toggle"
         key2 = "Passenger"
         value = "Off"
+    }
+    dazzEvent {
+        key = "toggle/passenger"
+        state = false
     }
 }
 

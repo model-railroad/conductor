@@ -22,6 +22,7 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.dazzserv.store.DataEntry;
 import com.alflabs.utils.FileOps;
+import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
@@ -59,6 +60,7 @@ public class DazzSender implements Runnable {
 
     private final ILogger mLogger;
     private final FileOps mFileOps;
+    private final IClock mClock;
     // Format timestamps using ISO 8601, e.g.:
     // DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private final DateFormat mJsonDateFormat;
@@ -74,11 +76,13 @@ public class DazzSender implements Runnable {
     @Inject
     public DazzSender(ILogger logger,
                       FileOps fileOps,
+                      IClock clock,
                       OkHttpClient okHttpClient,
                       @Named("JsonDateFormat") DateFormat jsonDateFormat,
                       @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         mLogger = logger;
         mFileOps = fileOps;
+        mClock = clock;
         mOkHttpClient = okHttpClient;
         mJsonDateFormat = jsonDateFormat;
         mExecutor = executor;
@@ -133,6 +137,12 @@ public class DazzSender implements Runnable {
     @Null
     public HttpUrl getDazzUrl() {
         return mDazzUrl;
+    }
+
+    public void sendEvent(
+            @NonNull String key,
+            boolean state) {
+        sendEvent(key, mClock.elapsedRealtime(), state, /*payload=*/ null);
     }
 
     public void sendEvent(
