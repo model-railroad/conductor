@@ -49,16 +49,14 @@ class DataStore @Inject constructor(
         const val HISTORY_NUM_ENTRIES = 10
     }
 
-    /// Adds an entry if it's new (e.g. a key/timestamp never seen before).
-    /// Already seen timestamps are ignored and not updated.
-    /// Returns true if the entry was new and added, false if already seen.
-    fun add(entry: DataEntry): Boolean {
+    /// Adds or update an entry.
+    fun add(entry: DataEntry) {
         val key = entry.key
         synchronized(data) {
             if (!data.containsKey(key)) {
                 data[key] = DataEntryMap()
             }
-            return data[key]!!.add(entry)
+            data[key]!!.add(entry)
         }
     }
 
@@ -101,9 +99,8 @@ class DataStore @Inject constructor(
     fun store(jsonPayload: String): Boolean {
         try {
             val entry = DataEntry.parseJson(mapper, jsonPayload)
-            if (add(entry)) {
-                newEntries.addLast(entry)
-            }
+            add(entry)
+            newEntries.addLast(entry)
             return true
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)

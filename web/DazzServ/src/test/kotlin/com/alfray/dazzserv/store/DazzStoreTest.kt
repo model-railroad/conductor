@@ -148,6 +148,36 @@ class DazzStoreTest {
     }
 
     @Test
+    fun testStoreUpdatedEvent() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-02T03:04:05Z", true, "payload 1"))
+
+        assertThat(ds.storeToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-02T03:04:05Z": {"key": "toggles/entry1", "ts": "1970-01-02T03:04:05Z", "st": true, "d": "payload 1"}
+                    }
+                  }
+                }
+            """.trimIndent())
+
+        // Update the same event: same key/timestamp, new state/payload.
+        ds.add(DataEntry("toggles/entry1", "1970-01-02T03:04:05Z", false, "payload 2"))
+
+        assertThat(ds.storeToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-02T03:04:05Z": {"key": "toggles/entry1", "ts": "1970-01-02T03:04:05Z", "st": false, "d": "payload 2"}
+                    }
+                  }
+                }
+            """.trimIndent())
+    }
+
+    @Test
     fun testStoreRejected() {
         // Key is mandatory
         var inputJson = """

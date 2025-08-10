@@ -29,15 +29,10 @@ data class DataEntryMap(
     val entries: TreeMap<String, DataEntry> =
         TreeMap<String, DataEntry>(Collections.reverseOrder())
 ) {
-    /// Adds an entry if it's new (e.g. a timestamp never seen before).
-    /// Already seen timestamps are ignored and not updated.
-    /// Returns true if the entry was new and added, false if already seen.
-    fun add(entry: DataEntry): Boolean {
+    /// Adds or updates an entry.
+    /// Already seen timestamps are updated.
+    fun add(entry: DataEntry) {
         val ts = entry.isoTimestamp
-        if (entries.containsKey(ts)) {
-            return false
-        }
         entries[ts] = entry
-        return true
     }
 }
