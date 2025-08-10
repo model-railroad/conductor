@@ -95,8 +95,7 @@ public class JsonSender implements Runnable {
     private final OkHttpClient mOkHttpClient;
     // Note: The executor is a dagger singleton, shared with the Analytics class.
     private final ScheduledExecutorService mExecutor;
-    @SuppressWarnings("unchecked")
-    private final TreeMap<String, Object> mKeyValues = new TreeMap();
+    private final TreeMap<String, Object> mKeyValues = new TreeMap<>();
     @VisibleForTesting
     protected final AtomicReference<String> mLatestJson = new AtomicReference<>();
 

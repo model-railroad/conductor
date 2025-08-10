@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2025 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.dagger.FakeDazzSender
 import com.alflabs.conductor.dagger.FakeEventLogger
 import com.alflabs.conductor.dagger.FakeJsonSender
 import com.alflabs.kv.IKeyValue
@@ -34,6 +35,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
     @Inject lateinit var keyValue: IKeyValue
     @Inject lateinit var eventLogger: FakeEventLogger
     @Inject lateinit var jsonSender: FakeJsonSender
+    @Inject lateinit var dazzSender: FakeDazzSender
 
     @Before
     fun setUp() {
@@ -51,6 +53,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         val b321 = conductorImpl.blocks["NS771"]!! as Block
 
         assertThat(jsonSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 1000> - S - S/NS769 B311 - OFF",
@@ -87,6 +90,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
+        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
 
         // Simulate an activation but turning the toggle on-off for 100ms
         mlToggle.active(true)
@@ -109,6 +113,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
+        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
 
         clockMillis.add(100)
         mlToggle.active(false)
@@ -151,6 +156,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
+        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
 
         // Simulate train progress by changing blocks B311->B321
         b321.internalActive(true)
@@ -307,5 +313,6 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
+        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
     }
 }

@@ -22,7 +22,6 @@ import com.alflabs.annotations.NonNull;
 import com.alflabs.annotations.Null;
 import com.alflabs.dazzserv.store.DataEntry;
 import com.alflabs.utils.FileOps;
-import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.annotations.VisibleForTesting;
@@ -66,7 +65,8 @@ public class DazzSender implements Runnable {
     private final OkHttpClient mOkHttpClient;
     // Note: The executor is a dagger singleton, shared with the Analytics class.
     private final ScheduledExecutorService mExecutor;
-    private final Deque<DataEntry> mEventQueue = new ConcurrentLinkedDeque<>();
+    @VisibleForTesting
+    protected final Deque<DataEntry> mEventQueue = new ConcurrentLinkedDeque<>();
 
     private long mRetryDelay;
     @Null private HttpUrl mDazzUrl;

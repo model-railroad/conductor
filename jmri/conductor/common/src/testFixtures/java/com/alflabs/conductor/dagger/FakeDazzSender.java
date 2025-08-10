@@ -18,10 +18,11 @@
 
 package com.alflabs.conductor.dagger;
 
-import com.alflabs.conductor.util.JsonSender;
+import com.alflabs.dazzserv.store.DataEntry;
+import com.alflabs.conductor.util.DazzSender;
 import com.alflabs.utils.FileOps;
-import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 
@@ -33,22 +34,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
-/** Provides a dummy JsonSender that writes to the main ILogger. */
-public class FakeJsonSender extends JsonSender {
+/** Provides a dummy DazzSender that writes to the main ILogger. */
+public class FakeDazzSender extends DazzSender {
 
     private final ArrayList<String> mEvents = new ArrayList<>();
-    private final IClock mClock;
 
     @Inject
-    public FakeJsonSender(
+    public FakeDazzSender(
             ILogger logger,
             FileOps fileOps,
-            IClock clock,
             OkHttpClient okHttpClient,
             @Named("JsonDateFormat") DateFormat jsonDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        super(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
-        mClock = clock;
+        super(logger, fileOps, okHttpClient, jsonDateFormat, executor);
     }
 
     @Override
@@ -57,33 +55,35 @@ public class FakeJsonSender extends JsonSender {
     }
 
     @Override
-    public void setJsonUrl(String urlOrFile) throws IOException {
+    public void setDazzUrl(String urlOrFile) throws IOException {
         // no-op
     }
 
     @Override
-    public HttpUrl getJsonUrl() {
-        return HttpUrl.parse("http://alfray.com/rtac/testing");
+    public HttpUrl getDazzUrl() {
+        return HttpUrl.parse("http://alfray.com/rtac/testing/store");
     }
 
     @Override
-    public void sendEvent(String key1, String key2, String value) {
+    public void sendEvent(String key, long eventTimestampMs, boolean state, String payload) {
         // We actually do not override sendEvent, to let the original
         // class perform all its (overcomplicated) behavior.
         // Instead, this will set mLatestJson and then call scheduleSend()
         // which we intercept below.
-        super.sendEvent(key1, key2, value);
+        super.sendEvent(key, eventTimestampMs, state, payload);
     }
 
     @Override
     protected void scheduleSend() {
-        String jsonData = mLatestJson.getAndSet(null);
-        if (jsonData != null) {
-            String msg = String.format("<clock %d> - %s",
-                    mClock.elapsedRealtime(),
-                    jsonData);
-            synchronized (mEvents) {
-                mEvents.add(msg);
+        DataEntry entry = mEventQueue.pollFirst();
+        if (entry != null) {
+            try {
+                String jsonData = entry.toJsonString(/*mapper=*/ null);
+                synchronized (mEvents) {
+                    mEvents.add(jsonData);
+                }
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("FakeDazzSender JSON conversion failed", e);
             }
         }
     }

@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.dagger;
 
+import com.alflabs.conductor.util.DazzSender;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -55,5 +56,16 @@ public abstract class JsonSenderModule {
            @Named("JsonDateFormat") DateFormat jsonDateFormat,
            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         return new JsonSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
+    }
+
+    @Singleton
+    @Provides
+    public static DazzSender provideDazzSender(
+            ILogger logger,
+            FileOps fileOps,
+            OkHttpClient okHttpClient,
+            @Named("JsonDateFormat") DateFormat jsonDateFormat,
+            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+        return new DazzSender(logger, fileOps, okHttpClient, jsonDateFormat, executor);
     }
 }

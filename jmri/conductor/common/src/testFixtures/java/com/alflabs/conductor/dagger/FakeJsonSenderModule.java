@@ -18,6 +18,7 @@
 
 package com.alflabs.conductor.dagger;
 
+import com.alflabs.conductor.util.DazzSender;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
@@ -32,8 +33,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 import java.util.concurrent.ScheduledExecutorService;
-
-import static org.mockito.Mockito.mock;
 
 @Module
 public abstract class FakeJsonSenderModule {
@@ -61,7 +60,24 @@ public abstract class FakeJsonSenderModule {
 
     @Singleton
     @Provides
+    public static DazzSender provideDazzSender(
+            ILogger logger,
+            FileOps fileOps,
+            OkHttpClient okHttpClient,
+            @Named("JsonDateFormat") DateFormat jsonDateFormat,
+            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+        return new FakeDazzSender(logger, fileOps, okHttpClient, jsonDateFormat, executor);
+    }
+
+    @Singleton
+    @Provides
     public static FakeJsonSender provideFakeJsonSender(JsonSender jsonSender) {
         return (FakeJsonSender) jsonSender;
+    }
+
+    @Singleton
+    @Provides
+    public static FakeDazzSender provideFakeDazzSender(DazzSender jsonSender) {
+        return (FakeDazzSender) jsonSender;
     }
 }
