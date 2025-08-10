@@ -137,7 +137,14 @@ public class DazzSender implements Runnable {
 
     public void sendEvent(
             @NonNull String key,
-            long eventTimestamp,
+            long eventTimestampMs,
+            boolean state) {
+        sendEvent(key, eventTimestampMs, state, /*payload=*/ null);
+    }
+
+    public void sendEvent(
+            @NonNull String key,
+            long eventTimestampMs,
             boolean state,
             @Null String payload) {
         if (key == null || key.isEmpty()) {
@@ -145,7 +152,9 @@ public class DazzSender implements Runnable {
             return;
         }
 
-        String isoTimestamp = mJsonDateFormat.format(new Date(eventTimestamp));
+        Date date = new Date(eventTimestampMs);
+        System.out.println("ts = " + eventTimestampMs + " ==> date = " + date);
+        String isoTimestamp = mJsonDateFormat.format(date);
         DataEntry entry = new DataEntry(key, isoTimestamp, state, payload);
         mEventQueue.addLast(entry);
         mRetryDelay = 0;
