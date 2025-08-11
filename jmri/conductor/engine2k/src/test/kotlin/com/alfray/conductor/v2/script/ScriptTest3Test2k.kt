@@ -53,7 +53,14 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         val b321 = conductorImpl.blocks["NS771"]!! as Block
 
         assertThat(jsonSender.eventsGetAndClear()).isEmpty()
-        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear().map {
+            // remove any path prefixing the kts filename to keep unit test path-agnostic
+            it.replace("\"[^\"]+[/\\\\]([^/\\\\]+.kts)".toRegex(), "\"$1")
+        }).containsExactly(
+            """
+                {"key":"conductor/exec","ts":"1970-01-01T00:00:01Z","st":true,"d":"{\"script\": \"script_test3.conductor.kts\"}"}
+            """.trimIndent()
+        )
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 1000> - S - S/NS769 B311 - OFF",
