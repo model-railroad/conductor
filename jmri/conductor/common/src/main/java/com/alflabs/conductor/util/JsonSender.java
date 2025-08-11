@@ -165,7 +165,7 @@ public class JsonSender implements Runnable {
 
     public void sendEvent(@NonNull String key1, @Null String key2, @Null String value) {
         if (key1 == null || key1.isEmpty()) {
-            mLogger.d(TAG, "JSON Sender: Invalid event no key1");
+            mLogger.d(TAG, "JSON Sender: Ignoring event with no key1");
             return;
         }
 
@@ -225,10 +225,9 @@ public class JsonSender implements Runnable {
         }
 
         if (mJsonUrl == null) {
-            mLogger.d(TAG, "JSON Sender: URL not set. Ignoring payload: " + jsonData);
+            mLogger.d(TAG, "JSON Sender: URL not set yet on queued payload.");
             return;
         }
-
 
         OkHttpClient client = mOkHttpClient;
         HttpUrl url = mJsonUrl;

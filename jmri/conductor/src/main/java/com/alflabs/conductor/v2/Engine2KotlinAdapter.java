@@ -133,7 +133,7 @@ public class Engine2KotlinAdapter implements IEngineAdapter {
             // TBD Release any resources from current script component as needed.
             //
             // The current mScript2kContext implementation (IScript2kComponent, Script2kLoader,
-            // and ConductorScriptHost) does not need any specific shutdown beside on reset() call.
+            // and ConductorScriptHost) does not need any specific shutdown beside a reset() call.
             // Factories and instances just get garbage-collected when a new mScript2kContext
             // createComponent() is called below.
         }

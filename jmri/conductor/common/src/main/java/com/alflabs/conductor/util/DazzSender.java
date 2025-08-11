@@ -115,7 +115,7 @@ public class DazzSender implements Runnable {
             urlOrFile = mFileOps.toString(file, Charsets.UTF_8);
         }
 
-        // Use "#" as a comment and only take the first thing before, if any.
+        // Use "#" as a comment and only take the FIRST LINE before, if any.
         urlOrFile = urlOrFile.replaceAll("[#\n\r].*", "").trim();
         // Somewhat sanitize the URL
         urlOrFile = urlOrFile.replaceAll("[^a-zA-Z0-9@:/._+-]", "");
@@ -147,6 +147,13 @@ public class DazzSender implements Runnable {
 
     public void sendEvent(
             @NonNull String key,
+            boolean state,
+            @Null String payload) {
+        sendEvent(key, mClock.elapsedRealtime(), state, payload);
+    }
+
+    public void sendEvent(
+            @NonNull String key,
             long eventTimestampMs,
             boolean state) {
         sendEvent(key, eventTimestampMs, state, /*payload=*/ null);
@@ -158,7 +165,7 @@ public class DazzSender implements Runnable {
             boolean state,
             @Null String payload) {
         if (key == null || key.isEmpty()) {
-            mLogger.d(TAG, "Dazz Sender: Invalid event no key1");
+            mLogger.d(TAG, "Dazz Sender: Ignoring event with no key");
             return;
         }
 
@@ -179,7 +186,7 @@ public class DazzSender implements Runnable {
     @Override
     public void run() {
         if (mDazzUrl == null) {
-            mLogger.d(TAG, "Dazz Sender: URL not set. Ignoring send.");
+            mLogger.d(TAG, "Dazz Sender: URL not set yet on queued event.");
             return;
         }
 

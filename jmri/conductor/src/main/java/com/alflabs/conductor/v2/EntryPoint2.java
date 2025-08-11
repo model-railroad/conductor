@@ -23,6 +23,7 @@ import com.alflabs.conductor.IEntryPoint;
 import com.alflabs.conductor.jmri.IJmriProvider;
 import com.alflabs.conductor.jmri.IJmriSensor;
 import com.alflabs.conductor.util.Analytics;
+import com.alflabs.conductor.util.DazzSender;
 import com.alflabs.conductor.util.EventLogger;
 import com.alflabs.conductor.util.JsonSender;
 import com.alflabs.conductor.util.LogException;
@@ -72,6 +73,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     @Inject Analytics mAnalytics;
     @Inject MqttClient mMqttClient;
     @Inject JsonSender mJsonSender;
+    @Inject DazzSender mDazzSender;
     @Inject EventLogger mEventLogger;
     @Inject KeyValueServer mKeyValueServer;
 
@@ -127,6 +129,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
 
         mKVController.start(mLogger, mKeyValueServer);
         mZeroConf.start(mLogger, scriptFile);
+        mDazzSender.sendEvent("conductor/running", true);
         openWindow();
         onWindowReload();
 
@@ -236,6 +239,7 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
     public void onQuit() {
         log("onQuit");
         mJsonSender.sendEvent("conductor", null, "off");
+        mDazzSender.sendEvent("conductor/running", false);
         sendEvent("Stop");
         mZeroConf.stop();
         mKVController.stop();
@@ -257,6 +261,12 @@ public class EntryPoint2 implements IEntryPoint, IWindowCallback {
             mJsonSender.shutdown();
         } catch (InterruptedException e) {
             mLogger.d(TAG, "Teardown JsonSender exception: " + e);
+        }
+
+        try {
+            mDazzSender.shutdown();
+        } catch (InterruptedException e) {
+            mLogger.d(TAG, "Teardown DazzSender exception: " + e);
         }
 
         try {
