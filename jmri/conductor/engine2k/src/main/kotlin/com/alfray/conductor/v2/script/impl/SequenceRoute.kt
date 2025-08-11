@@ -86,6 +86,7 @@ internal class SequenceRoute @AssistedInject constructor(
     override val maxSecondsEnterBlock = builder.maxSecondsEnterBlock
     val graph = parse(builder.sequence, builder.branches)
     val stats = SequenceRouteStats(
+        clock,
         name.ifEmpty { builder.routes.name },
         throttle.name.ifEmpty { throttle.dccAddress.toString() })
     var currentNode: INode? = null
@@ -285,9 +286,10 @@ internal class SequenceRoute @AssistedInject constructor(
             // Capture time spent on this block for our route running stats.
             stats.addNode(it)
 
+            stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
-            val key2 = "${stats.name}_${stats.th}"
+            val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
         }
 
@@ -312,9 +314,10 @@ internal class SequenceRoute @AssistedInject constructor(
             stats.addNode(it)
             stats.setError()
 
+            stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
-            val key2 = "${stats.name}_${stats.th}"
+            val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
         }
     }

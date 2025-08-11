@@ -18,8 +18,8 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.utils.IClock
 import com.alfray.conductor.v2.script.dsl.INode
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 
 /**
@@ -27,37 +27,60 @@ import com.fasterxml.jackson.databind.ObjectMapper
  *
  * All JSON exported fields must be public or annotated with @JsonProperty.
  *
- * @param name The name of the route exported to JSON.
- * @param th The name of the throttle exported to JSON.
+ * @param routeName The name of the route exported to JSON.
+ * @param throttleName The name of the throttle exported to JSON.
  */
 class SequenceRouteStats(
-    val name: String,                           // field name exported to JSON
-    val th: String,                             // field name exported to JSON
+    private val clock: IClock,
+    val routeName: String,
+    val throttleName: String,
 ) {
-    companion object {
-        /**
-         * One node and its occupation duration in milliseconds.
-         *
-         * @param n The name of the node, exported to JSON.
-         * @param ms The occupation duration in milliseconds, exported to JSON.
-         */
-        data class NodeTiming(
-            var n: String,                      // field name exported to JSON
-            val ms: Long)                       // field name exported to JSON
+    /**
+     * One node and its occupation duration in milliseconds.
+     *
+     * @param n The name of the node, exported to JSON.
+     * @param ms The occupation duration in milliseconds, exported to JSON.
+     */
+    data class NodeTiming(
+        var n: String,                      // field name exported to JSON
+        val ms: Long)                       // field name exported to JSON
+
+    enum class Running {
+        Unknown,
+        Started,
+        Ended,
     }
 
-    @JsonProperty("act")
     private var numActivations = 0
-    @JsonProperty("err")
     private var isError = false
-    @JsonProperty("nodes")
+    private var running = Running.Unknown
+    private var startTS = 0L
+    private var endTS = 0L
     private val nodes = mutableListOf<NodeTiming>()
 
+    data class JsonStructureV1(
+        // All field names directly as exported to JSON
+        val name: String,
+        val th: String,
+        val act: Int,
+        val err: Boolean,
+        val nodes: List<NodeTiming>,
+    )
 
     fun activateAndReset() {
         numActivations++
         isError = false
         nodes.clear()
+        setRunning(Running.Started)
+    }
+
+    fun setRunning(running: Running) {
+        this.running = running
+        when (running) {
+            Running.Started -> startTS = clock.elapsedRealtime()
+            Running.Ended ->   endTS   = clock.elapsedRealtime()
+            Running.Unknown -> { /*no-op*/ }
+        }
     }
 
     fun setError() {
@@ -92,6 +115,12 @@ class SequenceRouteStats(
         }
 
         val mapper = ObjectMapper()
-        return mapper.writeValueAsString(this)
+        return mapper.writeValueAsString(JsonStructureV1(
+            routeName,
+            throttleName,
+            numActivations,
+            isError,
+            nodes
+        ))
     }
 }
