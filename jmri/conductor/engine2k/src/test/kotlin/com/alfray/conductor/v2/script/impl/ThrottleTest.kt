@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
 import com.alflabs.conductor.jmri.IJmriThrottle
+import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
@@ -40,6 +41,7 @@ import com.nhaarman.mockitokotlin2.verify
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.text.DateFormat
 import javax.inject.Inject
 
 class ThrottleTest : ScriptTest2kBase() {
@@ -50,7 +52,9 @@ class ThrottleTest : ScriptTest2kBase() {
     private val mockThrottle = mock<IJmriThrottle> { on { dccAddress } doReturn 42 }
     private val mockProvider = mock<IJmriProvider> { on { getThrottle(42) } doReturn mockThrottle }
     private val jsonSender = mock<JsonSender>()
+    private val dazzSender = mock<DazzSender>()
     private val eventLogger = mock<EventLogger>()
+    private val jsonDateFormat = mock<DateFormat>()
     private val keyValue = mock<IKeyValue>()
     private val mockClock = MockClock()
     private val condCache = CondCache()
@@ -67,11 +71,13 @@ class ThrottleTest : ScriptTest2kBase() {
             keyValue,
             condCache,
             jsonSender,
+            dazzSender,
             eventLogger,
             mockProvider,
             currentContext,
             isSimulation,
             { mock<ThrottleBuilder>() },
+            jsonDateFormat,
             { mock<RoutesContainerBuilder>() },
         )
         throttle = factory.createThrottle(42)

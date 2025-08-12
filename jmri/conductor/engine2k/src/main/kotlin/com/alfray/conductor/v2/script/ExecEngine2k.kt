@@ -85,7 +85,7 @@ class ExecEngine2k @Inject internal constructor(
         exportMaps()
         exportRoutes()
         dazzSender.sendEvent(
-            "conductor/exec",
+            "conductor/script",
             true,
             """{"script": "${scriptSource.scriptInfo?.scriptName ?: ""}"}""")
     }

@@ -212,6 +212,7 @@ public class JsonSender implements Runnable {
         mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         // Remove null values in entries.
         mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        // Automatically format Date types.
         mapper.setDateFormat(mJsonDateFormat);
         return mapper.writeValueAsString(mKeyValues).replaceAll("\r", "");
     }

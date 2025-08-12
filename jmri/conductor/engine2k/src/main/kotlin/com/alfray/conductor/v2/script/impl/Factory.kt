@@ -19,6 +19,7 @@
 package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.conductor.jmri.IJmriProvider
+import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.kv.IKeyValue
@@ -32,22 +33,26 @@ import com.alfray.conductor.v2.script.dsl.Delay
 import com.alfray.conductor.v2.script.dsl.IBlock
 import com.alfray.conductor.v2.script.dsl.IRoutesContainer
 import com.alfray.conductor.v2.simulator.ISimulCallback
+import java.text.DateFormat
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Provider
 
 @Script2kScope
 internal class Factory @Inject constructor(
-        private val clock: IClock,
-        private val logger: ILogger,
-        private val keyValue: IKeyValue,
-        private val condCache: CondCache,
-        private val jsonSender: JsonSender,
-        private val eventLogger: EventLogger,
-        private val jmriProvider: IJmriProvider,
-        private val currentContext: CurrentContext,
-        private val isSimulation: Script2kIsSimulation,
-        private val throttleBuilderProvider: Provider<ThrottleBuilder>,
-        private val routesContainerBuilderProvider: Provider<RoutesContainerBuilder>,
+    private val clock: IClock,
+    private val logger: ILogger,
+    private val keyValue: IKeyValue,
+    private val condCache: CondCache,
+    private val jsonSender: JsonSender,
+    private val dazzSender: DazzSender,
+    private val eventLogger: EventLogger,
+    private val jmriProvider: IJmriProvider,
+    private val currentContext: CurrentContext,
+    private val isSimulation: Script2kIsSimulation,
+    private val throttleBuilderProvider: Provider<ThrottleBuilder>,
+    @Named("JsonDateFormat") private val jsonDateFormat: DateFormat,
+    private val routesContainerBuilderProvider: Provider<RoutesContainerBuilder>,
 ) {
     internal fun createBlock(
             systemName: String) : Block =
@@ -83,10 +88,13 @@ internal class Factory @Inject constructor(
         Sensor(keyValue, condCache, eventLogger, jmriProvider, systemName)
 
     internal fun createSequenceRoute(owner: IRoutesContainer, builder: SequenceRouteBuilder): SequenceRoute =
-        SequenceRoute(clock, logger, this, jsonSender, eventLogger, owner, builder)
+        SequenceRoute(clock, logger, this, jsonSender, dazzSender, eventLogger, owner, builder)
 
     internal fun createSequenceRouteBuilder(owner: IRoutesContainer): SequenceRouteBuilder =
         SequenceRouteBuilder(logger, this, owner)
+
+    internal fun createSequenceRouteStats(routeName: String, throttleName: String): SequenceRouteStats =
+        SequenceRouteStats(clock, jsonDateFormat, routeName, throttleName)
 
     internal fun createTimer(delay: Delay) : Timer =
         Timer(clock, logger, eventLogger, delay)

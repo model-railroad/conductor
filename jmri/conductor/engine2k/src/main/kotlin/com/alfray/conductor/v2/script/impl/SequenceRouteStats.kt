@@ -20,7 +20,13 @@ package com.alfray.conductor.v2.script.impl
 
 import com.alflabs.utils.IClock
 import com.alfray.conductor.v2.script.dsl.INode
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
+import java.text.DateFormat
+import java.util.Date
+import javax.inject.Named
 
 /**
  * Data class collecting stats for a route and exporting the data as JSON.
@@ -30,10 +36,11 @@ import com.fasterxml.jackson.databind.ObjectMapper
  * @param routeName The name of the route exported to JSON.
  * @param throttleName The name of the throttle exported to JSON.
  */
-class SequenceRouteStats(
+internal class SequenceRouteStats @AssistedInject constructor(
     private val clock: IClock,
-    val routeName: String,
-    val throttleName: String,
+    @Named("JsonDateFormat") private val jsonDateFormat: DateFormat,
+    @Assisted("routeName")    val routeName: String,
+    @Assisted("throttleName") val throttleName: String,
 ) {
     /**
      * One node and its occupation duration in milliseconds.
@@ -51,19 +58,33 @@ class SequenceRouteStats(
         Ended,
     }
 
+    private lateinit var mapper: ObjectMapper
     private var numActivations = 0
     private var isError = false
     private var running = Running.Unknown
-    private var startTS = 0L
+    var startTS = 0L
+        private set
     private var endTS = 0L
     private val nodes = mutableListOf<NodeTiming>()
 
-    data class JsonStructureV1(
+    data class JsonStructure(
         // All field names directly as exported to JSON
         val name: String,
         val th: String,
         val act: Int,
         val err: Boolean,
+        val nodes: List<NodeTiming>,
+    )
+
+    data class DazzStructure(
+        // All field names directly as exported to JSON
+        val name: String,
+        val th: String,
+        val act: Int,
+        val err: Boolean,
+        val run: Running,
+        val sts: Date,
+        val ets: Date?,
         val nodes: List<NodeTiming>,
     )
 
@@ -97,13 +118,38 @@ class SequenceRouteStats(
     }
 
     fun toJsonString(): String {
+        makeNodeNamesUnique()
+        return getMapper().writeValueAsString(JsonStructure(
+            routeName,
+            throttleName,
+            numActivations,
+            isError,
+            nodes,
+        ))
+    }
+
+    fun toDazzString(): String {
+        makeNodeNamesUnique()
+        return getMapper().writeValueAsString(DazzStructure(
+            routeName,
+            throttleName,
+            numActivations,
+            isError,
+            running,
+            Date(startTS),
+            if (running == Running.Ended) Date(endTS) else null,
+            nodes,
+        ))
+    }
+
+    private fun makeNodeNamesUnique() {
         // Adjust the block names to avoid duplicates.
         // Count the number of time each node name is present. Must be 1 or more.
         val blockCount = mutableMapOf<String, Int>()
         nodes.forEach {
             blockCount.merge(it.n, 1) { a, b -> a + b }
         }
-        // For each block name present more than once, generate a new name "name.1", "name.2" etc.
+        // For each block name present more than once, rename it to "name.1", "name.2" etc.
         val blockNext = mutableMapOf<String, Int>()
         nodes.forEach {
             val name = it.n
@@ -113,14 +159,18 @@ class SequenceRouteStats(
                 it.n = "$name.$index"
             }
         }
+    }
 
-        val mapper = ObjectMapper()
-        return mapper.writeValueAsString(JsonStructureV1(
-            routeName,
-            throttleName,
-            numActivations,
-            isError,
-            nodes
-        ))
+    private fun getMapper() : ObjectMapper {
+        if (!(::mapper.isInitialized)) {
+            mapper = ObjectMapper()
+            // Pretty print with indenting is not enabled here. We want the JSON payloads
+            // to be as compact as possible.
+            // Remove null values in entries.
+            mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            // Automatically format Date types
+            mapper.setDateFormat(jsonDateFormat)
+        }
+        return mapper
     }
 }

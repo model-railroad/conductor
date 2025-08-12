@@ -58,9 +58,8 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             it.replace("\"[^\"]+[/\\\\]([^/\\\\]+.kts)".toRegex(), "\"$1")
         }).containsExactly(
             """
-                {"key":"conductor/exec","ts":"1970-01-01T00:00:01Z","st":true,"d":"{\"script\": \"script_test3.conductor.kts\"}"}
-            """.trimIndent()
-        )
+                {"key":"conductor/script","ts":"1970-01-01T00:00:01Z","st":true,"d":"{\"script\": \"script_test3.conductor.kts\"}"}
+            """.trimIndent())
 
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 1000> - S - S/NS769 B311 - OFF",
@@ -100,8 +99,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         assertThat(dazzSender.eventsGetAndClear()).containsExactly(
             """
                 {"key":"toggle/passenger","ts":"1970-01-01T00:00:01Z","st":false,"d":""}
-            """.trimIndent()
-        )
+            """.trimIndent())
 
         // Simulate an activation but turning the toggle on-off for 100ms
         mlToggle.active(true)
@@ -127,8 +125,10 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         assertThat(dazzSender.eventsGetAndClear()).containsExactly(
             """
                 {"key":"toggle/passenger","ts":"1970-01-01T00:00:02Z","st":true,"d":""}
-            """.trimIndent()
-        )
+            """.trimIndent(),
+            """
+                {"key":"route/Freight_FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"{\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"run\":\"Started\",\"sts\":\"1970-01-01T00:00:02Z\",\"nodes\":[]}"}
+            """.trimIndent())
 
         clockMillis.add(100)
         mlToggle.active(false)
@@ -174,8 +174,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         assertThat(dazzSender.eventsGetAndClear()).containsExactly(
             """
                 {"key":"toggle/passenger","ts":"1970-01-01T00:00:02Z","st":false,"d":""}
-            """.trimIndent()
-        )
+            """.trimIndent())
 
         // Simulate train progress by changing blocks B311->B321
         b321.internalActive(true)
@@ -271,6 +270,27 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             ]}
         """.replace("\\s".toRegex(), "")
 
+        val expectedRouteDazz = """ {
+            "name": "Freight",
+            "th": "FR",
+            "act": 1,
+            "err": false,
+            "run": "Ended",
+            "sts": "1970-01-01T00:00:02Z",
+            "ets": "1970-01-01T00:03:54Z",
+            "nodes": [ {
+                    "n": "B311.1",
+                    "ms": 60000
+                }, {
+                    "n": "B321",
+                    "ms": 120200
+                }, {
+                    "n": "B311.2",
+                    "ms": 52100
+                }
+            ]}
+        """.replace("\\s".toRegex(), "")
+
         assertThat(eventLogger.eventLogGetAndClear()).containsExactly(
             "<clock 206533> - T - @timer@24 - activated",
             "<clock 206533> - T - @timer@6 - start:6",
@@ -292,7 +312,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "<clock 234533> - D - 1072 - Sound OFF",
             "<clock 234533> - D - 1072 - F8 ON",
             "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - IDLE",
-            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - $expectedRouteJson",
+            "<clock 234533> - R - Sequence Mainline #2 Freight (1072) - $expectedRouteDazz",
             "<clock 234533> - B - S/NS771 B321 - Was TRAILING for 52.10 seconds; Now EMPTY",
             "<clock 234533> - R - Idle Mainline #1 ML Wait - ACTIVATED",
             "<clock 234633> - R - Idle Mainline #1 ML Wait - ACTIVE",
@@ -332,6 +352,9 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 }
             """.trimIndent(),
         ).inOrder()
-        assertThat(dazzSender.eventsGetAndClear()).isEmpty()
+        assertThat(dazzSender.eventsGetAndClear()).containsExactly(
+            """
+                {"key":"route/Freight_FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"${expectedRouteDazz.replace("\"", "\\\"")}"}
+            """.trimIndent())
     }
 }

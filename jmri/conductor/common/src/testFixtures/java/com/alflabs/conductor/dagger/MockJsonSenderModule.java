@@ -41,7 +41,7 @@ public abstract class MockJsonSenderModule {
     @Provides
     @Named("JsonDateFormat")
     public static DateFormat provideJsonDateFormat() {
-        // Format timestamps using ISO 8601
+        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df;

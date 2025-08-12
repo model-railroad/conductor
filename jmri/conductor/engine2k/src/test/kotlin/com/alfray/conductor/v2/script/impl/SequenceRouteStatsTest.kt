@@ -23,16 +23,19 @@ import com.alflabs.conductor.util.EventLogger
 import com.alflabs.kv.IKeyValue
 import com.alflabs.utils.FakeClock
 import com.alfray.conductor.v2.script.CondCache
-import org.junit.Before
-import org.junit.Test
-
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.mock
 import dagger.internal.InstanceFactory
+import org.junit.Before
+import org.junit.Test
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.TimeZone
 
 /** Tests for [SequenceRouteStats]. */
 class SequenceRouteStatsTest {
     private lateinit var blockFactory: Block_Factory
+    private lateinit var stat: SequenceRouteStats
     private val jmriProvider = FakeJmriProvider()
     private val eventLogger = mock<EventLogger>()
     private val keyValue = mock<IKeyValue>()
@@ -41,6 +44,13 @@ class SequenceRouteStatsTest {
 
     @Before
     fun setUp() {
+        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
+        val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        df.timeZone = TimeZone.getTimeZone("UTC")
+
+        // resource under test
+        stat = SequenceRouteStats(clock, df, "MyRoute", "TH")
+
         blockFactory = Block_Factory(
             InstanceFactory.create(keyValue),
             InstanceFactory.create(jmriProvider),
@@ -51,7 +61,6 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_Empty() {
-        val stat = SequenceRouteStats(clock, "MyRoute", "TH")
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
             |"th":"TH",
@@ -63,7 +72,6 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_Error() {
-        val stat = SequenceRouteStats(clock, "MyRoute", "TH")
         stat.activateAndReset()
         stat.setError()
         assertThat(stat.toJsonString()).isEqualTo("""
@@ -77,7 +85,6 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_UniqueNodeNames() {
-        val stat = SequenceRouteStats(clock, "MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
         stat.addNodeWithDurationMs(node("B2"), 42)
@@ -99,7 +106,6 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_RepeatedNodeNames() {
-        val stat = SequenceRouteStats(clock, "MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
 
@@ -136,7 +142,6 @@ class SequenceRouteStatsTest {
 
     @Test
     fun toJsonString_ShuttleNodeNames() {
-        val stat = SequenceRouteStats(clock, "MyRoute", "TH")
         stat.activateAndReset()
         stat.addNodeWithDurationMs(node("B1"), 41)
 
@@ -155,6 +160,140 @@ class SequenceRouteStatsTest {
             |"th":"TH",
             |"act":3,
             |"err":false,
+            |"nodes":[
+              |{"n":"B1.1","ms":41},
+              |{"n":"B2.1","ms":42},
+              |{"n":"B3.1","ms":43},
+              |{"n":"B4","ms":44},
+              |{"n":"B3.2","ms":45},
+              |{"n":"B2.2","ms":46},
+              |{"n":"B1.2","ms":47}]}
+        """.trimMargin().replace("\n",""))
+    }
+
+    @Test
+    fun toDazzString_Empty() {
+        assertThat(stat.toDazzString()).isEqualTo("""
+            |{"name":"MyRoute",
+            |"th":"TH",
+            |"act":0,
+            |"err":false,
+            |"run":"Unknown",
+            |"sts":"1970-01-01T00:00:00Z",
+            |"nodes":[]}
+        """.trimMargin().replace("\n",""))
+    }
+
+    @Test
+    fun toDazzString_Error() {
+        stat.activateAndReset()
+        stat.setError()
+        clock.add(10_000)
+        stat.setRunning(SequenceRouteStats.Running.Ended)
+        assertThat(stat.toDazzString()).isEqualTo("""
+            |{"name":"MyRoute",
+            |"th":"TH",
+            |"act":1,
+            |"err":true,
+            |"run":"Ended",
+            |"sts":"1970-01-01T00:00:01Z",
+            |"ets":"1970-01-01T00:00:11Z",
+            |"nodes":[]}
+        """.trimMargin().replace("\n",""))
+    }
+
+    @Test
+    fun toDazzString_UniqueNodeNames() {
+        stat.activateAndReset()
+        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B2"), 42)
+        stat.addNodeWithDurationMs(node("B3"), 43)
+        stat.addNodeWithDurationMs(node("B4"), 44)
+        clock.add(10_000)
+        stat.setRunning(SequenceRouteStats.Running.Ended)
+
+        assertThat(stat.toDazzString()).isEqualTo("""
+            |{"name":"MyRoute",
+            |"th":"TH",
+            |"act":1,
+            |"err":false,
+            |"run":"Ended",
+            |"sts":"1970-01-01T00:00:01Z",
+            |"ets":"1970-01-01T00:00:11Z",
+            |"nodes":[
+              |{"n":"B1","ms":41},
+              |{"n":"B2","ms":42},
+              |{"n":"B3","ms":43},
+              |{"n":"B4","ms":44}]}
+        """.trimMargin().replace("\n",""))
+    }
+
+    @Test
+    fun toDazzString_RepeatedNodeNames() {
+        stat.activateAndReset()
+        stat.addNodeWithDurationMs(node("B1"), 41)
+
+        stat.activateAndReset()
+        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B2"), 42)
+        stat.addNodeWithDurationMs(node("B2"), 43)
+        stat.addNodeWithDurationMs(node("B3"), 44)
+        stat.addNodeWithDurationMs(node("B3"), 45)
+        stat.addNodeWithDurationMs(node("B3"), 46)
+        stat.addNodeWithDurationMs(node("B4"), 47)
+        stat.addNodeWithDurationMs(node("B4"), 48)
+        stat.addNodeWithDurationMs(node("B4"), 49)
+        stat.addNodeWithDurationMs(node("B4"), 50)
+        clock.add(10_000)
+        stat.setRunning(SequenceRouteStats.Running.Ended)
+
+        assertThat(stat.toDazzString()).isEqualTo("""
+            |{"name":"MyRoute",
+            |"th":"TH",
+            |"act":2,
+            |"err":false,
+            |"run":"Ended",
+            |"sts":"1970-01-01T00:00:01Z",
+            |"ets":"1970-01-01T00:00:11Z",
+            |"nodes":[
+              |{"n":"B1","ms":41},
+              |{"n":"B2.1","ms":42},
+              |{"n":"B2.2","ms":43},
+              |{"n":"B3.1","ms":44},
+              |{"n":"B3.2","ms":45},
+              |{"n":"B3.3","ms":46},
+              |{"n":"B4.1","ms":47},
+              |{"n":"B4.2","ms":48},
+              |{"n":"B4.3","ms":49},
+              |{"n":"B4.4","ms":50}]}
+        """.trimMargin().replace("\n",""))
+    }
+
+    @Test
+    fun toDazzString_ShuttleNodeNames() {
+        stat.activateAndReset()
+        stat.addNodeWithDurationMs(node("B1"), 41)
+
+        stat.activateAndReset()
+        stat.activateAndReset()
+        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B2"), 42)
+        stat.addNodeWithDurationMs(node("B3"), 43)
+        stat.addNodeWithDurationMs(node("B4"), 44)
+        stat.addNodeWithDurationMs(node("B3"), 45)
+        stat.addNodeWithDurationMs(node("B2"), 46)
+        stat.addNodeWithDurationMs(node("B1"), 47)
+        clock.add(10_000)
+        stat.setRunning(SequenceRouteStats.Running.Ended)
+
+        assertThat(stat.toDazzString()).isEqualTo("""
+            |{"name":"MyRoute",
+            |"th":"TH",
+            |"act":3,
+            |"err":false,
+            |"run":"Ended",
+            |"sts":"1970-01-01T00:00:01Z",
+            |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
               |{"n":"B1.1","ms":41},
               |{"n":"B2.1","ms":42},

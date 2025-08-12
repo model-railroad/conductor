@@ -20,6 +20,7 @@
 
 package com.alfray.conductor.v2.script.impl
 
+import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.EventLogger
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.IClock
@@ -67,13 +68,14 @@ import java.util.Locale
  * In the Active state, the route manager manages blocks and nodes.
  */
 internal class SequenceRoute @AssistedInject constructor(
-        private val clock: IClock,
-        logger: ILogger,
-        private val factory: Factory,
-        private val jsonSender: JsonSender,
-        eventLogger: EventLogger,
-        @Assisted override val owner: IRoutesContainer,
-        @Assisted builder: SequenceRouteBuilder
+    private val clock: IClock,
+    logger: ILogger,
+    private val factory: Factory,
+    private val jsonSender: JsonSender,
+    private val dazzSender: DazzSender,
+    eventLogger: EventLogger,
+    @Assisted override val owner: IRoutesContainer,
+    @Assisted builder: SequenceRouteBuilder
 ) : RouteBase(logger, eventLogger, owner, builder), ISequenceRoute, IRouteManager {
     private val TAG = javaClass.simpleName
     private var currentActiveBlocks = setOf<IBlock> ()
@@ -84,11 +86,10 @@ internal class SequenceRoute @AssistedInject constructor(
     override val minSecondsOnBlock = builder.minSecondsOnBlock
     override val maxSecondsOnBlock = builder.maxSecondsOnBlock
     override val maxSecondsEnterBlock = builder.maxSecondsEnterBlock
-    val graph = parse(builder.sequence, builder.branches)
-    val stats = SequenceRouteStats(
-        clock,
+    private val stats = factory.createSequenceRouteStats(
         name.ifEmpty { builder.routes.name },
         throttle.name.ifEmpty { throttle.dccAddress.toString() })
+    val graph = parse(builder.sequence, builder.branches)
     var currentNode: INode? = null
         private set
 
@@ -210,6 +211,10 @@ internal class SequenceRoute @AssistedInject constructor(
     private fun onSequenceRouteActivated() {
         stats.activateAndReset()
 
+        val dazz = stats.toDazzString()
+        val key2 = "${stats.routeName}_${stats.throttleName}"
+        dazzSender.sendEvent("route/$key2", stats.startTS, /*state=ok*/ true, /*payload=*/ dazz)
+
         // Forget any older value of currentNode. It is properly set in postOnActivateAction.
         currentNode = null
 
@@ -288,9 +293,11 @@ internal class SequenceRoute @AssistedInject constructor(
 
             stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
-            eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
+            val dazz = stats.toDazzString()
+            eventLogger.logAsync(EventLogger.Type.Route, toString(), dazz)
             val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
+            dazzSender.sendEvent("route/$key2", stats.startTS, /*state=ok*/ true, /*payload=*/ dazz)
         }
 
         // Remove any trailing blocks. We don't need them as they will not be
@@ -313,12 +320,13 @@ internal class SequenceRoute @AssistedInject constructor(
             // Capture time spent on this block for our route running stats.
             stats.addNode(it)
             stats.setError()
-
             stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
+            val dazz = stats.toDazzString()
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
             val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
+            dazzSender.sendEvent("route/$key2", stats.startTS, /*state=error*/ false, /*payload=*/ dazz)
         }
     }
 
