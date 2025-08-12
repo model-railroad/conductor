@@ -215,9 +215,11 @@ internal class SequenceRoute @AssistedInject constructor(
     private fun onSequenceRouteActivated() {
         stats.activateAndReset()
 
-        val dazz = stats.toDazzString()
-        val key2 = "${stats.routeName}_${stats.throttleName}"
-        dazzSender.sendEvent("route/$key2", stats.startTS, /*state=ok*/ true, /*payload=*/ dazz)
+        dazzSender.sendEvent(
+            "route/${stats.routeName}/${stats.throttleName}",
+            stats.startTS,
+            /*state=ok*/ true,
+            /*payload=*/ stats.toDazzString())
 
         // Forget any older value of currentNode. It is properly set in postOnActivateAction.
         currentNode = null
@@ -301,7 +303,10 @@ internal class SequenceRoute @AssistedInject constructor(
             eventLogger.logAsync(EventLogger.Type.Route, toString(), dazz)
             val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
-            dazzSender.sendEvent("route/$key2", stats.startTS, /*state=ok*/ true, /*payload=*/ dazz)
+            dazzSender.sendEvent(
+                "route/${stats.routeName}/${stats.throttleName}",
+                stats.startTS, /*state=ok*/ true,
+                /*payload=*/ dazz)
         }
 
         // Remove any trailing blocks. We don't need them as they will not be
@@ -330,7 +335,11 @@ internal class SequenceRoute @AssistedInject constructor(
             eventLogger.logAsync(EventLogger.Type.Route, toString(), json)
             val key2 = "${stats.routeName}_${stats.throttleName}"
             jsonSender.sendEvent("route_stats", key2, json)
-            dazzSender.sendEvent("route/$key2", stats.startTS, /*state=error*/ false, /*payload=*/ dazz)
+            dazzSender.sendEvent(
+                "route/${stats.routeName}/${stats.throttleName}",
+                stats.startTS,
+                /*state=error*/ false,
+                /*payload=*/ dazz)
         }
     }
 

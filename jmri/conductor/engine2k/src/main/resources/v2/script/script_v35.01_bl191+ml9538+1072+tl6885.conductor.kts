@@ -1471,7 +1471,7 @@ fun ML_Fn_Try_Recover_Route() {
 
 val ML_Recovery_Passenger_Route = ML_Route.sequence {
     // Recovery route for the passenger mainline train.
-    name = "PA Recovery"
+    name = "Recovery PA"
     throttle = PA
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 120     // 2 minutes per block max
@@ -1554,7 +1554,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             // a recover block. We do not set any speed on purpose
             // (except to clear B503a below).
             if (!monitor_B503a) {
-                log("ML PA Recovery: Enter B503 without monitor B503a")
+                log("ML Recovery PA: Enter B503 without monitor B503a")
                 after (PA_Data.Delay_B503b_Down_Stop) then {
                     PA.stop()
                     PA.horn()
@@ -1566,7 +1566,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
                     ML_Wait_Route.activate()
                 }
             } else {
-                log("ML PA Recovery: Enter B503 with monitor B503a")
+                log("ML Recovery PA: Enter B503 with monitor B503a")
                 PA.stop()
                 PA.bell(Off)
                 after (5.seconds) then {
@@ -1595,7 +1595,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
         ML_State = EML_State.Recover
         ML_Train = EML_Train.Passenger
         ML_Passenger_Align_Turnouts()
-        log("ML PA Recovery: Select start node.")
+        log("ML Recovery PA: Select start node.")
         when {
             B370.active && B360.active ->   route.startNode(B360_rev, trailing=B370_rev)
             B370.active ->                  route.startNode(B370_rev)
@@ -1619,7 +1619,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
             }
             B503b.active ->                 route.startNode(B503b_rev)
             else -> {
-               log("ML PA Recovery: WARNING: No condition for start node.")
+               log("ML Recovery PA: WARNING: No condition for start node.")
             }
         }
     }
@@ -1636,7 +1636,7 @@ val ML_Recovery_Passenger_Route = ML_Route.sequence {
 
 val ML_Recovery_Freight_Route = ML_Route.sequence {
     // Recovery route for the freight mainline train.
-    name = "FR Recovery"
+    name = "Recovery FR"
     throttle = FR
     minSecondsOnBlock = 0       // deactivated
     maxSecondsOnBlock = 180     // 3 minutes per block max
@@ -1697,7 +1697,7 @@ val ML_Recovery_Freight_Route = ML_Route.sequence {
             B321.active -> route.startNode(B321_rev)
             B311.active -> route.startNode(B311_rev)
             else -> {
-               log("ML FR Recovery: WARNING: No condition for start node.")
+               log("ML Recovery FR: WARNING: No condition for start node.")
             }
         }
     }
@@ -2588,7 +2588,7 @@ val TL_Recovery_Route = TL_Route.sequence {
             else -> {
                 // SDB is setup such that B713b is active if the train is not found *elsewhere*.
                 // The only reason B713b may be inactive is if SDB cannot communicate with JMRI.
-                log("TL Recovery: WARNING: Engine not detected.")
+                log("Recovery TL: WARNING: Engine not detected.")
             }
         }
     }

@@ -127,7 +127,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
                 {"key":"toggle/passenger","ts":"1970-01-01T00:00:02Z","st":true,"d":""}
             """.trimIndent(),
             """
-                {"key":"route/Freight_FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"{\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"run\":\"Started\",\"sts\":\"1970-01-01T00:00:02Z\",\"nodes\":[]}"}
+                {"key":"route/Freight/FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"{\"name\":\"Freight\",\"th\":\"FR\",\"act\":1,\"err\":false,\"run\":\"Started\",\"sts\":\"1970-01-01T00:00:02Z\",\"nodes\":[]}"}
             """.trimIndent())
 
         clockMillis.add(100)
@@ -360,7 +360,7 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
         ).inOrder()
         assertThat(dazzSender.eventsGetAndClear()).containsExactly(
             """
-                {"key":"route/Freight_FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"${expectedRouteDazz.replace("\"", "\\\"")}"}
+                {"key":"route/Freight/FR","ts":"1970-01-01T00:00:02Z","st":true,"d":"${expectedRouteDazz.replace("\"", "\\\"")}"}
             """.trimIndent())
     }
 }
