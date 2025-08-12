@@ -96,7 +96,7 @@ public class DazzSenderTest {
     }
 
     @Test
-    public void testSetDazzUrl_FromString() throws Exception {
+    public void testSetDazzUrl_fromString() throws Exception {
         assertThat(mSender.getDazzUrl()).isNull();
 
         mSender.setDazzUrl(" http://example.com/store # Comment \nBlah");
@@ -104,7 +104,7 @@ public class DazzSenderTest {
     }
 
     @Test
-    public void testSetDazzUrl_FromFile() throws Exception {
+    public void testSetDazzUrl_fromFile() throws Exception {
         assertThat(mSender.getDazzUrl()).isNull();
 
         mFileOps.writeBytes(

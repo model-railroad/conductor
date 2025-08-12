@@ -99,7 +99,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testPostStore_NoPayload() {
+    fun testPostStore_noPayload() {
         val request = createRequest(HttpMethod.POST, "/store")
 
         val response = FakeResponse(request)
@@ -112,7 +112,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testPostStore_CorrectPayload() {
+    fun testPostStore_correctPayload() {
         val jsonPayload =
             """
                 {"key":"toggles/entry1","ts":"1970-01-01T00:03:54Z","st":true,"d":"( some payload )"}
@@ -139,7 +139,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetQuery_NoPayload() {
+    fun testGetQuery_noPayload() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
@@ -157,7 +157,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetQuery_CorrectPayload() {
+    fun testGetQuery_correctPayload() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
@@ -184,7 +184,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_NoData() {
+    fun testGetLive_noData() {
         val request = createRequest(HttpMethod.GET, "/live")
 
         val response = FakeResponse(request)
@@ -196,7 +196,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetLive_CorrectData() {
+    fun testGetLive_correctData() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
@@ -216,7 +216,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetHistory_NoData() {
+    fun testGetHistory_noData() {
         val request = createRequest(HttpMethod.GET, "/history")
 
         val response = FakeResponse(request)
@@ -228,7 +228,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetHistory_CorrectData() {
+    fun testGetHistory_correctData() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))

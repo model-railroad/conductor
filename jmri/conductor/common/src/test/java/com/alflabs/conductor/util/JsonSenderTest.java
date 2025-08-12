@@ -95,7 +95,7 @@ public class JsonSenderTest {
     }
 
     @Test
-    public void testSetJsonUrl_FromString() throws Exception {
+    public void testSetJsonUrl_fromString() throws Exception {
         assertThat(mSender.getJsonUrl()).isNull();
 
         mSender.setJsonUrl(" http://example.com/some/url # Comment \nBlah");
@@ -103,7 +103,7 @@ public class JsonSenderTest {
     }
 
     @Test
-    public void testSetJsonUrl_FromFile() throws Exception {
+    public void testSetJsonUrl_fromFile() throws Exception {
         assertThat(mSender.getJsonUrl()).isNull();
 
         mFileOps.writeBytes(
