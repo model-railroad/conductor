@@ -86,10 +86,10 @@ class SequenceRouteStatsTest {
     @Test
     fun toJsonString_UniqueNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B3"), 43)
-        stat.addNodeWithDurationMs(node("B4"), 44)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
@@ -107,19 +107,19 @@ class SequenceRouteStatsTest {
     @Test
     fun toJsonString_RepeatedNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
 
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B2"), 43)
-        stat.addNodeWithDurationMs(node("B3"), 44)
-        stat.addNodeWithDurationMs(node("B3"), 45)
-        stat.addNodeWithDurationMs(node("B3"), 46)
-        stat.addNodeWithDurationMs(node("B4"), 47)
-        stat.addNodeWithDurationMs(node("B4"), 48)
-        stat.addNodeWithDurationMs(node("B4"), 49)
-        stat.addNodeWithDurationMs(node("B4"), 50)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 45, minSeconds = 50, maxSeconds = 150)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 46, minSeconds = 60, maxSeconds = 160)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 47, minSeconds = 70, maxSeconds = 170)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 48, minSeconds = 80, maxSeconds = 180)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 49, minSeconds = 90, maxSeconds = 190)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 50, minSeconds = 99, maxSeconds = 199)
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
@@ -143,17 +143,17 @@ class SequenceRouteStatsTest {
     @Test
     fun toJsonString_ShuttleNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
 
         stat.activateAndReset()
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B3"), 43)
-        stat.addNodeWithDurationMs(node("B4"), 44)
-        stat.addNodeWithDurationMs(node("B3"), 45)
-        stat.addNodeWithDurationMs(node("B2"), 46)
-        stat.addNodeWithDurationMs(node("B1"), 47)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 45, minSeconds = 50, maxSeconds = 150)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 46, minSeconds = 60, maxSeconds = 160)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 47, minSeconds = 70, maxSeconds = 170)
 
         assertThat(stat.toJsonString()).isEqualTo("""
             |{"name":"MyRoute",
@@ -205,10 +205,10 @@ class SequenceRouteStatsTest {
     @Test
     fun toDazzString_UniqueNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B3"), 43)
-        stat.addNodeWithDurationMs(node("B4"), 44)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
         clock.add(10_000)
         stat.setRunning(SequenceRouteStats.Running.Ended)
 
@@ -221,29 +221,29 @@ class SequenceRouteStatsTest {
             |"sts":"1970-01-01T00:00:01Z",
             |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
-              |{"n":"B1","ms":41},
-              |{"n":"B2","ms":42},
-              |{"n":"B3","ms":43},
-              |{"n":"B4","ms":44}]}
+              |{"n":"B1","ms":41,"mis":10,"mas":110},
+              |{"n":"B2","ms":42,"mis":20,"mas":120},
+              |{"n":"B3","ms":43,"mis":30,"mas":130},
+              |{"n":"B4","ms":44,"mis":40,"mas":140}]}
         """.trimMargin().replace("\n",""))
     }
 
     @Test
     fun toDazzString_RepeatedNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
 
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B2"), 43)
-        stat.addNodeWithDurationMs(node("B3"), 44)
-        stat.addNodeWithDurationMs(node("B3"), 45)
-        stat.addNodeWithDurationMs(node("B3"), 46)
-        stat.addNodeWithDurationMs(node("B4"), 47)
-        stat.addNodeWithDurationMs(node("B4"), 48)
-        stat.addNodeWithDurationMs(node("B4"), 49)
-        stat.addNodeWithDurationMs(node("B4"), 50)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 45, minSeconds = 50, maxSeconds = 150)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 46, minSeconds = 60, maxSeconds = 160)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 47, minSeconds = 70, maxSeconds = 170)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 48, minSeconds = 80, maxSeconds = 180)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 49, minSeconds = 90, maxSeconds = 190)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 50, minSeconds = 99, maxSeconds = 199)
         clock.add(10_000)
         stat.setRunning(SequenceRouteStats.Running.Ended)
 
@@ -256,33 +256,33 @@ class SequenceRouteStatsTest {
             |"sts":"1970-01-01T00:00:01Z",
             |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
-              |{"n":"B1","ms":41},
-              |{"n":"B2.1","ms":42},
-              |{"n":"B2.2","ms":43},
-              |{"n":"B3.1","ms":44},
-              |{"n":"B3.2","ms":45},
-              |{"n":"B3.3","ms":46},
-              |{"n":"B4.1","ms":47},
-              |{"n":"B4.2","ms":48},
-              |{"n":"B4.3","ms":49},
-              |{"n":"B4.4","ms":50}]}
+              |{"n":"B1","ms":41,"mis":10,"mas":110},
+              |{"n":"B2.1","ms":42,"mis":20,"mas":120},
+              |{"n":"B2.2","ms":43,"mis":30,"mas":130},
+              |{"n":"B3.1","ms":44,"mis":40,"mas":140},
+              |{"n":"B3.2","ms":45,"mis":50,"mas":150},
+              |{"n":"B3.3","ms":46,"mis":60,"mas":160},
+              |{"n":"B4.1","ms":47,"mis":70,"mas":170},
+              |{"n":"B4.2","ms":48,"mis":80,"mas":180},
+              |{"n":"B4.3","ms":49,"mis":90,"mas":190},
+              |{"n":"B4.4","ms":50,"mis":99,"mas":199}]}
         """.trimMargin().replace("\n",""))
     }
 
     @Test
     fun toDazzString_ShuttleNodeNames() {
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
 
         stat.activateAndReset()
         stat.activateAndReset()
-        stat.addNodeWithDurationMs(node("B1"), 41)
-        stat.addNodeWithDurationMs(node("B2"), 42)
-        stat.addNodeWithDurationMs(node("B3"), 43)
-        stat.addNodeWithDurationMs(node("B4"), 44)
-        stat.addNodeWithDurationMs(node("B3"), 45)
-        stat.addNodeWithDurationMs(node("B2"), 46)
-        stat.addNodeWithDurationMs(node("B1"), 47)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 41, minSeconds = 10, maxSeconds = 110)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 42, minSeconds = 20, maxSeconds = 120)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 43, minSeconds = 30, maxSeconds = 130)
+        stat.addNodeWithDurationMs(node("B4"), durationMs = 44, minSeconds = 40, maxSeconds = 140)
+        stat.addNodeWithDurationMs(node("B3"), durationMs = 45, minSeconds = 50, maxSeconds = 150)
+        stat.addNodeWithDurationMs(node("B2"), durationMs = 46, minSeconds = 60, maxSeconds = 160)
+        stat.addNodeWithDurationMs(node("B1"), durationMs = 47, minSeconds = 70, maxSeconds = 170)
         clock.add(10_000)
         stat.setRunning(SequenceRouteStats.Running.Ended)
 
@@ -295,13 +295,13 @@ class SequenceRouteStatsTest {
             |"sts":"1970-01-01T00:00:01Z",
             |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
-              |{"n":"B1.1","ms":41},
-              |{"n":"B2.1","ms":42},
-              |{"n":"B3.1","ms":43},
-              |{"n":"B4","ms":44},
-              |{"n":"B3.2","ms":45},
-              |{"n":"B2.2","ms":46},
-              |{"n":"B1.2","ms":47}]}
+              |{"n":"B1.1","ms":41,"mis":10,"mas":110},
+              |{"n":"B2.1","ms":42,"mis":20,"mas":120},
+              |{"n":"B3.1","ms":43,"mis":30,"mas":130},
+              |{"n":"B4","ms":44,"mis":40,"mas":140},
+              |{"n":"B3.2","ms":45,"mis":50,"mas":150},
+              |{"n":"B2.2","ms":46,"mis":60,"mas":160},
+              |{"n":"B1.2","ms":47,"mis":70,"mas":170}]}
         """.trimMargin().replace("\n",""))
     }
 

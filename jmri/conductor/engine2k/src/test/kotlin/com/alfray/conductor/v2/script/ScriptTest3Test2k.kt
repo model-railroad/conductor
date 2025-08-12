@@ -280,13 +280,19 @@ class ScriptTest3Test2k : ScriptTest2kBase() {
             "ets": "1970-01-01T00:03:54Z",
             "nodes": [ {
                     "n": "B311.1",
-                    "ms": 60000
+                    "ms": 60000,
+                    "mis": 10,
+                    "mas": 120
                 }, {
                     "n": "B321",
-                    "ms": 120200
+                    "ms": 120200,
+                    "mis": 10,
+                    "mas": 180
                 }, {
                     "n": "B311.2",
-                    "ms": 52100
+                    "ms": 52100,
+                    "mis": 10,
+                    "mas": 120
                 }
             ]}
         """.replace("\\s".toRegex(), "")

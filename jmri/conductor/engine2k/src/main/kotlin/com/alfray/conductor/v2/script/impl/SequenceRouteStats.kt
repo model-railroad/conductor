@@ -44,13 +44,29 @@ internal class SequenceRouteStats @AssistedInject constructor(
 ) {
     /**
      * One node and its occupation duration in milliseconds.
+     * Version 1 for legacy JSON.
      *
      * @param n The name of the node, exported to JSON.
      * @param ms The occupation duration in milliseconds, exported to JSON.
      */
-    data class NodeTiming(
+    data class NodeTimingV1(
         var n: String,                      // field name exported to JSON
         val ms: Long)                       // field name exported to JSON
+
+    /**
+     * One node and its occupation duration in milliseconds.
+     * Version 2 for Dazz.
+     *
+     * @param n The name of the node, exported to JSON.
+     * @param ms The occupation duration in milliseconds, exported to JSON.
+     * @param mis The Min Seconds occupation time, exported to JSON.
+     * @param mis The Max Seconds occupation time, exported to JSON.
+     */
+    data class NodeTimingV2(
+        var n: String,                      // field name exported to JSON
+        val ms: Long,                       // field name exported to JSON
+        val mis: Int,                       // field name exported to JSON
+        val mas: Int)                       // field name exported to JSON
 
     enum class Running {
         Unknown,
@@ -65,7 +81,7 @@ internal class SequenceRouteStats @AssistedInject constructor(
     var startTS = 0L
         private set
     private var endTS = 0L
-    private val nodes = mutableListOf<NodeTiming>()
+    private val nodes = mutableListOf<NodeTimingV2>()
 
     data class JsonStructure(
         // All field names directly as exported to JSON
@@ -73,7 +89,7 @@ internal class SequenceRouteStats @AssistedInject constructor(
         val th: String,
         val act: Int,
         val err: Boolean,
-        val nodes: List<NodeTiming>,
+        val nodes: List<NodeTimingV1>,
     )
 
     data class DazzStructure(
@@ -85,7 +101,7 @@ internal class SequenceRouteStats @AssistedInject constructor(
         val run: Running,
         val sts: Date,
         val ets: Date?,
-        val nodes: List<NodeTiming>,
+        val nodes: List<NodeTimingV2>,
     )
 
     fun activateAndReset() {
@@ -108,13 +124,17 @@ internal class SequenceRouteStats @AssistedInject constructor(
         isError = true
     }
 
-    fun addNode(node: INode) {
+    fun addNode(node: INode, minSeconds: Int, maxSeconds: Int) {
         val block = node.block as BlockBase
-        addNodeWithDurationMs(node, block.stateTimeMs())
+        addNodeWithDurationMs(node, block.stateTimeMs(), minSeconds, maxSeconds)
     }
 
-    fun addNodeWithDurationMs(node: INode, durationMs: Long) {
-        nodes.add(NodeTiming(node.block.name, durationMs))
+    fun addNodeWithDurationMs(node: INode, durationMs: Long, minSeconds: Int, maxSeconds: Int) {
+        nodes.add(NodeTimingV2(
+            node.block.name,
+            durationMs,
+            minSeconds,
+            maxSeconds))
     }
 
     fun toJsonString(): String {
@@ -124,7 +144,7 @@ internal class SequenceRouteStats @AssistedInject constructor(
             throttleName,
             numActivations,
             isError,
-            nodes,
+            nodes.map { nt2 -> NodeTimingV1(nt2.n, nt2.ms) },
         ))
     }
 

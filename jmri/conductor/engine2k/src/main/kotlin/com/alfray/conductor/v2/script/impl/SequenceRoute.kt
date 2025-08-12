@@ -101,8 +101,10 @@ internal class SequenceRoute @AssistedInject constructor(
     }
 
     /** Returns the [minSecondsOnBlock] for the [currentNode] or the current route. */
-    private fun computeMinSecondsOnBlock(node: Node): Int =
-        if (node.minSecondsOnBlock > 0) node.minSecondsOnBlock else minSecondsOnBlock
+    private fun computeMinSecondsOnBlock(node: INode): Int {
+        node as Node
+        return if (node.minSecondsOnBlock > 0) node.minSecondsOnBlock else minSecondsOnBlock
+    }
 
     /** Computes the [Timeout] for [minSecondsOnBlock] time. */
     private fun minSecondsReached(node: Node): Timeout {
@@ -113,8 +115,10 @@ internal class SequenceRoute @AssistedInject constructor(
     }
 
     /** Returns the [maxSecondsOnBlock] for the given [node] or the current route. */
-    private fun computeMaxSecondsOnBlock(node: Node): Int =
-        if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
+    private fun computeMaxSecondsOnBlock(node: INode): Int {
+        node as Node
+        return if (node.maxSecondsOnBlock > 0) node.maxSecondsOnBlock else maxSecondsOnBlock
+    }
 
     /** Computes the [Timeout] for [maxSecondsOnBlock] time. */
     private fun maxSecondsOnBlockReached(node: Node): Timeout {
@@ -289,7 +293,7 @@ internal class SequenceRoute @AssistedInject constructor(
         // route running stats when the route is deactivated.
         currentNode?.let {
             // Capture time spent on this block for our route running stats.
-            stats.addNode(it)
+            stats.addNode(it, computeMinSecondsOnBlock(it), computeMaxSecondsOnBlock(it))
 
             stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
@@ -318,7 +322,7 @@ internal class SequenceRoute @AssistedInject constructor(
         // route running stats when the route is deactivated.
         currentNode?.let {
             // Capture time spent on this block for our route running stats.
-            stats.addNode(it)
+            stats.addNode(it, computeMinSecondsOnBlock(it), computeMaxSecondsOnBlock(it))
             stats.setError()
             stats.setRunning(SequenceRouteStats.Running.Ended)
             val json = stats.toJsonString()
@@ -454,7 +458,11 @@ internal class SequenceRoute @AssistedInject constructor(
                         }
 
                     // Capture time spent on this block for our route running stats.
-                    stats.addNode(currentNode_)
+                    stats.addNode(
+                        currentNode_,
+                        computeMinSecondsOnBlock(currentNode_),
+                        computeMaxSecondsOnBlock(currentNode_)
+                    )
 
                     // Mark current block as trailing.
                     // Any timer for min/maxSecondsOnBlock becomes reset after the state change.
