@@ -58,7 +58,7 @@ class DazzRestHandler @AssistedInject constructor(
                 return doPostQuit(path, response, callback)
             } else if (isPost && path.startsWith("/store")) {
                 return doPostStore(path, request, response, callback)
-            } else if (isGet && path.startsWith("/query/")) {
+            } else if (isGet && path.startsWith("/query")) {
                 return doGetQuery(path, request, response, callback)
             } else if (isGet && path.startsWith("/live")) {
                 return doGetLive(path, request, response, callback)
@@ -124,9 +124,13 @@ class DazzRestHandler @AssistedInject constructor(
     ): Boolean {
         logger.d(TAG, "doGetQuery: $path")
 
-        val query = path.removePrefix("/query/")
+        val filter = if (path.startsWith("/query/")) {
+            path.removePrefix("/query/")
+        } else {
+            ""
+        }
 
-        val content = dataStore.queryToJson(query)
+        val content = dataStore.queryToJson(filter)
 
         reply(
             response,
@@ -146,7 +150,14 @@ class DazzRestHandler @AssistedInject constructor(
     ): Boolean {
         logger.d(TAG, "doGetLive: $path")
 
-        val content = dataStore.liveToJson()
+
+        val filter = if (path.startsWith("/live/")) {
+            path.removePrefix("/live/")
+        } else {
+            ""
+        }
+
+        val content = dataStore.liveToJson(filter)
 
         reply(
             response,
@@ -166,7 +177,13 @@ class DazzRestHandler @AssistedInject constructor(
     ): Boolean {
         logger.d(TAG, "doGetHistory: $path")
 
-        val content = dataStore.historyToJson()
+        val filter = if (path.startsWith("/history/")) {
+            path.removePrefix("/history/")
+        } else {
+            ""
+        }
+
+        val content = dataStore.historyToJson(filter)
 
         reply(
             response,

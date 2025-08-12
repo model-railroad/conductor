@@ -151,8 +151,9 @@ class DazzRestHandlerTest {
         val callback = mock<Callback>()
 
         assertThat(handler.handle(request, response, callback)).isTrue()
-        assertThat(response.status).isEqualTo(404)
-        assertThat(response.getBuffer()).isEmpty()
+        assertThat(response.status).isEqualTo(200)
+        // Note: this is about testing the REST call. We don't want to dup the DataStore test here.
+        assertThat(response.getBuffer()).isNotEmpty()
     }
 
     @Test
@@ -190,8 +191,8 @@ class DazzRestHandlerTest {
         val callback = mock<Callback>()
 
         assertThat(handler.handle(request, response, callback)).isTrue()
-        assertThat(response.status).isEqualTo(404)
-        assertThat(response.getBuffer()).isEmpty()
+        assertThat(response.status).isEqualTo(200)
+        assertThat(response.getBuffer()).isEqualTo("{ }")
     }
 
     @Test
@@ -222,8 +223,8 @@ class DazzRestHandlerTest {
         val callback = mock<Callback>()
 
         assertThat(handler.handle(request, response, callback)).isTrue()
-        assertThat(response.status).isEqualTo(404)
-        assertThat(response.getBuffer()).isEmpty()
+        assertThat(response.status).isEqualTo(200)
+        assertThat(response.getBuffer()).isEqualTo("{ }")
     }
 
     @Test

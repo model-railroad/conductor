@@ -216,8 +216,8 @@ class DazzStoreTest {
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", true, "payload 3"))
         ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", true, "payload 4"))
 
-        assertThat(ds.queryToJson("blah")).isEmpty()
-        assertThat(ds.queryToJson("toggles/")).isEmpty()
+        assertThat(ds.queryToJson("blah")).isEqualTo("{ }")
+        assertThat(ds.queryToJson("toggles/")).isEqualTo("{ }")
 
         assertThat(ds.queryToJson("toggles/entry1")).isEqualTo(
             """
@@ -286,7 +286,9 @@ class DazzStoreTest {
         ds.add(DataEntry("entryC", "ts0008", false, "run C.04 fail"))
         ds.add(DataEntry("entryC", "ts0009", false, "run C.04 fail"))
 
-        assertThat(ds.liveToJson()).isEqualTo(
+        assertThat(ds.liveToJson(keyQuery = "foo")).isEqualTo("{ }")
+
+        assertThat(ds.liveToJson(keyQuery = "")).isEqualTo(
             """
                 {
                   "entryA": {
@@ -347,7 +349,9 @@ class DazzStoreTest {
         ds.add(DataEntry("entryB", "ts0017", false, "run B.13 fail"))
         ds.add(DataEntry("entryB", "ts0018", false, "run B.14 fail"))
 
-        assertThat(ds.historyToJson()).isEqualTo(
+        assertThat(ds.liveToJson(keyQuery = "foo")).isEqualTo("{ }")
+
+        assertThat(ds.historyToJson(keyQuery = "")).isEqualTo(
             """
                 {
                   "entryA": {

@@ -113,52 +113,22 @@ class DataStore @Inject constructor(
     /// error details, they would be logged here instead.)
     fun queryToJson(keyQuery: String): String {
         synchronized(data) {
-            val selectedKeys = mutableSetOf<String>()
-
-            if (keyQuery.contains("*") || keyQuery.contains("**")) {
-                val keys = data.keys
-
-                // Treat the keyQuery as a glob matcher
-                // Transform the glob query into a regexp query
-                // ** --> .+
-                // *  --> [^/]+
-                // TBD optional: regex-escape all other special characters except / ?
-                val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
-
-                val filtered = keys.filter { key -> pattern.matcher(key).matches() }
-                selectedKeys.addAll(filtered)
-            } else {
-                // Treat the keyQuery as a single key
-                selectedKeys.add(keyQuery)
-            }
-
-            // Create a shallow copy of the data store with only the selected keys
-
-            val filteredMap = data.filterKeys { key -> selectedKeys.contains(key) }
-
-            return if (filteredMap.isNotEmpty()) {
-                storeToJson(filteredMap)
-            } else {
-                "" // error or no data
-            }
+            val filteredData = filterData(keyQuery)
+            return storeToJson(filteredData)
         }
     }
 
-    fun liveToJson(): String {
+    fun liveToJson(keyQuery: String): String {
         // Wazz Logic to serve live data:
         // - For each key, return all entries till we report one success entries.
         // - If the next one also is a success entry, report it too.
-        // TBD optional: key glob filter via CGI param or URI Path.
         // TBD optional: configure max num success entries via CGI param.
 
-        val liveData = mutableMapOf<String, DataEntryMap>()
-
         synchronized(data) {
-            if (data.isEmpty()) {
-                return "" // no data
-            }
+            val liveData = mutableMapOf<String, DataEntryMap>()
+            val filteredData = filterData(keyQuery)
 
-            data.forEach { (key, entries) ->
+            filteredData.forEach { (key, entries) ->
                 val newEntries = DataEntryMap()
                 var countSuccess = 0
                 for(entry in entries.entries.values) {
@@ -176,26 +146,22 @@ class DataStore @Inject constructor(
                 }
                 liveData[key] = newEntries
             }
-        }
 
-        return storeToJson(liveData)
+            return storeToJson(liveData)
+        }
     }
 
-    fun historyToJson(): String {
+    fun historyToJson(keyQuery: String): String {
         // Wazz Logic to serve history data:
         // - For each key, return up to 10 success entries
         // - Ignore the failed ones.
-        // TBD optional: key glob filter via CGI param or URI Path.
         // TBD optional: configure max num entries via CGI param.
 
-        val historyData = mutableMapOf<String, DataEntryMap>()
-
         synchronized(data) {
-            if (data.isEmpty()) {
-                return "" // no data
-            }
+            val historyData = mutableMapOf<String, DataEntryMap>()
+            val filteredData = filterData(keyQuery)
 
-            data.forEach { (key, entries) ->
+            filteredData.forEach { (key, entries) ->
                 val newEntries = DataEntryMap()
                 for(entry in entries.entries.values) {
                     if (entry.isState) {
@@ -207,9 +173,40 @@ class DataStore @Inject constructor(
                 }
                 historyData[key] = newEntries
             }
+
+            return storeToJson(historyData)
+        }
+    }
+
+    private fun filterData(keyQuery: String): Map<String, DataEntryMap> {
+        val selectedKeys = mutableSetOf<String>()
+
+        if (keyQuery.isEmpty() || keyQuery == "**") {
+            // If there's no query, return the entire data store unfiltered as-is.
+            // That means the caller should likely synchronize on data even when
+            // manipulating the filterData result to avoid concurrent modifications.
+            return data
         }
 
-        return storeToJson(historyData)
+        if (keyQuery.contains("*") || keyQuery.contains("**")) {
+            val keys = data.keys
+
+            // Treat the keyQuery as a glob matcher
+            // Transform the glob query into a regexp query
+            // ** --> .+
+            // *  --> [^/]+
+            // TBD optional: regex-escape all other special characters except / ?
+            val pattern = keyQuery.replace("**", ".+").replace("*", "[^/]+").toPattern()
+
+            val filtered = keys.filter { key -> pattern.matcher(key).matches() }
+            selectedKeys.addAll(filtered)
+        } else {
+            // Treat the keyQuery as a single key
+            selectedKeys.add(keyQuery)
+        }
+
+        // Create a shallow copy of the data store with only the selected keys
+        return data.filterKeys { key -> selectedKeys.contains(key) }
     }
 }
 
