@@ -15,10 +15,12 @@ if ! grep -qs "$JV" $($JA -version 2>&1) ; then
     JC=$(find "$PF/Java" -type f -name javac.exe | grep "$JV" | sort -r | head -n 1)
     JS=$(cygpath -w "${JC//\/bin*/}")
     JA=$(cygpath -w "${JC/javac/java}")
+    JE=$(cygpath "$JA")
   else
     JC=$(ls /usr/lib/jvm/*java*$JV*/bin/javac | head -n 1)
     JS="${JS//\/bin*/}"
     JA="${JC/javac/java}"
+    JE="$JA"
   fi
   if [[ -d "$JS" ]]; then
     export JAVA_HOME="$JS"
@@ -38,5 +40,13 @@ echo "---- Building with gradle..."
 echo
 echo "---- Running ${ARTIFACT}..."
 echo
+
+# deactivate output color on some term which do not support it
+case "$TERM" in
+  cygwin)
+    export NO_COLOR=1
+    ;;
+esac
+
 set -x
-"$JA" -jar ./build/libs/DazzServ-${ARTIFACT}-all.jar $@
+"$JE" -jar ./build/libs/DazzServ-${ARTIFACT}-all.jar $@
