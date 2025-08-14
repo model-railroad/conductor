@@ -43,7 +43,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,11 +76,7 @@ public class Analytics extends ThreadLoop {
     private final OkHttpClient mOkHttpClient;
     private final ConcurrentLinkedDeque<Payload> mPayloads = new ConcurrentLinkedDeque<>();
     private final AtomicBoolean mStopLoopOnceEmpty = new AtomicBoolean(false);
-    private final CountDownLatch mLatchEndLoop = new CountDownLatch(1);
     private final ILocalDateTimeNowProvider mLocalDateTimeNow;
-    // Note: The executor is a dagger singleton, shared with the JsonSender.
-    @Deprecated(forRemoval = true)
-    private final ScheduledExecutorService mExecutor;
 
     private String mAnalyticsId = null;
     private String mGA4ClientId = null;
@@ -95,8 +90,7 @@ public class Analytics extends ThreadLoop {
                      FileOps fileOps,
                      IKeyValue keyValue,
                      OkHttpClient okHttpClient,
-                     ILocalDateTimeNowProvider localDateTimeNow,
-                     @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+                     ILocalDateTimeNowProvider localDateTimeNow) {
         mLogger = logger;
         mClock = clock;
         mFileOps = fileOps;
@@ -104,7 +98,6 @@ public class Analytics extends ThreadLoop {
         mRandom = random;
         mOkHttpClient = okHttpClient;
         mLocalDateTimeNow = localDateTimeNow;
-        mExecutor = executor;
     }
 
     /**
@@ -181,10 +174,7 @@ public class Analytics extends ThreadLoop {
     public void stop() throws Exception {
         mLogger.d(TAG, "Stop");
         mStopLoopOnceEmpty.set(true);
-        mLatchEndLoop.await(10, TimeUnit.SECONDS);
-        super.stop();
-        mExecutor.shutdown();
-        mExecutor.awaitTermination(10, TimeUnit.SECONDS);
+        super.stopWithPreTimeout(10, TimeUnit.SECONDS);
         mLogger.d(TAG, "Stopped");
     }
 
@@ -221,14 +211,13 @@ public class Analytics extends ThreadLoop {
         try {
             Thread.sleep(IDLE_SLEEP_MS);
         } catch (Exception e) {
-            mLogger.d(TAG, "Stats idle loop interrupted: " + e);
+            mLogger.d(TAG, "Stats idle loop interrupted", e);
         }
     }
 
     @Override
     protected void _afterThreadLoop() {
         mLogger.d(TAG, "End Loop");
-        mLatchEndLoop.countDown();
     }
 
     public void sendEvent(

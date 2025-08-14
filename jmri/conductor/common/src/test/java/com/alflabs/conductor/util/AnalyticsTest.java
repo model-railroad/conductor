@@ -41,10 +41,11 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.when;
 
 public class AnalyticsTest {
@@ -56,9 +57,8 @@ public class AnalyticsTest {
     @Mock private OkHttpClient mOkHttpClient;
     @Mock private ILocalDateTimeNowProvider mLocalDateTimeNowProvider;
 
-    private MockClock mClock = new MockClock();
+    private final MockClock mClock = new MockClock();
     private final FileOps mFileOps = new FakeFileOps();
-    private final ScheduledExecutorService mExecutor = Executors.newSingleThreadScheduledExecutor();
     private Analytics mAnalytics;
 
     @Before
@@ -74,8 +74,28 @@ public class AnalyticsTest {
                 mFileOps,
                 mKeyValue,
                 mOkHttpClient,
-                mLocalDateTimeNowProvider,
-                mExecutor);
+                mLocalDateTimeNowProvider) {
+            // For testing purposes, we want to ensure the loop has been able to run at least
+            // once before we allow a shutdown. Otherwise, we may shutdown the thread under
+            // test before it even got a chance to execute the operation under test.
+            private final CountDownLatch mLatchRunLoop = new CountDownLatch(1);
+
+            @Override
+            protected void _runInThreadLoop() throws EndLoopException {
+                super._runInThreadLoop();
+                mLatchRunLoop.countDown();
+            }
+
+            @Override
+            public void shutdown() throws Exception {
+                // This pause is necessary to give the thread loop a deterministic chance to run.
+                // Without that pause, the test is flaky because we might shut down before ever
+                // running the loop with the operation under test.
+                //noinspection ResultOfMethodCallIgnored
+                mLatchRunLoop.await(250, TimeUnit.MILLISECONDS);
+                super.shutdown();
+            }
+        };
     }
 
     @After
@@ -112,7 +132,7 @@ public class AnalyticsTest {
         mAnalytics.shutdown(); // forces pending tasks to execute
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        Mockito.verify(mOkHttpClient).newCall(requestCaptor.capture());
+        Mockito.verify(mOkHttpClient, atLeastOnce()).newCall(requestCaptor.capture());
         Request req = requestCaptor.getValue();
         assertThat(req).isNotNull();
         assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/collect");
@@ -153,7 +173,7 @@ public class AnalyticsTest {
         mAnalytics.shutdown(); // forces pending tasks to execute
 
         ArgumentCaptor<Request> requestCaptor = ArgumentCaptor.forClass(Request.class);
-        Mockito.verify(mOkHttpClient).newCall(requestCaptor.capture());
+        Mockito.verify(mOkHttpClient, atLeastOnce()).newCall(requestCaptor.capture());
         Request req = requestCaptor.getValue();
         assertThat(req).isNotNull();
         assertThat(req.url().toString()).isEqualTo("https://www.google-analytics.com/mp/collect?api_secret=XyzAppSecretZyX&measurement_id=G-1234ABCD");

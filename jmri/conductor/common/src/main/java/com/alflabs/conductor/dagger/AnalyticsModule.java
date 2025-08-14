@@ -28,10 +28,8 @@ import dagger.Module;
 import dagger.Provides;
 import okhttp3.OkHttpClient;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Random;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Module
 public abstract class AnalyticsModule {
@@ -44,8 +42,7 @@ public abstract class AnalyticsModule {
             FileOps fileOps,
             IKeyValue keyValue,
             OkHttpClient okHttpClient,
-            ILocalDateTimeNowProvider localDateTimeNow,
-            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+            ILocalDateTimeNowProvider localDateTimeNow) {
         return new Analytics(
                 logger,
                 clock,
@@ -53,7 +50,6 @@ public abstract class AnalyticsModule {
                 fileOps,
                 keyValue,
                 okHttpClient,
-                localDateTimeNow,
-                executor);
+                localDateTimeNow);
     }
 }
