@@ -22,6 +22,7 @@ import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -30,6 +31,7 @@ class DazzSched @Inject constructor(
     private val clock: IClock,
     private val fileOps: FileOps,
 ) : ThreadLoop() {
+    private lateinit var storeDir: File
 
     companion object {
         const val TAG = "DazzSched"
@@ -37,8 +39,19 @@ class DazzSched @Inject constructor(
     }
 
     /// Returns false if the directory does not exist.
-    fun setAndCheckStoreDir(storeDir: String): Boolean {
-        // TBD
+    @Suppress("LocalVariableName")
+    fun setAndCheckStoreDir(storeDir_: String): Boolean {
+        storeDir = File(storeDir_)
+        if (storeDir_.startsWith("~") && !fileOps.isDir(storeDir) && !fileOps.isFile(storeDir)) {
+            storeDir = File(System.getProperty("user.home"), storeDir_.substring(1))
+        }
+
+        if (!fileOps.isDir(this.storeDir)) {
+            logger.d(TAG, """ERROR: Store directory '$storeDir' does not exist.
+                |      SUGGESTION: Create it first or select an existing directory with --store-dir.
+                |""".trimMargin())
+            return false
+        }
         return true
     }
 
