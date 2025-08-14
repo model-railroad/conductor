@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $(dirname "$0")
+
 # Parse properties
 JV=$(sed -n -e "/propVersJava/s/.*=\(.*\)/\\1/p" gradle.properties)
 ARTIFACT=$(sed -n -e "/propArtifactVers/s/.*=\(.*\)/\\1/p" gradle.properties)
