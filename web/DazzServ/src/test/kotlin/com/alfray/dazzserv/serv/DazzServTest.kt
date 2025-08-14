@@ -37,8 +37,9 @@ class DazzServTest {
         val component = DaggerIMainTestComponent.factory().createComponent()
         component.inject(this)
 
-        main = object : Main(autoStartServer = false) {
+        main = object : Main() {
             override fun createComponent(): IMainComponent {
+                // Inject the test component here instead of the prod one.
                 return component
             }
         }
@@ -50,8 +51,9 @@ class DazzServTest {
         assertThat(main.port).isEqualTo(8080)
         assertThat(logger.string).isEqualTo(
             """
-               Main: Configured for 127.0.0.1 port 8080
-               Main: End
+                Main: Running test version
+                Main: Configured for 127.0.0.1 port 8080
+                Main: End
 
             """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)
@@ -63,8 +65,9 @@ class DazzServTest {
         assertThat(main.port).isEqualTo(9090)
         assertThat(logger.string).isEqualTo(
             """
-               Main: Configured for 0.0.0.0 port 9090
-               Main: End
+                Main: Running test version
+                Main: Configured for 0.0.0.0 port 9090
+                Main: End
 
             """.trimIndent())
         assertThat(result.statusCode).isEqualTo(0)

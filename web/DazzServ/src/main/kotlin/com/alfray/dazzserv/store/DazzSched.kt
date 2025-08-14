@@ -18,10 +18,61 @@
 
 package com.alfray.dazzserv.store
 
+import com.alflabs.utils.FileOps
+import com.alflabs.utils.IClock
+import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class DazzSched : ThreadLoop() {
+class DazzSched @Inject constructor(
+    private val logger: ILogger,
+    private val clock: IClock,
+    private val fileOps: FileOps,
+) : ThreadLoop() {
+
+    companion object {
+        const val TAG = "DazzSched"
+        const val IDLE_SLEEP_MS: Long = 1000L * 10L
+    }
+
+    /// Returns false if the directory does not exist.
+    fun setAndCheckStoreDir(storeDir: String): Boolean {
+        // TBD
+        return true
+    }
+
+    /// Load stored on-disk data.
+    fun load() {
+        // TBD
+    }
+
+    override fun start() {
+        super.start("DazzSched")
+    }
+
+    /**
+     * Requests termination. Pending tasks will be executed, no new task is allowed.
+     * Waiting time is 10 seconds max.
+     */
+    override fun stop() {
+        logger.d(TAG, "Stop")
+        try {
+            super.stopWithPreTimeout(10, TimeUnit.SECONDS)
+        } catch (e: Exception) {
+            logger.d(TAG, "Stop Exception", e)
+        }
+        logger.d(TAG, "Stopped")
+    }
+
     override fun _runInThreadLoop() {
-        TODO("Not yet implemented")
+        // TBD
+
+        try {
+            logger.d(TAG, "Loop")
+            Thread.sleep(IDLE_SLEEP_MS)
+        } catch (e: Exception) {
+            logger.d(TAG, "Stats idle loop interrupted", e)
+        }
     }
 }

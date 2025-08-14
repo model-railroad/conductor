@@ -18,20 +18,32 @@
 
 package com.alfray.dazzserv.dagger
 
-import com.alfray.dazzserv.Main
-import com.github.ajalt.clikt.core.CliktCommand
-import dagger.BindsInstance
-import dagger.Component
+import com.alflabs.utils.FileOps
+import com.alflabs.utils.IClock
+import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.store.DazzSched
+import dagger.Module
+import dagger.Provides
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Named
 import javax.inject.Singleton
 
+@Module
+object DazzModule {
+    @Singleton
+    @Provides
+    @Named("AppUnderTest")
+    fun provideAppUnderTest(): AtomicBoolean {
+        return AtomicBoolean(false)
+    }
 
-@Singleton
-@Component(modules = [CommonModule::class, DazzModule::class])
-interface IMainComponent {
-    fun inject(main: Main)
-
-    @Component.Factory
-    interface Factory {
-        fun createComponent(@BindsInstance echoer: CliktCommand): IMainComponent
+    @Singleton
+    @Provides
+    fun provideDazzSched(
+        logger: ILogger,
+        clock: IClock,
+        fileOps: FileOps,
+    ): DazzSched {
+        return DazzSched(logger, clock, fileOps)
     }
 }

@@ -26,7 +26,7 @@ import javax.inject.Singleton
 
 
 @Singleton
-@Component(modules = [CommonTestModule::class])
+@Component(modules = [CommonTestModule::class, DazzTestModule::class])
 interface IMainTestComponent : IMainComponent {
     fun inject(dazzServTest: DazzServTest)
     fun inject(dazzStoreTest: DazzStoreTest)
