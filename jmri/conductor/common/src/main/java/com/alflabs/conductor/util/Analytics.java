@@ -25,6 +25,7 @@ import com.alflabs.manifest.Constants;
 import com.alflabs.utils.FileOps;
 import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
+import com.alflabs.utils.ThreadLoop;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import okhttp3.MediaType;
@@ -79,6 +80,7 @@ public class Analytics extends ThreadLoop {
     private final CountDownLatch mLatchEndLoop = new CountDownLatch(1);
     private final ILocalDateTimeNowProvider mLocalDateTimeNow;
     // Note: The executor is a dagger singleton, shared with the JsonSender.
+    @Deprecated(forRemoval = true)
     private final ScheduledExecutorService mExecutor;
 
     private String mAnalyticsId = null;

@@ -50,6 +50,7 @@ open class Main(
     // Command Line Options
     val port by option(help = "Server Port").int().default(8080)
     val host by option(help = "Server Bind IP").default("127.0.0.1")
+    val storeDir by option(help = "Directory for store files").default("~/.dazz-store")
 
     companion object {
         const val TAG = "Main"

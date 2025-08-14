@@ -31,6 +31,11 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * In-Memory Data Store for Dazz events.
+ *
+ * @see DazzSched for the one dealing with stored files.
+ */
 @Suppress("FoldInitializerAndIfToElvis")
 @Singleton
 class DataStore @Inject constructor(

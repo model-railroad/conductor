@@ -1,6 +1,6 @@
 /*
- * Project: Conductor
- * Copyright (C) 2021 alf.labs gmail com,
+ * Project: DazzServ
+ * Copyright (C) 2025 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,9 +16,12 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.util;
+package com.alfray.dazzserv.store
 
-public interface IStartStop {
-    void start() throws Exception;
-    void stop() throws Exception;
+import com.alflabs.utils.ThreadLoop
+
+class DazzSched : ThreadLoop() {
+    override fun _runInThreadLoop() {
+        TODO("Not yet implemented")
+    }
 }
