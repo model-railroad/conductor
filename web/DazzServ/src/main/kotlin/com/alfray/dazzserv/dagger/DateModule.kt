@@ -19,13 +19,22 @@
 package com.alfray.dazzserv.dagger
 
 import dagger.Module
+import dagger.Provides
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.TimeZone
+import javax.inject.Named
+import javax.inject.Singleton
 
-@Module(
-    includes = [
-        ClockModule::class,
-        FileOpsModule::class,
-        LoggerModule::class,
-        DateModule::class,
-    ]
-)
-abstract class CommonModule 
+@Module
+object DateModule {
+    @Singleton
+    @Provides
+    @Named("IsoDateFormat")
+    fun provideIsoDateFormat(): DateFormat {
+        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
+        val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        df.timeZone = TimeZone.getTimeZone("UTC")
+        return df
+    }
+}

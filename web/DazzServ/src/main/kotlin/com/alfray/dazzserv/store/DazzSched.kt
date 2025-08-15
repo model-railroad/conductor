@@ -23,19 +23,28 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
 import java.io.File
+import java.text.DateFormat
+import java.util.Collections
+import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import javax.inject.Named
 
 class DazzSched @Inject constructor(
     private val logger: ILogger,
     private val clock: IClock,
     private val fileOps: FileOps,
+    private val store: DataStore,
+    @Named("IsoDateFormat") private val isoDateFormat: DateFormat,
 ) : ThreadLoop() {
+    private var nextSaveTS: Long = 0
     private lateinit var storeDir: File
 
     companion object {
         const val TAG = "DazzSched"
-        const val IDLE_SLEEP_MS: Long = 1000L * 10L
+        const val IDLE_SLEEP_MS = 1000L
+        const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
+        const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
     }
 
     /// Returns false if the directory does not exist.
@@ -57,10 +66,32 @@ class DazzSched @Inject constructor(
 
     /// Load stored on-disk data.
     fun load() {
-        // TBD
+        try {
+            val files = fileOps.listDirectory(
+                storeDir,
+                "ds_*.txt",
+                /*listFiles=*/ true,
+                /*listDirectories=*/ false) as ArrayList<File>
+            Collections.sort(files, Collections.reverseOrder())
+
+            var n = LOAD_NUM_DAYS
+            for (file in files) {
+                store.loadFrom(file)
+                n--
+                if (n <= 0) break
+            }
+        } catch (e: Exception) {
+            logger.d(TAG, "Load failed", e)
+        }
+    }
+
+    /// Schedule next save to happen 30 seconds from now
+    private fun scheduleNextSave() {
+        nextSaveTS = clock.elapsedRealtime() + SAVE_INTERVAL_SEC * 1000L
     }
 
     override fun start() {
+        scheduleNextSave()
         super.start("DazzSched")
     }
 
@@ -79,13 +110,24 @@ class DazzSched @Inject constructor(
     }
 
     override fun _runInThreadLoop() {
-        // TBD
-
         try {
-            logger.d(TAG, "Loop")
+            val nowTS = clock.elapsedRealtime()
+
+            if (nowTS >= nextSaveTS) {
+                store.saveTo(fileForTimestamp(nextSaveTS))
+                scheduleNextSave()
+            }
+
             Thread.sleep(IDLE_SLEEP_MS)
         } catch (e: Exception) {
-            logger.d(TAG, "Stats idle loop interrupted", e)
+            logger.d(TAG, "Loop interrupted", e)
         }
+    }
+
+    private fun fileForTimestamp(timestampMs: Long): File {
+        val date = Date(timestampMs)
+        val isoTimestamp: String = isoDateFormat.format(date)
+        val file = File(storeDir, "ds_${isoTimestamp}.txt")
+        return file
     }
 }

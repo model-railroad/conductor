@@ -24,7 +24,8 @@ import dagger.Module
     includes = [
         FakeClockModule::class,
         FakeFileOpsModule::class,
-        StringLoggerModule::class
+        StringLoggerModule::class,
+        DateModule::class,
     ]
 )
 abstract class CommonTestModule
