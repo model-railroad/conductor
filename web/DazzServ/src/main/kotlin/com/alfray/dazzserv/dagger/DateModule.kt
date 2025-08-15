@@ -30,11 +30,21 @@ import javax.inject.Singleton
 object DateModule {
     @Singleton
     @Provides
-    @Named("IsoDateFormat")
-    fun provideIsoDateFormat(): DateFormat {
+    @Named("IsoDateTime")
+    fun provideIsoTimeFormat(): DateFormat {
         // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
         val df: DateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
         df.timeZone = TimeZone.getTimeZone("UTC")
         return df
     }
-}
+
+
+    @Singleton
+    @Provides
+    @Named("IsoDateOnly")
+    fun provideIsoOnlyFormat(): DateFormat {
+        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
+        val df: DateFormat = SimpleDateFormat("yyyy-MM-dd")
+        df.timeZone = TimeZone.getTimeZone("UTC")
+        return df
+    }}

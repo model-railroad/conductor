@@ -46,8 +46,8 @@ object DazzModule {
         clock: IClock,
         fileOps: FileOps,
         store: DataStore,
-        @Named("IsoDateFormat") isoDateFormat: DateFormat,
+        @Named("IsoDateOnly") isoDateOnlyFormat: DateFormat,
     ): DazzSched {
-        return DazzSched(logger, clock, fileOps, store, isoDateFormat)
+        return DazzSched(logger, clock, fileOps, store, isoDateOnlyFormat)
     }
 }

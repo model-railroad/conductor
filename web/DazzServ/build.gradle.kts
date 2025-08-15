@@ -20,6 +20,7 @@ val propVersClikt: String by project
 val propVersJetty: String by project
 val propVersSLF4J: String by project
 val propVersJackson: String by project
+val propVersGuava: String by project
 val propVersJunit: String by project
 val propVersTruth: String by project
 val propVersMockitoKotlin: String by project
@@ -51,6 +52,7 @@ dependencies {
     implementation("org.eclipse.jetty:jetty-server:$propVersJetty")
     implementation("org.slf4j:slf4j-simple:$propVersSLF4J")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$propVersJackson")
+    implementation("com.google.guava:guava:$propVersGuava")
 
     implementation("com.google.dagger:dagger:$propVersDagger")
     kapt("com.google.dagger:dagger-compiler:$propVersDagger")

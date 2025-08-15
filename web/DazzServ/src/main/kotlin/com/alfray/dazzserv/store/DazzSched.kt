@@ -22,6 +22,7 @@ import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
+import com.google.common.annotations.VisibleForTesting
 import java.io.File
 import java.text.DateFormat
 import java.util.Collections
@@ -35,7 +36,7 @@ class DazzSched @Inject constructor(
     private val clock: IClock,
     private val fileOps: FileOps,
     private val store: DataStore,
-    @Named("IsoDateFormat") private val isoDateFormat: DateFormat,
+    @Named("IsoDateOnly") private val isoDateOnlyFormat: DateFormat,
 ) : ThreadLoop() {
     private var nextSaveTS: Long = 0
     private lateinit var storeDir: File
@@ -50,6 +51,7 @@ class DazzSched @Inject constructor(
     /// Returns false if the directory does not exist.
     @Suppress("LocalVariableName")
     fun setAndCheckStoreDir(storeDir_: String): Boolean {
+        scheduleNextSave()
         storeDir = File(storeDir_)
         if (storeDir_.startsWith("~") && !fileOps.isDir(storeDir) && !fileOps.isFile(storeDir)) {
             storeDir = File(System.getProperty("user.home"), storeDir_.substring(1))
@@ -114,8 +116,7 @@ class DazzSched @Inject constructor(
             val nowTS = clock.elapsedRealtime()
 
             if (nowTS >= nextSaveTS) {
-                store.saveTo(fileForTimestamp(nextSaveTS))
-                scheduleNextSave()
+                doSave()
             }
 
             Thread.sleep(IDLE_SLEEP_MS)
@@ -124,9 +125,16 @@ class DazzSched @Inject constructor(
         }
     }
 
-    private fun fileForTimestamp(timestampMs: Long): File {
+    @VisibleForTesting
+    internal fun doSave() {
+        store.saveTo(fileForTimestamp(nextSaveTS))
+        scheduleNextSave()
+    }
+
+    @VisibleForTesting
+    internal fun fileForTimestamp(timestampMs: Long): File {
         val date = Date(timestampMs)
-        val isoTimestamp: String = isoDateFormat.format(date)
+        val isoTimestamp: String = isoDateOnlyFormat.format(date)
         val file = File(storeDir, "ds_${isoTimestamp}.txt")
         return file
     }
