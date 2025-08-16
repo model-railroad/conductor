@@ -44,10 +44,13 @@ class DazzServ @AssistedInject constructor(
     fun createServer() {
         server = Server()
 
-        val connector = ServerConnector(server)
-        connector.port = port
-        connector.host = host
-        server.addConnector(connector)
+        host.split(",").forEach {
+            val connector = ServerConnector(server)
+            connector.port = port
+            connector.host = it
+            server.addConnector(connector)
+            logger.d(TAG, "Serving on http://$it:$port")
+        }
 
         // DefaultHandler serves a favicon or show contexts for debugging when all other
         // handlers return false.
@@ -77,7 +80,7 @@ class DazzServ @AssistedInject constructor(
     fun runServer() {
         try {
             server.start()
-            logger.d(TAG, "REST Server started on http://$host:$port")
+            logger.d(TAG, "REST Server started")
             server.join()
         } catch (e: Exception) {
             logger.d(TAG, "REST Server error: $e")
