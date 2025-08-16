@@ -54,7 +54,9 @@ class DataStore @Inject constructor(
         const val HISTORY_NUM_ENTRIES = 10
     }
 
-    /// Adds or update an entry.
+    /**
+     * Adds or update an entry.
+     */
     fun add(entry: DataEntry) {
         val key = entry.key
         synchronized(data) {
@@ -87,7 +89,9 @@ class DataStore @Inject constructor(
         logger.d(TAG, "Loaded $n entries from $file")
     }
 
-    /// Appends all new entries to the given file, if any.
+    /**
+     * Appends all new entries to the given file, if any.
+     */
     fun saveTo(file: File) {
         if (newEntries.isEmpty()) {
             return
@@ -110,11 +114,68 @@ class DataStore @Inject constructor(
         logger.d(TAG, "Saved $n entries to $file")
     }
 
-    /// Decodes the payload, adds it to the store if valid, returns whether it was success.
-    /// Payload is expected to be a JSON decoding to DataEntry.
-    /// This also queues the new entry to be automatically saved to the store files by [saveTo()].
-    /// Caller is the HTTP REST handler and doesn't care about error details, as any
-    /// error will only be detailed via the logs and not in the HTTP response.
+    /**
+     * Keep the last N days of data and remove everything else.
+     *
+     * Note that "N days" does not mean "N days from now" -- we keep the N _most recent_
+     * timestamps days, whatever they are.
+     *
+     * This assumes that the _string_ timestamps are properly formated in the expected ISO 8601
+     * format (namely "1970-01-01T00:03:54Z"). Timestamps that do not follow this format are
+     * simply ignored and not purged.
+     */
+    fun purgeOlderEntriesThan(numDaysToKeep: Int) {
+        val datesToTimestamps = mutableMapOf<String, MutableList<String>>()
+        var sizeBefore = 0
+        synchronized(data) {
+            val format = "^([0-9]{4}-[0-9]{2}-[0-9]{2}T).*".toRegex()
+
+            // The data is { key -> { timestamp -> entry } },
+            // parse all timestamps across all keys.
+            data.values.forEach { dataEntryMap ->
+                sizeBefore += dataEntryMap.entries.size
+                dataEntryMap.entries.keys.forEach { timestamp ->
+                    format.matchEntire(timestamp)?.let { match ->
+                        val date = match.groupValues[1]
+                        datesToTimestamps.computeIfAbsent(date) { mutableListOf() }
+                        datesToTimestamps[date]!!.add(timestamp)
+                    }
+                }
+            }
+        }
+
+        // We'll remove everything but the highest N date timestamps
+        val removeDates = datesToTimestamps.keys.sortedDescending().drop(numDaysToKeep)
+        if (removeDates.isNotEmpty()) {
+            var sizeAfter = 0
+            val removeTimestamps = mutableSetOf<String>()
+            removeDates.forEach { date ->
+                removeTimestamps.addAll(datesToTimestamps[date].orEmpty())
+            }
+
+            synchronized(data) {
+                data.values.forEach { dataEntryMap ->
+                    removeTimestamps.forEach { timestamp ->
+                        dataEntryMap.entries.remove(timestamp)
+                    }
+                    sizeAfter += dataEntryMap.entries.size
+                }
+            }
+
+            if (sizeAfter != sizeBefore) {
+                logger.d(TAG, "Purged ${sizeBefore - sizeAfter} older entries")
+            }
+        }
+    }
+
+    /**
+     * Decodes the payload, adds it to the store if valid, returns whether it was success.
+     * Payload is expected to be a JSON decoding to DataEntry.
+     *
+     * This also queues the new entry to be automatically saved to the store files by [saveTo()].
+     * Caller is the HTTP REST handler and doesn't care about error details, as any
+     * error will only be detailed via the logs and not in the HTTP response.
+     */
     fun store(jsonPayload: String): Boolean {
         try {
             val entry = decodeAndAddEntry(jsonPayload)
@@ -132,9 +193,12 @@ class DataStore @Inject constructor(
         return entry
     }
 
-    /// Returns data for the key or keys denoted by the query.
-    /// Returns an empty string on error (caller is the HTTP REST handler and doesn't care about
-    /// error details, they would be logged here instead.)
+    /**
+     * Returns data for the key or keys denoted by the query.
+     *
+     * Returns an empty string on error (caller is the HTTP REST handler and doesn't care about
+     * error details, they would be logged here instead.)
+     */
     fun queryToJson(keyQuery: String): String {
         synchronized(data) {
             val filteredData = filterData(keyQuery)
@@ -234,9 +298,12 @@ class DataStore @Inject constructor(
     }
 }
 
-/// Custom pretty printer for the data store map. See CustomIndenter for details.
-/// This custom pretty-printer is the reason we use Jackson instead of Kotlinx Serialization.
-/// In practice, this CustomPrettyPrinter will actually only be used for unit tests.
+/**
+ * Custom pretty printer for the data store map. See CustomIndenter for details.
+ *
+ * This custom pretty-printer is the reason we use Jackson instead of Kotlinx Serialization.
+ * In practice, this CustomPrettyPrinter will actually only be used for unit tests.
+ */
 private class CustomPrettyPrinter : DefaultPrettyPrinter(
     Separators.createDefaultInstance()
         .withObjectFieldValueSpacing(Separators.Spacing.AFTER)

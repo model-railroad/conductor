@@ -39,19 +39,23 @@ class DazzSched @Inject constructor(
     @Named("IsoDateOnly") private val isoDateOnlyFormat: DateFormat,
 ) : ThreadLoop() {
     private var nextSaveTS: Long = 0
+    private var nextPurgeTS: Long = 0
     private lateinit var storeDir: File
 
     companion object {
         const val TAG = "DazzSched"
         const val IDLE_SLEEP_MS = 1000L * 10L
         const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
+        const val PURGE_INTERVAL_SEC = 12*3600      // Default to purge old data is every 12 hours
         const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
+        const val PURGE_NUM_DAYS = 7                // Number of days to keep when purging
     }
 
     /// Returns false if the directory does not exist.
     @Suppress("LocalVariableName")
     fun setAndCheckStoreDir(storeDir_: String): Boolean {
         scheduleNextSave()
+        scheduleNextPurge()
         storeDir = File(storeDir_)
         if (storeDir_.startsWith("~") && !fileOps.isDir(storeDir) && !fileOps.isFile(storeDir)) {
             storeDir = File(System.getProperty("user.home"), storeDir_.substring(1))
@@ -87,13 +91,17 @@ class DazzSched @Inject constructor(
         }
     }
 
-    /// Schedule next save to happen 30 seconds from now
     private fun scheduleNextSave() {
         nextSaveTS = clock.elapsedRealtime() + SAVE_INTERVAL_SEC * 1000L
     }
 
+    private fun scheduleNextPurge() {
+        nextPurgeTS = clock.elapsedRealtime() + PURGE_INTERVAL_SEC * 1000L
+    }
+
     override fun start() {
         scheduleNextSave()
+        scheduleNextPurge()
         super.start("DazzSched")
         logger.d(TAG, "Start")
     }
@@ -119,6 +127,8 @@ class DazzSched @Inject constructor(
 
             if (nowTS >= nextSaveTS) {
                 doSave()
+            } else if (nowTS >= nextPurgeTS) {
+                doPurge()
             }
 
             Thread.sleep(IDLE_SLEEP_MS)
@@ -131,6 +141,11 @@ class DazzSched @Inject constructor(
     internal fun doSave() {
         store.saveTo(fileForTimestamp(nextSaveTS))
         scheduleNextSave()
+    }
+
+    private fun doPurge() {
+        store.purgeOlderEntriesThan(PURGE_NUM_DAYS)
+        scheduleNextPurge()
     }
 
     @VisibleForTesting

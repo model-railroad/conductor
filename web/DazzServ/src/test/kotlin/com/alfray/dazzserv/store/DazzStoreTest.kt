@@ -199,6 +199,94 @@ class DazzStoreTest {
     }
 
     @Test
+    fun testPurgeOlderEntriesThan() {
+        ds.add(DataEntry("toggles/entryA", "1970-01-01T00:01:00Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entryA", "1970-01-01T00:02:00Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entryA", "1970-01-02T00:03:00Z", true, "payload 3"))
+        ds.add(DataEntry("toggles/entryB", "1970-01-02T00:04:00Z", true, "payload 4"))
+        ds.add(DataEntry("toggles/entryB", "1970-01-03T00:05:00Z", true, "payload 5"))
+        ds.add(DataEntry("toggles/entryB", "1970-01-03T00:06:00Z", true, "payload 6"))
+        ds.add(DataEntry("toggles/entryA", "1970-01-03T00:07:00Z", true, "payload 7"))
+        ds.add(DataEntry("toggles/entryC", "1970-01-04T00:08:00Z", true, "payload 8"))
+        ds.add(DataEntry("toggles/entryC", "1970-01-04T00:09:00Z", true, "payload 9"))
+        ds.add(DataEntry("toggles/entryA", "1970-01-04T00:10:00Z", true, "payload A"))
+        ds.add(DataEntry("toggles/entryC", "1970-01-05T00:11:00Z", true, "payload B"))
+        ds.add(DataEntry("toggles/entryA", "1970-01-05T00:12:00Z", true, "payload C"))
+        ds.add(DataEntry("toggles/entryB", "1970-01-06T00:13:00Z", true, "payload D"))
+        ds.add(DataEntry("toggles/entryC", "1970-01-06T00:14:00Z", true, "payload E"))
+        ds.add(DataEntry("toggles/entryC", "INVALID-07T00:15:00Z", true, "invalid timestamp 1"))
+        ds.add(DataEntry("toggles/entryC", "1970-01-06 00:16:00" , true, "invalid timestamp 2"))
+        ds.add(DataEntry("toggles/entryC", "19700106001500"      , true, "invalid timestamp 3"))
+
+        val initial = ds.storeToJson()
+        ds.purgeOlderEntriesThan(numDaysToKeep = 10)
+        assertThat(ds.storeToJson()).isEqualTo(initial)
+        assertThat(logger.string).isEqualTo("")
+
+        ds.purgeOlderEntriesThan(numDaysToKeep = 4) // keeps days -06, -05, -04, -03
+        assertThat(logger.string).contains("DataStore: Purged 4 older entries")
+        assertThat(ds.storeToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entryA": {
+                    "entries": {
+                      "1970-01-05T00:12:00Z": {"key": "toggles/entryA", "ts": "1970-01-05T00:12:00Z", "st": true, "d": "payload C"}, 
+                      "1970-01-04T00:10:00Z": {"key": "toggles/entryA", "ts": "1970-01-04T00:10:00Z", "st": true, "d": "payload A"}, 
+                      "1970-01-03T00:07:00Z": {"key": "toggles/entryA", "ts": "1970-01-03T00:07:00Z", "st": true, "d": "payload 7"}
+                    }
+                  }, 
+                  "toggles/entryB": {
+                    "entries": {
+                      "1970-01-06T00:13:00Z": {"key": "toggles/entryB", "ts": "1970-01-06T00:13:00Z", "st": true, "d": "payload D"}, 
+                      "1970-01-03T00:06:00Z": {"key": "toggles/entryB", "ts": "1970-01-03T00:06:00Z", "st": true, "d": "payload 6"}, 
+                      "1970-01-03T00:05:00Z": {"key": "toggles/entryB", "ts": "1970-01-03T00:05:00Z", "st": true, "d": "payload 5"}
+                    }
+                  }, 
+                  "toggles/entryC": {
+                    "entries": {
+                      "INVALID-07T00:15:00Z": {"key": "toggles/entryC", "ts": "INVALID-07T00:15:00Z", "st": true, "d": "invalid timestamp 1"}, 
+                      "19700106001500": {"key": "toggles/entryC", "ts": "19700106001500", "st": true, "d": "invalid timestamp 3"}, 
+                      "1970-01-06T00:14:00Z": {"key": "toggles/entryC", "ts": "1970-01-06T00:14:00Z", "st": true, "d": "payload E"}, 
+                      "1970-01-06 00:16:00": {"key": "toggles/entryC", "ts": "1970-01-06 00:16:00", "st": true, "d": "invalid timestamp 2"}, 
+                      "1970-01-05T00:11:00Z": {"key": "toggles/entryC", "ts": "1970-01-05T00:11:00Z", "st": true, "d": "payload B"}, 
+                      "1970-01-04T00:09:00Z": {"key": "toggles/entryC", "ts": "1970-01-04T00:09:00Z", "st": true, "d": "payload 9"}, 
+                      "1970-01-04T00:08:00Z": {"key": "toggles/entryC", "ts": "1970-01-04T00:08:00Z", "st": true, "d": "payload 8"}
+                    }
+                  }
+                }
+            """.trimIndent()
+        )
+
+        ds.purgeOlderEntriesThan(numDaysToKeep = 2) // keeps days -06, -05
+        assertThat(logger.string).contains("DataStore: Purged 6 older entries")
+        assertThat(ds.storeToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entryA": {
+                    "entries": {
+                      "1970-01-05T00:12:00Z": {"key": "toggles/entryA", "ts": "1970-01-05T00:12:00Z", "st": true, "d": "payload C"}
+                    }
+                  }, 
+                  "toggles/entryB": {
+                    "entries": {
+                      "1970-01-06T00:13:00Z": {"key": "toggles/entryB", "ts": "1970-01-06T00:13:00Z", "st": true, "d": "payload D"}
+                    }
+                  }, 
+                  "toggles/entryC": {
+                    "entries": {
+                      "INVALID-07T00:15:00Z": {"key": "toggles/entryC", "ts": "INVALID-07T00:15:00Z", "st": true, "d": "invalid timestamp 1"}, 
+                      "19700106001500": {"key": "toggles/entryC", "ts": "19700106001500", "st": true, "d": "invalid timestamp 3"}, 
+                      "1970-01-06T00:14:00Z": {"key": "toggles/entryC", "ts": "1970-01-06T00:14:00Z", "st": true, "d": "payload E"}, 
+                      "1970-01-06 00:16:00": {"key": "toggles/entryC", "ts": "1970-01-06 00:16:00", "st": true, "d": "invalid timestamp 2"}, 
+                      "1970-01-05T00:11:00Z": {"key": "toggles/entryC", "ts": "1970-01-05T00:11:00Z", "st": true, "d": "payload B"}
+                    }
+                  }
+                }
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun testStoreUpdatedEvent() {
         ds.add(DataEntry("toggles/entry1", "1970-01-02T03:04:05Z", true, "payload 1"))
 
