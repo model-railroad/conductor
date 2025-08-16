@@ -74,7 +74,17 @@ class DataStore @Inject constructor(
     }
 
     fun loadFrom(file: File) {
-        TODO()
+        var n = 0
+        fileOps.toString(file, Charsets.UTF_8).reader().forEachLine {
+            try {
+                // do not call "store" as it queues entries to be written back to save files later.
+                decodeAndAddEntry(it)
+                n++
+            } catch (e: Exception) {
+                logger.d(TAG, "[$file] Failed to decode JSON DataEntry: ${e.message}")
+            }
+        }
+        logger.d(TAG, "Loaded $n entries from $file")
     }
 
     /// Appends all new entries to the given file, if any.
@@ -82,6 +92,7 @@ class DataStore @Inject constructor(
         if (newEntries.isEmpty()) {
             return
         }
+        var n = 0
         fileOps.openFileWriter(file, /*append=*/ true).use { writer ->
             while (true) {
                 val entry = newEntries.peekFirst()
@@ -90,27 +101,35 @@ class DataStore @Inject constructor(
                 }
                 val json = entryToJson(entry)
                 writer.write("$json\n")
+                n++
                 // We only actually remove the entry only if the write op didn't throw.
                 // This is safe since all concurrent additions only occur at the end.
                 newEntries.removeFirst()
             }
         }
+        logger.d(TAG, "Saved $n entries to $file")
     }
 
     /// Decodes the payload, adds it to the store if valid, returns whether it was success.
     /// Payload is expected to be a JSON decoding to DataEntry.
+    /// This also queues the new entry to be automatically saved to the store files by [saveTo()].
     /// Caller is the HTTP REST handler and doesn't care about error details, as any
     /// error will only be detailed via the logs and not in the HTTP response.
     fun store(jsonPayload: String): Boolean {
         try {
-            val entry = DataEntry.parseJson(mapper, jsonPayload)
-            add(entry)
+            val entry = decodeAndAddEntry(jsonPayload)
             newEntries.addLast(entry)
             return true
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)
             return false
         }
+    }
+
+    private fun decodeAndAddEntry(jsonPayload: String): DataEntry {
+        val entry = DataEntry.parseJson(mapper, jsonPayload)
+        add(entry)
+        return entry
     }
 
     /// Returns data for the key or keys denoted by the query.

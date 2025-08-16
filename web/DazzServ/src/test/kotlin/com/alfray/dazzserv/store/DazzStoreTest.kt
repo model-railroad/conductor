@@ -20,6 +20,7 @@ package com.alfray.dazzserv.store
 
 import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.FakeFileOps
+import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -30,6 +31,7 @@ import javax.inject.Inject
 
 
 class DazzStoreTest {
+    @Inject lateinit var logger: StringLogger
     @Inject lateinit var fileOps: FakeFileOps
     @Inject lateinit var ds: DataStore
 
@@ -103,7 +105,7 @@ class DazzStoreTest {
                 }
             """.trimIndent())
 
-        val file = File("save.dat")
+        val file = File("tmp", "save.dat")
         ds.saveTo(file)
 
         assertThat(fileOps.isFile(file)).isTrue()
@@ -145,6 +147,55 @@ class DazzStoreTest {
 
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun testSaveAndLoad() {
+        ds.store(""" {"key": "toggles/entry1", "ts": "1970-01-01T00:05:67Z", "st": false, "d": "payload 1"} """)
+        ds.store(""" {"key": "toggles/entry2", "ts": "1970-01-02T00:06:78Z", "st": true , "d": "payload 2"} """)
+        ds.store(""" {"key": "toggles/entry2", "ts": "1970-01-03T00:07:89Z", "st": false, "d": "payload 3"} """)
+        ds.store(""" {"key": "toggles/entry1", "ts": "1970-01-04T00:08:90Z", "st": true , "d": "payload 4"} """)
+
+        val file = File("tmp", "save.dat")
+        ds.saveTo(file)
+
+        assertThat(fileOps.isFile(file)).isTrue()
+        assertThat(fileOps.toString(file, StandardCharsets.UTF_8)).isEqualTo(
+            """
+                {"key":"toggles/entry1","ts":"1970-01-01T00:05:67Z","st":false,"d":"payload 1"}
+                {"key":"toggles/entry2","ts":"1970-01-02T00:06:78Z","st":true,"d":"payload 2"}
+                {"key":"toggles/entry2","ts":"1970-01-03T00:07:89Z","st":false,"d":"payload 3"}
+                {"key":"toggles/entry1","ts":"1970-01-04T00:08:90Z","st":true,"d":"payload 4"}
+
+            """.trimIndent()
+        )
+
+        val newDataStore = DataStore(logger, fileOps)
+        assertThat(newDataStore.storeToJson()).isEqualTo("{ }")
+
+        newDataStore.loadFrom(file)
+        assertThat(newDataStore.storeToJson()).isEqualTo(
+            """
+                {
+                  "toggles/entry1": {
+                    "entries": {
+                      "1970-01-04T00:08:90Z": {"key": "toggles/entry1", "ts": "1970-01-04T00:08:90Z", "st": true, "d": "payload 4"}, 
+                      "1970-01-01T00:05:67Z": {"key": "toggles/entry1", "ts": "1970-01-01T00:05:67Z", "st": false, "d": "payload 1"}
+                    }
+                  }, 
+                  "toggles/entry2": {
+                    "entries": {
+                      "1970-01-03T00:07:89Z": {"key": "toggles/entry2", "ts": "1970-01-03T00:07:89Z", "st": false, "d": "payload 3"}, 
+                      "1970-01-02T00:06:78Z": {"key": "toggles/entry2", "ts": "1970-01-02T00:06:78Z", "st": true, "d": "payload 2"}
+                    }
+                  }
+                }
+            """.trimIndent()
+        )
+
+        // Reloading the same stuff is indempotent
+        ds.loadFrom(file)
+        assertThat(ds.storeToJson()).isEqualTo(newDataStore.storeToJson())
     }
 
     @Test

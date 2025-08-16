@@ -43,7 +43,7 @@ class DazzSched @Inject constructor(
 
     companion object {
         const val TAG = "DazzSched"
-        const val IDLE_SLEEP_MS = 1000L
+        const val IDLE_SLEEP_MS = 1000L * 10L
         const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
         const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
     }
@@ -95,6 +95,7 @@ class DazzSched @Inject constructor(
     override fun start() {
         scheduleNextSave()
         super.start("DazzSched")
+        logger.d(TAG, "Start")
     }
 
     /**
@@ -104,10 +105,11 @@ class DazzSched @Inject constructor(
     override fun stop() {
         logger.d(TAG, "Stop")
         try {
-            super.stopWithPreTimeout(10, TimeUnit.SECONDS)
+            super.stopWithPreTimeout(2, TimeUnit.SECONDS)
         } catch (e: Exception) {
             logger.d(TAG, "Stop Exception", e)
         }
+        doSave()
         logger.d(TAG, "Stopped")
     }
 
