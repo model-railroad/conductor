@@ -16,12 +16,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv.store
+package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
+import com.alfray.dazzserv.store.DataStore
 import com.google.common.annotations.VisibleForTesting
 import java.io.File
 import java.text.DateFormat

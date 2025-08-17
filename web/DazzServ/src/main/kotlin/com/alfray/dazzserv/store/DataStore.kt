@@ -34,7 +34,7 @@ import javax.inject.Singleton
 /**
  * In-Memory Data Store for Dazz events.
  *
- * @see DazzSched for the one dealing with stored files.
+ * @see com.alfray.dazzserv.serv.DazzSched for the one dealing with stored files.
  */
 @Suppress("FoldInitializerAndIfToElvis")
 @Singleton

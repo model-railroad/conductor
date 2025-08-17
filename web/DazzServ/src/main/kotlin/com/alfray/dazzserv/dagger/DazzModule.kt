@@ -22,7 +22,7 @@ import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.dazzserv.store.DataStore
-import com.alfray.dazzserv.store.DazzSched
+import com.alfray.dazzserv.serv.DazzSched
 import dagger.Module
 import dagger.Provides
 import java.text.DateFormat

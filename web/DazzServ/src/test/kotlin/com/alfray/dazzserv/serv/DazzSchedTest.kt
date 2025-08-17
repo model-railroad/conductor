@@ -16,12 +16,13 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alfray.dazzserv.store
+package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.FakeClock
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
+import com.alfray.dazzserv.store.DataStore
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -33,7 +34,6 @@ import java.io.File
 import java.text.DateFormat
 import javax.inject.Inject
 import javax.inject.Named
-
 
 class DazzSchedTest {
     @Inject lateinit var logger: StringLogger

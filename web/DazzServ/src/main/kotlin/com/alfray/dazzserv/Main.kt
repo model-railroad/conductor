@@ -25,7 +25,7 @@ import com.alfray.dazzserv.dagger.IMainComponent
 import com.alfray.dazzserv.serv.DazzServ
 import com.alfray.dazzserv.serv.DazzServFactory
 import com.alfray.dazzserv.store.DataStore
-import com.alfray.dazzserv.store.DazzSched
+import com.alfray.dazzserv.serv.DazzSched
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default

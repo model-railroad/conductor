@@ -21,7 +21,7 @@ package com.alfray.dazzserv.dagger
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import com.alfray.dazzserv.store.DazzSched
+import com.alfray.dazzserv.serv.DazzSched
 import dagger.Module
 import dagger.Provides
 import org.mockito.Mockito.mock
