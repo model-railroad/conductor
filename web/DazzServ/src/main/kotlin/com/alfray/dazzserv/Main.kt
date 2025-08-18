@@ -20,6 +20,7 @@ package com.alfray.dazzserv
 
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.dagger.AppUnderTest
 import com.alfray.dazzserv.dagger.DaggerIMainComponent
 import com.alfray.dazzserv.dagger.IMainComponent
 import com.alfray.dazzserv.serv.DazzServ
@@ -31,9 +32,7 @@ import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.int
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
-import javax.inject.Named
 
 /**
  * Main entry point for DazzServ.
@@ -45,7 +44,7 @@ open class Main : CliktCommand() {
     @Inject lateinit var dataStore: DataStore
     @Inject lateinit var dazzServFactory: DazzServFactory
     @Inject lateinit var dazzSched: DazzSched
-    @Inject @Named("AppUnderTest") lateinit var appUnderTest: AtomicBoolean
+    @Inject lateinit var appUnderTest: AppUnderTest
     private lateinit var server: DazzServ
 
     // Command Line Options
@@ -72,7 +71,7 @@ open class Main : CliktCommand() {
         component.inject(this)
 
         // Dagger objects can now be used.
-        val runningTests = appUnderTest.get()
+        val runningTests = appUnderTest.isUnderTest
         logger.d(TAG, "Running ${if (runningTests) "test" else "prod"} version")
         logger.d(TAG, "Configured for $host port $port")
 

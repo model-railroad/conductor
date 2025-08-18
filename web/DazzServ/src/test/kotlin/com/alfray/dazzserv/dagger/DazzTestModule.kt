@@ -25,17 +25,14 @@ import com.alfray.dazzserv.serv.DazzSched
 import dagger.Module
 import dagger.Provides
 import org.mockito.Mockito.mock
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 object DazzTestModule {
     @Singleton
     @Provides
-    @Named("AppUnderTest")
-    fun provideAppUnderTest(): AtomicBoolean {
-        return AtomicBoolean(true)
+    fun provideAppUnderTest(): AppUnderTest {
+        return AppUnderTest(true)
     }
 
     @Singleton

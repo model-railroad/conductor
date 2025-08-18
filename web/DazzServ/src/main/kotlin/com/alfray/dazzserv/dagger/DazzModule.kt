@@ -21,12 +21,11 @@ package com.alfray.dazzserv.dagger
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import com.alfray.dazzserv.store.DataStore
 import com.alfray.dazzserv.serv.DazzSched
+import com.alfray.dazzserv.store.DataStore
 import dagger.Module
 import dagger.Provides
 import java.text.DateFormat
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -34,9 +33,10 @@ import javax.inject.Singleton
 object DazzModule {
     @Singleton
     @Provides
-    @Named("AppUnderTest")
-    fun provideAppUnderTest(): AtomicBoolean {
-        return AtomicBoolean(false)
+    fun provideAppUnderTest(): AppUnderTest {
+        // This is not just a primitive boolean because "@Inject lateinit var" in kotlin requires
+        // an object and not a primitive.
+        return AppUnderTest(false)
     }
 
     @Singleton
@@ -48,6 +48,10 @@ object DazzModule {
         store: DataStore,
         @Named("IsoDateOnly") isoDateOnlyFormat: DateFormat,
     ): DazzSched {
+        // This provider becomes a mock<> in DazzTestModule.
         return DazzSched(logger, clock, fileOps, store, isoDateOnlyFormat)
     }
 }
+
+data class AppUnderTest(val isUnderTest: Boolean)
+
