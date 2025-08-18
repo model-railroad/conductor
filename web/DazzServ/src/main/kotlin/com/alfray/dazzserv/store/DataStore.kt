@@ -21,10 +21,13 @@ package com.alfray.dazzserv.store
 import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.serv.DazzOff
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter
 import com.fasterxml.jackson.core.util.Separators
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.google.common.annotations.VisibleForTesting
+import com.google.errorprone.annotations.concurrent.GuardedBy
 import java.io.File
 import java.util.Deque
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -41,10 +44,12 @@ import javax.inject.Singleton
 class DataStore @Inject constructor(
     private val logger: ILogger,
     private val fileOps: FileOps,
+    private val dazzOff: DazzOff,
 ) {
     /// The JSON Jackson mapper helper
     private val mapper = jacksonObjectMapper()
     /// The actual "data store". Read/writes must be synchronized on "data".
+    @GuardedBy(value = "data")
     private val data = mutableMapOf<String, DataEntryMap>()
     /// List of new entries not written to disk yet. Concurrent access is thread-safe.
     private val newEntries: Deque<DataEntry> = ConcurrentLinkedDeque()
@@ -56,8 +61,13 @@ class DataStore @Inject constructor(
 
     /**
      * Adds or update an entry.
+     *
+     * This is mostly useful for testing. Entries are typically added by parsing a JSON payload
+     * using the [store] method, which in turn invokes this method if the payload is properly
+     * decoded.
      */
-    fun add(entry: DataEntry) {
+    @VisibleForTesting
+    internal fun add(entry: DataEntry) {
         val key = entry.key
         synchronized(data) {
             if (!data.containsKey(key)) {
@@ -67,10 +77,12 @@ class DataStore @Inject constructor(
         }
     }
 
-    fun entryToJson(entry: DataEntry): String {
+    @VisibleForTesting
+    internal fun entryToJson(entry: DataEntry): String {
         return entry.toJsonString(mapper)
     }
 
+    @VisibleForTesting
     fun storeToJson(entries: Map<String, DataEntryMap>? = null): String {
         return mapper.writer(CustomPrettyPrinter()).writeValueAsString(entries ?: data)
     }
@@ -180,6 +192,7 @@ class DataStore @Inject constructor(
         try {
             val entry = decodeAndAddEntry(jsonPayload)
             newEntries.addLast(entry)
+            dazzOff.monitor(entry)
             return true
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)

@@ -22,9 +22,11 @@ import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
+import com.alfray.dazzserv.serv.DazzOff
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import org.mockito.kotlin.mock
 import java.io.File
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
@@ -34,6 +36,7 @@ class DazzStoreTest {
     @Inject lateinit var logger: StringLogger
     @Inject lateinit var fileOps: FakeFileOps
     @Inject lateinit var ds: DataStore
+    val dazzOff = mock<DazzOff>()
 
     @Before
     fun setUp() {
@@ -170,7 +173,7 @@ class DazzStoreTest {
             """.trimIndent()
         )
 
-        val newDataStore = DataStore(logger, fileOps)
+        val newDataStore = DataStore(logger, fileOps, dazzOff)
         assertThat(newDataStore.storeToJson()).isEqualTo("{ }")
 
         newDataStore.loadFrom(file)
