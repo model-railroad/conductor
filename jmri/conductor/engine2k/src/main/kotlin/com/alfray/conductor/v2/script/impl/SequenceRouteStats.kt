@@ -38,7 +38,7 @@ import javax.inject.Named
  */
 internal class SequenceRouteStats @AssistedInject constructor(
     private val clock: IClock,
-    @Named("JsonDateFormat") private val jsonDateFormat: DateFormat,
+    @Named("IsoUtcDateTime") private val jsonDateFormat: DateFormat,
     @Assisted("routeName")    val routeName: String,
     @Assisted("throttleName") val throttleName: String,
 ) {

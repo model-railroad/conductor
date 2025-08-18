@@ -45,7 +45,7 @@ public class FakeJsonSender extends JsonSender {
             FileOps fileOps,
             IClock clock,
             OkHttpClient okHttpClient,
-            @Named("JsonDateFormat") DateFormat jsonDateFormat,
+            @Named("IsoUtcDateTime") DateFormat jsonDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         super(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
         mClock = clock;

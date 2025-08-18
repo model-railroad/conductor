@@ -38,9 +38,9 @@ import java.util.concurrent.ScheduledExecutorService;
 public abstract class JsonSenderModule {
     @Singleton
     @Provides
-    @Named("JsonDateFormat")
-    public static DateFormat provideJsonDateFormat() {
-        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
+    @Named("IsoUtcDateTime")
+    public static DateFormat provideIsoUtcDateFormat() {
+        // Format timestamps using ISO 8601, forcing a UTC (Zulu) timezone.
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         return df;
@@ -53,9 +53,9 @@ public abstract class JsonSenderModule {
            FileOps fileOps,
            IClock clock,
            OkHttpClient okHttpClient,
-           @Named("JsonDateFormat") DateFormat jsonDateFormat,
+           @Named("IsoUtcDateTime") DateFormat isoUtcDateFormat,
            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new JsonSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
+        return new JsonSender(logger, fileOps, clock, okHttpClient, isoUtcDateFormat, executor);
     }
 
     @Singleton
@@ -65,8 +65,8 @@ public abstract class JsonSenderModule {
             FileOps fileOps,
             IClock clock,
             OkHttpClient okHttpClient,
-            @Named("JsonDateFormat") DateFormat jsonDateFormat,
+            @Named("IsoUtcDateTime") DateFormat isoUtcDateFormat,
             @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
-        return new DazzSender(logger, fileOps, clock, okHttpClient, jsonDateFormat, executor);
+        return new DazzSender(logger, fileOps, clock, okHttpClient, isoUtcDateFormat, executor);
     }
 }

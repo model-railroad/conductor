@@ -39,8 +39,8 @@ import static org.mockito.Mockito.mock;
 public abstract class MockJsonSenderModule {
     @Singleton
     @Provides
-    @Named("JsonDateFormat")
-    public static DateFormat provideJsonDateFormat() {
+    @Named("IsoUtcDateTime")
+    public static DateFormat provideIsoUtcDateFormat() {
         // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -51,11 +51,11 @@ public abstract class MockJsonSenderModule {
     @Provides
     public static JsonSender provideJsonSender(
             ILogger logger,
-           FileOps fileOps,
-           IClock clock,
-           OkHttpClient okHttpClient,
-           @Named("JsonDateFormat") DateFormat jsonDateFormat,
-           @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
+            FileOps fileOps,
+            IClock clock,
+            OkHttpClient okHttpClient,
+            @Named("IsoUtcDateTime") DateFormat isoUtcDateFormat,
+            @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         return mock(JsonSender.class);
     }
 }

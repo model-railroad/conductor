@@ -107,13 +107,13 @@ public class JsonSender implements Runnable {
                       FileOps fileOps,
                       IClock clock,
                       OkHttpClient okHttpClient,
-                      @Named("JsonDateFormat") DateFormat jsonDateFormat,
+                      @Named("IsoUtcDateTime") DateFormat isoUtcDateFormat,
                       @Named("SingleThreadExecutor") ScheduledExecutorService executor) {
         mLogger = logger;
         mFileOps = fileOps;
         mClock = clock;
         mOkHttpClient = okHttpClient;
-        mJsonDateFormat = jsonDateFormat;
+        mJsonDateFormat = isoUtcDateFormat;
         mExecutor = executor;
     }
 

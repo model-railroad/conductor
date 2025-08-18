@@ -51,7 +51,7 @@ internal class Factory @Inject constructor(
     private val currentContext: CurrentContext,
     private val isSimulation: Script2kIsSimulation,
     private val throttleBuilderProvider: Provider<ThrottleBuilder>,
-    @Named("JsonDateFormat") private val jsonDateFormat: DateFormat,
+    @Named("IsoUtcDateTime") private val jsonDateFormat: DateFormat,
     private val routesContainerBuilderProvider: Provider<RoutesContainerBuilder>,
 ) {
     internal fun createBlock(
