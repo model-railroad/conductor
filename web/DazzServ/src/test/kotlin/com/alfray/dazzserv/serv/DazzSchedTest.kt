@@ -41,7 +41,7 @@ class DazzSchedTest {
     @Inject lateinit var fileOps: FakeFileOps
     @Inject @Named("IsoDateOnly") lateinit var isoDateOnlyFormat: DateFormat
     private val mockStore = mock<DataStore>()
-    lateinit var sched: DazzSched
+    private lateinit var sched: DazzSched
 
     @Before
     fun setUp() {

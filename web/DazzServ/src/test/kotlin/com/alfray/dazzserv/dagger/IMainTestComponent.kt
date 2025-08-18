@@ -18,6 +18,7 @@
 
 package com.alfray.dazzserv.dagger
 
+import com.alfray.dazzserv.serv.DazzOffTest
 import com.alfray.dazzserv.serv.DazzRestHandlerTest
 import com.alfray.dazzserv.serv.DazzServTest
 import com.alfray.dazzserv.serv.DazzSchedTest
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 @Singleton
 @Component(modules = [CommonTestModule::class, DazzTestModule::class])
 interface IMainTestComponent : IMainComponent {
+    fun inject(dazzOffTest: DazzOffTest)
     fun inject(dazzServTest: DazzServTest)
     fun inject(dazzSchedTest: DazzSchedTest)
     fun inject(dazzStoreTest: DazzStoreTest)

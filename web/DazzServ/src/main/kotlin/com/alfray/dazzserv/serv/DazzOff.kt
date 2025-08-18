@@ -20,6 +20,8 @@ package com.alfray.dazzserv.serv
 
 import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.store.DataStore
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.errorprone.annotations.concurrent.GuardedBy
 import javax.inject.Inject
@@ -30,7 +32,9 @@ import javax.inject.Singleton
  */
 @Singleton
 class DazzOff @Inject constructor(
-    private val logger: ILogger
+    private val logger: ILogger,
+    // DataStore injects DazzOff. Need a lazy<> to remove circular dependency.
+    private val store: dagger.Lazy<DataStore>,
 ) {
     @GuardedBy(value = "computers")
     private val computers = mutableMapOf<String, DazzOffPayload>()
@@ -58,7 +62,7 @@ class DazzOff @Inject constructor(
         KEY_RE.matchEntire(entry.key)?.let { match ->
             try {
                 val computerName = match.groupValues[1]
-                val payload = mapper.readValue(entry.payload, DazzOffPayload::class.java)
+                val payload = decodePayload(entry.payload)
                 if (!payload.dazzOff) {
                     // This is not an entry that we should monitor.
                     synchronized(computers) {
@@ -101,9 +105,13 @@ class DazzOff @Inject constructor(
         logger.d(TAG, "Check '$name'")
     }
 
+    internal fun decodePayload(json: String) : DazzOffPayload {
+        return mapper.readValue(json, DazzOffPayload::class.java)
+    }
 }
 
 data class DazzOffPayload(
+    @JsonProperty("dazz-off")
     val dazzOff: Boolean = false,
     val ip: String? = null
 )
