@@ -27,6 +27,7 @@ import com.alfray.dazzserv.serv.DazzServ
 import com.alfray.dazzserv.serv.DazzServFactory
 import com.alfray.dazzserv.store.DataStore
 import com.alfray.dazzserv.serv.DazzSched
+import com.alfray.dazzserv.utils.CnxStats
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
@@ -45,6 +46,7 @@ open class Main : CliktCommand() {
     @Inject lateinit var dazzServFactory: DazzServFactory
     @Inject lateinit var dazzSched: DazzSched
     @Inject lateinit var appUnderTest: AppUnderTest
+    @Inject lateinit var cnxStats: CnxStats
     private lateinit var server: DazzServ
 
     // Command Line Options
@@ -93,6 +95,7 @@ open class Main : CliktCommand() {
         }
 
         dazzSched.stop()
+        cnxStats.log(force = true)
         logger.d(TAG, "End")
     }
 

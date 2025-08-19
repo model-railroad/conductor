@@ -19,18 +19,28 @@
 package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.serv.DazzServ.Companion.TAG
+import com.alfray.dazzserv.utils.CnxStats
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import org.eclipse.jetty.io.Connection
+import org.eclipse.jetty.io.EndPoint
+import org.eclipse.jetty.server.Connector
 import org.eclipse.jetty.server.CustomRequestLog
+import org.eclipse.jetty.server.HttpConfiguration
+import org.eclipse.jetty.server.HttpConnectionFactory
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
+import org.eclipse.jetty.server.internal.HttpConnection
+import java.util.concurrent.TimeoutException
 
 class DazzServ @AssistedInject constructor(
     private val logger: ILogger,
+    private val cnxStats: CnxStats,
     private val dazzRestHandlerFactory: DazzRestHandlerFactory,
     @Assisted private val host: String,
     @Assisted private val port: Int,
@@ -39,22 +49,28 @@ class DazzServ @AssistedInject constructor(
 
     companion object {
         const val TAG = "DazzServ"
+        const val HTTP_CNX_TIMEOUT_MS = 5_000L // 5 seconds
     }
 
     fun createServer() {
         server = Server()
 
         host.split(",").forEach {
-            val connector = ServerConnector(server)
+            val connector = ServerConnector(
+                server,
+                /*acceptors=*/ -1,
+                /*selectors=*/ -1,
+                CustomHttpConnectionFactory(logger, cnxStats))
             connector.port = port
             connector.host = it
+            connector.idleTimeout = HTTP_CNX_TIMEOUT_MS
             server.addConnector(connector)
             logger.d(TAG, "Serving on http://$it:$port")
         }
 
         // DefaultHandler serves a favicon or show contexts for debugging when all other
         // handlers return false.
-        server.defaultHandler = DefaultHandler(/*serveFavIcon=*/ false, /*showContexts=*/ true)
+        server.defaultHandler = DefaultHandler(/*serveFavIcon=*/ false, /*showContexts=*/ false)
 
         // GracefulHandler prevents new connection during shutdown, with a stop timeout
         // for existing ones.
@@ -67,13 +83,12 @@ class DazzServ @AssistedInject constructor(
             quitServer(server)
         }
 
-
         // Sets the RequestLog to log to an SLF4J logger named
         // "org.eclipse.jetty.server.RequestLog" at INFO level.
         // See https://jetty.org/docs/jetty/12/programming-guide/server/http.html#request-logging
         server.requestLog = CustomRequestLog(
             Slf4jRequestLogWriter(),
-            CustomRequestLog.EXTENDED_NCSA_FORMAT
+            CustomRequestLog.EXTENDED_NCSA_FORMAT + " | %D us, %S bytes"
         )
     }
 
@@ -103,4 +118,66 @@ interface DazzServFactory {
         host: String,
         port: Int,
     ) : DazzServ
+}
+
+/**
+ * A custom Jetty HttpConnectionFactory that returns an HttpConnection that logs
+ * the number of bytes receives and sent through the connection.
+ */
+private class CustomHttpConnectionFactory(
+    private val logger: ILogger,
+    private val cnxStats: CnxStats,
+)
+    : HttpConnectionFactory()
+{
+    private var cnxCount = 0
+
+    override fun newConnection(
+        connector: Connector,
+        endPoint: EndPoint
+    ): Connection? {
+        // The code below mimics the original implementation from
+        //    "return super.newConnection(connector, endPoint)"
+        val connection = CustomHttpConnection(
+            ++cnxCount,
+            logger,
+            cnxStats,
+            httpConfiguration,
+            connector,
+            endPoint)
+        connection.isUseInputDirectByteBuffers = isUseInputDirectByteBuffers
+        connection.isUseOutputDirectByteBuffers = isUseOutputDirectByteBuffers
+        return configure<HttpConnection?>(connection, connector, endPoint)
+
+    }
+}
+
+private class CustomHttpConnection(
+    private val cnxIndex: Int,
+    private val logger: ILogger,
+    private val cnxStats: CnxStats,
+    httpConfiguration: HttpConfiguration,
+    connector: Connector,
+    endPoint: EndPoint,
+) : HttpConnection(httpConfiguration, connector, endPoint)
+{
+    override fun onOpen() {
+        super.onOpen()
+    }
+
+    override fun onIdleExpired(timeout: TimeoutException?): Boolean {
+        logger.d(TAG, "HTTP Cnx $cnxIndex / Idle, sum bytes in $bytesIn out $bytesOut")
+        return super.onIdleExpired(timeout)
+    }
+
+    override fun onFillable() {
+        super.onFillable()
+        logger.d(TAG, "HTTP Cnx $cnxIndex / Fill Request, sum bytes in $bytesIn out $bytesOut")
+    }
+
+    override fun close() {
+        logger.d(TAG, "HTTP Cnx $cnxIndex / Close, sum bytes in $bytesIn out $bytesOut")
+        cnxStats.accumulate(bytesIn, bytesOut)
+        super.close()
+    }
 }

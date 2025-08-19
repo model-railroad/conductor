@@ -23,6 +23,7 @@ import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alflabs.utils.ThreadLoop
 import com.alfray.dazzserv.store.DataStore
+import com.alfray.dazzserv.utils.CnxStats
 import com.google.common.annotations.VisibleForTesting
 import java.io.File
 import java.text.DateFormat
@@ -38,6 +39,7 @@ class DazzSched @Inject constructor(
     private val fileOps: FileOps,
     private val store: DataStore,
     private val dazzOff: DazzOff,
+    private val cnxStats: CnxStats,
     @Named("IsoDateOnly") private val isoDateOnlyFormat: DateFormat,
 ) : ThreadLoop() {
     private var nextOffTS: Long = 0
@@ -163,6 +165,8 @@ class DazzSched @Inject constructor(
     private fun doOff() {
         dazzOff.periodicCheck()
         scheduleNextOff()
+        // TBD move to its own method
+        cnxStats.log()
     }
 
     @VisibleForTesting

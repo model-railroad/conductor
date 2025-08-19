@@ -54,6 +54,7 @@ class DazzServTest {
                 Main: Running test version
                 Main: Configured for 127.0.0.1 port 8080
                 DazzServ: Serving on http://127.0.0.1:8080
+                CnxStats: 0 Cnx. Sum bytes in 0, Sum bytes out 0
                 Main: End
 
             """.trimIndent())
@@ -69,6 +70,7 @@ class DazzServTest {
                 Main: Running test version
                 Main: Configured for 0.0.0.0 port 9090
                 DazzServ: Serving on http://0.0.0.0:9090
+                CnxStats: 0 Cnx. Sum bytes in 0, Sum bytes out 0
                 Main: End
 
             """.trimIndent())
@@ -85,6 +87,7 @@ class DazzServTest {
                 Main: Configured for localhost,192.168.255.255 port 8080
                 DazzServ: Serving on http://localhost:8080
                 DazzServ: Serving on http://192.168.255.255:8080
+                CnxStats: 0 Cnx. Sum bytes in 0, Sum bytes out 0
                 Main: End
 
             """.trimIndent())

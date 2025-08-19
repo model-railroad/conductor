@@ -23,6 +23,7 @@ import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.alfray.dazzserv.store.DataStore
+import com.alfray.dazzserv.utils.CnxStats
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -40,7 +41,6 @@ class DazzSchedTest {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var fileOps: FakeFileOps
     @Inject @Named("IsoDateOnly") lateinit var isoDateOnlyFormat: DateFormat
-    private val mockDazzOff = mock<DazzOff>()
     private val mockStore = mock<DataStore>()
     private lateinit var dazzSched: DazzSched
 
@@ -57,7 +57,8 @@ class DazzSchedTest {
             clock,
             fileOps,
             mockStore,
-            mockDazzOff,
+            mock<DazzOff>(),
+            mock<CnxStats>(),
             isoDateOnlyFormat)
     }
 
