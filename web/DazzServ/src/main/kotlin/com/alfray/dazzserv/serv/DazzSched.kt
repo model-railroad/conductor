@@ -37,8 +37,10 @@ class DazzSched @Inject constructor(
     private val clock: IClock,
     private val fileOps: FileOps,
     private val store: DataStore,
+    private val dazzOff: DazzOff,
     @Named("IsoDateOnly") private val isoDateOnlyFormat: DateFormat,
 ) : ThreadLoop() {
+    private var nextOffTS: Long = 0
     private var nextSaveTS: Long = 0
     private var nextPurgeTS: Long = 0
     private lateinit var storeDir: File
@@ -47,6 +49,7 @@ class DazzSched @Inject constructor(
         const val TAG = "DazzSched"
         const val IDLE_SLEEP_MS = 1000L * 10L
         const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
+        const val OFF_INTERVAL_SEC = 60             // Default DazzOff is every 1 minute
         const val PURGE_INTERVAL_SEC = 12*3600      // Default to purge old data is every 12 hours
         const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
         const val PURGE_NUM_DAYS = 7                // Number of days to keep when purging
@@ -55,6 +58,7 @@ class DazzSched @Inject constructor(
     /// Returns false if the directory does not exist.
     @Suppress("LocalVariableName")
     fun setAndCheckStoreDir(storeDir_: String): Boolean {
+        scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
         storeDir = File(storeDir_)
@@ -92,6 +96,10 @@ class DazzSched @Inject constructor(
         }
     }
 
+    private fun scheduleNextOff() {
+        nextOffTS = clock.elapsedRealtime() + OFF_INTERVAL_SEC * 1000L
+    }
+
     private fun scheduleNextSave() {
         nextSaveTS = clock.elapsedRealtime() + SAVE_INTERVAL_SEC * 1000L
     }
@@ -101,6 +109,7 @@ class DazzSched @Inject constructor(
     }
 
     override fun start() {
+        scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
         super.start("DazzSched")
@@ -130,6 +139,8 @@ class DazzSched @Inject constructor(
                 doSave()
             } else if (nowTS >= nextPurgeTS) {
                 doPurge()
+            } else if (nowTS >= nextOffTS) {
+                doOff()
             }
 
             Thread.sleep(IDLE_SLEEP_MS)
@@ -147,6 +158,11 @@ class DazzSched @Inject constructor(
     private fun doPurge() {
         store.purgeOlderEntriesThan(PURGE_NUM_DAYS)
         scheduleNextPurge()
+    }
+
+    private fun doOff() {
+        dazzOff.periodicCheck()
+        scheduleNextOff()
     }
 
     @VisibleForTesting

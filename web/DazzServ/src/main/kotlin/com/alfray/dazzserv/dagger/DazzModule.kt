@@ -21,6 +21,7 @@ package com.alfray.dazzserv.dagger
 import com.alflabs.utils.FileOps
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
+import com.alfray.dazzserv.serv.DazzOff
 import com.alfray.dazzserv.serv.DazzSched
 import com.alfray.dazzserv.store.DataStore
 import dagger.Module
@@ -46,10 +47,11 @@ object DazzModule {
         clock: IClock,
         fileOps: FileOps,
         store: DataStore,
+        dazzOff: DazzOff,
         @Named("IsoDateOnly") isoDateOnlyFormat: DateFormat,
     ): DazzSched {
         // This provider becomes a mock<> in DazzTestModule.
-        return DazzSched(logger, clock, fileOps, store, isoDateOnlyFormat)
+        return DazzSched(logger, clock, fileOps, store, dazzOff, isoDateOnlyFormat)
     }
 }
 

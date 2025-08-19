@@ -192,7 +192,6 @@ class DataStore @Inject constructor(
         try {
             val entry = decodeAndAddEntry(jsonPayload)
             newEntries.addLast(entry)
-            dazzOff.monitor(entry)
             return true
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)
@@ -203,6 +202,7 @@ class DataStore @Inject constructor(
     private fun decodeAndAddEntry(jsonPayload: String): DataEntry {
         val entry = DataEntry.parseJson(mapper, jsonPayload)
         add(entry)
+        dazzOff.monitor(entry)
         return entry
     }
 

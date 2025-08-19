@@ -40,8 +40,9 @@ class DazzSchedTest {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var fileOps: FakeFileOps
     @Inject @Named("IsoDateOnly") lateinit var isoDateOnlyFormat: DateFormat
+    private val mockDazzOff = mock<DazzOff>()
     private val mockStore = mock<DataStore>()
-    private lateinit var sched: DazzSched
+    private lateinit var dazzSched: DazzSched
 
     @Before
     fun setUp() {
@@ -51,11 +52,12 @@ class DazzSchedTest {
         // Create a version of DazzSched that uses a mock DataStore
         // instead of the real one. All other test components are fakes
         // (and not mocks).
-        sched = DazzSched(
+        dazzSched = DazzSched(
             logger,
             clock,
             fileOps,
             mockStore,
+            mockDazzOff,
             isoDateOnlyFormat)
     }
 
@@ -65,14 +67,14 @@ class DazzSchedTest {
         val file = fileOps.toFile("tmp", "dazz", "store", "file.txt")
         createFakeFile(file)
 
-        assertThat(sched.setAndCheckStoreDir(file.parent)).isTrue()
+        assertThat(dazzSched.setAndCheckStoreDir(file.parent)).isTrue()
     }
 
     @Test
     fun testSetAndCheckStoreDir_missingDir() {
         // Do not simulate a fake dir tmp/dazz/store
         val file = fileOps.toFile("tmp", "dazz", "store", "file.txt")
-        assertThat(sched.setAndCheckStoreDir(file.parent)).isFalse()
+        assertThat(dazzSched.setAndCheckStoreDir(file.parent)).isFalse()
         assertThat(logger.string.replace('\\', '/')).isEqualTo(
             """
                 DazzSched: ERROR: Store directory 'tmp/dazz/store' does not exist.
@@ -87,20 +89,20 @@ class DazzSchedTest {
         // Simulate a fake dir tmp/dazz/store and set it as the store root
         val file = fileOps.toFile("tmp", "dazz", "store", "file.txt")
         createFakeFile(file)
-        assertThat(sched.setAndCheckStoreDir(file.parent)).isTrue()
+        assertThat(dazzSched.setAndCheckStoreDir(file.parent)).isTrue()
 
         clock.setNow(24*3600*1000L)
-        assertThat(sched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
+        assertThat(dazzSched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
             fileOps.toFile("tmp", "dazz", "store", "ds_1970-01-02.txt")
         )
 
         clock.add((25*3600+300)*1000L)
-        assertThat(sched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
+        assertThat(dazzSched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
             fileOps.toFile("tmp", "dazz", "store", "ds_1970-01-03.txt")
         )
 
         clock.add((26*3600+123)*1000L)
-        assertThat(sched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
+        assertThat(dazzSched.fileForTimestamp(clock.elapsedRealtime())).isEqualTo(
             fileOps.toFile("tmp", "dazz", "store", "ds_1970-01-04.txt")
         )
     }
@@ -112,9 +114,9 @@ class DazzSchedTest {
         // Simulate a fake dir tmp/dazz/store and set it as the store root
         val file = fileOps.toFile("tmp", "dazz", "store", "file.txt")
         createFakeFile(file)
-        assertThat(sched.setAndCheckStoreDir(file.parent)).isTrue()
+        assertThat(dazzSched.setAndCheckStoreDir(file.parent)).isTrue()
 
-        sched.doSave()
+        dazzSched.doSave()
 
         verify(mockStore).saveTo(eq(fileOps.toFile("tmp", "dazz", "store", "ds_1970-01-02.txt")))
         verifyNoMoreInteractions(mockStore)
@@ -127,7 +129,7 @@ class DazzSchedTest {
         // Simulate a fake dir tmp/dazz/store and set it as the store root
         val file = fileOps.toFile("tmp", "dazz", "store", "file.txt")
         createFakeFile(file)
-        assertThat(sched.setAndCheckStoreDir(file.parent)).isTrue()
+        assertThat(dazzSched.setAndCheckStoreDir(file.parent)).isTrue()
 
         // "fill" the directory with fake files to be loaded.
         // The N "most recent" will be loaded, based on their decreasing file name
@@ -147,7 +149,7 @@ class DazzSchedTest {
         createFakeFile(fileOps.toFile("tmp", "dazz", "store", "ds_1971-01-01.txt"))
         createFakeFile(fileOps.toFile("tmp", "dazz", "store", "ds_1970-12-12.txt"))
 
-        sched.load()
+        dazzSched.load()
         verify(mockStore).loadFrom(eq(fileOps.toFile("tmp", "dazz", "store", "ds_1971-10-10.txt")))
         verify(mockStore).loadFrom(eq(fileOps.toFile("tmp", "dazz", "store", "ds_1971-09-09.txt")))
         verify(mockStore).loadFrom(eq(fileOps.toFile("tmp", "dazz", "store", "ds_1971-08-08.txt")))
