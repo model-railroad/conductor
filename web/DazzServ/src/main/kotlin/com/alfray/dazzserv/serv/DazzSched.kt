@@ -45,6 +45,7 @@ class DazzSched @Inject constructor(
     private var nextOffTS: Long = 0
     private var nextSaveTS: Long = 0
     private var nextPurgeTS: Long = 0
+    private var nextStatsTS: Long = 0
     private lateinit var storeDir: File
 
     companion object {
@@ -52,6 +53,7 @@ class DazzSched @Inject constructor(
         const val IDLE_SLEEP_MS = 1000L * 10L
         const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
         const val OFF_INTERVAL_SEC = 60             // Default DazzOff is every 1 minute
+        const val STATS_INTERVAL_SEC = 3600         // Default CnxStats is every hour
         const val PURGE_INTERVAL_SEC = 12*3600      // Default to purge old data is every 12 hours
         const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
         const val PURGE_NUM_DAYS = 7                // Number of days to keep when purging
@@ -63,6 +65,7 @@ class DazzSched @Inject constructor(
         scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
+        scheduleNextStats()
         storeDir = File(storeDir_)
         if (storeDir_.startsWith("~") && !fileOps.isDir(storeDir) && !fileOps.isFile(storeDir)) {
             storeDir = File(System.getProperty("user.home"), storeDir_.substring(1))
@@ -110,10 +113,15 @@ class DazzSched @Inject constructor(
         nextPurgeTS = clock.elapsedRealtime() + PURGE_INTERVAL_SEC * 1000L
     }
 
+    private fun scheduleNextStats() {
+        nextStatsTS = clock.elapsedRealtime() + STATS_INTERVAL_SEC * 1000L
+    }
+
     override fun start() {
         scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
+        scheduleNextStats()
         super.start("DazzSched")
         logger.d(TAG, "Start")
     }
@@ -143,6 +151,8 @@ class DazzSched @Inject constructor(
                 doPurge()
             } else if (nowTS >= nextOffTS) {
                 doOff()
+            } else if (nowTS >= nextStatsTS) {
+                doStats()
             }
 
             Thread.sleep(IDLE_SLEEP_MS)
@@ -165,8 +175,11 @@ class DazzSched @Inject constructor(
     private fun doOff() {
         dazzOff.periodicCheck()
         scheduleNextOff()
-        // TBD move to its own method
+    }
+
+    private fun doStats() {
         cnxStats.log()
+        scheduleNextStats()
     }
 
     @VisibleForTesting
