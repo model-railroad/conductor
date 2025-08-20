@@ -30,6 +30,7 @@ import org.eclipse.jetty.io.Content
 import org.eclipse.jetty.server.Handler
 import org.eclipse.jetty.server.Request
 import org.eclipse.jetty.server.Response
+import org.eclipse.jetty.server.internal.HttpConnection
 import org.eclipse.jetty.util.Callback
 
 class DazzRestHandler @AssistedInject constructor(
@@ -78,6 +79,7 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doPostQuit: $path")
+        setCnxStatsLabel("quit")
 
         // Command to trigger/test this:
         // $ wget --no-verbose -O - --post-data="" http://localhost:8080/quitquitquit
@@ -99,6 +101,7 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doPostStore: $path")
+        setCnxStatsLabel("store")
 
         val stream = Request.asInputStream(request)
         // Noob notes:
@@ -123,6 +126,7 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doGetQuery: $path")
+        setCnxStatsLabel("query")
 
         val filter = if (path.startsWith("/query/")) {
             path.removePrefix("/query/")
@@ -149,7 +153,7 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doGetLive: $path")
-
+        setCnxStatsLabel("live")
 
         val filter = if (path.startsWith("/live/")) {
             path.removePrefix("/live/")
@@ -176,6 +180,7 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback
     ): Boolean {
         logger.d(TAG, "doGetHistory: $path")
+        setCnxStatsLabel("history")
 
         val filter = if (path.startsWith("/history/")) {
             path.removePrefix("/history/")
@@ -193,6 +198,13 @@ class DazzRestHandler @AssistedInject constructor(
         )
 
         return true
+    }
+
+    private fun setCnxStatsLabel(label: String) {
+        val currentCnx = HttpConnection.getCurrentConnection()
+        if (currentCnx is DazzHttpConnection) {
+            currentCnx.setLabel(label)
+        }
     }
 
     private fun reply(

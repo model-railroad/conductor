@@ -19,8 +19,7 @@
 package com.alfray.dazzserv.utils
 
 import com.alflabs.utils.ILogger
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -28,30 +27,37 @@ import javax.inject.Singleton
 class CnxStats @Inject constructor(
     private val logger: ILogger,
 ) {
-    private val numCnx = AtomicInteger(0)
-    private var sumBytesIn = AtomicLong(0)
-    private var sumBytesOut = AtomicLong(0)
-    private var lastLog = -1L
+    private val dataMap = ConcurrentHashMap<String, CnxStatsData>()
 
     companion object {
         const val TAG = "CnxStats"
     }
 
-    fun accumulate(bytesIn: Long, bytesOut: Long) {
-        numCnx.incrementAndGet()
-        sumBytesIn.addAndGet(bytesIn)
-        sumBytesOut.addAndGet(bytesOut)
-        log()
+    fun accumulate(label: String, bytesIn: Long, bytesOut: Long) {
+        dataMap.computeIfAbsent(label) { CnxStatsData() }
+        dataMap[label]?.let { data ->
+            synchronized(data) {
+                data.numRequests++
+                data.sumBytesIn += bytesIn
+                data.sumBytesOut += bytesOut
+            }
+            data.log(logger, label)
+        }
     }
 
-    fun log(force: Boolean = false) {
-        val hashLog = numCnx.get() + sumBytesIn.get() + sumBytesOut.get()
-        if (force || hashLog != lastLog) {
-            lastLog = hashLog
-            logger.d(
-                TAG,
-                "${numCnx.get()} Cnx. Sum bytes in ${sumBytesIn.get()}, Sum bytes out ${sumBytesOut.get()}"
-            )
+    fun log() {
+        dataMap.forEach { (label, data) ->
+            data.log(logger, label)
+        }
+    }
+
+    private data class CnxStatsData(
+        var numRequests: Int = 0,
+        var sumBytesIn: Long = 0L,
+        var sumBytesOut: Long = 0L,
+    ) {
+        fun log(logger: ILogger, label: String) {
+            logger.d(TAG, "[$label] $numRequests requests, $sumBytesIn bytes in, $sumBytesOut bytes out")
         }
     }
 }

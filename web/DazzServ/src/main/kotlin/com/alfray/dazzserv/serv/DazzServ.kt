@@ -19,7 +19,6 @@
 package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.ILogger
-import com.alfray.dazzserv.serv.DazzServ.Companion.TAG
 import com.alfray.dazzserv.utils.CnxStats
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -36,7 +35,6 @@ import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
 import org.eclipse.jetty.server.internal.HttpConnection
-import java.util.concurrent.TimeoutException
 
 class DazzServ @AssistedInject constructor(
     private val logger: ILogger,
@@ -60,7 +58,7 @@ class DazzServ @AssistedInject constructor(
                 server,
                 /*acceptors=*/ -1,
                 /*selectors=*/ -1,
-                CustomHttpConnectionFactory(logger, cnxStats))
+                DazzHttpConnectionFactory(cnxStats))
             connector.port = port
             connector.host = it
             connector.idleTimeout = HTTP_CNX_TIMEOUT_MS
@@ -88,7 +86,7 @@ class DazzServ @AssistedInject constructor(
         // See https://jetty.org/docs/jetty/12/programming-guide/server/http.html#request-logging
         server.requestLog = CustomRequestLog(
             Slf4jRequestLogWriter(),
-            CustomRequestLog.EXTENDED_NCSA_FORMAT + " | %D us, %S bytes"
+            CustomRequestLog.EXTENDED_NCSA_FORMAT + " | %D us, %I bytes in, %O bytes out"
         )
     }
 
@@ -124,23 +122,17 @@ interface DazzServFactory {
  * A custom Jetty HttpConnectionFactory that returns an HttpConnection that logs
  * the number of bytes receives and sent through the connection.
  */
-private class CustomHttpConnectionFactory(
-    private val logger: ILogger,
+private class DazzHttpConnectionFactory(
     private val cnxStats: CnxStats,
-)
-    : HttpConnectionFactory()
+) : HttpConnectionFactory()
 {
-    private var cnxCount = 0
-
     override fun newConnection(
         connector: Connector,
         endPoint: EndPoint
     ): Connection? {
         // The code below mimics the original implementation from
         //    "return super.newConnection(connector, endPoint)"
-        val connection = CustomHttpConnection(
-            ++cnxCount,
-            logger,
+        val connection = DazzHttpConnection(
             cnxStats,
             httpConfiguration,
             connector,
@@ -152,32 +144,31 @@ private class CustomHttpConnectionFactory(
     }
 }
 
-private class CustomHttpConnection(
-    private val cnxIndex: Int,
-    private val logger: ILogger,
+class DazzHttpConnection(
     private val cnxStats: CnxStats,
     httpConfiguration: HttpConfiguration,
     connector: Connector,
     endPoint: EndPoint,
 ) : HttpConnection(httpConfiguration, connector, endPoint)
 {
-    override fun onOpen() {
-        super.onOpen()
-    }
-
-    override fun onIdleExpired(timeout: TimeoutException?): Boolean {
-        logger.d(TAG, "HTTP Cnx $cnxIndex / Idle, sum bytes in $bytesIn out $bytesOut")
-        return super.onIdleExpired(timeout)
-    }
+    private var label = ""
 
     override fun onFillable() {
+        var bIn = bytesIn
+        var bOut = bytesOut
+        label = "other"
+
+        // The call "onRequest.run();" in the super
+        // implementation invokes DazzRestHandler.handle().
         super.onFillable()
-        logger.d(TAG, "HTTP Cnx $cnxIndex / Fill Request, sum bytes in $bytesIn out $bytesOut")
+
+        bIn = bytesIn - bIn
+        bOut = bytesOut - bOut
+        cnxStats.accumulate(label, bIn, bOut)
     }
 
-    override fun close() {
-        logger.d(TAG, "HTTP Cnx $cnxIndex / Close, sum bytes in $bytesIn out $bytesOut")
-        cnxStats.accumulate(bytesIn, bytesOut)
-        super.close()
+    // Called by DazzRestHandler using the static HttpConnection.currentConnection.
+    fun setLabel(label: String) {
+        this.label = label
     }
 }

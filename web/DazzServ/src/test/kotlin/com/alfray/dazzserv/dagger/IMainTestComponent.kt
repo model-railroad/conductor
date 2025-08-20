@@ -23,6 +23,7 @@ import com.alfray.dazzserv.serv.DazzRestHandlerTest
 import com.alfray.dazzserv.serv.DazzServTest
 import com.alfray.dazzserv.serv.DazzSchedTest
 import com.alfray.dazzserv.store.DazzStoreTest
+import com.alfray.dazzserv.utils.CnxStatsTest
 import dagger.Component
 import javax.inject.Singleton
 
@@ -32,6 +33,7 @@ import javax.inject.Singleton
 interface IMainTestComponent : IMainComponent {
     fun inject(dazzOffTest: DazzOffTest)
     fun inject(dazzServTest: DazzServTest)
+    fun inject(cnxStatsTest: CnxStatsTest)
     fun inject(dazzSchedTest: DazzSchedTest)
     fun inject(dazzStoreTest: DazzStoreTest)
     fun inject(dazzRestHandlerTest: DazzRestHandlerTest)
