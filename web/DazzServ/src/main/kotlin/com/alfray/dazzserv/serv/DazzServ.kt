@@ -34,6 +34,7 @@ import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.server.Slf4jRequestLogWriter
 import org.eclipse.jetty.server.handler.DefaultHandler
 import org.eclipse.jetty.server.handler.GracefulHandler
+import org.eclipse.jetty.server.handler.gzip.GzipHandler
 import org.eclipse.jetty.server.internal.HttpConnection
 
 class DazzServ @AssistedInject constructor(
@@ -70,23 +71,26 @@ class DazzServ @AssistedInject constructor(
         // handlers return false.
         server.defaultHandler = DefaultHandler(/*serveFavIcon=*/ false, /*showContexts=*/ false)
 
-        // GracefulHandler prevents new connection during shutdown, with a stop timeout
+        // Handler chain is GZip Handler -> GracefulHandler -> DazzRestHandler.
+        // GZIP Handler handles gzip request/response compression/decompression.
+        // GracefulHandler prevents new connections during shutdown, with a stop timeout
         // for existing ones.
-        val gracefulHandler = GracefulHandler()
-        server.handler = gracefulHandler
-        server.stopTimeout = 2_000  // seconds for current handlers to terminate on shutdown
-
         // DazzRestHandler is our REST API handler.
+        val gracefulHandler = GracefulHandler()
         gracefulHandler.handler = dazzRestHandlerFactory.create {
             quitServer(server)
         }
+        val gzipHandler = GzipHandler()
+        gzipHandler.handler = gracefulHandler
+        server.handler = gzipHandler
+        server.stopTimeout = 2_000  // seconds for current handlers to terminate on shutdown
 
         // Sets the RequestLog to log to an SLF4J logger named
         // "org.eclipse.jetty.server.RequestLog" at INFO level.
         // See https://jetty.org/docs/jetty/12/programming-guide/server/http.html#request-logging
         server.requestLog = CustomRequestLog(
             Slf4jRequestLogWriter(),
-            CustomRequestLog.EXTENDED_NCSA_FORMAT + " | %D us, %I bytes in, %O bytes out"
+            CustomRequestLog.EXTENDED_NCSA_FORMAT + " | %D µs, %I bytes in, %O bytes out"
         )
     }
 
