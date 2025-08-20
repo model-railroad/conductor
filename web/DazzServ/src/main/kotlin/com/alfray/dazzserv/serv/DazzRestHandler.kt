@@ -88,9 +88,9 @@ class DazzRestHandler @AssistedInject constructor(
         reply(
             response,
             callback,
-            "$path acknowledged"
-        )
+            "$path acknowledged")
         quitMethod.run()
+
         return true
     }
 
@@ -114,8 +114,8 @@ class DazzRestHandler @AssistedInject constructor(
             response,
             callback,
             "$path ${if (ok) "acknowledged" else "rejected"}",
-            if (ok) HttpStatus.OK_200 else HttpStatus.BAD_REQUEST_400
-        )
+            if (ok) HttpStatus.OK_200 else HttpStatus.BAD_REQUEST_400)
+
         return true
     }
 
@@ -140,8 +140,8 @@ class DazzRestHandler @AssistedInject constructor(
             response,
             callback,
             content,
-            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
-        )
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404,
+            mimeType = "application/json")
 
         return true
     }
@@ -161,14 +161,21 @@ class DazzRestHandler @AssistedInject constructor(
             ""
         }
 
+        val lastTS = if (dataStore.mostRecentTS.isBlank()) ""
+                     else "${dataStore.mostRecentTS};${filter.hashCode()}"
+        if (checkIfNotModified(lastTS, request, response, callback)) {
+            return true
+        }
+
         val content = dataStore.liveToJson(filter)
 
         reply(
             response,
             callback,
             content,
-            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
-        )
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404,
+            mimeType = "application/json",
+            etag = lastTS)
 
         return true
     }
@@ -188,22 +195,47 @@ class DazzRestHandler @AssistedInject constructor(
             ""
         }
 
+        val lastTS = if (dataStore.mostRecentTS.isBlank()) ""
+                     else "${dataStore.mostRecentTS};${filter.hashCode()}"
+        if (checkIfNotModified(lastTS, request, response, callback)) {
+            return true
+        }
+
         val content = dataStore.historyToJson(filter)
 
         reply(
             response,
             callback,
             content,
-            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404
-        )
+            if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404,
+            mimeType = "application/json",
+            etag = lastTS)
 
         return true
     }
 
-    private fun setCnxStatsLabel(label: String) {
-        val currentCnx = HttpConnection.getCurrentConnection()
-        if (currentCnx is DazzHttpConnection) {
-            currentCnx.setLabel(label)
+    private fun checkIfNotModified(
+        etag: String,
+        request: Request,
+        response: Response,
+        callback: Callback
+    ): Boolean {
+        if (etag.isBlank()) {
+            return false
+        }
+
+        val noneMatch: String? = request.headers.get(HttpHeader.IF_NONE_MATCH)
+
+        if (etag == noneMatch) {
+            reply(
+                response,
+                callback,
+                "", // no content for a 304
+                HttpStatus.NOT_MODIFIED_304,
+                etag = etag)
+            return true
+        } else {
+            return false
         }
     }
 
@@ -212,17 +244,35 @@ class DazzRestHandler @AssistedInject constructor(
         callback: Callback,
         answer: String,
         status: Int = HttpStatus.OK_200,
+        mimeType: String = "text/plain",
+        etag: String? = null,
     ) {
-        // Provide a text response
         response.status = status
-        response.headers.put(HttpHeader.CONTENT_TYPE, "text/plain; charset=UTF-8")
 
-        Content.Sink.write(
-            response,
-            /*last=*/ true,
-            answer,
-            callback
-        )
+        if (!etag.isNullOrBlank()) {
+            response.headers.put(HttpHeader.ETAG, etag)
+        }
+
+        if (answer.isNotEmpty()) {
+            response.headers.put(HttpHeader.CONTENT_TYPE, "$mimeType; charset=UTF-8")
+            Content.Sink.write(
+                response,
+                /*last=*/ true,
+                answer,
+                callback
+            )
+        } else {
+            // If we don't write to the sink (and thus don't have last=true),
+            // we need to clearly indicate we're done processing this request.
+            callback.succeeded()
+        }
+    }
+
+    private fun setCnxStatsLabel(label: String) {
+        val currentCnx = HttpConnection.getCurrentConnection()
+        if (currentCnx is DazzHttpConnection) {
+            currentCnx.setLabel(label)
+        }
     }
 }
 

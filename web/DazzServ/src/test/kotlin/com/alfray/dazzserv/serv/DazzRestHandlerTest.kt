@@ -23,7 +23,9 @@ import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.alfray.dazzserv.store.DataStore
 import com.google.common.truth.Truth.assertThat
+import org.eclipse.jetty.http.HttpField
 import org.eclipse.jetty.http.HttpFields
+import org.eclipse.jetty.http.HttpHeader
 import org.eclipse.jetty.http.HttpMethod
 import org.eclipse.jetty.http.HttpURI
 import org.eclipse.jetty.http.HttpVersion
@@ -193,6 +195,7 @@ class DazzRestHandlerTest {
         assertThat(handler.handle(request, response, callback)).isTrue()
         assertThat(response.status).isEqualTo(200)
         assertThat(response.getBuffer()).isEqualTo("{ }")
+        assertThat(response.headers[HttpHeader.ETAG]).isNull()
     }
 
     @Test
@@ -213,6 +216,28 @@ class DazzRestHandlerTest {
         assertThat(response.status).isEqualTo(200)
         // Note: this is about testing the REST call. We don't want to dup the DataStore test here.
         assertThat(response.getBuffer()).isNotEmpty()
+        assertThat(response.headers[HttpHeader.ETAG]).isEqualTo("1970-01-06T00:07:89Z;0")
+    }
+
+    @Test
+    fun testGetLive_correctData_304() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", false, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
+
+        val request = createRequest(HttpMethod.GET, "/live",
+            httpField = HttpField(HttpHeader.IF_NONE_MATCH, "1970-01-06T00:07:89Z;0"))
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(304)
+        assertThat(response.getBuffer()).isEmpty() // No content for a 304
+        assertThat(response.headers[HttpHeader.ETAG]).isEqualTo("1970-01-06T00:07:89Z;0")
     }
 
     @Test
@@ -225,6 +250,7 @@ class DazzRestHandlerTest {
         assertThat(handler.handle(request, response, callback)).isTrue()
         assertThat(response.status).isEqualTo(200)
         assertThat(response.getBuffer()).isEqualTo("{ }")
+        assertThat(response.headers[HttpHeader.ETAG]).isNull()
     }
 
     @Test
@@ -245,6 +271,28 @@ class DazzRestHandlerTest {
         assertThat(response.status).isEqualTo(200)
         // Note: this is about testing the REST call. We don't want to dup the DataStore test here.
         assertThat(response.getBuffer()).isNotEmpty()
+        assertThat(response.headers[HttpHeader.ETAG]).isEqualTo("1970-01-06T00:07:89Z;0")
+    }
+
+    @Test
+    fun testGetHistory_correctData_304() {
+        ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-02T00:03:26Z", false, "payload 4"))
+        ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
+        ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
+
+        val request = createRequest(HttpMethod.GET, "/history",
+            httpField = HttpField(HttpHeader.IF_NONE_MATCH, "1970-01-06T00:07:89Z;0"))
+
+        val response = FakeResponse(request)
+        val callback = mock<Callback>()
+
+        assertThat(handler.handle(request, response, callback)).isTrue()
+        assertThat(response.status).isEqualTo(304)
+        assertThat(response.getBuffer()).isEmpty() // No content for a 304
+        assertThat(response.headers[HttpHeader.ETAG]).isEqualTo("1970-01-06T00:07:89Z;0")
     }
 
     // -- test helpers --
@@ -253,8 +301,9 @@ class DazzRestHandlerTest {
         httpMethod: HttpMethod,
         uri: HttpURI.Unsafe,
         content: String? = null,
+        httpField: HttpField? = null,
     ): Request {
-        return FakeRequest(httpMethod, uri, content)
+        return FakeRequest(httpMethod, uri, content, httpField)
     }
 
     private fun createRequest(
@@ -263,9 +312,10 @@ class DazzRestHandlerTest {
         query: String? = null,
         fragment: String? = null,
         content: String? = null,
+        httpField: HttpField? = null,
     ): Request {
         val uri = HttpURI.Unsafe("http", "www.example.com", /*port=*/ 8080, path, query, fragment)
-        return createRequestFromUri(method, uri, content)
+        return createRequestFromUri(method, uri, content, httpField)
     }
 }
 
@@ -273,14 +323,14 @@ private class FakeRequest(
     private val httpMethod: HttpMethod,
     private val uri: HttpURI.Unsafe,
     private val content: String? = null,
+    httpField: HttpField? = null,
 ) : Attributes.Lazy(), Request {
-    private val fakeFields = HttpFields.EMPTY
     private val metadata = org.eclipse.jetty.http.MetaData.Request(
         /*beginNanoTime=*/ 0,
         httpMethod.toString(),
         uri,
         HttpVersion.HTTP_1_1,
-        fakeFields
+        if (httpField == null) HttpFields.EMPTY else HttpFields.from(httpField)
     )
 
     val mockContext = mock<Context> {

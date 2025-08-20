@@ -52,7 +52,10 @@ class DataStore @Inject constructor(
     @GuardedBy(value = "data")
     private val data = mutableMapOf<String, DataEntryMap>()
     /// List of new entries not written to disk yet. Concurrent access is thread-safe.
-    private val newEntries: Deque<DataEntry> = ConcurrentLinkedDeque()
+    private val entriesToSave: Deque<DataEntry> = ConcurrentLinkedDeque()
+    /// Most recent timestamp stored, for E-Tag responses.
+    var mostRecentTS = ""
+        private set
 
     companion object {
         const val TAG = "DataStore"
@@ -70,10 +73,14 @@ class DataStore @Inject constructor(
     internal fun add(entry: DataEntry) {
         val key = entry.key
         synchronized(data) {
-            if (!data.containsKey(key)) {
-                data[key] = DataEntryMap()
-            }
+            data.computeIfAbsent(key) { DataEntryMap() }
             data[key]!!.add(entry)
+
+            entry.isoTimestamp?.let { ts ->
+                if (ts > mostRecentTS) {
+                    mostRecentTS = ts
+                }
+            }
         }
     }
 
@@ -105,13 +112,13 @@ class DataStore @Inject constructor(
      * Appends all new entries to the given file, if any.
      */
     fun saveTo(file: File) {
-        if (newEntries.isEmpty()) {
+        if (entriesToSave.isEmpty()) {
             return
         }
         var n = 0
         fileOps.openFileWriter(file, /*append=*/ true).use { writer ->
             while (true) {
-                val entry = newEntries.peekFirst()
+                val entry = entriesToSave.peekFirst()
                 if (entry == null) {
                     break
                 }
@@ -120,7 +127,7 @@ class DataStore @Inject constructor(
                 n++
                 // We only actually remove the entry only if the write op didn't throw.
                 // This is safe since all concurrent additions only occur at the end.
-                newEntries.removeFirst()
+                entriesToSave.removeFirst()
             }
         }
         logger.d(TAG, "Saved $n entries to $file")
@@ -191,7 +198,7 @@ class DataStore @Inject constructor(
     fun store(jsonPayload: String): Boolean {
         try {
             val entry = decodeAndAddEntry(jsonPayload)
-            newEntries.addLast(entry)
+            entriesToSave.addLast(entry)
             return true
         } catch (e: Exception) {
             logger.d(TAG, "Failed to decode JSON DataEntry", e)
