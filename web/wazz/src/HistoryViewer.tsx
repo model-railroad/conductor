@@ -19,7 +19,7 @@ interface WazzHistoryData {
 }
 
 
-function LiveViewer(): ReactElement {
+function HistoryViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [liveData, setLiveData] = useState<WazzHistoryData>({ placeholder: [] });
@@ -342,4 +342,4 @@ function LiveViewer(): ReactElement {
     )
 }
 
-export default LiveViewer
+export default HistoryViewer

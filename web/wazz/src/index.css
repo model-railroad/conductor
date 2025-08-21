@@ -34,9 +34,19 @@ body {
   margin-bottom: 1em;
 }
 
+.navbar-brand {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border-right:  solid 1px var(--bs-navbar-color);;
+}
+
 .navbar-detail {
   margin-right: 1em;
   text-align: end;
+}
+
+.nav-font-size {
+  font-size: smaller;
 }
 
 .gitinfo {
