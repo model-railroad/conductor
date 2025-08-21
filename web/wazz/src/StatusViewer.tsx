@@ -1,3 +1,5 @@
+// noinspection DuplicatedCode
+
 import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
@@ -10,7 +12,7 @@ import {
 } from "./StatusData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
-const REFRESH_KEY = "refresh"
+const REFRESH_KEY = "refresh-status"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARNING_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
