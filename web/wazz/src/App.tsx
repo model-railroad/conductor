@@ -9,9 +9,9 @@ function App() {
     <HashRouter>
         <AppHeader/>
         <Routes>
-            <Route path="/" element={<StatusViewer />} />
-            <Route path="/live" element={<LiveViewer />} />
-            <Route path="/history" element={<HistoryViewer />} />
+            <Route path="/"         element={<StatusViewer  />} />
+            <Route path="/live"     element={<LiveViewer    />} />
+            <Route path="/history"  element={<HistoryViewer />} />
         </Routes>
     </HashRouter>
   )
