@@ -98,6 +98,11 @@ tr.wazz-status-warning-false, tr.wazz-status-highlight-green {
   --bs-table-striped-bg: var(--bs-success-bg-subtle);
 }
 
+tr.wazz-status-highlight-yellow {
+  --bs-table-bg-type:    var(--bs-warning-bg-subtle);
+  --bs-table-striped-bg: var(--bs-warning-bg-subtle);
+}
+
 tr.wazz-status-warning-true, tr.wazz-status-highlight-red {
   --bs-table-bg-type:    var(--bs-danger-bg-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);

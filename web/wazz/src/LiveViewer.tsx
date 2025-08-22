@@ -184,10 +184,12 @@ function LiveViewer(): ReactElement {
                         color = "green";
                     } else if (deltaStart <= -WARN_OLD_MINUTES) {
                         color = "red";
+                    } else {
+                        color = "yellow";
                     }
                 }
 
-                console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${deltaStart} min, ${color}`);
+                // console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${deltaStart} min, ${color}`);
 
                 const r : WazzLiveRoute = {
                     label: label,
