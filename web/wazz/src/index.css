@@ -93,12 +93,12 @@ td.wazz-indent-true {
   white-space: nowrap;
 }
 
-tr.wazz-status-warning-false {
+tr.wazz-status-warning-false, tr.wazz-status-highlight-green {
   --bs-table-bg-type:    var(--bs-success-bg-subtle);
   --bs-table-striped-bg: var(--bs-success-bg-subtle);
 }
 
-tr.wazz-status-warning-true {
+tr.wazz-status-warning-true, tr.wazz-status-highlight-red {
   --bs-table-bg-type:    var(--bs-danger-bg-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);
 }

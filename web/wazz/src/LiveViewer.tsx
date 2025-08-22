@@ -15,8 +15,15 @@ import {
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-live"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
-const WARNING_MINUTES = 30;
+const WARN_RECENT_MINUTES = 10;
+const WARN_OLD_MINUTES = 30;
 const ROUTE_OLD_DAYS = 7;
+const TOGGLES_MAP : Map<string, string> = new Map([
+    ["pa", "toggle/passenger"],
+    ["fr", "toggle/passenger"],
+    ["bl", "toggle/branchline"],
+    ["tl", "toggle/branchline"],
+]);
 
 // -- Interface for display in Wazz
 
@@ -34,7 +41,7 @@ interface WazzLiveRoute {
     finished: boolean;
     recovery: boolean;
     old: boolean;
-    warn?: boolean;
+    color?: string;
     sts: DateTime;
     ets?: DateTime;
 }
@@ -142,95 +149,6 @@ function LiveViewer(): ReactElement {
             routes: [],
         }
 
-        // function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
-        //     try {
-        //         // 2021-08-27 adjust computer names: "computer" alone is legacy for "computer-consist".
-        //         let label = key1;
-        //         if (label === "computer") {
-        //             label = "computer-consist";
-        //         }
-        //         label = label.replaceAll("-", " ");
-        //         const indent = (label === "depart");
-        //
-        //         let data = rtac[key1] as never;
-        //         if (key2 !== undefined) {
-        //             data = data[key2];
-        //         }
-        //         if (data === undefined) {
-        //             console.log(`@@ transformData: ${key1}/${key2} not present. Skipping.`);
-        //             return false;
-        //         }
-        //         const ts = data as Timestamp;
-        //         const dt = DateTime.fromISO(ts.ts);
-        //
-        //         const state: boolean | undefined = ("value" in data)
-        //             ? String(data["value"]).toLowerCase() === "on"
-        //             : undefined;
-        //
-        //         const warning: boolean | undefined = running
-        //             ? dt.diffNow("minutes").minutes <= -WARNING_MINUTES
-        //             : undefined;
-        //
-        //         const entry: WazzStatusEntry = {
-        //             ts: dt,
-        //             indent: indent,
-        //             state: state,
-        //             warning: warning,
-        //             label: label,
-        //             sublabel: key2,
-        //         };
-        //
-        //         result.status.push(entry);
-        //
-        //         return state ?? false;
-        //     } catch (err) {
-        //         console.error(err);
-        //         setStatus(stringifyError(err));
-        //         return false;
-        //     }
-        // }
-        //
-        // _appendTsValue("computer");
-        // _appendTsValue("computer-vision");
-        // const cond = _appendTsValue("conductor");
-        //
-        // let tog = _appendTsValue("toggle", "passenger");
-        // _appendTsValue("depart", "passenger", cond && tog);
-        // _appendTsValue("depart", "freight", cond && tog);
-        // tog = _appendTsValue("toggle", "branchline");
-        // _appendTsValue("depart", "branchline", cond && tog);
-        // _appendTsValue("depart", "trolley", cond && tog);
-        //
-        //
-        // function _appendRoute(data: RouteJsonData) {
-        //     let nodes = "";
-        //     for(const n of data.nodes) {
-        //         if (nodes !== "") nodes += " > ";
-        //         nodes += n.n + " = " + (n.ms / 1000).toFixed(1);
-        //     }
-        //
-        //     const entry : WazzRouteEntry = {
-        //         ts: data.ts,
-        //         name: `${data.name} [${data.th}]`,
-        //         error: data.err,
-        //         runs: data.act,
-        //         nodes: nodes,
-        //         old: data.ts.diffNow("days").days <= -ROUTE_OLD_DAYS,
-        //         recovery: data.name.includes("Recovery"),
-        //     };
-        //
-        //     result.routes.push(entry);
-        // }
-        //
-        // const rt_dict = rtac["route_stats"] as RouteStatsDict;
-        // const rt_list = Object.values(rt_dict).map((e) => {
-        //     const rt_data = JSON.parse(e.value) as RouteJsonData;
-        //     rt_data.ts = DateTime.fromISO(e.ts);
-        //     return rt_data;
-        // });
-        // rt_list.sort( (a, b) => b.ts.valueOf() - a.ts.valueOf() );
-        // rt_list.forEach(entry => _appendRoute(entry));
-
         function _addToggles(key: string, entries: DazzEntryDict) {
             for (const [isoTS, entry] of Object.entries(entries)) {
                 const dt = DateTime.fromISO(isoTS);
@@ -245,43 +163,70 @@ function LiveViewer(): ReactElement {
             }
         }
 
-        function _addRoutes(key: string, entries: DazzEntryDict) {
+        function _addRoutes(key: string, entries: DazzEntryDict, togglesOn: Map<string, boolean>) {
             for (const [isoTS, entry] of Object.entries(entries)) {
                 if (entry.d == null) {
                     continue;
                 }
+                const label = key.replace("route/", "").replaceAll("/", " ");
                 const sdt = DateTime.fromISO(isoTS);
                 const payload = JSON.parse(entry.d) as DazzRoutePayload
+                const th = payload.th.toLowerCase()
                 const finish = payload.run.toLowerCase() === "ended"
-
-                const edt : DateTime | undefined = finish && payload.ets != null
+                const edt: DateTime | undefined = finish && payload.ets != null
                     ? DateTime.fromISO(payload.ets) : undefined;
+                const isEnabled = togglesOn.get(TOGGLES_MAP.get(th) ?? "") ?? false;
+                const isFirst = !result.routes.some(value => value.label === label)
+                let color = "";
+                const deltaStart = sdt.diffNow("minutes").minutes;
+                if (isFirst && isEnabled) {
+                    if (deltaStart >= -WARN_RECENT_MINUTES) {
+                        color = "green";
+                    } else if (deltaStart <= -WARN_OLD_MINUTES) {
+                        color = "red";
+                    }
+                }
+
+                console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${deltaStart} min, ${color}`);
 
                 const r : WazzLiveRoute = {
-                    label: key.replace("route/", "").replaceAll("/", " "),
+                    label: label,
                     sts: sdt,
                     err: !entry.st,
                     finished: finish,
                     act: finish ? payload.act : undefined,
                     ets: edt,
                     old: sdt.diffNow("days").days <= -ROUTE_OLD_DAYS,
-                    warn: !finish && sdt.diffNow("minutes").minutes <= -WARNING_MINUTES ? true : undefined,
+                    color: color,
                     recovery: key.includes("Recovery"),
                 }
 
                 result.routes.push(r);
             }
-
         }
 
         const keys = Object.keys(dazzLive).sort();
+        const togglesOn = new Map<string, boolean>();
 
         for (const key of keys) {
             const entries = dazzLive[key];
-            if (key.startsWith("toggle/") || key.startsWith("computer/")) {
+            if (key.startsWith("toggle/")) {
                 _addToggles(key, entries.entries);
-            } else if (key.startsWith("route/")) {
-                _addRoutes(key, entries.entries);
+                if (!togglesOn.has(key)) {
+                    const v = Object.values(entries.entries);
+                    togglesOn.set(key, v.at(0)?.st ?? false);
+                }
+            } else if (key.startsWith("computer/")) {
+                _addToggles(key, entries.entries);
+            }
+        }
+
+        // Add all routes only after we processed all toggles.
+        // Routes are sorted in decreasing start timestamp order.
+        for (const key of keys) {
+            const entries = dazzLive[key];
+            if (key.startsWith("route/")) {
+                _addRoutes(key, entries.entries, togglesOn);
             }
         }
         result.routes.sort((a, b) =>
@@ -426,7 +371,7 @@ function LiveViewer(): ReactElement {
                     }
                     return (
                     <tr key={`rt-${index}`} className={
-                        `wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery} wazz-status-warning-${entry.warn ?? "undef"}`}>
+                        `wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery} wazz-status-highlight-${entry.color ?? "undef"}`}>
                         <td className="wazz-route-name"> { label } </td>
                         <td> { formatDay(entry.sts) } </td>
                         <td> { formatTime(entry.sts) } </td>
