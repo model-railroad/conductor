@@ -22,6 +22,22 @@ export interface DazzJsonData {
     };
 }
 
+export interface DazzRoutePayload {
+    name: string;
+    th: string;
+    act: number;
+    err: boolean;
+    run: string;
+    sts: string;
+    ets?: string;
+    nodes?: {
+        n:  string;
+        ms: number;
+        mis?: number;
+        mas?: number;
+    }[];
+}
+
 export async function fetchDazzData(url: string) : Promise<DazzJsonData> {
     const jsonData = await fetch(url);
     if (!jsonData.ok) {

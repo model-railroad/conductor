@@ -107,6 +107,7 @@ tr.wazz-status-warning-true {
 
 .wazz-route-name {
   white-space: nowrap;
+  text-transform: capitalize;
 }
 
 tr.wazz-route-old-true td {

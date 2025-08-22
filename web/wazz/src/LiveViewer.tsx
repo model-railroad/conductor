@@ -4,26 +4,52 @@ import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
-import {type DazzJsonData, fetchDazzData, LIVE_JSON_URL} from "./DazzData.ts";
+import {
+    type DazzEntryDict,
+    type DazzJsonData,
+    type DazzRoutePayload,
+    fetchDazzData,
+    LIVE_JSON_URL
+} from "./DazzData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-live"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
-// const WARNING_MINUTES = 30;
-// const ROUTE_OLD_DAYS = 7;
+const WARNING_MINUTES = 30;
+const ROUTE_OLD_DAYS = 7;
 
 // -- Interface for display in Wazz
 
+interface WazzLiveToggle {
+    label: string;
+    ts: DateTime;
+    st: boolean;
+    warn?: boolean;
+}
+
+interface WazzLiveRoute {
+    label: string;
+    err: boolean;
+    act?: number;
+    finished: boolean;
+    recovery: boolean;
+    old: boolean;
+    warn?: boolean;
+    sts: DateTime;
+    ets?: DateTime;
+}
+
 interface WazzLiveData {
     refresh?: DateTime;
-    placeholder: string[];
+    toggles: WazzLiveToggle[];
+    routes: WazzLiveRoute[];
 }
 
 
 function LiveViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
-    const [liveData, setLiveData] = useState<WazzLiveData>({ placeholder: [] });
+    const [liveData, setLiveData] = useState<WazzLiveData>({ toggles: [], routes: [] });
     const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
     const intervalRef = useRef<number | null>(null);
 
@@ -112,7 +138,8 @@ function LiveViewer(): ReactElement {
 
     function transformData(dazzLive: DazzJsonData ): WazzLiveData {
         const result: WazzLiveData = {
-            placeholder: Object.keys(dazzLive),
+            toggles: [],
+            routes: [],
         }
 
         // function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
@@ -204,6 +231,60 @@ function LiveViewer(): ReactElement {
         // rt_list.sort( (a, b) => b.ts.valueOf() - a.ts.valueOf() );
         // rt_list.forEach(entry => _appendRoute(entry));
 
+        function _addToggles(key: string, entries: DazzEntryDict) {
+            for (const [isoTS, entry] of Object.entries(entries)) {
+                const dt = DateTime.fromISO(isoTS);
+
+                const t : WazzLiveToggle = {
+                    label: key.replaceAll("/", " "),
+                    ts: dt,
+                    st: entry.st ?? false,
+                    warn: undefined, // dt.diffNow("minutes").minutes <= -WARNING_MINUTES
+                }
+                result.toggles.push(t);
+            }
+        }
+
+        function _addRoutes(key: string, entries: DazzEntryDict) {
+            for (const [isoTS, entry] of Object.entries(entries)) {
+                if (entry.d == null) {
+                    continue;
+                }
+                const sdt = DateTime.fromISO(isoTS);
+                const payload = JSON.parse(entry.d) as DazzRoutePayload
+                const finish = payload.run.toLowerCase() === "ended"
+
+                const edt : DateTime | undefined = finish && payload.ets != null
+                    ? DateTime.fromISO(payload.ets) : undefined;
+
+                const r : WazzLiveRoute = {
+                    label: key.replace("route/", "").replaceAll("/", " "),
+                    sts: sdt,
+                    err: !entry.st,
+                    finished: finish,
+                    act: finish ? payload.act : undefined,
+                    ets: edt,
+                    old: sdt.diffNow("days").days <= -ROUTE_OLD_DAYS,
+                    warn: !finish && sdt.diffNow("minutes").minutes <= -WARNING_MINUTES ? true : undefined,
+                    recovery: key.includes("Recovery"),
+                }
+
+                result.routes.push(r);
+            }
+
+        }
+
+        const keys = Object.keys(dazzLive).sort();
+
+        for (const key of keys) {
+            const entries = dazzLive[key];
+            if (key.startsWith("toggle/") || key.startsWith("computer/")) {
+                _addToggles(key, entries.entries);
+            } else if (key.startsWith("route/")) {
+                _addRoutes(key, entries.entries);
+            }
+        }
+
         return result;
     }
 
@@ -232,6 +313,43 @@ function LiveViewer(): ReactElement {
         )
     }
 
+    function formatDay(dateTime: DateTime) {
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const dateString2 = serverDt.toLocaleString(DateTime.DATE_SHORT);
+
+        return (
+            <span className="wazz-date" title={dateTime.toISO( {
+                format: "extended",
+                suppressMilliseconds: true
+            }) ?? ""}>
+                {dateString2}
+            </span>
+        )
+    }
+
+    function formatTime(dateTime: DateTime, timeStart?: DateTime) {
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const dateString2 = serverDt.toLocaleString(DateTime.TIME_WITH_SHORT_OFFSET);
+        const relativeToNow = timeStart == null
+            ? serverDt.toRelative()
+            : `run for ${Math.round(dateTime.diff(timeStart, "minutes").minutes)} minutes` ;
+
+        return (
+            <>
+            <span className="wazz-date" title={dateTime.toISO( {
+                format: "extended",
+                suppressMilliseconds: true
+            }) ?? ""}>
+                {dateString2}
+            </span>
+                { ' ' }
+                <span className="wazz-rel-date">
+                ({relativeToNow})
+            </span>
+            </>
+        )
+    }
+
     function formatStateButton(state: boolean|undefined, onLabel: string, offLabel: string) {
         if (state === undefined) {
             return <></>;
@@ -248,28 +366,31 @@ function LiveViewer(): ReactElement {
             return <span className="wazz-loading">...</span>;
         }
 
-        // const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
+        let lastLabel = "";
 
         return (
             <Table striped bordered variant="light" className="wazz-table wazz-system-table">
                 <thead>
                 <tr>
-                    <th colSpan={3}>System Status</th>
+                    <th colSpan={2}>System Status</th>
                     <th>Last Updated</th>
                 </tr>
                 </thead>
                 <tbody>
-                { data.placeholder }
-                { formatDate(DateTime.now()) }
-                { formatStateButton(true, "TBD", "TBD") }
-                {/*{ data.status.map((entry, index) => (*/}
-                {/*    <tr key={`st-${epoch}-${index}`} className={`wazz-status-warning-${entry.warning ?? "undef"}`}>*/}
-                {/*        <td className={`wazz-status-text wazz-indent-${entry.indent}`}> { entry.label } </td>*/}
-                {/*        <td className="wazz-status-text"> { entry.sublabel } </td>*/}
-                {/*        <td> { formatStateButton(entry.state, "ON", "OFF") } </td>*/}
-                {/*        <td> { formatDate(entry.ts) } </td>*/}
-                {/*    </tr>*/}
-                {/*)) }*/}
+                { data.toggles.map((entry, index) => {
+                    let label = entry.label;
+                    if (label === lastLabel) {
+                        label = "";
+                    } else {
+                        lastLabel = label;
+                    }
+                    return (
+                    <tr key={`st-${index}`} className={`wazz-status-warning-${entry.warn ?? "undef"}`}>
+                        <td className="wazz-route-name"> { label } </td>
+                        <td> { formatStateButton(entry.st, "ON", "OFF") } </td>
+                        <td> { formatDate(entry.ts) } </td>
+                    </tr>
+                ) } ) }
                 </tbody>
             </Table>
         )
@@ -280,32 +401,38 @@ function LiveViewer(): ReactElement {
             return <span className="wazz-loading">...</span>;
         }
 
-        // const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
+        let lastLabel = "";
 
         return (
             <Table striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr>
-                    <th>Finished At</th>
                     <th>Route</th>
+                    <th colSpan={2}>Start</th>
+                    <th>End</th>
                     <th>#</th>
-                    <th>Error</th>
-                    <th>Nodes</th>
+                    <th>Status</th>
                 </tr>
                 </thead>
                 <tbody>
-                { data.placeholder }
-                { formatDate(DateTime.now()) }
-                { formatStateButton(true, "TBD", "TBD") }
-                {/*{ data.routes.map((entry, index) => (*/}
-                {/*    <tr key={`rt-${epoch}-${index}`} className={`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery}`}>*/}
-                {/*        <td> { formatDate(entry.ts) } </td>*/}
-                {/*        <td className="wazz-route-name"> { entry.name } </td>*/}
-                {/*        <td> { entry.runs } </td>*/}
-                {/*        <td> { formatStateButton(!entry.error, "OK", "ERR") } </td>*/}
-                {/*        <td> { entry.nodes } </td>*/}
-                {/*    </tr>*/}
-                {/*)) }*/}
+                { data.routes.map((entry, index) => {
+                    let label = entry.label;
+                    if (label === lastLabel) {
+                        label = "";
+                    } else {
+                        lastLabel = label;
+                    }
+                    return (
+                    <tr key={`rt-${index}`} className={
+                        `wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery} wazz-status-warning-${entry.warn ?? "undef"}`}>
+                        <td className="wazz-route-name"> { label } </td>
+                        <td> { formatDay(entry.sts) } </td>
+                        <td> { formatTime(entry.sts) } </td>
+                        <td> { entry.ets == null ? "-" : formatTime(entry.ets, entry.sts) } </td>
+                        <td> { entry.act == null ? "-" : entry.act } </td>
+                        <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
+                    </tr>
+                ) } ) }
                 </tbody>
             </Table>
         )

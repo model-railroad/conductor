@@ -28,7 +28,8 @@ function AppHeader() {
             <Nav className="nav-font-size flex-row justify-content-start justify-content-md-start" variant="underline">
                 <Nav.Link as={Link} to="/"        active={isActive("/"       )}>Legacy</Nav.Link>
                 <Nav.Link as={Link} to="/live"    active={isActive("/live"   )}>Dashboard</Nav.Link>
-                <Nav.Link as={Link} to="/history" active={isActive("/history")}>History</Nav.Link>
+                {/*TBD*/}
+                {/*<Nav.Link as={Link} to="/history" active={isActive("/history")}>History</Nav.Link>*/}
             </Nav>
         </div>
         <Navbar.Toggle aria-controls="text-nav-info" />
