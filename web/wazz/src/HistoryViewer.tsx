@@ -4,6 +4,7 @@ import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
+import {type DazzJsonData, fetchDazzData, HISTORY_JSON_URL} from "./DazzData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-history"
@@ -84,7 +85,7 @@ function HistoryViewer(): ReactElement {
             const refresh = DateTime.now();
             console.log(`@@ fetchData ${refresh}`);
 
-            const jsonData = "TBD History Data"; // await fetchLiveData();
+            const jsonData = await fetchDazzData(HISTORY_JSON_URL);
             const wazz = transformData(jsonData);
 
             wazz.refresh = refresh;
@@ -109,9 +110,9 @@ function HistoryViewer(): ReactElement {
         }
     }
 
-    function transformData(dazzLive: string /*DazzLiveJsonData*/ ): WazzHistoryData {
+    function transformData(dazzLive: DazzJsonData ): WazzHistoryData {
         const result: WazzHistoryData = {
-            placeholder: [ dazzLive ],
+            placeholder: Object.keys(dazzLive),
         }
 
         // function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {

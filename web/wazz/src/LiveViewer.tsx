@@ -4,6 +4,7 @@ import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
+import {type DazzJsonData, fetchDazzData, LIVE_JSON_URL} from "./DazzData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-live"
@@ -84,7 +85,7 @@ function LiveViewer(): ReactElement {
             const refresh = DateTime.now();
             console.log(`@@ fetchData ${refresh}`);
 
-            const jsonData = "TBD Live Data"; // await fetchLiveData();
+            const jsonData = await fetchDazzData(LIVE_JSON_URL);
             const wazz = transformData(jsonData);
 
             wazz.refresh = refresh;
@@ -109,9 +110,9 @@ function LiveViewer(): ReactElement {
         }
     }
 
-    function transformData(dazzLive: string /*DazzLiveJsonData*/ ): WazzLiveData {
+    function transformData(dazzLive: DazzJsonData ): WazzLiveData {
         const result: WazzLiveData = {
-            placeholder: [ dazzLive ],
+            placeholder: Object.keys(dazzLive),
         }
 
         // function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
