@@ -284,6 +284,8 @@ function LiveViewer(): ReactElement {
                 _addRoutes(key, entries.entries);
             }
         }
+        result.routes.sort((a, b) =>
+            b.sts.toMillis() - a.sts.toMillis() )
 
         return result;
     }
