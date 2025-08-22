@@ -4,7 +4,13 @@ import {type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
-import {type DazzJsonData, fetchDazzData, HISTORY_JSON_URL} from "./DazzData.ts";
+import {
+    type DazzEntryDict,
+    type DazzJsonData,
+    type DazzRouteNode, type DazzRoutePayload,
+    fetchDazzData,
+    HISTORY_JSON_URL
+} from "./DazzData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-history"
@@ -14,16 +20,32 @@ const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 
 // -- Interface for display in Wazz
 
-interface WazzHistoryData {
+interface WazzHistRoute {
+    label: string;
+    err: boolean;
+    act: number;
+    finished: boolean;
+    recovery: boolean;
+    sts: DateTime;
+    ets: DateTime;
+    nodes: DazzRouteNode[];
+}
+
+type WazzHistRouteMap = Map<string, {
+        label: string,
+        list: WazzHistRoute[],
+}>;
+
+interface WazzHistData {
     refresh?: DateTime;
-    placeholder: string[];
+    routes: WazzHistRouteMap;
 }
 
 
 function HistoryViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
-    const [liveData, setLiveData] = useState<WazzHistoryData>({ placeholder: [] });
+    const [histData, setHistData] = useState<WazzHistData>({ routes: new Map() });
     const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
     const intervalRef = useRef<number | null>(null);
 
@@ -91,7 +113,7 @@ function HistoryViewer(): ReactElement {
             wazz.refresh = refresh;
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
 
-            setLiveData(wazz);
+            setHistData(wazz);
             setStatus("");
             setLoading(false);
 
@@ -110,99 +132,61 @@ function HistoryViewer(): ReactElement {
         }
     }
 
-    function transformData(dazzLive: DazzJsonData ): WazzHistoryData {
-        const result: WazzHistoryData = {
-            placeholder: Object.keys(dazzLive),
+    function transformData(dazzLive: DazzJsonData ): WazzHistData {
+        const result: WazzHistData = {
+            routes: new Map(),
         }
 
-        // function _appendTsValue(key1: string, key2?: string, running?: boolean): boolean {
-        //     try {
-        //         // 2021-08-27 adjust computer names: "computer" alone is legacy for "computer-consist".
-        //         let label = key1;
-        //         if (label === "computer") {
-        //             label = "computer-consist";
-        //         }
-        //         label = label.replaceAll("-", " ");
-        //         const indent = (label === "depart");
-        //
-        //         let data = rtac[key1] as never;
-        //         if (key2 !== undefined) {
-        //             data = data[key2];
-        //         }
-        //         if (data === undefined) {
-        //             console.log(`@@ transformData: ${key1}/${key2} not present. Skipping.`);
-        //             return false;
-        //         }
-        //         const ts = data as Timestamp;
-        //         const dt = DateTime.fromISO(ts.ts);
-        //
-        //         const state: boolean | undefined = ("value" in data)
-        //             ? String(data["value"]).toLowerCase() === "on"
-        //             : undefined;
-        //
-        //         const warning: boolean | undefined = running
-        //             ? dt.diffNow("minutes").minutes <= -WARNING_MINUTES
-        //             : undefined;
-        //
-        //         const entry: WazzStatusEntry = {
-        //             ts: dt,
-        //             indent: indent,
-        //             state: state,
-        //             warning: warning,
-        //             label: label,
-        //             sublabel: key2,
-        //         };
-        //
-        //         result.status.push(entry);
-        //
-        //         return state ?? false;
-        //     } catch (err) {
-        //         console.error(err);
-        //         setStatus(stringifyError(err));
-        //         return false;
-        //     }
-        // }
-        //
-        // _appendTsValue("computer");
-        // _appendTsValue("computer-vision");
-        // const cond = _appendTsValue("conductor");
-        //
-        // let tog = _appendTsValue("toggle", "passenger");
-        // _appendTsValue("depart", "passenger", cond && tog);
-        // _appendTsValue("depart", "freight", cond && tog);
-        // tog = _appendTsValue("toggle", "branchline");
-        // _appendTsValue("depart", "branchline", cond && tog);
-        // _appendTsValue("depart", "trolley", cond && tog);
-        //
-        //
-        // function _appendRoute(data: RouteJsonData) {
-        //     let nodes = "";
-        //     for(const n of data.nodes) {
-        //         if (nodes !== "") nodes += " > ";
-        //         nodes += n.n + " = " + (n.ms / 1000).toFixed(1);
-        //     }
-        //
-        //     const entry : WazzRouteEntry = {
-        //         ts: data.ts,
-        //         name: `${data.name} [${data.th}]`,
-        //         error: data.err,
-        //         runs: data.act,
-        //         nodes: nodes,
-        //         old: data.ts.diffNow("days").days <= -ROUTE_OLD_DAYS,
-        //         recovery: data.name.includes("Recovery"),
-        //     };
-        //
-        //     result.routes.push(entry);
-        // }
-        //
-        // const rt_dict = rtac["route_stats"] as RouteStatsDict;
-        // const rt_list = Object.values(rt_dict).map((e) => {
-        //     const rt_data = JSON.parse(e.value) as RouteJsonData;
-        //     rt_data.ts = DateTime.fromISO(e.ts);
-        //     return rt_data;
-        // });
-        // rt_list.sort( (a, b) => b.ts.valueOf() - a.ts.valueOf() );
-        // rt_list.forEach(entry => _appendRoute(entry));
+        function _addRoutes(key: string, entries: DazzEntryDict) {
+            for (const [isoTS, entry] of Object.entries(entries)) {
+                if (entry.d == null) {
+                    console.log(`@@ ERROR missing entry.d: skip route ${JSON.stringify(entry)}`)
+                    continue;
+                }
+                const label = key.replace("route/", "").replaceAll("/", " ");
+                const payload = JSON.parse(entry.d) as DazzRoutePayload
+                const finish = payload.run.toLowerCase() === "ended"
+                // console.log(`@@ FOUND ${label}, ${finish}, ${JSON.stringify(payload)}`)
+                if (payload.nodes == null || payload.nodes.length === 0 || !finish) {
+                    console.log(`@@ ERROR missing nodes/finish: skip route ${JSON.stringify(payload)}`)
+                    continue;
+                }
+
+                if (!result.routes.has(key)) {
+                    result.routes.set(key, {
+                        label: label,
+                        list: [],
+                    });
+                }
+                const routeList = result.routes.get(key);
+                if (routeList == null) {
+                    console.log(`@@ ERROR routeList in result.routes ${JSON.stringify(Object.fromEntries(result.routes))}`)
+                    continue; // one of these "should never happen" safety checks
+                }
+
+                const r : WazzHistRoute = {
+                    label: label,
+                    sts: DateTime.fromISO(isoTS),
+                    err: !entry.st,
+                    finished: finish,
+                    act: payload.act ?? -1,
+                    ets: DateTime.fromISO(payload.ets ?? DateTime.now().toISO()),
+                    recovery: key.includes("Recovery"),
+                    nodes: payload.nodes ?? [],
+                }
+
+                routeList.list.push(r);
+            }
+        }
+
+        const keys = Object.keys(dazzLive).sort();
+
+        for (const key of keys) {
+            const entries = dazzLive[key];
+            if (key.startsWith("route/")) {
+                _addRoutes(key, entries.entries);
+            }
+        }
 
         return result;
     }
@@ -211,6 +195,7 @@ function HistoryViewer(): ReactElement {
         return <div className="wazz-status-text"> {status} </div>;
     }
 
+    /*
     function formatDate(dateTime: DateTime) {
         const serverDt = dateTime.setZone(SERVER_TZ);
         const dateString2 = serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
@@ -231,6 +216,44 @@ function HistoryViewer(): ReactElement {
             </>
         )
     }
+    */
+
+    function formatDay(dateTime: DateTime) {
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const dateString2 = serverDt.toLocaleString(DateTime.DATE_SHORT);
+
+        return (
+            <span className="wazz-date" title={dateTime.toISO( {
+                format: "extended",
+                suppressMilliseconds: true
+            }) ?? ""}>
+                {dateString2}
+            </span>
+        )
+    }
+
+    function formatTime(dateTime: DateTime, timeStart?: DateTime) {
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const dateString2 = serverDt.toLocaleString(DateTime.TIME_WITH_SHORT_OFFSET);
+        const relativeToNow = timeStart == null
+            ? serverDt.toRelative()
+            : `run for ${Math.round(dateTime.diff(timeStart, "minutes").minutes)} minutes` ;
+
+        return (
+            <>
+            <span className="wazz-date" title={dateTime.toISO( {
+                format: "extended",
+                suppressMilliseconds: true
+            }) ?? ""}>
+                {dateString2}
+            </span>
+                { ' ' }
+                <span className="wazz-rel-date">
+                ({relativeToNow})
+            </span>
+            </>
+        )
+    }
 
     function formatStateButton(state: boolean|undefined, onLabel: string, offLabel: string) {
         if (state === undefined) {
@@ -243,75 +266,107 @@ function HistoryViewer(): ReactElement {
         }
     }
 
-    function generateSystemStatus(data: WazzHistoryData) {
-        if (loading) {
-            return <span className="wazz-loading">...</span>;
+    function nodeColor(node: DazzRouteNode): string {
+        const sec = node.ms / 1000;
+
+        if (node.mis != null && sec < node.mis) {
+            return "red";
         }
 
-        // const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
+        if (node.mas != null) {
+            if (sec >= node.mas * 0.90) {
+                return "red";
+            }
+            if (sec >= node.mas * 0.75) {
+                return "yellow";
+            }
+            if (sec >= node.mas * 0.50) {
+                return "green";
+            }
+        }
 
-        return (
-            <Table striped bordered variant="light" className="wazz-table wazz-system-table">
-                <thead>
-                <tr>
-                    <th colSpan={3}>System Status</th>
-                    <th>Last Updated</th>
-                </tr>
-                </thead>
-                <tbody>
-                { data.placeholder }
-                { formatDate(DateTime.now()) }
-                { formatStateButton(true, "TBD", "TBD") }
-                {/*{ data.status.map((entry, index) => (*/}
-                {/*    <tr key={`st-${epoch}-${index}`} className={`wazz-status-warning-${entry.warning ?? "undef"}`}>*/}
-                {/*        <td className={`wazz-status-text wazz-indent-${entry.indent}`}> { entry.label } </td>*/}
-                {/*        <td className="wazz-status-text"> { entry.sublabel } </td>*/}
-                {/*        <td> { formatStateButton(entry.state, "ON", "OFF") } </td>*/}
-                {/*        <td> { formatDate(entry.ts) } </td>*/}
-                {/*    </tr>*/}
-                {/*)) }*/}
-                </tbody>
-            </Table>
-        )
+        return "";
     }
 
-    function generateRouteStatus(data: WazzHistoryData) {
-        if (loading) {
-            return <span className="wazz-loading">...</span>;
-        }
+    function generateNode(key: string, index: number, indxN: number, node?: DazzRouteNode) {
+        return node === undefined
+            ? <td key={`n-${key}-${index}-${indxN}`}>
+                -
+            </td>
+            : <td key={`n-${key}-${index}-${indxN}`} className={`wazz-node-${nodeColor(node)}`}>
+                                <span title={`Min: ${node.mis} seconds; Max: ${node.mas} seconds`}>
+                                { node.ms > 10000 ? Math.round(node.ms/1000) : (node.ms/1000).toFixed(1) } s
+                                </span>
+            </td>
+    }
 
-        // const epoch = Math.floor(data.refresh?.toSeconds() ?? 0);
+    function generateRouteTable(key: string, label: string, list: WazzHistRoute[]) {
+        const nodes: string[] = []
+        for (const entry of list) {
+            for (const node of entry.nodes) {
+                const n = node.n;
+                if (!nodes.includes(n)) {
+                    nodes.push(n);
+                }
+            }
+        }
+        const numNodes = nodes.length;
 
         return (
-            <Table striped bordered variant="light" className="wazz-table wazz-routes-table">
+            <Table key={key} striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr>
-                    <th>Finished At</th>
-                    <th>Route</th>
+                    <th colSpan={5+numNodes}>Route {label}</th>
+                </tr>
+                <tr>
+                    <th colSpan={2}>Start</th>
+                    <th>End</th>
                     <th>#</th>
-                    <th>Error</th>
-                    <th>Nodes</th>
+                    <th>Status</th>
+                    { nodes.map((node, index) => (
+                        <th key={`th-n-${key}-${index}`}>{node}</th>
+                    ) ) }
                 </tr>
                 </thead>
                 <tbody>
-                { data.placeholder }
-                { formatDate(DateTime.now()) }
-                { formatStateButton(true, "TBD", "TBD") }
-                {/*{ data.routes.map((entry, index) => (*/}
-                {/*    <tr key={`rt-${epoch}-${index}`} className={`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery}`}>*/}
-                {/*        <td> { formatDate(entry.ts) } </td>*/}
-                {/*        <td className="wazz-route-name"> { entry.name } </td>*/}
-                {/*        <td> { entry.runs } </td>*/}
-                {/*        <td> { formatStateButton(!entry.error, "OK", "ERR") } </td>*/}
-                {/*        <td> { entry.nodes } </td>*/}
-                {/*    </tr>*/}
-                {/*)) }*/}
+                { list.map((entry, index) => (
+                    <tr key={`rt-${key}-${index}`}>
+                        <td> { formatDay(entry.sts) } </td>
+                        <td> { formatTime(entry.sts) } </td>
+                        <td> { formatTime(entry.ets, entry.sts) } </td>
+                        <td> { entry.act } </td>
+                        <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
+                        { nodes.map((nodeName, indxN) =>
+                            generateNode(
+                                key,
+                                index,
+                                indxN,
+                                entry.nodes.find(nd => nd.n === nodeName))
+                        )}
+                    </tr>
+                    ) ) }
                 </tbody>
             </Table>
         )
     }
 
-    function generateRefreshStatus(data: WazzHistoryData) {
+    function generateRoutesTables(data: WazzHistData) {
+        if (loading) {
+            return <span className="wazz-loading">...</span>;
+        }
+
+        return (
+            <>
+            { Array.from(data.routes.entries()).map(([key, value]) =>
+                generateRouteTable(key, value.label, value.list)
+            )
+
+            }
+            </>
+        );
+    }
+
+    function generateRefreshStatus(data: WazzHistData) {
         const dt = data.refresh;
 
         if (dt === undefined) {
@@ -336,9 +391,8 @@ function HistoryViewer(): ReactElement {
     return (
     <>
         { generateStatusLine() }
-        { generateRefreshStatus(liveData) }
-        { generateSystemStatus(liveData) }
-        { generateRouteStatus(liveData) }
+        { generateRefreshStatus(histData) }
+        { generateRoutesTables(histData) }
     </>
     )
 }

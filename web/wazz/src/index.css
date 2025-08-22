@@ -93,17 +93,17 @@ td.wazz-indent-true {
   white-space: nowrap;
 }
 
-tr.wazz-status-warning-false, tr.wazz-status-highlight-green {
+tr.wazz-status-warning-false, tr.wazz-status-highlight-green, td.wazz-node-green {
   --bs-table-bg-type:    var(--bs-success-bg-subtle);
   --bs-table-striped-bg: var(--bs-success-bg-subtle);
 }
 
-tr.wazz-status-highlight-yellow {
+tr.wazz-status-highlight-yellow, td.wazz-node-yellow {
   --bs-table-bg-type:    var(--bs-warning-bg-subtle);
   --bs-table-striped-bg: var(--bs-warning-bg-subtle);
 }
 
-tr.wazz-status-warning-true, tr.wazz-status-highlight-red {
+tr.wazz-status-warning-true, tr.wazz-status-highlight-red, td.wazz-node-red {
   --bs-table-bg-type:    var(--bs-danger-bg-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);
 }
