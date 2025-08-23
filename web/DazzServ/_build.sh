@@ -38,6 +38,7 @@ set -e
 echo
 echo "---- Building with gradle..."
 ./gradlew $GRADLE_CMD --console=plain $@
+./gradlew --stop
 
 echo
 echo "---- Result ${ARTIFACT} files..."
