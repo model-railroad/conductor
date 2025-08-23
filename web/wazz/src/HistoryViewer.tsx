@@ -269,23 +269,39 @@ function HistoryViewer(): ReactElement {
     function nodeColor(node: DazzRouteNode): string {
         const sec = node.ms / 1000;
 
-        if (node.mis != null && sec < node.mis) {
+        const mis = node.mis ?? 0;
+
+        if (sec < mis) {
             return "red";
         }
 
         if (node.mas != null) {
-            if (sec >= node.mas * 0.90) {
+
+            const delta = node.mas - mis;
+            if (sec >= mis + delta * 0.90) {
                 return "red";
             }
-            if (sec >= node.mas * 0.75) {
+            if (sec >= mis + delta * 0.75) {
                 return "yellow";
             }
-            if (sec >= node.mas * 0.50) {
+            if (sec >= mis + delta * 0.50) {
                 return "green";
             }
         }
 
+        if (sec < mis * 1.50) {
+            return "yellow";
+        }
+
         return "";
+    }
+
+    function nodeText(node: DazzRouteNode): string {
+        const mis = node.mis ?? 0;
+        const mas = node.mas ?? 0;
+        const mi2 = Math.round(mis * 1.5);
+        const ma2 = Math.round(mis + (mas - mis) * 0.75);
+        return `Min: ${mis} seconds\nIdeal: ${mi2}-${ma2} seconds\nMax: ${mas} seconds`;
     }
 
     function generateNode(key: string, index: number, indxN: number, node?: DazzRouteNode) {
@@ -294,7 +310,7 @@ function HistoryViewer(): ReactElement {
                 -
             </td>
             : <td key={`n-${key}-${index}-${indxN}`} className={`wazz-node-${nodeColor(node)}`}>
-                                <span title={`Min: ${node.mis} seconds; Max: ${node.mas} seconds`}>
+                                <span title={nodeText(node)}>
                                 { node.ms > 10000 ? Math.round(node.ms/1000) : (node.ms/1000).toFixed(1) } s
                                 </span>
             </td>
