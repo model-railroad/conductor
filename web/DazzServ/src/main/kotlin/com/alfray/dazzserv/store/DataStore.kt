@@ -59,7 +59,7 @@ class DataStore @Inject constructor(
 
     companion object {
         const val TAG = "DataStore"
-        const val HISTORY_NUM_ENTRIES = 10
+        const val PERF_NUM_ENTRIES = 10
     }
 
     /**
@@ -259,14 +259,14 @@ class DataStore @Inject constructor(
         }
     }
 
-    fun historyToJson(keyQuery: String): String {
-        // Wazz Logic to serve history data:
+    fun perfToJson(keyQuery: String): String {
+        // Wazz Logic to serve perf data:
         // - For each key, return up to 10 success entries
         // - Ignore the failed ones.
         // TBD optional: configure max num entries via CGI param.
 
         synchronized(data) {
-            val historyData = mutableMapOf<String, DataEntryMap>()
+            val perfData = mutableMapOf<String, DataEntryMap>()
             val filteredData = filterData(keyQuery)
 
             filteredData.forEach { (key, entries) ->
@@ -274,15 +274,15 @@ class DataStore @Inject constructor(
                 for(entry in entries.entries.values) {
                     if (entry.isState) {
                         newEntries.add(entry)
-                        if (newEntries.entries.size >= HISTORY_NUM_ENTRIES) {
+                        if (newEntries.entries.size >= PERF_NUM_ENTRIES) {
                             break
                         }
                     }
                 }
-                historyData[key] = newEntries
+                perfData[key] = newEntries
             }
 
-            return storeToJson(historyData)
+            return storeToJson(perfData)
         }
     }
 

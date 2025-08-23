@@ -241,8 +241,8 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetHistory_noData() {
-        val request = createRequest(HttpMethod.GET, "/history")
+    fun testGetPerf_noData() {
+        val request = createRequest(HttpMethod.GET, "/perf")
 
         val response = FakeResponse(request)
         val callback = mock<Callback>()
@@ -254,7 +254,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetHistory_correctData() {
+    fun testGetPerf_correctData() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
@@ -262,7 +262,7 @@ class DazzRestHandlerTest {
         ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
         ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
 
-        val request = createRequest(HttpMethod.GET, "/history")
+        val request = createRequest(HttpMethod.GET, "/perf")
 
         val response = FakeResponse(request)
         val callback = mock<Callback>()
@@ -275,7 +275,7 @@ class DazzRestHandlerTest {
     }
 
     @Test
-    fun testGetHistory_correctData_304() {
+    fun testGetPerf_correctData_304() {
         ds.add(DataEntry("toggles/entry1", "1970-01-04T00:06:59Z", true, "payload 1"))
         ds.add(DataEntry("toggles/entry2", "1970-01-03T00:05:48Z", true, "payload 2"))
         ds.add(DataEntry("toggles/entry1", "1970-01-01T00:04:37Z", false, "payload 3"))
@@ -283,7 +283,7 @@ class DazzRestHandlerTest {
         ds.add(DataEntry("toggles/entry1", "1970-01-05T00:06:89Z", true, "payload 5"))
         ds.add(DataEntry("toggles/entry2", "1970-01-06T00:07:89Z", true, "payload 6"))
 
-        val request = createRequest(HttpMethod.GET, "/history",
+        val request = createRequest(HttpMethod.GET, "/perf",
             httpField = HttpField(HttpHeader.IF_NONE_MATCH, "1970-01-06T00:07:89Z;0"))
 
         val response = FakeResponse(request)

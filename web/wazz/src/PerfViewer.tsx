@@ -9,11 +9,11 @@ import {
     type DazzJsonData,
     type DazzRouteNode, type DazzRoutePayload,
     fetchDazzData,
-    HISTORY_JSON_URL
+    PERF_JSON_URL
 } from "./DazzData.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
-const REFRESH_KEY = "refresh-history"
+const REFRESH_KEY = "refresh-perf"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 // const WARNING_MINUTES = 30;
 // const ROUTE_OLD_DAYS = 7;
@@ -42,7 +42,7 @@ interface WazzHistData {
 }
 
 
-function HistoryViewer(): ReactElement {
+function PerfViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [histData, setHistData] = useState<WazzHistData>({ routes: new Map() });
@@ -107,7 +107,7 @@ function HistoryViewer(): ReactElement {
             const refresh = DateTime.now();
             console.log(`@@ fetchData ${refresh}`);
 
-            const jsonData = await fetchDazzData(HISTORY_JSON_URL);
+            const jsonData = await fetchDazzData(PERF_JSON_URL);
             const wazz = transformData(jsonData);
 
             wazz.refresh = refresh;
@@ -413,4 +413,4 @@ function HistoryViewer(): ReactElement {
     )
 }
 
-export default HistoryViewer
+export default PerfViewer

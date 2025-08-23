@@ -63,8 +63,8 @@ class DazzRestHandler @AssistedInject constructor(
                 return doGetQuery(path, request, response, callback)
             } else if (isGet && path.startsWith("/live")) {
                 return doGetLive(path, request, response, callback)
-            } else if (isGet && path.startsWith("/history")) {
-                return doGetHistory(path, request, response, callback)
+            } else if (isGet && path.startsWith("/perf")) {
+                return doGetPerf(path, request, response, callback)
             }
         }
 
@@ -180,17 +180,17 @@ class DazzRestHandler @AssistedInject constructor(
         return true
     }
 
-    private fun doGetHistory(
+    private fun doGetPerf(
         path: String,
         request: Request,
         response: Response,
         callback: Callback
     ): Boolean {
-        logger.d(TAG, "doGetHistory: $path")
-        setCnxStatsLabel("history")
+        logger.d(TAG, "doGetPerf: $path")
+        setCnxStatsLabel("perf")
 
-        val filter = if (path.startsWith("/history/")) {
-            path.removePrefix("/history/")
+        val filter = if (path.startsWith("/perf/")) {
+            path.removePrefix("/perf/")
         } else {
             ""
         }
@@ -201,7 +201,7 @@ class DazzRestHandler @AssistedInject constructor(
             return true
         }
 
-        val content = dataStore.historyToJson(filter)
+        val content = dataStore.perfToJson(filter)
 
         reply(
             response,

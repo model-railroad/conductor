@@ -460,7 +460,7 @@ class DazzStoreTest {
     }
 
     @Test
-    fun testHistoryToJson() {
+    fun testPerfToJson() {
         ds.add(DataEntry("entryA", "ts0001", true , "run A.01 ok"))
         ds.add(DataEntry("entryA", "ts0002", false, "run A.01 fail"))
         ds.add(DataEntry("entryA", "ts0003", true , "run A.02 ok"))
@@ -493,7 +493,7 @@ class DazzStoreTest {
 
         assertThat(ds.liveToJson(keyQuery = "foo")).isEqualTo("{ }")
 
-        assertThat(ds.historyToJson(keyQuery = "")).isEqualTo(
+        assertThat(ds.perfToJson(keyQuery = "")).isEqualTo(
             """
                 {
                   "entryA": {
