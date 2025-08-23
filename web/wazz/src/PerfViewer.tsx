@@ -1,6 +1,6 @@
 // noinspection DuplicatedCode
 
-import {type ReactElement, useEffect, useRef, useState} from "react";
+import {type MouseEvent, type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
@@ -15,13 +15,10 @@ import {
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-perf"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
-// const WARNING_MINUTES = 30;
-// const ROUTE_OLD_DAYS = 7;
 
 // -- Interface for display in Wazz
 
-interface WazzHistRoute {
-    label: string;
+interface WazzPerfRoute {
     err: boolean;
     act: number;
     finished: boolean;
@@ -31,21 +28,25 @@ interface WazzHistRoute {
     nodes: DazzRouteNode[];
 }
 
-type WazzHistRouteMap = Map<string, {
-        label: string,
-        list: WazzHistRoute[],
-}>;
+interface WazzPerfRouteTable {
+    label: string;
+    anchor: string;
+    update: DateTime;
+    list: WazzPerfRoute[];
+}
 
-interface WazzHistData {
+type WazzPerfRoutesMap = Map<string, WazzPerfRouteTable>;
+
+interface WazzPerfData {
     refresh?: DateTime;
-    routes: WazzHistRouteMap;
+    routes: WazzPerfRoutesMap;
 }
 
 
 function PerfViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
-    const [histData, setHistData] = useState<WazzHistData>({ routes: new Map() });
+    const [histData, setHistData] = useState<WazzPerfData>({ routes: new Map() });
     const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
     const intervalRef = useRef<number | null>(null);
 
@@ -132,8 +133,8 @@ function PerfViewer(): ReactElement {
         }
     }
 
-    function transformData(dazzLive: DazzJsonData ): WazzHistData {
-        const result: WazzHistData = {
+    function transformData(dazzLive: DazzJsonData ): WazzPerfData {
+        const result: WazzPerfData = {
             routes: new Map(),
         }
 
@@ -144,6 +145,7 @@ function PerfViewer(): ReactElement {
                     continue;
                 }
                 const label = key.replace("route/", "").replaceAll("/", " ");
+                const anchor = key.replaceAll("/", "-");
                 const payload = JSON.parse(entry.d) as DazzRoutePayload
                 const finish = payload.run.toLowerCase() === "ended"
                 // console.log(`@@ FOUND ${label}, ${finish}, ${JSON.stringify(payload)}`)
@@ -155,17 +157,18 @@ function PerfViewer(): ReactElement {
                 if (!result.routes.has(key)) {
                     result.routes.set(key, {
                         label: label,
+                        anchor: anchor,
+                        update: DateTime.fromISO(isoTS),
                         list: [],
-                    });
+                    } as WazzPerfRouteTable);
                 }
-                const routeList = result.routes.get(key);
-                if (routeList == null) {
+                const routeTable = result.routes.get(key);
+                if (routeTable == null) {
                     console.log(`@@ ERROR routeList in result.routes ${JSON.stringify(Object.fromEntries(result.routes))}`)
                     continue; // one of these "should never happen" safety checks
                 }
 
-                const r : WazzHistRoute = {
-                    label: label,
+                const r : WazzPerfRoute = {
                     sts: DateTime.fromISO(isoTS),
                     err: !entry.st,
                     finished: finish,
@@ -175,7 +178,7 @@ function PerfViewer(): ReactElement {
                     nodes: payload.nodes ?? [],
                 }
 
-                routeList.list.push(r);
+                routeTable.list.push(r);
             }
         }
 
@@ -255,6 +258,22 @@ function PerfViewer(): ReactElement {
         )
     }
 
+    function formatRelTime(dateTime: DateTime) {
+        const serverDt = dateTime.setZone(SERVER_TZ);
+        const relativeToNow = serverDt.toRelative()
+
+        return (
+            <>
+            <span className="wazz-date" title={dateTime.toISO( {
+                format: "extended",
+                suppressMilliseconds: true
+            }) ?? ""}>
+                {relativeToNow}
+            </span>
+            </>
+        )
+    }
+
     function formatStateButton(state: boolean|undefined, onLabel: string, offLabel: string) {
         if (state === undefined) {
             return <></>;
@@ -316,9 +335,10 @@ function PerfViewer(): ReactElement {
             </td>
     }
 
-    function generateRouteTable(key: string, label: string, list: WazzHistRoute[]) {
+    function generateRouteTable(key: string, table: WazzPerfRouteTable) {
         const nodes: string[] = []
-        for (const entry of list) {
+
+        for (const entry of table.list) {
             for (const node of entry.nodes) {
                 const n = node.n;
                 if (!nodes.includes(n)) {
@@ -329,10 +349,10 @@ function PerfViewer(): ReactElement {
         const numNodes = nodes.length;
 
         return (
-            <Table key={key} striped bordered variant="light" className="wazz-table wazz-routes-table">
+            <Table key={`rt-${key}-table`} striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr>
-                    <th colSpan={5+numNodes}>Route {label}</th>
+                    <th colSpan={5+numNodes}><a id={table.anchor}></a>Route {table.label}</th>
                 </tr>
                 <tr>
                     <th colSpan={2}>Start</th>
@@ -345,7 +365,7 @@ function PerfViewer(): ReactElement {
                 </tr>
                 </thead>
                 <tbody>
-                { list.map((entry, index) => (
+                { table.list.map((entry, index) => (
                     <tr key={`rt-${key}-${index}`}>
                         <td> { formatDay(entry.sts) } </td>
                         <td> { formatTime(entry.sts) } </td>
@@ -366,23 +386,55 @@ function PerfViewer(): ReactElement {
         )
     }
 
-    function generateRoutesTables(data: WazzHistData) {
+    function generateRoutesTables(data: WazzPerfData) {
         if (loading) {
             return <span className="wazz-loading">...</span>;
         }
 
         return (
             <>
-            { Array.from(data.routes.entries()).map(([key, value]) =>
-                generateRouteTable(key, value.label, value.list)
-            )
+                { Array.from(data.routes.entries()).map(([key, value]) =>
+                    generateRouteTable(key, value)
+                )
 
-            }
+                }
             </>
         );
     }
 
-    function generateRefreshStatus(data: WazzHistData) {
+    function scrollTo(evt: MouseEvent<HTMLAnchorElement>, anchor: string) {
+        evt.preventDefault();
+        const element = document.getElementById(anchor);
+        if (element) {
+            element.scrollIntoView({behavior: "smooth", block: "start"});
+        }
+    }
+
+    function generateRouteLinks(data: WazzPerfData) {
+        if (loading) {
+            return <span className="wazz-loading">...</span>;
+        }
+
+        return (
+            <Table striped bordered variant="light" className="wazz-table wazz-routes-links">
+                <thead>
+                <tr>
+                    { Array.from(data.routes.entries()).map(([, table]) => (
+                        <th>
+                            <a href={`#/perf/#${table.anchor}`}
+                               onClick={ (evt) =>
+                                   scrollTo(evt, table.anchor) }>{table.label}</a>
+                            <br/>
+                            {formatRelTime(table.update)}
+                        </th>
+                    ) ) }
+                </tr>
+                </thead>
+            </Table>
+        );
+    }
+
+    function generateRefreshStatus(data: WazzPerfData) {
         const dt = data.refresh;
 
         if (dt === undefined) {
@@ -408,6 +460,7 @@ function PerfViewer(): ReactElement {
     <>
         { generateStatusLine() }
         { generateRefreshStatus(histData) }
+        { generateRouteLinks(histData) }
         { generateRoutesTables(histData) }
     </>
     )
