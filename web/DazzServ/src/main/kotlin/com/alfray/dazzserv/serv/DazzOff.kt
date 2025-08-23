@@ -158,8 +158,12 @@ open class DazzOff @Inject constructor(
         if (state == data.state) {
             // Nothing changed. Move to the next check.
             currentData = null
-            // This gets very verbose and doesn't add much useful information since it's a no-op
-            // logger.d(TAG, "Check '$name'; Unchanged on try #$currentRetries")
+            if (currentRetries > 1) {
+                // We arrive here if the state changed from ON to OFF after at least one
+                // try below yet the next retry showed there wasn't really any change.
+                // Thus, it was a transient ping failure.
+                logger.d(TAG, "Check '$name'; Unchanged as ${if (state) "ON" else "OFF"} on try #$currentRetries")
+            }
             return
         }
 
