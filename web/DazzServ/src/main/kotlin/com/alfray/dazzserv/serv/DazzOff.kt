@@ -22,6 +22,7 @@ import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
 import com.alfray.dazzserv.store.DataStore
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.common.annotations.VisibleForTesting
@@ -47,16 +48,22 @@ open class DazzOff @Inject constructor(
     @GuardedBy(value = "computers")
     private val computers = mutableMapOf<String, DazzOffData>()
     private val mapper = jacksonObjectMapper()
+    private var currentIndex = -1
+    private var currentRetries = 0
+    private var currentData : DazzOffData? = null
 
     companion object {
         const val TAG = "DazzOff"
-        // Number of times to retry the ICMP Ping.
-        const val RETRIES = 3
-        // Timeout for the local ICMP Ping. Because it's local, a fairly short timeout is enough.
-        // Note that the actual time on a computer off is really this timeout x RETRIES.
-        const val PING_TIMEOUT_MS = 2_000
+        // Number of times to retry the ICMP Ping on failure.
+        const val RETRIES = 5
+        // Timeout for the local ICMP Ping.
+        const val PING_TIMEOUT_MS = 9_000
         // The key pattern that we monitor. The captured value is typically a valid hostname.
         val KEY_RE = "^computer/([A-Za-z0-9-]+)$".toRegex()
+    }
+
+    init {
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
     /**
@@ -69,15 +76,15 @@ open class DazzOff @Inject constructor(
         // state: true if computer is on.
         // payload: must be a DazzOffPayload with a field dazz-off=true.
 
-        if (!entry.isState || entry.payload.isNullOrEmpty()) {
+        if (entry.payload.isNullOrEmpty()) {
             return
         }
 
         KEY_RE.matchEntire(entry.key)?.let { match ->
             try {
-                val computerName = match.groupValues[1]
-                val payload = decodePayload(entry.payload)
-                parseEntry(computerName, entry, payload)
+                val name = match.groupValues[1]
+                val payload = jsonToPayload(entry.payload)
+                parseEntry(name, entry, payload)
             } catch (e: Exception) {
                 logger.d(TAG, "Failed to decode DazzOffPayload", e)
             }
@@ -85,23 +92,23 @@ open class DazzOff @Inject constructor(
     }
 
     private fun parseEntry(
-        computerName: String,
+        name: String,
         entry: DataEntry,
         payload: DazzOffPayload,
     ) {
         synchronized(computers) {
-            if (!entry.isState) {
-                // This computer is off. Don't monitor it.
-                computers.remove(computerName)
-                return
-            } else if (!payload.dazzOff) {
-                // This computer is on, but it is not an entry that we should monitor.
-                computers.remove(computerName)
+            val n = computers.size
+            if (!payload.dazzOff) {
+                // This is not an entry that we should monitor.
+                computers.remove(name)
                 return
             } else {
-                // This computer is on and we should monitor it.
-                computers[computerName] = DazzOffData(entry, payload)
-                logger.d(TAG, "Monitor '$computerName'")
+                // Monitor this one.
+                computers[name] = DazzOffData(name, entry.isState, entry, payload)
+                logger.d(TAG, "Monitor '$name', currently ${if (entry.isState) "ON" else "OFF"}")
+            }
+            if (n != computers.size) {
+                currentData = null
             }
         }
     }
@@ -110,56 +117,70 @@ open class DazzOff @Inject constructor(
      * Invoked from the Dazz Scheduler to periodically check if computers are still on.
      */
     fun periodicCheck() {
-        // Make a copy of the map so that we don't keep it synchronized, and also
-        // because we'll change the original map whilst iterating on it.
-        val mapCopy: Map<String, DazzOffData>
         synchronized(computers) {
-            mapCopy = computers.toSortedMap()
+            if (computers.isEmpty()) {
+                currentData = null
+            } else if (currentData == null) {
+                currentIndex = (currentIndex + 1) % computers.size
+                val key = computers.keys.toList()[currentIndex]
+                currentData = computers[key]
+                currentRetries = 0
+            }
         }
 
-        mapCopy.forEach { (name, data) ->
-            performCheck(name, data)
+        currentData?.let {
+            performCheck(it)
         }
     }
 
-    private fun performCheck(name: String, data: DazzOffData) {
-        logger.d(TAG, "Check '$name'")
+    private fun performCheck(data: DazzOffData) {
+        val name = data.name
+        currentRetries++
 
         // The ip to monitor is either the one in the payload (if present), or the
         // actual hostname of the computer that was given in the entry key.
         val ip = data.payload.ip ?: name
 
-        repeat(RETRIES) { retry ->
-            try {
-                // Resolve the IP string or the hostname
-                val address = resolveHostname(ip)
-                val reachable = ping(address)
-                if (reachable) {
-                    // Computer still "on". Keep the entry and we'll monitor again later.
-                    return
-                }
-                // A value off just means the given timeout has been reached.
-                // We'll still retry N times before giving up.
-            } catch (e: Exception) {
-                // Exception here should be:
-                // - getByName() UnknownHostException – the hostname/ip can't be resolved.
-                // - isReachable() IOException – some network error other than ping timeout.
-                logger.d(TAG, "Check '$name' (retry $retry) network error", e)
+        var state: Boolean
+        try {
+            // Resolve the IP string or the hostname
+            val address = resolveHostname(ip)
+            val reachable = ping(address)
+            state = reachable
+        } catch (e: Exception) {
+            // Exception here should be:
+            // - getByName() UnknownHostException – the hostname/ip can't be resolved.
+            // - isReachable() IOException – some network error other than ping timeout.
+            state = false
+            logger.d(TAG, "Check '$name' (retry $currentRetries) network error", e)
+        }
+
+        if (state == data.state) {
+            // Nothing changed. Move to the next check.
+            currentData = null
+            // This gets very verbose and doesn't add much useful information since it's a no-op
+            // logger.d(TAG, "Check '$name'; Unchanged on try #$currentRetries")
+            return
+        }
+
+        if (state || currentRetries >= RETRIES) {
+            // Compute is now on, or it's off after N retries... accept the change.
+            currentData = null
+            synchronized(computers) {
+                computers[name] = data.copy(state = state)
             }
+            val entry = DataEntry(
+                data.entry.key,
+                isoDateTimeFormat.format(Date(clock.elapsedRealtime())),
+                state,
+                payloadToJson(data.payload),
+            )
+            store.get().add(entry)
+            logger.d(TAG, "Check '$name'; Changed to ${if (state) "ON" else "OFF"} on try #$currentRetries")
+        } else {
+            // State is off but we haven't reached the retry count yet
+            logger.d(TAG, "Check '$name'; Noticed is OFF on try #$currentRetries")
         }
-        // If we arrive here, we have failed to ping the host N times for the given timeout.
-        // We'll consider it really off, thus changing its state in the DataStore.
-        synchronized(computers) {
-            computers.remove(name)
-        }
-        val entry = DataEntry(
-            data.entry.key,
-            isoDateTimeFormat.format(Date(clock.elapsedRealtime())),
-            /*state=*/ false,
-            /*payload=*/ null,
-        )
-        store.get().add(entry)
-        logger.d(TAG, "Detected '$name' is off")
     }
 
     @VisibleForTesting
@@ -172,12 +193,18 @@ open class DazzOff @Inject constructor(
         return address.isReachable(/*timeout=*/ PING_TIMEOUT_MS)
     }
 
-    internal fun decodePayload(json: String) : DazzOffPayload {
+    internal fun jsonToPayload(json: String) : DazzOffPayload {
         return mapper.readValue(json, DazzOffPayload::class.java)
+    }
+
+    internal fun payloadToJson(payload: DazzOffPayload): String {
+        return mapper.writeValueAsString(payload)
     }
 
     /** Internal data to keep track of this computer for dazz off. */
     internal data class DazzOffData(
+        val name: String,
+        val state: Boolean,
         val entry: DataEntry,
         val payload: DazzOffPayload,
     )

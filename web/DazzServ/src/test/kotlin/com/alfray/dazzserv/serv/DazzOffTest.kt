@@ -80,11 +80,44 @@ class DazzOffTest {
     }
 
     @Test
-    fun testDecodePayload() {
-        assertThat(dazzOff.decodePayload(
+    fun testJsonToPayload() {
+        assertThat(dazzOff.jsonToPayload(
             """ { "dazz-off": true, "ip": "192.168.0.0" } """
         )).isEqualTo(
             DazzOffPayload(dazzOff = true, ip = "192.168.0.0")
+        )
+
+        assertThat(dazzOff.jsonToPayload(
+            """ { "dazz-off": true } """
+        )).isEqualTo(
+            DazzOffPayload(dazzOff = true, ip = null)
+        )
+
+        assertThat(dazzOff.jsonToPayload(
+            """ { "dazz-off": false } """
+        )).isEqualTo(
+            DazzOffPayload(dazzOff = false, ip = null)
+        )
+    }
+
+    @Test
+    fun testPayloadToJson() {
+        assertThat(dazzOff.payloadToJson(
+            DazzOffPayload(dazzOff = true, ip = "192.168.0.0")
+        )).isEqualTo(
+            """{"dazz-off":true,"ip":"192.168.0.0"}"""
+        )
+
+        assertThat(dazzOff.payloadToJson(
+            DazzOffPayload(dazzOff = true, ip = null)
+        )).isEqualTo(
+            """{"dazz-off":true}"""
+        )
+
+        assertThat(dazzOff.payloadToJson(
+            DazzOffPayload(dazzOff = false, ip = null)
+        )).isEqualTo(
+            """{"dazz-off":false}"""
         )
     }
 
@@ -102,7 +135,10 @@ class DazzOffTest {
             """ { "dazz-off": false } """))
         dazzOff.monitor(DataEntry("computer/hostname4", "1970-01-01T00:03:54Z", true,
             """ { "dazz-off": true, "ip": "192.168.0.0" } """))
-        assertThat(logger.string).contains("DazzOff: Monitor 'hostname4'")
+        dazzOff.monitor(DataEntry("computer/hostname5", "1970-01-01T00:03:54Z", false,
+            """ { "dazz-off": true, "ip": "192.168.0.0" } """))
+        assertThat(logger.string).contains("DazzOff: Monitor 'hostname4', currently ON")
+        assertThat(logger.string).contains("DazzOff: Monitor 'hostname5', currently OFF")
 
         verifyNoInteractions(mockStore)
     }
@@ -110,31 +146,37 @@ class DazzOffTest {
     @Test
     fun testPeriodicCheck_resolveFailed() {
         dazzOff.monitor(DataEntry("computer/hostname0", "1970-01-01T00:03:54Z", false, null))
-        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", true,
+        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", false,
             """ { "dazz-off": true } """))
         dazzOff.monitor(DataEntry("computer/hostname2", "1970-01-01T00:03:54Z", true,
             """ { "dazz-off": true, "ip": "192.168.0.0" } """))
 
         clock.add(2 * 24 * 3600 * 1000L)
-        dazzOff.periodicCheck()
+        repeat(7) {
+            dazzOff.periodicCheck()
+            clock.add(3600 * 1000L)
+        }
 
         assertThat(resolvedHostnames).containsExactly(
-            "hostname1",   "hostname1",   "hostname1",   // 3 retries
-            "192.168.0.0", "192.168.0.0", "192.168.0.0", // 3 retries
+            "hostname1",        // 1 retry (same state as currently off)
+            "192.168.0.0", "192.168.0.0", "192.168.0.0", "192.168.0.0", "192.168.0.0", // 5 retries
+            "hostname1",        // cycle back to trying next host
         ).inOrder()
 
-        verify(mockStore).add(DataEntry("computer/hostname1", "1970-01-03T00:00:01Z", false, null))
-        verify(mockStore).add(DataEntry("computer/hostname2", "1970-01-03T00:00:01Z", false, null))
+        verify(mockStore).add(DataEntry(
+            "computer/hostname2",
+            "1970-01-03T05:00:01Z",
+            false,
+            """{"dazz-off":true,"ip":"192.168.0.0"}"""))
         verifyNoMoreInteractions(mockStore)
 
-        assertThat(logger.string).contains("DazzOff: Detected 'hostname1' is off")
-        assertThat(logger.string).contains("DazzOff: Detected 'hostname2' is off")
+        assertThat(logger.string).contains("DazzOff: Check 'hostname2'; Changed to OFF on try #5")
     }
 
     @Test
     fun testPeriodicCheck_resolveFailed_pingNegative() {
         dazzOff.monitor(DataEntry("computer/hostname0", "1970-01-01T00:03:54Z", false, null))
-        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", true,
+        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", false,
             """ { "dazz-off": true } """))
         dazzOff.monitor(DataEntry("computer/hostname2", "1970-01-01T00:03:54Z", true,
             """ { "dazz-off": true, "ip": "192.168.0.0" } """))
@@ -144,26 +186,31 @@ class DazzOffTest {
         hostnameToAddress["192.168.0.0"] = mock<InetAddress>()
         addressToPing[ hostnameToAddress["hostname1"  ]!! ] = false
         addressToPing[ hostnameToAddress["192.168.0.0"]!! ] = false
-
-        dazzOff.periodicCheck()
+        repeat(7) {
+            dazzOff.periodicCheck()
+            clock.add(3600 * 1000L)
+        }
 
         assertThat(resolvedHostnames).containsExactly(
-            "hostname1",   "hostname1",   "hostname1",   // 3 retries
-            "192.168.0.0", "192.168.0.0", "192.168.0.0", // 3 retries
+            "hostname1",        // 1 retry (same state as currently off)
+            "192.168.0.0", "192.168.0.0", "192.168.0.0", "192.168.0.0", "192.168.0.0", // 5 retries
+            "hostname1",        // cycle back to trying next host
         ).inOrder()
 
-        verify(mockStore).add(DataEntry("computer/hostname1", "1970-01-03T00:00:01Z", false, null))
-        verify(mockStore).add(DataEntry("computer/hostname2", "1970-01-03T00:00:01Z", false, null))
+        verify(mockStore).add(DataEntry(
+            "computer/hostname2",
+            "1970-01-03T05:00:01Z",
+            false,
+            """{"dazz-off":true,"ip":"192.168.0.0"}"""))
         verifyNoMoreInteractions(mockStore)
 
-        assertThat(logger.string).contains("DazzOff: Detected 'hostname1' is off")
-        assertThat(logger.string).contains("DazzOff: Detected 'hostname2' is off")
+        assertThat(logger.string).contains("DazzOff: Check 'hostname2'; Changed to OFF on try #5")
     }
 
     @Test
     fun testPeriodicCheck_resolveFailed_pingPositive() {
         dazzOff.monitor(DataEntry("computer/hostname0", "1970-01-01T00:03:54Z", false, null))
-        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", true,
+        dazzOff.monitor(DataEntry("computer/hostname1", "1970-01-01T00:03:54Z", false,
             """ { "dazz-off": true } """))
         dazzOff.monitor(DataEntry("computer/hostname2", "1970-01-01T00:03:54Z", true,
             """ { "dazz-off": true, "ip": "192.168.0.0" } """))
@@ -173,17 +220,25 @@ class DazzOffTest {
         hostnameToAddress["192.168.0.0"] = mock<InetAddress>()
         addressToPing[ hostnameToAddress["hostname1"  ]!! ] = true
         addressToPing[ hostnameToAddress["192.168.0.0"]!! ] = true
-
-        dazzOff.periodicCheck()
+        repeat(4) {
+            dazzOff.periodicCheck()
+            clock.add(3600 * 1000L)
+        }
 
         assertThat(resolvedHostnames).containsExactly(
-            "hostname1",   // 1 retry (immediate success)
-            "192.168.0.0", // 1 retry (immediate success)
+            "hostname1",        // 1 retry (same state as currently off)
+            "192.168.0.0",      // 1 retry (immediately on)
+            "hostname1",        // cycle back to trying next host
+            "192.168.0.0",      // 1 retry (same state)
         ).inOrder()
 
-        verifyNoInteractions(mockStore)
+        verify(mockStore).add(DataEntry(
+            "computer/hostname1",
+            "1970-01-03T00:00:01Z",
+            true,
+            """{"dazz-off":true}"""))
+        verifyNoMoreInteractions(mockStore)
 
-        assertThat(logger.string).doesNotContain("DazzOff: Detected 'hostname1' is off")
-        assertThat(logger.string).doesNotContain("DazzOff: Detected 'hostname2' is off")
+        assertThat(logger.string).contains("DazzOff: Check 'hostname1'; Changed to ON on try #1")
     }
 }

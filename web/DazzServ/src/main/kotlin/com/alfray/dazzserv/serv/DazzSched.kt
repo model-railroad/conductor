@@ -32,6 +32,7 @@ import java.util.Date
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Named
+import kotlin.math.max
 
 class DazzSched @Inject constructor(
     private val logger: ILogger,
@@ -42,7 +43,6 @@ class DazzSched @Inject constructor(
     private val cnxStats: CnxStats,
     @Named("IsoDateOnly") private val isoDateOnlyFormat: DateFormat,
 ) : ThreadLoop() {
-    private var nextOffTS: Long = 0
     private var nextSaveTS: Long = 0
     private var nextPurgeTS: Long = 0
     private var nextStatsTS: Long = 0
@@ -62,7 +62,6 @@ class DazzSched @Inject constructor(
     /// Returns false if the directory does not exist.
     @Suppress("LocalVariableName")
     fun setAndCheckStoreDir(storeDir_: String): Boolean {
-        scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
         scheduleNextStats()
@@ -101,10 +100,6 @@ class DazzSched @Inject constructor(
         }
     }
 
-    private fun scheduleNextOff() {
-        nextOffTS = clock.elapsedRealtime() + OFF_INTERVAL_SEC * 1000L
-    }
-
     private fun scheduleNextSave() {
         nextSaveTS = clock.elapsedRealtime() + SAVE_INTERVAL_SEC * 1000L
     }
@@ -118,7 +113,6 @@ class DazzSched @Inject constructor(
     }
 
     override fun start() {
-        scheduleNextOff()
         scheduleNextSave()
         scheduleNextPurge()
         scheduleNextStats()
@@ -149,13 +143,15 @@ class DazzSched @Inject constructor(
                 doSave()
             } else if (nowTS >= nextPurgeTS) {
                 doPurge()
-            } else if (nowTS >= nextOffTS) {
-                doOff()
             } else if (nowTS >= nextStatsTS) {
                 doStats()
+            } else {
+                doOff()
             }
 
-            Thread.sleep(IDLE_SLEEP_MS)
+            val elapsedMS = clock.elapsedRealtime() - nowTS
+            val sleepMs = max(1000L, IDLE_SLEEP_MS - elapsedMS)
+            Thread.sleep(sleepMs)
         } catch (e: Exception) {
             logger.d(TAG, "Loop interrupted", e)
         }
@@ -174,7 +170,6 @@ class DazzSched @Inject constructor(
 
     private fun doOff() {
         dazzOff.periodicCheck()
-        scheduleNextOff()
     }
 
     private fun doStats() {
