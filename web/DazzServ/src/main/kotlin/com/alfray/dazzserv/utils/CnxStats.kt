@@ -18,36 +18,105 @@
 
 package com.alfray.dazzserv.utils
 
+import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
-import java.util.concurrent.ConcurrentHashMap
+import java.text.DateFormat
+import java.util.Date
+import java.util.TreeMap
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class CnxStats @Inject constructor(
     private val logger: ILogger,
+    private val clock: IClock,
+    @Named("IsoDateOnly") private val dayDateFormat: DateFormat,
+    @Named("IsoYearMonth") private val monthDateFormat: DateFormat,
 ) {
-    private val dataMap = ConcurrentHashMap<String, CnxStatsData>()
+    /** An ISO day string (e.g. "2025-08-01" to a CnxStatsMap. */
+    private val daysMap = TreeMap<String, CnxStatsMap>()
+    /** An ISO month string (e.g. "2025-08" to a CnxStatsMap. */
+    private val monthsMap = TreeMap<String, CnxStatsMap>()
+
 
     companion object {
         const val TAG = "CnxStats"
+        const val NUM_DAYS = 7
+        const val NUM_MONTHS = 12
     }
 
-    fun accumulate(label: String, bytesIn: Long, bytesOut: Long) {
-        dataMap.computeIfAbsent(label) { CnxStatsData() }
-        dataMap[label]?.let { data ->
-            synchronized(data) {
-                data.numRequests++
-                data.sumBytesIn += bytesIn
-                data.sumBytesOut += bytesOut
+    private fun getCurrentDayStats(nowTS: Long): CnxStatsMap {
+        val day = dayDateFormat.format(Date(nowTS))
+
+        synchronized(daysMap) {
+            daysMap.computeIfAbsent(day) { CnxStatsMap(date = day) }
+
+            while (daysMap.size > NUM_DAYS) {
+                daysMap.keys.toList().minOf { it }.let { oldest ->
+                    logger.d(TAG, "Discard stats for day $oldest")
+                    daysMap[oldest]?.log(logger)
+                    daysMap.remove(oldest)
+                }
             }
-            data.log(logger, label)
+
+            return daysMap[day]!!
         }
     }
 
-    fun log() {
-        dataMap.forEach { (label, data) ->
-            data.log(logger, label)
+    private fun getCurrentMonthStats(nowTS: Long): CnxStatsMap {
+        val month = monthDateFormat.format(Date(nowTS))
+
+        synchronized(monthsMap) {
+            monthsMap.computeIfAbsent(month) { CnxStatsMap(date = month) }
+
+            while (monthsMap.size > NUM_MONTHS) {
+                monthsMap.keys.toList().minOf { it }.let { oldest ->
+                    logger.d(TAG, "Discard stats for month $oldest")
+                    monthsMap[oldest]?.log(logger)
+                    monthsMap.remove(oldest)
+                }
+            }
+
+            return monthsMap[month]!!
+        }
+    }
+
+    fun accumulate(label: String, bytesIn: Long, bytesOut: Long) {
+        val nowTS = clock.elapsedRealtime()
+        accumulateInMap(getCurrentDayStats(nowTS), label, bytesIn, bytesOut, log = true)
+        accumulateInMap(getCurrentMonthStats(nowTS), label, bytesIn, bytesOut)
+    }
+
+    private fun accumulateInMap(
+        dataMap: CnxStatsMap,
+        label: String,
+        bytesIn: Long,
+        bytesOut: Long,
+        log: Boolean = false,
+    ) {
+        synchronized(dataMap) {
+            dataMap.map.computeIfAbsent(label) { CnxStatsData() }
+            dataMap.map[label]?.let { data ->
+                data.numRequests++
+                data.sumBytesIn += bytesIn
+                data.sumBytesOut += bytesOut
+                if (log) {
+                    data.log(logger, dataMap.date, label)
+                }
+            }
+        }
+    }
+
+    fun logDays() {
+        synchronized(daysMap) {
+            daysMap.forEach { (_, map) -> map.log(logger) }
+        }
+    }
+
+    fun logMonths() {
+        synchronized(monthsMap) {
+            monthsMap.forEach { (_, map) -> map.log(logger) }
         }
     }
 
@@ -56,8 +125,23 @@ class CnxStats @Inject constructor(
         var sumBytesIn: Long = 0L,
         var sumBytesOut: Long = 0L,
     ) {
-        fun log(logger: ILogger, label: String) {
-            logger.d(TAG, "[$label] $numRequests requests, $sumBytesIn bytes in, $sumBytesOut bytes out")
+        fun log(logger: ILogger, date: String, label: String) {
+            logger.d(TAG, "$date [${label.padEnd(5)}] $numRequests requests, $sumBytesIn bytes in, $sumBytesOut bytes out")
+        }
+    }
+
+    private data class CnxStatsMap(
+        /// The current day or month of this accumulation map.
+        val date: String,
+        /// A map of request labels to their request stats.
+        val map: TreeMap<String, CnxStatsData> = TreeMap()
+    ) {
+        fun log(logger: ILogger) {
+            synchronized(this) {
+                map.forEach { (label, data) ->
+                    data.log(logger, date, label)
+                }
+            }
         }
     }
 }

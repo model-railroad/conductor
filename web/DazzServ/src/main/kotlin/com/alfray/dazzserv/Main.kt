@@ -95,7 +95,7 @@ open class Main : CliktCommand() {
         }
 
         dazzSched.stop()
-        cnxStats.log()
+        cnxStats.logMonths()
         logger.d(TAG, "End")
     }
 

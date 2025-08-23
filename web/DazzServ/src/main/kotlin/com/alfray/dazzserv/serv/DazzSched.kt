@@ -53,7 +53,7 @@ class DazzSched @Inject constructor(
         const val IDLE_SLEEP_MS = 1000L * 10L
         const val SAVE_INTERVAL_SEC = 30            // Default is to save every 30 seconds
         const val OFF_INTERVAL_SEC = 60             // Default DazzOff is every 1 minute
-        const val STATS_INTERVAL_SEC = 3600         // Default CnxStats is every hour
+        const val STATS_INTERVAL_SEC = 12*3600      // Default CnxStats is every 12 hours
         const val PURGE_INTERVAL_SEC = 12*3600      // Default to purge old data is every 12 hours
         const val LOAD_NUM_DAYS = 7                 // Number of last days to reload on start
         const val PURGE_NUM_DAYS = 7                // Number of days to keep when purging
@@ -173,7 +173,7 @@ class DazzSched @Inject constructor(
     }
 
     private fun doStats() {
-        cnxStats.log()
+        cnxStats.logDays()
         scheduleNextStats()
     }
 

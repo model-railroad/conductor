@@ -18,6 +18,7 @@
 
 package com.alfray.dazzserv.utils
 
+import com.alflabs.utils.FakeClock
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
@@ -26,6 +27,7 @@ import org.junit.Test
 import javax.inject.Inject
 
 class CnxStatsTest {
+    @Inject lateinit var clock: FakeClock
     @Inject lateinit var logger: StringLogger
     @Inject lateinit var cnxStats: CnxStats
 
@@ -37,29 +39,50 @@ class CnxStatsTest {
 
     @Test
     fun testAccumulateAndLog() {
+        clock.add( 2 * 24 * 3600L * 1000L)
         cnxStats.accumulate("label1", 11, 31)
         cnxStats.accumulate("label2", 13, 37)
         cnxStats.accumulate("label2", 17, 41)
         cnxStats.accumulate("label1", 19, 47)
+        clock.add(30 * 24 * 3600L * 1000L)
+        cnxStats.accumulate("label1", 11, 41)
+        cnxStats.accumulate("label2", 12, 42)
 
         assertThat(logger.string).isEqualTo(
             """
-                CnxStats: [label1] 1 requests, 11 bytes in, 31 bytes out
-                CnxStats: [label2] 1 requests, 13 bytes in, 37 bytes out
-                CnxStats: [label2] 2 requests, 30 bytes in, 78 bytes out
-                CnxStats: [label1] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-01-03 [label1] 1 requests, 11 bytes in, 31 bytes out
+                CnxStats: 1970-01-03 [label2] 1 requests, 13 bytes in, 37 bytes out
+                CnxStats: 1970-01-03 [label2] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-01-03 [label1] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-02-02 [label1] 1 requests, 11 bytes in, 41 bytes out
+                CnxStats: 1970-02-02 [label2] 1 requests, 12 bytes in, 42 bytes out
 
             """.trimIndent()
         )
 
         logger.clear()
-        cnxStats.log()
+        cnxStats.logDays()
         assertThat(logger.string).isEqualTo(
             """
-                CnxStats: [label1] 2 requests, 30 bytes in, 78 bytes out
-                CnxStats: [label2] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-01-03 [label1] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-01-03 [label2] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-02-02 [label1] 1 requests, 11 bytes in, 41 bytes out
+                CnxStats: 1970-02-02 [label2] 1 requests, 12 bytes in, 42 bytes out
 
             """.trimIndent()
         )
+
+        logger.clear()
+        cnxStats.logMonths()
+        assertThat(logger.string).isEqualTo(
+            """
+                CnxStats: 1970-01 [label1] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-01 [label2] 2 requests, 30 bytes in, 78 bytes out
+                CnxStats: 1970-02 [label1] 1 requests, 11 bytes in, 41 bytes out
+                CnxStats: 1970-02 [label2] 1 requests, 12 bytes in, 42 bytes out
+
+            """.trimIndent()
+        )
+
     }
 }

@@ -38,13 +38,23 @@ object DateModule {
         return df
     }
 
-
     @Singleton
     @Provides
     @Named("IsoDateOnly")
-    fun provideIsoOnlyFormat(): DateFormat {
+    fun provideIsoDateOnlyFormat(): DateFormat {
         // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
         val df: DateFormat = SimpleDateFormat("yyyy-MM-dd")
         df.timeZone = TimeZone.getTimeZone("UTC")
         return df
-    }}
+    }
+
+    @Singleton
+    @Provides
+    @Named("IsoYearMonth")
+    fun provideIsoYearMonthFormat(): DateFormat {
+        // Format timestamps using ISO 8601, forcing a UTC (ZULU) timezone.
+        val df: DateFormat = SimpleDateFormat("yyyy-MM")
+        df.timeZone = TimeZone.getTimeZone("UTC")
+        return df
+    }
+}
