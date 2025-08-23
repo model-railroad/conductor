@@ -35,7 +35,12 @@ function AppHeader() {
             <Navbar.Text>
                 <a href="https://www.alfray.com/trains/randall/" target="_blank">The Randall Museum Model Railroad</a>
                 <br/>
-                {`v${VERSION_MAJOR}.${VERSION_MINOR}, `} { ' ' }
+                <Link to="/statz">σ</Link>
+                { ' ' }
+                <Link to="/legacy">λ</Link>
+                { ' ' }
+                {`v${VERSION_MAJOR}.${VERSION_MINOR}, `}
+                { ' ' }
                 <span className="gitinfo" title={GIT_LONG_STR}>
                     <a href={`https://github.com/model-railroad/conductor/tree/${GIT_BRANCH_STR}`} target="_blank">
                         build {GIT_BRANCH_STR}

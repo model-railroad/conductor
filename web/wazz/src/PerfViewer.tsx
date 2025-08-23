@@ -46,7 +46,7 @@ interface WazzPerfData {
 function PerfViewer(): ReactElement {
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
-    const [histData, setHistData] = useState<WazzPerfData>({ routes: new Map() });
+    const [histData, sethistData] = useState<WazzPerfData>({ routes: new Map() });
     const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
     const intervalRef = useRef<number | null>(null);
 
@@ -114,7 +114,7 @@ function PerfViewer(): ReactElement {
             wazz.refresh = refresh;
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
 
-            setHistData(wazz);
+            sethistData(wazz);
             setStatus("");
             setLoading(false);
 
