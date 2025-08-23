@@ -20,6 +20,7 @@ package com.alfray.dazzserv.serv
 
 import com.alflabs.utils.ILogger
 import com.alfray.dazzserv.store.DataStore
+import com.alfray.dazzserv.utils.CnxStats
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -36,6 +37,7 @@ import org.eclipse.jetty.util.Callback
 class DazzRestHandler @AssistedInject constructor(
     private val logger: ILogger,
     private val dataStore: DataStore,
+    private val cnxStats: CnxStats,
     @Assisted private val quitMethod: Runnable,
 ) : Handler.Abstract() {
 
@@ -65,6 +67,8 @@ class DazzRestHandler @AssistedInject constructor(
                 return doGetLive(path, request, response, callback)
             } else if (isGet && path.startsWith("/perf")) {
                 return doGetPerf(path, request, response, callback)
+            } else if (isGet && path.startsWith("/statz")) {
+                return doGetStats(path, request, response, callback)
             }
         }
 
@@ -210,6 +214,25 @@ class DazzRestHandler @AssistedInject constructor(
             if (content.isNotBlank()) HttpStatus.OK_200 else HttpStatus.NOT_FOUND_404,
             mimeType = "application/json",
             etag = lastTS)
+
+        return true
+    }
+
+    private fun doGetStats(
+        path: String,
+        request: Request,
+        response: Response,
+        callback: Callback
+    ): Boolean {
+        logger.d(TAG, "doGetStats: $path")
+        setCnxStatsLabel("statz")
+
+        val content = cnxStats.logToString()
+
+        reply(
+            response,
+            callback,
+            content)
 
         return true
     }

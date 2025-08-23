@@ -22,6 +22,7 @@ import com.alflabs.dazzserv.store.DataEntry
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.alfray.dazzserv.store.DataStore
+import com.alfray.dazzserv.utils.CnxStats
 import com.google.common.truth.Truth.assertThat
 import org.eclipse.jetty.http.HttpField
 import org.eclipse.jetty.http.HttpFields
@@ -59,6 +60,7 @@ import javax.inject.Inject
 class DazzRestHandlerTest {
     @Inject lateinit var logger: StringLogger
     @Inject lateinit var ds: DataStore
+    @Inject lateinit var cnxStats: CnxStats
     @Inject lateinit var dazzRestHandlerFactory: DazzRestHandlerFactory
     private lateinit var handler: DazzRestHandler
 
@@ -90,7 +92,7 @@ class DazzRestHandlerTest {
         val callback = mock<Callback>()
 
         var quitCalled = false
-        val handlerQuit = DazzRestHandler(logger, ds, quitMethod = {
+        val handlerQuit = DazzRestHandler(logger, ds, cnxStats, quitMethod = {
             quitCalled = true
         })
 

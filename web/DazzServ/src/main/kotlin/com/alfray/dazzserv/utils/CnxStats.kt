@@ -20,6 +20,7 @@ package com.alfray.dazzserv.utils
 
 import com.alflabs.utils.IClock
 import com.alflabs.utils.ILogger
+import java.lang.StringBuilder
 import java.text.DateFormat
 import java.util.Date
 import java.util.TreeMap
@@ -120,6 +121,32 @@ class CnxStats @Inject constructor(
         }
     }
 
+    fun logToString(): String {
+        val builder = StringBuilder()
+
+        builder.append("Days:\n")
+        synchronized(daysMap) {
+            daysMap.forEach { (_, map) ->
+                map.logToStrings().forEach { str ->
+                    builder.append(str).append('\n')
+                }
+            }
+        }
+        builder.append("\n")
+
+        builder.append("Months:\n")
+        synchronized(monthsMap) {
+            monthsMap.forEach { (_, map) ->
+                map.logToStrings().forEach { str ->
+                    builder.append(str).append('\n')
+                }
+            }
+        }
+        builder.append("\n")
+
+        return builder.toString()
+    }
+
     private data class CnxStatsData(
         var numRequests: Int = 0,
         var sumBytesIn: Long = 0L,
@@ -127,6 +154,10 @@ class CnxStats @Inject constructor(
     ) {
         fun log(logger: ILogger, date: String, label: String) {
             logger.d(TAG, "$date [${label.padEnd(5)}] $numRequests requests, $sumBytesIn bytes in, $sumBytesOut bytes out")
+        }
+
+        fun logToString(date: String, label: String): String {
+            return "$date [${label.padEnd(5)}] $numRequests requests, $sumBytesIn bytes in, $sumBytesOut bytes out"
         }
     }
 
@@ -141,6 +172,14 @@ class CnxStats @Inject constructor(
                 map.forEach { (label, data) ->
                     data.log(logger, date, label)
                 }
+            }
+        }
+
+        fun logToStrings(): List<String> {
+            synchronized(this) {
+                return map.map( { (label, data) ->
+                    data.logToString(date, label)
+                })
             }
         }
     }
