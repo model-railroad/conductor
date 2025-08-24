@@ -124,25 +124,25 @@ class CnxStats @Inject constructor(
     fun logToString(): String {
         val builder = StringBuilder()
 
-        builder.append("Days:\n")
+        builder.append("Days:\n\n")
         synchronized(daysMap) {
             daysMap.forEach { (_, map) ->
                 map.logToStrings().forEach { str ->
                     builder.append(str).append('\n')
                 }
+                builder.append('\n')
             }
         }
-        builder.append("\n")
 
-        builder.append("Months:\n")
+        builder.append("Months:\n\n")
         synchronized(monthsMap) {
             monthsMap.forEach { (_, map) ->
                 map.logToStrings().forEach { str ->
                     builder.append(str).append('\n')
                 }
+                builder.append('\n')
             }
         }
-        builder.append("\n")
 
         return builder.toString()
     }
