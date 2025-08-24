@@ -90,14 +90,18 @@ class CnxStatsTest {
         assertThat(cnxStats.logToString()).isEqualTo(
             """
                 Days:
+                
                 1970-01-03 [label1] 2 requests, 30 bytes in, 78 bytes out
                 1970-01-03 [label2] 2 requests, 30 bytes in, 78 bytes out
+                
                 1970-02-02 [label1] 1 requests, 11 bytes in, 41 bytes out
                 1970-02-02 [label2] 1 requests, 12 bytes in, 42 bytes out
                 
                 Months:
+                
                 1970-01 [label1] 2 requests, 30 bytes in, 78 bytes out
                 1970-01 [label2] 2 requests, 30 bytes in, 78 bytes out
+                
                 1970-02 [label1] 1 requests, 11 bytes in, 41 bytes out
                 1970-02 [label2] 1 requests, 12 bytes in, 42 bytes out
                 
