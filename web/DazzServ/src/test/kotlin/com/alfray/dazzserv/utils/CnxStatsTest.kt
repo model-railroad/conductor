@@ -19,16 +19,19 @@
 package com.alfray.dazzserv.utils
 
 import com.alflabs.utils.FakeClock
+import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
 import com.alfray.dazzserv.dagger.DaggerIMainTestComponent
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 import javax.inject.Inject
 
 class CnxStatsTest {
     @Inject lateinit var clock: FakeClock
     @Inject lateinit var logger: StringLogger
+    @Inject lateinit var fileOps: FakeFileOps
     @Inject lateinit var cnxStats: CnxStats
 
     @Before
@@ -98,6 +101,101 @@ class CnxStatsTest {
                 1970-02 [label1] 1 requests, 11 bytes in, 41 bytes out
                 1970-02 [label2] 1 requests, 12 bytes in, 42 bytes out
                 
+
+            """.trimIndent()
+        )
+
+        // create the storage dir
+        val storeDir = fileOps.toFile("tmp", "testdir")
+        fileOps.writeBytes("dummy".toByteArray(Charsets.UTF_8), File(storeDir, "dummy"))
+
+        // write to the save file
+        logger.clear()
+        cnxStats.save(storeDir.path)
+
+        // verify write
+        assertThat(
+            fileOps
+                .toString(File(storeDir, "cnxstats.json"), Charsets.UTF_8)
+                .replace("\r\n", "\n")
+        ).isEqualTo(
+            """
+                {
+                  "daysMap" : {
+                    "1970-01-03" : {
+                      "date" : "1970-01-03",
+                      "map" : {
+                        "label1" : {
+                          "numRequests" : 2,
+                          "sumBytesIn" : 30,
+                          "sumBytesOut" : 78
+                        },
+                        "label2" : {
+                          "numRequests" : 2,
+                          "sumBytesIn" : 30,
+                          "sumBytesOut" : 78
+                        }
+                      }
+                    },
+                    "1970-02-02" : {
+                      "date" : "1970-02-02",
+                      "map" : {
+                        "label1" : {
+                          "numRequests" : 1,
+                          "sumBytesIn" : 11,
+                          "sumBytesOut" : 41
+                        },
+                        "label2" : {
+                          "numRequests" : 1,
+                          "sumBytesIn" : 12,
+                          "sumBytesOut" : 42
+                        }
+                      }
+                    }
+                  },
+                  "monthsMap" : {
+                    "1970-01" : {
+                      "date" : "1970-01",
+                      "map" : {
+                        "label1" : {
+                          "numRequests" : 2,
+                          "sumBytesIn" : 30,
+                          "sumBytesOut" : 78
+                        },
+                        "label2" : {
+                          "numRequests" : 2,
+                          "sumBytesIn" : 30,
+                          "sumBytesOut" : 78
+                        }
+                      }
+                    },
+                    "1970-02" : {
+                      "date" : "1970-02",
+                      "map" : {
+                        "label1" : {
+                          "numRequests" : 1,
+                          "sumBytesIn" : 11,
+                          "sumBytesOut" : 41
+                        },
+                        "label2" : {
+                          "numRequests" : 1,
+                          "sumBytesIn" : 12,
+                          "sumBytesOut" : 42
+                        }
+                      }
+                    }
+                  }
+                }
+            """.trimIndent()
+        )
+
+        // try a reload
+        cnxStats.load(storeDir.path)
+
+        assertThat(logger.string.replace('\\', '/')).isEqualTo(
+            """
+                CnxStats: Stored tmp/testdir/cnxstats.json
+                CnxStats: Loaded tmp/testdir/cnxstats.json
 
             """.trimIndent()
         )

@@ -86,6 +86,7 @@ open class Main : CliktCommand() {
             }
         }
         dazzSched.load()
+        cnxStats.load(storeDir)
 
         server = dazzServFactory.create(host, port)
         server.createServer()
@@ -96,6 +97,7 @@ open class Main : CliktCommand() {
 
         dazzSched.stop()
         cnxStats.logMonths()
+        cnxStats.save(storeDir)
         logger.d(TAG, "End")
     }
 
