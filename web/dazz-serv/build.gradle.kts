@@ -42,7 +42,7 @@ java {
 }
 
 application {
-    mainClass = "com.alfray.dazzserv.Main"
+    mainClass = "$propArtifactGroup.Main"
 }
 
 dependencies {
