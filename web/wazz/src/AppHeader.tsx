@@ -7,9 +7,19 @@ import {
 } from "./GitBuild.ts";
 import {Nav, Navbar} from "react-bootstrap";
 import {Link, useLocation} from "react-router-dom";
+import {useEffect} from "react";
+import {GTagPageView} from "./GTagPageView.ts";
 
 function AppHeader() {
     const location = useLocation();
+
+    useEffect(() => {
+        GTagPageView(
+            location.pathname === "/" ? "dashboard" : location.pathname.replaceAll("/", ""),
+            window.location.href,
+            location.pathname,
+        )
+    }, [location]);
 
     const isActive = (path: string) => {
         if (path === "/") {
