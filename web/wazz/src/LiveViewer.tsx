@@ -17,6 +17,7 @@ const REFRESH_KEY = "refresh-live"
 const REFRESH_DATA_MINUTES = import.meta.env.DEV ? 1 : 10;
 const WARN_RECENT_MINUTES = 10;
 const WARN_OLD_MINUTES = 30;
+const WARN_SKIP_DAYS = 2;
 const ROUTE_OLD_DAYS = 7;
 const TOGGLES_MAP : Map<string, string> = new Map([
     ["pa", "toggle/passenger"],
@@ -157,7 +158,7 @@ function LiveViewer(): ReactElement {
                     label: key.replaceAll("/", " "),
                     ts: dt,
                     st: entry.st ?? false,
-                    warn: undefined, // dt.diffNow("minutes").minutes <= -WARNING_MINUTES
+                    warn: undefined,
                 }
                 result.toggles.push(t);
             }
@@ -178,11 +179,12 @@ function LiveViewer(): ReactElement {
                 const isEnabled = togglesOn.get(TOGGLES_MAP.get(th) ?? "") ?? false;
                 const isFirst = !result.routes.some(value => value.label === label)
                 let color = "";
-                const deltaStart = sdt.diffNow("minutes").minutes;
-                if (isFirst && isEnabled) {
-                    if (deltaStart >= -WARN_RECENT_MINUTES) {
+                const minutes = -1 * sdt.diffNow("minutes").minutes;
+                const days = -1 * sdt.diffNow("days").days;
+                if (isFirst && isEnabled && days <= WARN_SKIP_DAYS) {
+                    if (minutes <= WARN_RECENT_MINUTES) {
                         color = "green";
-                    } else if (deltaStart <= -WARN_OLD_MINUTES) {
+                    } else if (minutes >= WARN_OLD_MINUTES) {
                         color = "red";
                     } else {
                         color = "yellow";
@@ -198,7 +200,7 @@ function LiveViewer(): ReactElement {
                     finished: finish,
                     act: finish ? payload.act : undefined,
                     ets: edt,
-                    old: sdt.diffNow("days").days <= -ROUTE_OLD_DAYS,
+                    old: days >= ROUTE_OLD_DAYS,
                     color: color,
                     recovery: key.includes("Recovery"),
                 }
