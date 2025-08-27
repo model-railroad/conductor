@@ -11,6 +11,7 @@ import {
     fetchDazzData,
     PERF_JSON_URL
 } from "./DazzData.ts";
+import {GTagRefreshEvent} from "./GTagHelpers.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-perf"
@@ -113,6 +114,7 @@ function PerfViewer(): ReactElement {
 
             wazz.refresh = refresh;
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
+            GTagRefreshEvent(REFRESH_KEY);
 
             sethistData(wazz);
             setStatus("");

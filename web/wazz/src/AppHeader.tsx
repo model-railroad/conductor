@@ -8,7 +8,7 @@ import {
 import {Nav, Navbar} from "react-bootstrap";
 import {Link, useLocation} from "react-router-dom";
 import {useEffect} from "react";
-import {GTagPageView} from "./GTagPageView.ts";
+import {GTagPageView} from "./GTagHelpers.ts";
 
 function AppHeader() {
     const location = useLocation();

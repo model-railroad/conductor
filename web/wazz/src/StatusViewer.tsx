@@ -10,6 +10,7 @@ import {
     type RtacJsonData,
     type Timestamp
 } from "./StatusData.ts";
+import {GTagRefreshEvent} from "./GTagHelpers.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-status"
@@ -116,6 +117,7 @@ function StatusViewer(): ReactElement {
 
             wazz.refresh = refresh;
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
+            GTagRefreshEvent(REFRESH_KEY);
 
             setWazzData(wazz);
             setStatus("");

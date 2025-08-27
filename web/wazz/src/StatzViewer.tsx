@@ -8,6 +8,7 @@ import {
     fetchDazzText,
     STATZ_TXT_URL
 } from "./DazzData.ts";
+import {GTagRefreshEvent} from "./GTagHelpers.ts";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-statz"
@@ -94,6 +95,7 @@ function StatzViewer(): ReactElement {
             }
 
             storeInSimpleCache(REFRESH_KEY, wazz.refresh);
+            GTagRefreshEvent(REFRESH_KEY);
 
             setstatzData(wazz);
             setStatus("");
