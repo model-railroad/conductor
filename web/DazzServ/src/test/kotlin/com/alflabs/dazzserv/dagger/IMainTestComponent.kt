@@ -1,0 +1,45 @@
+/*
+ * Project: DazzServ
+ * Copyright (C) 2025 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.alflabs.dazzserv.dagger
+
+import com.alflabs.dazzserv.serv.DazzOffTest
+import com.alflabs.dazzserv.serv.DazzRestHandlerTest
+import com.alflabs.dazzserv.serv.DazzServTest
+import com.alflabs.dazzserv.serv.DazzSchedTest
+import com.alflabs.dazzserv.store.DazzStoreTest
+import com.alflabs.dazzserv.utils.CnxStatsTest
+import dagger.Component
+import javax.inject.Singleton
+
+
+@Singleton
+@Component(modules = [CommonTestModule::class, DazzTestModule::class])
+interface IMainTestComponent : IMainComponent {
+    fun inject(dazzOffTest: DazzOffTest)
+    fun inject(dazzServTest: DazzServTest)
+    fun inject(cnxStatsTest: CnxStatsTest)
+    fun inject(dazzSchedTest: DazzSchedTest)
+    fun inject(dazzStoreTest: DazzStoreTest)
+    fun inject(dazzRestHandlerTest: DazzRestHandlerTest)
+
+    @Component.Factory
+    interface Factory {
+        fun createComponent(): IMainTestComponent
+    }
+}

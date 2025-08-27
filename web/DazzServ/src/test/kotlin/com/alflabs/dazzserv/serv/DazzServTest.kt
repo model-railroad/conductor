@@ -1,0 +1,99 @@
+/*
+ * Project: DazzServ
+ * Copyright (C) 2025 alf.labs gmail com,
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.alflabs.dazzserv.serv
+
+import com.alflabs.utils.StringLogger
+import com.alflabs.dazzserv.Main
+import com.alflabs.dazzserv.dagger.DaggerIMainTestComponent
+import com.alflabs.dazzserv.dagger.IMainComponent
+import com.github.ajalt.clikt.testing.test
+import com.google.common.truth.Truth.assertThat
+import org.junit.Before
+import org.junit.Test
+import javax.inject.Inject
+
+class DazzServTest {
+    private lateinit var main : Main
+    @Inject lateinit var logger: StringLogger
+
+    @Before
+    fun setUp() {
+        val component = DaggerIMainTestComponent.factory().createComponent()
+        component.inject(this)
+
+        main = object : Main() {
+            override fun createComponent(): IMainComponent {
+                // Inject the test component here instead of the prod one.
+                return component
+            }
+        }
+    }
+
+    @Test
+    fun testArgDefaults() {
+        val result = main.test("")
+        assertThat(main.port).isEqualTo(8080)
+        assertThat(logger.string).isEqualTo(
+            """
+                Main: Running test version
+                Main: Configured for 127.0.0.1 port 8080
+                CnxStats: Load, ignoring invalid ~/.dazz-store
+                DazzServ: Serving on http://127.0.0.1:8080
+                CnxStats: Save, ignoring invalid ~/.dazz-store
+                Main: End
+
+            """.trimIndent())
+        assertThat(result.statusCode).isEqualTo(0)
+    }
+
+    @Test
+    fun testArgPort() {
+        val result = main.test("--port 9090 --host 0.0.0.0")
+        assertThat(main.port).isEqualTo(9090)
+        assertThat(logger.string).isEqualTo(
+            """
+                Main: Running test version
+                Main: Configured for 0.0.0.0 port 9090
+                CnxStats: Load, ignoring invalid ~/.dazz-store
+                DazzServ: Serving on http://0.0.0.0:9090
+                CnxStats: Save, ignoring invalid ~/.dazz-store
+                Main: End
+
+            """.trimIndent())
+        assertThat(result.statusCode).isEqualTo(0)
+    }
+
+    @Test
+    fun testArgMultipleHosts() {
+        val result = main.test("--host localhost,192.168.255.255")
+        assertThat(main.port).isEqualTo(8080)
+        assertThat(logger.string).isEqualTo(
+            """
+                Main: Running test version
+                Main: Configured for localhost,192.168.255.255 port 8080
+                CnxStats: Load, ignoring invalid ~/.dazz-store
+                DazzServ: Serving on http://localhost:8080
+                DazzServ: Serving on http://192.168.255.255:8080
+                CnxStats: Save, ignoring invalid ~/.dazz-store
+                Main: End
+
+            """.trimIndent())
+        assertThat(result.statusCode).isEqualTo(0)
+    }
+}
