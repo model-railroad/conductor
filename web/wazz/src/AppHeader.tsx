@@ -47,8 +47,6 @@ function AppHeader() {
                 <br/>
                 <Link to="/statz">σ</Link>
                 { ' ' }
-                <Link to="/legacy">λ</Link>
-                { ' ' }
                 {`v${VERSION_MAJOR}.${VERSION_MINOR}, `}
                 { ' ' }
                 <span className="gitinfo" title={GIT_LONG_STR}>
