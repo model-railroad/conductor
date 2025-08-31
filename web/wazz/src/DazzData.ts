@@ -1,4 +1,4 @@
-const PROD_URL_BASE = "https://www.alfray.com/cgi/dazz/";
+const PROD_URL_BASE = "https://r.alfray.com/cgi/dazz/";
 const DEV_URL_BASE = "mock_";
 export const LIVE_JSON_URL = `${import.meta.env.DEV ? DEV_URL_BASE : PROD_URL_BASE}live.json`;
 export const PERF_JSON_URL = `${import.meta.env.DEV ? DEV_URL_BASE : PROD_URL_BASE}perf.json`;
