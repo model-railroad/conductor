@@ -1,6 +1,6 @@
 // noinspection DuplicatedCode
 
-import {type ReactElement, useEffect, useRef, useState} from "react";
+import {type MouseEvent, type ReactElement, useEffect, useRef, useState} from "react";
 import {Button, Table} from "react-bootstrap";
 import {DateTime} from "luxon";
 import {getFromSimpleCache, storeInSimpleCache} from "./SimpleCache.ts";
@@ -391,6 +391,13 @@ function LiveViewer(): ReactElement {
         )
     }
 
+    function forceRefresh(evt: MouseEvent<HTMLAnchorElement>) {
+        evt.preventDefault();
+        stopRefreshTimer()
+        fetchData()
+        startRefreshTimer()
+    }
+
     function generateRefreshStatus(data: WazzLiveData) {
         const dt = data.refresh;
 
@@ -404,11 +411,17 @@ function LiveViewer(): ReactElement {
             : dt.setZone(SERVER_TZ);
 
         return (
-            <div className="wazz-last-update-text">
-                Data Updated
-                { ' ' }
-                { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
-                { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
+            <div className="d-flex">
+                <div className="wazz-last-update-text flex-grow-1">
+                    Data Updated
+                    { ' ' }
+                    { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+                    { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
+                </div>
+                <div className="justify-content-end wazz-refresh">
+                <a href="#"
+                   onClick={ (evt) => forceRefresh(evt) }>Refresh</a>
+                </div>
             </div>
         );
     }

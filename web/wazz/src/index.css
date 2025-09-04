@@ -22,9 +22,13 @@ body {
   color: var(--bs-danger);
 }
 
-
 .wazz-last-update-text {
   padding-left: 1em;
+  font-size: 0.75em;
+}
+
+.wazz-refresh {
+  padding-right: 1em;
   font-size: 0.75em;
 }
 
