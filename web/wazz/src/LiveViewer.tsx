@@ -12,6 +12,7 @@ import {
     LIVE_JSON_URL
 } from "./DazzData.ts";
 import {GTagRefreshEvent} from "./GTagHelpers.ts";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const SERVER_TZ = "America/Los_Angeles"; // PST or PDT
 const REFRESH_KEY = "refresh-live"
@@ -26,6 +27,12 @@ const TOGGLES_MAP : Map<string, string> = new Map([
     ["bl", "toggle/branchline"],
     ["tl", "toggle/branchline"],
 ]);
+
+// -- URL Params
+
+interface UrlParams {
+    all?: boolean;
+}
 
 // -- Interface for display in Wazz
 
@@ -56,6 +63,9 @@ interface WazzLiveData {
 
 
 function LiveViewer(): ReactElement {
+    const location =  useLocation();
+    const navigate = useNavigate();
+    const urlParams = parseLocationParams();
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [liveData, setLiveData] = useState<WazzLiveData>({ toggles: [], routes: [] });
@@ -75,6 +85,13 @@ function LiveViewer(): ReactElement {
             stopRefreshTimer();
         };
     }, []);
+
+    function parseLocationParams() : UrlParams {
+        const queryParams = new URLSearchParams(location.search);
+        return {
+            all: !!queryParams.get("all")
+        };
+    }
 
     function handleVisibilityChange() {
         const newVisibility = document.visibilityState === "visible";
@@ -213,6 +230,8 @@ function LiveViewer(): ReactElement {
 
         const keys = Object.keys(dazzLive).sort();
         const togglesOn = new Map<string, boolean>();
+        const viewAll = urlParams.all ?? false;
+        console.log(`@@ params: ${JSON.stringify(urlParams)}`);
 
         for (const key of keys) {
             const entries = dazzLive[key];
@@ -223,6 +242,10 @@ function LiveViewer(): ReactElement {
                     togglesOn.set(key, v.at(0)?.st ?? false);
                 }
             } else if (key.startsWith("computer/")) {
+                if (viewAll || key === "computer/consist") {
+                    _addToggles(key, entries.entries);
+                }
+            } else if (key.startsWith("conductor/")) {
                 _addToggles(key, entries.entries);
             }
         }
@@ -391,11 +414,21 @@ function LiveViewer(): ReactElement {
         )
     }
 
-    function forceRefresh(evt: MouseEvent<HTMLAnchorElement>) {
+    function onButtonForceRefresh(evt: MouseEvent<HTMLButtonElement>) {
         evt.preventDefault();
         stopRefreshTimer()
         fetchData()
         startRefreshTimer()
+    }
+
+    function onButtonAll(evt: MouseEvent<HTMLButtonElement>) {
+        const newParams = {
+            all: !!urlParams.all
+        }
+
+        const searchParams = new URLSearchParams(newParams).toString();
+        navigate(`?${searchParams}`);
+        onButtonForceRefresh(evt)
     }
 
     function generateRefreshStatus(data: WazzLiveData) {
@@ -412,15 +445,20 @@ function LiveViewer(): ReactElement {
 
         return (
             <div className="d-flex">
-                <div className="wazz-last-update-text flex-grow-1">
+                <div className="wazz-last-update-text flex-grow-1 align-content-center">
                     Data Updated
                     { ' ' }
                     { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
                     { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
                 </div>
                 <div className="justify-content-end wazz-refresh">
-                <a href="#"
-                   onClick={ (evt) => forceRefresh(evt) }>Refresh</a>
+                    <Button variant="link"
+                       onClick={ (evt) => onButtonForceRefresh(evt) }>Refresh</Button>
+                    { ' ' }
+                    <Button variant="link"
+                        onClick={ (evt) => onButtonAll(evt) }>
+                        {urlParams.all ? "Less" : "All"}
+                    </Button>
                 </div>
             </div>
         );
