@@ -1,1 +1,52 @@
-Placeholder
+Days:
+
+2025-08-29 [live ] 5 requests, 5630 bytes in, 6006 bytes out
+2025-08-29 [other] 10 requests, 0 bytes in, 0 bytes out
+2025-08-29 [perf ] 1 requests, 1083 bytes in, 2930 bytes out
+2025-08-29 [statz] 1 requests, 1024 bytes in, 570 bytes out
+2025-08-29 [store] 185 requests, 117786 bytes in, 33855 bytes out
+
+2025-08-30 [live ] 9 requests, 10422 bytes in, 6769 bytes out
+2025-08-30 [other] 17 requests, 0 bytes in, 0 bytes out
+2025-08-30 [perf ] 4 requests, 4601 bytes in, 9164 bytes out
+2025-08-30 [statz] 1 requests, 1024 bytes in, 633 bytes out
+2025-08-30 [store] 146 requests, 91419 bytes in, 26718 bytes out
+
+2025-08-31 [live ] 33 requests, 21719 bytes in, 24007 bytes out
+2025-08-31 [other] 47 requests, 390 bytes in, 628 bytes out
+2025-08-31 [perf ] 6 requests, 6012 bytes in, 9698 bytes out
+2025-08-31 [quit ] 1 requests, 159 bytes in, 190 bytes out
+2025-08-31 [statz] 1 requests, 1412 bytes in, 641 bytes out
+2025-08-31 [store] 34 requests, 12618 bytes in, 6222 bytes out
+
+2025-09-01 [live ] 2 requests, 1198 bytes in, 1700 bytes out
+2025-09-01 [other] 3 requests, 0 bytes in, 0 bytes out
+2025-09-01 [store] 9 requests, 2806 bytes in, 1647 bytes out
+
+2025-09-02 [live ] 5 requests, 2902 bytes in, 5974 bytes out
+2025-09-02 [other] 5 requests, 0 bytes in, 0 bytes out
+2025-09-02 [store] 151 requests, 93453 bytes in, 27633 bytes out
+
+2025-09-03 [live ] 4 requests, 2257 bytes in, 4767 bytes out
+2025-09-03 [other] 5 requests, 0 bytes in, 0 bytes out
+2025-09-03 [store] 143 requests, 90456 bytes in, 26169 bytes out
+
+2025-09-04 [live ] 9 requests, 5693 bytes in, 16378 bytes out
+2025-09-04 [other] 11 requests, 0 bytes in, 0 bytes out
+2025-09-04 [perf ] 1 requests, 110 bytes in, 25881 bytes out
+2025-09-04 [store] 55 requests, 34174 bytes in, 10065 bytes out
+
+Months:
+
+2025-08 [live ] 81 requests, 66375 bytes in, 72200 bytes out
+2025-08 [other] 132 requests, 390 bytes in, 628 bytes out
+2025-08 [perf ] 21 requests, 20114 bytes in, 42969 bytes out
+2025-08 [quit ] 2 requests, 318 bytes in, 380 bytes out
+2025-08 [statz] 9 requests, 8076 bytes in, 4530 bytes out
+2025-08 [store] 774 requests, 482924 bytes in, 141642 bytes out
+
+2025-09 [live ] 20 requests, 12050 bytes in, 28819 bytes out
+2025-09 [other] 24 requests, 0 bytes in, 0 bytes out
+2025-09 [perf ] 1 requests, 110 bytes in, 25881 bytes out
+2025-09 [store] 358 requests, 220889 bytes in, 65514 bytes out
+
