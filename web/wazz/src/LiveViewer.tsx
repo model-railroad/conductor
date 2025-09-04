@@ -422,12 +422,14 @@ function LiveViewer(): ReactElement {
     }
 
     function onButtonAll(evt: MouseEvent<HTMLButtonElement>) {
-        const newParams = {
-            all: !!urlParams.all
+        if (urlParams.all) {
+            navigate(`?`);
+        } else {
+            const searchParams = new URLSearchParams({
+                all: "true"
+            }).toString();
+            navigate(`?${searchParams}`);
         }
-
-        const searchParams = new URLSearchParams(newParams).toString();
-        navigate(`?${searchParams}`);
         onButtonForceRefresh(evt)
     }
 
