@@ -28,11 +28,6 @@ const TOGGLES_MAP : Map<string, string> = new Map([
     ["tl", "toggle/branchline"],
 ]);
 
-// -- URL Params
-
-interface UrlParams {
-    all?: boolean;
-}
 
 // -- Interface for display in Wazz
 
@@ -65,12 +60,12 @@ interface WazzLiveData {
 function LiveViewer(): ReactElement {
     const location =  useLocation();
     const navigate = useNavigate();
-    const urlParams = parseLocationParams();
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState("Loading...");
     const [liveData, setLiveData] = useState<WazzLiveData>({ toggles: [], routes: [] });
     const [isTabVisible, setIsTabVisible] = useState<boolean>(document.visibilityState === "visible");
     const intervalRef = useRef<number | null>(null);
+    const [displayAll, setDisplayAll] = useState(parseLocationParamAll());
 
     useEffect(() => {
         fetchData().then(() => {
@@ -84,13 +79,11 @@ function LiveViewer(): ReactElement {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             stopRefreshTimer();
         };
-    }, []);
+    }, [displayAll]);
 
-    function parseLocationParams() : UrlParams {
+    function parseLocationParamAll() : boolean {
         const queryParams = new URLSearchParams(location.search);
-        return {
-            all: !!queryParams.get("all")
-        };
+        return !!queryParams.get("all")
     }
 
     function handleVisibilityChange() {
@@ -230,8 +223,6 @@ function LiveViewer(): ReactElement {
 
         const keys = Object.keys(dazzLive).sort();
         const togglesOn = new Map<string, boolean>();
-        const viewAll = urlParams.all ?? false;
-        console.log(`@@ params: ${JSON.stringify(urlParams)}`);
 
         for (const key of keys) {
             const entries = dazzLive[key];
@@ -242,11 +233,13 @@ function LiveViewer(): ReactElement {
                     togglesOn.set(key, v.at(0)?.st ?? false);
                 }
             } else if (key.startsWith("computer/")) {
-                if (viewAll || key === "computer/consist") {
+                if (displayAll || key === "computer/consist") {
                     _addToggles(key, entries.entries);
                 }
             } else if (key.startsWith("conductor/")) {
-                _addToggles(key, entries.entries);
+                if (displayAll) {
+                    _addToggles(key, entries.entries);
+                }
             }
         }
 
@@ -422,7 +415,8 @@ function LiveViewer(): ReactElement {
     }
 
     function onButtonAll(evt: MouseEvent<HTMLButtonElement>) {
-        if (urlParams.all) {
+        evt.preventDefault();
+        if (displayAll) {
             navigate(`?`);
         } else {
             const searchParams = new URLSearchParams({
@@ -430,7 +424,7 @@ function LiveViewer(): ReactElement {
             }).toString();
             navigate(`?${searchParams}`);
         }
-        onButtonForceRefresh(evt)
+        setDisplayAll(!displayAll);
     }
 
     function generateRefreshStatus(data: WazzLiveData) {
@@ -459,7 +453,7 @@ function LiveViewer(): ReactElement {
                     { ' ' }
                     <Button variant="link"
                         onClick={ (evt) => onButtonAll(evt) }>
-                        {urlParams.all ? "Less" : "All"}
+                        {displayAll ? "Less" : "All"}
                     </Button>
                 </div>
             </div>
