@@ -63,7 +63,7 @@ function PerfViewer(): ReactElement {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             stopRefreshTimer();
         };
-    }, [fetchData]);
+    }, []);
 
     function handleVisibilityChange() {
         const newVisibility = document.visibilityState === "visible";
