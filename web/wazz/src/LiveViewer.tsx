@@ -79,7 +79,7 @@ function LiveViewer(): ReactElement {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             stopRefreshTimer();
         };
-    }, [displayAll]);
+    }, [displayAll, fetchData]);
 
     function parseLocationParamAll() : boolean {
         const queryParams = new URLSearchParams(location.search);

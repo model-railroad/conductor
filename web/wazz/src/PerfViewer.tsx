@@ -63,7 +63,7 @@ function PerfViewer(): ReactElement {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
             stopRefreshTimer();
         };
-    }, []);
+    }, [fetchData]);
 
     function handleVisibilityChange() {
         const newVisibility = document.visibilityState === "visible";
@@ -436,6 +436,13 @@ function PerfViewer(): ReactElement {
         );
     }
 
+    function onButtonForceRefresh(evt: MouseEvent<HTMLButtonElement>) {
+        evt.preventDefault();
+        stopRefreshTimer()
+        fetchData()
+        startRefreshTimer()
+    }
+
     function generateRefreshStatus(data: WazzPerfData) {
         const dt = data.refresh;
 
@@ -449,11 +456,17 @@ function PerfViewer(): ReactElement {
             : dt.setZone(SERVER_TZ);
 
         return (
-            <div className="wazz-last-update-text">
-                Data Updated
-                { ' ' }
-                { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
-                { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
+            <div className="d-flex">
+                <div className="wazz-last-update-text flex-grow-1 align-content-center">
+                    Data Updated
+                    { ' ' }
+                    { serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS) }
+                    { serverDt === dt ? ' ' : ` // ${dt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)}` }
+                </div>
+                <div className="justify-content-end wazz-refresh">
+                    <Button variant="link"
+                            onClick={ (evt) => onButtonForceRefresh(evt) }>Refresh</Button>
+                </div>
             </div>
         );
     }
