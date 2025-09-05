@@ -397,9 +397,7 @@ function PerfViewer(): ReactElement {
             <>
                 { Array.from(data.routes.entries()).map(([key, value]) =>
                     generateRouteTable(key, value)
-                )
-
-                }
+                ) }
             </>
         );
     }
@@ -421,8 +419,8 @@ function PerfViewer(): ReactElement {
             <Table striped bordered variant="light" className="wazz-table wazz-routes-links">
                 <thead>
                 <tr>
-                    { Array.from(data.routes.entries()).map(([, table]) => (
-                        <th>
+                    { Array.from(data.routes.entries()).map(([, table], index) => (
+                        <th key={`link-${index}`}>
                             <a href={`#/perf/#${table.anchor}`}
                                onClick={ (evt) =>
                                    scrollTo(evt, table.anchor) }>{table.label}</a>
