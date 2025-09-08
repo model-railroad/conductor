@@ -1,79 +1,141 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-.card {
-  padding: 2em;
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+}
+
+body {
+  margin: 0px;
+  background-color: #AAA;
+}
+
+
+/* ----- COMMON ----- */
+
+/* override stuff from boostrap */
+.bg-primary {
+  /*background-color: #2f2823 !important;*/
+}
+
+
+/* ----- MISC ----- */
+
+.wazz-status-text {
+  padding-left: 1em;
+  color: var(--bs-danger);
+}
+
+.wazz-last-update-text {
+  padding-left: 1em;
+  font-size: 0.75em;
+}
+
+.wazz-refresh button {
+  padding: 0 1em 0 0;
+  border: 0;
+  font-size: 0.75em;
+}
+
+/* ----- APP HEADER ----- */
+
+.header {
+  margin-bottom: 1em;
+}
+
+.navbar-brand {
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  border-right:  solid 1px var(--bs-navbar-color);;
+}
+
+.navbar-detail {
+  margin-right: 1em;
+  text-align: end;
+}
+
+.nav-font-size {
+  font-size: smaller;
+}
+
+.gitinfo {
+  font-size: 0.75em;
+}
+
+.gitinfo a {
+  text-decoration: none;
+  color: var(--bs-navbar-color);
+}
+
+.gitinfo a:hover {
+  text-decoration: underline;
+}
+
+/* ----- SYSTEM TABLE ----- */
+
+.wazz-table {
+  margin: 0.5em;
+  width: 98%;
+  border-radius: 15px;
+  border-collapse: collapse;
+  overflow: hidden;
+  font-size: smaller;
+}
+
+.wazz-table th {
+  background-color: var(--bs-primary-bg-subtle);
+}
+
+.wazz-routes-links th {
+  font-weight: normal;
   text-align: center;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+td.wazz-status-text {
+  text-transform: capitalize;
 }
+
+td.wazz-indent-true {
+  padding-left: 2em;
+}
+
+.wazz-btn {
+  font-size: xx-small;
+}
+
+.wazz-date, .wazz-rel-date {
+  white-space: nowrap;
+}
+
+tr.wazz-status-warning-false, tr.wazz-status-highlight-green, td.wazz-node-green {
+  --bs-table-bg-type:    var(--bs-success-bg-subtle);
+  --bs-table-striped-bg: var(--bs-success-bg-subtle);
+}
+
+tr.wazz-status-highlight-yellow, td.wazz-node-yellow {
+  --bs-table-bg-type:    var(--bs-warning-bg-subtle);
+  --bs-table-striped-bg: var(--bs-warning-bg-subtle);
+}
+
+tr.wazz-status-warning-true, tr.wazz-status-highlight-red, td.wazz-node-red {
+  --bs-table-bg-type:    var(--bs-danger-bg-subtle);
+  --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+}
+
+/* ----- ROUTES TABLE ----- */
+
+.wazz-route-name {
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+tr.wazz-route-old-true td {
+  color: darkgray;
+}
+
+tr.wazz-route-recovery-true td {
+  --bs-table-bg-type:    var(--bs-danger-bg-subtle);
+  --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+}
+
+/* ~~ */
+
