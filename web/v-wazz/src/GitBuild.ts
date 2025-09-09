@@ -1,5 +1,5 @@
 export const GIT_BRANCH_STR = "dev";
-export const GIT_HASH_STR = "0cd107e8";
-export const GIT_LONG_STR = "Build dev @ 0cd107e8, 2025-09-07 23:35:32 -0700";
-export const VERSION_MAJOR = "2";
+export const GIT_HASH_STR = "8454a78f";
+export const GIT_LONG_STR = "Build dev @ 8454a78f, 2025-09-09 14:39:45 -0700";
+export const VERSION_MAJOR = "0";
 export const VERSION_MINOR = "4";

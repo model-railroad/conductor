@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {BButton, BTableSimple} from "bootstrap-vue-next";
 import {DateTime} from "luxon";
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import {
   type DazzEntryDict,
   type DazzJsonData,
@@ -9,7 +9,7 @@ import {
   fetchDazzData,
   LIVE_JSON_URL, DAZZ_SERVER_TZ
 } from "../DazzData.ts";
-import {storeInSimpleCache} from "../SimpleCache.ts";
+import {getFromSimpleCache, storeInSimpleCache} from "../SimpleCache.ts";
 import WFormattedDate from "./WFormattedDate.vue";
 import WStateButton from "./WStateButton.vue";
 import WFormattedTime from "./WFormattedTime.vue";
@@ -66,10 +66,62 @@ const status = ref("Loading...");
 const liveData = ref<WazzLiveData>({ toggles:[], routes: [] });
 const isTabVisible = ref<boolean>(document.visibilityState === "visible");
 const intervalRef = ref<number|null>(null);
-const displayAll = ref(true);
+const displayAll = ref(parseLocationParamAll());
 
 async function doOnMounted() {
-  await fetchData();
+  await fetchData().then(() => {
+    // Setup refresh & monitor visibility
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    startRefreshTimer();
+  });;
+}
+
+function doOnUnmounted() {
+  stopRefreshTimer();
+}
+
+function parseLocationParamAll() : boolean {
+  const queryParams = new URLSearchParams(window.location.search);
+  return !!queryParams.get("all")
+}
+
+function handleVisibilityChange() {
+  const newVisibility = document.visibilityState === "visible";
+  isTabVisible.value = newVisibility;
+  console.log(`@@ Visibility changed to ${newVisibility}`);
+
+  // Start-stop refresh based on tab visibility
+  if (newVisibility) {
+    startRefreshTimer();
+  } else {
+    stopRefreshTimer();
+  }
+}
+
+function startRefreshTimer() {
+  console.log(`@@ startRefreshTimer. Tab Visible: ${isTabVisible}`);
+  if (intervalRef.value !== null) {
+    clearInterval(intervalRef.value);
+  }
+
+  if (!isTabVisible) return;
+
+  // If we reopen this tab after the elapsed refresh time, force a data fetch.
+  const lastRefresh : DateTime|undefined = getFromSimpleCache(REFRESH_KEY);
+  if (lastRefresh === undefined || lastRefresh.diffNow("minutes").minutes < -REFRESH_DATA_MINUTES) {
+    fetchData();
+  }
+
+  const intervalMs = REFRESH_DATA_MINUTES * 60 * 1000;
+  intervalRef.value = window.setInterval(fetchData, intervalMs);
+}
+
+function stopRefreshTimer() {
+  console.log("@@ stopRefreshTimer");
+  if (intervalRef.value !== null) {
+    clearInterval(intervalRef.value);
+    intervalRef.value = null;
+  }
 }
 
 async function fetchData() {
@@ -181,11 +233,11 @@ function transformData(dazzLive: DazzJsonData ): WazzLiveData {
         togglesOn.set(key, v.at(0)?.st ?? false);
       }
     } else if (key.startsWith("computer/")) {
-      if (displayAll || key === "computer/consist") {
+      if (displayAll.value || key === "computer/consist") {
         _addToggles(key, entries.entries);
       }
     } else if (key.startsWith("conductor/")) {
-      if (displayAll) {
+      if (displayAll.value) {
         _addToggles(key, entries.entries);
       }
     }
@@ -207,13 +259,14 @@ function transformData(dazzLive: DazzJsonData ): WazzLiveData {
 
 function onButtonForceRefresh(evt: MouseEvent) {
   evt.preventDefault();
-  // stopRefreshTimer()
+  stopRefreshTimer()
   fetchData()
-  // startRefreshTimer()
+  startRefreshTimer()
 }
 
 function onButtonAll(evt: MouseEvent) {
   evt.preventDefault();
+  // TBD add router and convert React code below to Vue style.
   // if (displayAll) {
   //   navigate(`?`);
   // } else {
@@ -223,9 +276,12 @@ function onButtonAll(evt: MouseEvent) {
   //   navigate(`?${searchParams}`);
   // }
   displayAll.value = !displayAll.value;
+  // No router in this experiment yet, so force a manual refresh.
+  onButtonForceRefresh(evt);
 }
 
 onMounted(doOnMounted);
+onUnmounted(doOnUnmounted);
 
 </script>
 
@@ -291,7 +347,7 @@ onMounted(doOnMounted);
         :key="`${entry.sts}-${entry.label}`"
         :class="`wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery} wazz-status-highlight-${entry.color ?? 'undef'}`">
       <td class="wazz-route-name"> {{
-          index < 1 || entry.label !== liveData.toggles[index-1].label ? entry.label : ""
+          index < 1 || entry.label !== liveData.routes[index-1].label ? entry.label : ""
         }} </td>
       <td> <WFormattedDay  :date-time="entry.sts" /> </td>
       <td> <WFormattedTime :date-time="entry.sts" /> </td>
