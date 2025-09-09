@@ -11,8 +11,15 @@ declare module 'vue' {
     AppHeader: typeof import('./src/components/AppHeader.vue')['default']
     BNavbar: typeof import('bootstrap-vue-next/components/BNavbar')['BNavbar']
     BNavbarBrand: typeof import('bootstrap-vue-next/components/BNavbar')['BNavbarBrand']
+    FormattedDate: typeof import('./src/components/FormattedDate.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     LiveViewer: typeof import('./src/components/LiveViewer.vue')['default']
+    StateButton: typeof import('./src/components/StateButton.vue')['default']
+    WFormattedDate: typeof import('./src/components/WFormattedDate.vue')['default']
+    WFormattedDay: typeof import('./src/components/WFormattedDay.vue')['default']
+    WFormattedDy: typeof import('./src/components/WFormattedDy.vue')['default']
+    WFormattedTime: typeof import('./src/components/WFormattedTime.vue')['default']
+    WStateButton: typeof import('./src/components/WStateButton.vue')['default']
   }
   export interface GlobalDirectives {
     vBColorMode: typeof import('bootstrap-vue-next/directives/BColorMode')['vBColorMode']
