@@ -1,0 +1,4 @@
+# Upload a copy of this file named "settings.toml" on the CircuitPython root storage.
+# Setting these variables will automatically connect board to WiFi on boot
+CIRCUITPY_WIFI_SSID="enter wifi ssid"
+CIRCUITPY_WIFI_PASSWORD="enter wifi password"
