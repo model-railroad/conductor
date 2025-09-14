@@ -26,13 +26,14 @@ COL_WARN  = (0x80, 0x80,    0)
 COL_ALERT = (0xFF,    0,    0)
 
 REFRESH_DELAY_S = 1
-DISPLAY_TIME_DELAY_S = 30
+DISPLAY_TIME_DELAY_S = 10
 
 LIGHT_THRESHOLD = 600
 _light_level = {
     "current": 0,
     "min": 10000,
-    "max": 0
+    "max": 0,
+    "changed": True,
 }
 
 # VL53L0X Timing Budget: 20ms = fast but medium accurate; 200ms = slow but more accurate.
@@ -42,7 +43,8 @@ VL53_TIMING_BUGDGET_MS = 200
 _tof_distance_mm = {
     "current": 0,
     "min": 10000,
-    "max": 0
+    "max": 0,
+    "changed": True,
 }
 
 def init_display() -> None:
@@ -130,6 +132,7 @@ def update_tof_distance_mm() -> None:
 
 def update_light_level() -> int:
     lvl = _magtag.peripherals.light
+    _light_level["changed"] = _light_level["changed"] or (_light_level["current"] != lvl)
     _light_level["current"] = lvl
     if lvl < _light_level["min"]:
         _light_level["min"] = lvl
@@ -174,7 +177,10 @@ def loop() -> None:
         # Only update display if we have some light (otherwise it's unreadable anyway)
         if display_on:
             if now_s > display_next_s:
-                display_values()
+                if _light_level["changed"] or _tof_distance_mm["changed"]:
+                    display_values()
+                    _light_level["changed"] = False
+                    _tof_distance_mm["changed"] = False
                 display_next_s = now_s + DISPLAY_TIME_DELAY_S - REFRESH_DELAY_S
                 # This ensures we write one last time before turning display off
                 display_on = light_lvl >= LIGHT_THRESHOLD
