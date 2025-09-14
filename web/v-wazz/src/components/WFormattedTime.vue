@@ -23,5 +23,6 @@ const dateTitle = props.dateTime?.toISO( {
 <template>
   <span v-if="dateTime == undefined" class="wazz-date">-</span>
   <span v-if="dateTime" class="wazz-date" :title="dateTitle">{{dateString2}}</span>
+  {{}}
   <span v-if="dateTime" class="wazz-rel-date">({{relativeToNow}})</span>
 </template>

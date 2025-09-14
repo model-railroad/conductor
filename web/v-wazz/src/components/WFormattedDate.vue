@@ -19,5 +19,6 @@ const dateTitle = props.dateTime.toISO( {
 
 <template>
   <span class="wazz-date" :title="dateTitle">{{dateString2}}</span>
+  {{}}
   <span class="wazz-rel-date">({{relativeToNow}})</span>
 </template>
