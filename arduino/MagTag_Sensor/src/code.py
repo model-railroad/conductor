@@ -5,6 +5,9 @@
 # Target Platform: CircuitPython 9.x on AdaFruit MagTag
 
 from adafruit_magtag.magtag import MagTag
+import adafruit_vl53l0x
+import board
+import busio
 import microcontroller
 import os
 import socketpool
@@ -13,6 +16,8 @@ import time
 import wifi
 
 _magtag: MagTag = None              # Global MagTag object (singleton)
+_i2c = None
+_tof_sensor: adafruit_vl53l0x.VL53L0X = None
 
 COL_BLACK = (   0,    0,    0)
 COL_BLINK = (0x80, 0x7F, 0x80)
@@ -25,6 +30,16 @@ DISPLAY_TIME_DELAY_S = 30
 
 LIGHT_THRESHOLD = 600
 _light_level = {
+    "current": 0,
+    "min": 10000,
+    "max": 0
+}
+
+# VL53L0X Timing Budget: 20ms = fast but medium accurate; 200ms = slow but more accurate.
+VL53_TIMING_BUGDGET_MS = 200
+# VL53L0X returns the distance in mm (integer).
+# Max distance measurable is 2 meters (2000 mm). When nothing found, it seems to returns > 8000 mm.
+_tof_distance_mm = {
     "current": 0,
     "min": 10000,
     "max": 0
@@ -43,7 +58,7 @@ def init_display() -> None:
     # Text index 2 + 3 : light sensor.
     _magtag.add_text(text_position=(35, 64+7,), text_scale=1 )
     _magtag.set_text("VL503L0X Sensor", index = 2, auto_refresh = False)
-    _magtag.add_text(text_position=(35, 64+32,), text_scale=4 )
+    _magtag.add_text(text_position=(35, 64+32,), text_scale=3 )
     _magtag.set_text("----", index = 3, auto_refresh = False)
 
     # Reminder: AFAIK there's no hardware brightness control on a NeoPixel strip.
@@ -51,6 +66,12 @@ def init_display() -> None:
     _magtag.peripherals.neopixel_disable = False
     _magtag.peripherals.neopixels.brightness = 1
     update_leds(blink = False)
+
+def init_vl53l0x() -> None:
+    global _i2c, _tof_sensor
+    _i2c = busio.I2C(board.SCL, board.SDA)
+    _tof_sensor = adafruit_vl53l0x.VL53L0X(_i2c)
+    _tof_sensor.measurement_timing_budget = int(VL53_TIMING_BUGDGET_MS * 1000)
 
 def init_wifi() -> None:
     global _wifi_channel
@@ -73,9 +94,10 @@ def init_wifi() -> None:
     print("@@ WiFI OK for", wifi_ssid)
 
 def display_values() -> None:
-    str1 = "%(min)d %(current)d %(max)d" % _light_level
+    str1 = level_to_str_compact(_light_level)
     _magtag.set_text(str1, index = 1, auto_refresh = False)
-    _magtag.set_text(str(0), index = 3, auto_refresh = True)
+    str2 = level_to_str_compact(_tof_distance_mm)
+    _magtag.set_text(str2, index = 3, auto_refresh = True)
 
 def update_leds(blink: int, rgb1 = None, rgb2 = None, bright: bool = True) -> None:
     _magtag.peripherals.neopixels[3] = fade1(bright, COL_BLINK) if blink else COL_BLACK
@@ -97,6 +119,15 @@ def fade2(bright: bool, rgb):
         (r, g, b) = rgb
         return (r >> 6, g >> 6, b >> 6)
 
+def update_tof_distance_mm() -> None:
+    dist_mm = _tof_sensor.range
+    _tof_distance_mm["current"] = dist_mm
+    if dist_mm < _tof_distance_mm["min"]:
+        _tof_distance_mm["min"] = dist_mm
+    if dist_mm > _tof_distance_mm["max"]:
+        _tof_distance_mm["max"] = dist_mm
+    return dist_mm
+
 def update_light_level() -> int:
     lvl = _magtag.peripherals.light
     _light_level["current"] = lvl
@@ -105,6 +136,12 @@ def update_light_level() -> int:
     if lvl > _light_level["max"]:
         _light_level["max"] = lvl
     return lvl
+
+def level_to_str(level) -> str:
+    return "%(min)d < %(current)d < %(max)d" % level
+
+def level_to_str_compact(level) -> str:
+    return "%(min)d %(current)d %(max)d" % level
 
 def level_to_rgb(level, rgb):
     (r, g, b) = rgb
@@ -130,6 +167,7 @@ def loop() -> None:
     while True:
         now_s = time.time()
         light_lvl = update_light_level()
+        update_tof_distance_mm()
         loop_s = now_s - start_s
         start_s = time.time()
 
@@ -146,15 +184,16 @@ def loop() -> None:
 
         blink_rate = 2 if display_on else 4
         rgb1 = level_to_rgb(_light_level, (0x00, -1, 0x00))
-        rgb2 = COL_BLACK
+        rgb2 = level_to_rgb(_tof_distance_mm, (0x00, 0x00, -1))
         update_leds(now_s % blink_rate == 0, rgb1, rgb2, bright=display_on)
 
-        print(now_s, "+", loop_s, ", lvl:", _light_level["min"], "<", light_lvl, "<", _light_level["max"], " -> ", rgb1)
+        print(now_s, "+", loop_s, ", lvl:", level_to_str(_light_level), ", tof:", level_to_str(_tof_distance_mm))
 
         time.sleep(REFRESH_DELAY_S)
 
 if __name__ == "__main__":
     init_display()
+    init_vl53l0x()
     # TBD: don't loop if wifi / NTP could not connect, and display error.
     init_wifi()
     loop()
