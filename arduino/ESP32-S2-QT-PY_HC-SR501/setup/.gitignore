@@ -1,0 +1,7 @@
+*.zip
+*.bin
+*.uf2
+bundle
+settings.toml.local
+adafruit*
+
