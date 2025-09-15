@@ -53,7 +53,7 @@ def init_display() -> None:
 
     # Text index 0 + 1 : light sensor.
     _magtag.add_text(text_position=(35, 7,), text_scale=1 )
-    _magtag.set_text("Ambiant Sensor", index = 0, auto_refresh = False)
+    _magtag.set_text("Ambient Sensor", index = 0, auto_refresh = False)
     _magtag.add_text(text_position=(35, 32,), text_scale=3 )
     _magtag.set_text("----", index = 1, auto_refresh = False)
 

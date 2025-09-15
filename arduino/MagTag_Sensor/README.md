@@ -3,7 +3,7 @@
 An experiment using an AdaFruit MagTag ESP32, a sensor, and an MQTT publication.
 
 Main device is an Adafruit MagTag (ESP32, E-Ink display).
-Sensor is onboard ambiant light sensor, or external VL53L0X, or external BD20.
+Sensor is onboard ambient light sensor, or external VL53L0X, or external BD20.
 Communication uses WiFi and MQTT.
 
 
