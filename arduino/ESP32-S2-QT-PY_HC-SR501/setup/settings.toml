@@ -2,11 +2,6 @@
 CIRCUITPY_WIFI_SSID="Your WiFi SSID Here"
 CIRCUITPY_WIFI_PASSWORD="Your WiFi Password Here"
 
-# Set this to true for a 64x32 panel of type "32Scan" or "HUB75-E.
-_64X32_WITH_32SCAN=False
-# Panel pixel width. Only 64 or 128 are supported.
-_SX=64
-
 # MQTT integration.
 # Leave the Broker IP empty to disable the MQTT functionality.
 MQTT_BROKER_IP=""
@@ -14,8 +9,9 @@ MQTT_BROKER_PORT=1883
 MQTT_USERNAME="username"
 MQTT_PASSWORD="password"
 
-# DistantSignal Configuration for this panel.
-MQTT_TURNOUT="t330"
+# JMRI Configuration for this sensor
+MQTT_JMRI_CHANNEL="jmri"
+MQTT_SENSOR_NAME="SR501"
 
 # Google Analytics 4 Configuration.
 # Leave any field empty to disable the Analytics functionality.
