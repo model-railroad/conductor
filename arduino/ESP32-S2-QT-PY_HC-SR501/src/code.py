@@ -93,6 +93,7 @@ _logger = logging.getLogger("Exp")
 _logger.setLevel(logging.INFO)      # INFO or DEBUG
 _mqtt_sub_topics = []
 _last_published_motion = None
+_last_motion_on_ts = 0
 
 
 def init() -> None:
@@ -237,15 +238,36 @@ def init_mqtt() -> None:
 
 
 def mqtt_publish_motion(motion: bool) -> None:
+    global _last_published_motion, _last_motion_on_ts
+
+    # On reconnect, this is called _last_published_motion to voluntarily send
+    # the same value to the MQTT broker.
+    # _last_published_motion is None at startup, and thus we avoid it here.
     if _mqtt is None or motion is None:
         return
 
+    # Publish to MQTT.
     topic = f"{_MQTT_JMRI_CHANNEL}/{_MQTT_SENSOR_TOPIC}/{_MQTT_SENSOR_NAME}"
     msg   = "ACTIVE" if motion else "INACTIVE"
     _mqtt.publish(topic, msg, qos=1)  # QOS 1 means "at least once"
     print("@@ MQTT: Publish", topic, ":", msg)
-    global _last_published_motion
+
+    # Update the global state. Only send the GA4 stat if the state has changed.
+    if _last_published_motion == motion:
+        return
     _last_published_motion = motion
+
+    # Send GA4 event with duration seconds ON as value.
+    now = time.monotonic()
+    if motion:
+        action = "on"
+        value = None
+        _last_motion_on_ts = now
+    else:
+        action = "off"
+        value = now - _last_motion_on_ts
+        _last_motion_on_ts = now
+    ga4_mk_event(category="motion", action=action, value=value)
 
 
 def subscribe_mqtt_topics():
