@@ -150,7 +150,6 @@ internal class SequenceRouteStats @AssistedInject constructor(
     }
 
     fun toDazzString(): String {
-        makeNodeNamesUnique()
         return getMapper().writeValueAsString(DazzStructure(
             routeName,
             throttleName,

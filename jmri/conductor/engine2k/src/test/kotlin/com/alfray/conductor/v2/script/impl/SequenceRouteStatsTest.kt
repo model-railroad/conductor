@@ -247,6 +247,8 @@ class SequenceRouteStatsTest {
         clock.add(10_000)
         stat.setRunning(SequenceRouteStats.Running.Ended)
 
+        // Dazz does not need the node block names modified to be made unique.
+
         assertThat(stat.toDazzString()).isEqualTo("""
             |{"name":"MyRoute",
             |"th":"TH",
@@ -257,15 +259,15 @@ class SequenceRouteStatsTest {
             |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
               |{"n":"B1","ms":41,"mis":10,"mas":110},
-              |{"n":"B2.1","ms":42,"mis":20,"mas":120},
-              |{"n":"B2.2","ms":43,"mis":30,"mas":130},
-              |{"n":"B3.1","ms":44,"mis":40,"mas":140},
-              |{"n":"B3.2","ms":45,"mis":50,"mas":150},
-              |{"n":"B3.3","ms":46,"mis":60,"mas":160},
-              |{"n":"B4.1","ms":47,"mis":70,"mas":170},
-              |{"n":"B4.2","ms":48,"mis":80,"mas":180},
-              |{"n":"B4.3","ms":49,"mis":90,"mas":190},
-              |{"n":"B4.4","ms":50,"mis":99,"mas":199}]}
+              |{"n":"B2","ms":42,"mis":20,"mas":120},
+              |{"n":"B2","ms":43,"mis":30,"mas":130},
+              |{"n":"B3","ms":44,"mis":40,"mas":140},
+              |{"n":"B3","ms":45,"mis":50,"mas":150},
+              |{"n":"B3","ms":46,"mis":60,"mas":160},
+              |{"n":"B4","ms":47,"mis":70,"mas":170},
+              |{"n":"B4","ms":48,"mis":80,"mas":180},
+              |{"n":"B4","ms":49,"mis":90,"mas":190},
+              |{"n":"B4","ms":50,"mis":99,"mas":199}]}
         """.trimMargin().replace("\n",""))
     }
 
@@ -286,6 +288,8 @@ class SequenceRouteStatsTest {
         clock.add(10_000)
         stat.setRunning(SequenceRouteStats.Running.Ended)
 
+        // Dazz does not need the node block names modified to be made unique.
+
         assertThat(stat.toDazzString()).isEqualTo("""
             |{"name":"MyRoute",
             |"th":"TH",
@@ -295,13 +299,13 @@ class SequenceRouteStatsTest {
             |"sts":"1970-01-01T00:00:01Z",
             |"ets":"1970-01-01T00:00:11Z",
             |"nodes":[
-              |{"n":"B1.1","ms":41,"mis":10,"mas":110},
-              |{"n":"B2.1","ms":42,"mis":20,"mas":120},
-              |{"n":"B3.1","ms":43,"mis":30,"mas":130},
+              |{"n":"B1","ms":41,"mis":10,"mas":110},
+              |{"n":"B2","ms":42,"mis":20,"mas":120},
+              |{"n":"B3","ms":43,"mis":30,"mas":130},
               |{"n":"B4","ms":44,"mis":40,"mas":140},
-              |{"n":"B3.2","ms":45,"mis":50,"mas":150},
-              |{"n":"B2.2","ms":46,"mis":60,"mas":160},
-              |{"n":"B1.2","ms":47,"mis":70,"mas":170}]}
+              |{"n":"B3","ms":45,"mis":50,"mas":150},
+              |{"n":"B2","ms":46,"mis":60,"mas":160},
+              |{"n":"B1","ms":47,"mis":70,"mas":170}]}
         """.trimMargin().replace("\n",""))
     }
 
