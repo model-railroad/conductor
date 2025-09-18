@@ -76,7 +76,8 @@ internal class SequenceRouteStats @AssistedInject constructor(
 
     private lateinit var mapper: ObjectMapper
     private var numActivations = 0
-    private var isError = false
+    var isError = false
+        private set
     private var running = Running.Unknown
     var startTS = 0L
         private set

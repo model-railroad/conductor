@@ -305,7 +305,8 @@ internal class SequenceRoute @AssistedInject constructor(
             jsonSender.sendEvent("route_stats", key2, json)
             dazzSender.sendEvent(
                 "route/${stats.routeName}/${stats.throttleName}",
-                stats.startTS, /*state=ok*/ true,
+                stats.startTS,
+                /*state is ok?*/ !stats.isError,
                 /*payload=*/ dazz)
         }
 
@@ -338,7 +339,7 @@ internal class SequenceRoute @AssistedInject constructor(
             dazzSender.sendEvent(
                 "route/${stats.routeName}/${stats.throttleName}",
                 stats.startTS,
-                /*state=error*/ false,
+                /*state is ok?*/ !stats.isError,
                 /*payload=*/ dazz)
         }
     }
