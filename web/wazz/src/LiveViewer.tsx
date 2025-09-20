@@ -212,7 +212,7 @@ function LiveViewer(): ReactElement {
                 }
                 const recoveryColor = isEnabled && days <= WARN_SKIP_DAYS && key.includes("Recovery");
 
-                console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${minutes} min, ${color}`);
+                // console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${minutes} min, ${color}`);
 
                 const r : WazzLiveRoute = {
                     label: label,

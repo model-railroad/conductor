@@ -78,7 +78,7 @@ body {
   font-size: smaller;
 }
 
-.wazz-table th {
+.wazz-table th, tr.wazz-table-head th {
   background-color: var(--bs-primary-bg-subtle);
 }
 
@@ -132,6 +132,12 @@ tr.wazz-route-old-true td {
 tr.wazz-route-recovery-true td {
   --bs-table-bg-type:    var(--bs-danger-bg-subtle);
   --bs-table-striped-bg: var(--bs-danger-bg-subtle);
+}
+
+.wazz-node-index {
+  font-weight: normal;
+  vertical-align: top;
+  font-size: smaller;
 }
 
 /* ~~ */

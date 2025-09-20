@@ -26,7 +26,9 @@ export interface DazzJsonData {
 }
 
 export interface DazzRouteNode {
-    n:  string;
+    n:  string;             // Original name from Dazz event
+    wIndex?: number;        // Wazz only
+    wFull?: string;         // Wazz only
     ms: number;
     mis?: number;
     mas?: number;

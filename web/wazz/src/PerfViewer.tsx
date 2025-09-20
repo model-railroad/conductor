@@ -29,10 +29,17 @@ interface WazzPerfRoute {
     nodes: DazzRouteNode[];
 }
 
+interface WazzPerfNodeName {
+    n: string;
+    index: number;
+    full: string;
+}
+
 interface WazzPerfRouteTable {
     label: string;
     anchor: string;
     update: DateTime;
+    nodeNames: WazzPerfNodeName[];
     list: WazzPerfRoute[];
 }
 
@@ -148,6 +155,38 @@ function PerfViewer(): ReactElement {
             return label;
         }
 
+        function _collectNodeNames(routeTable: WazzPerfRouteTable, nodes: DazzRouteNode[]) {
+            const count = new Map<string, number>();
+
+            const pattern = /\.[0-9]$/;
+            for (const node of nodes) {
+                node.n = node.n.replace(pattern, "");
+                count.set(node.n, 1 + (count.get(node.n) ?? 0));
+                node.wIndex = count.get(node.n) ?? 0;
+                node.wFull = `${node.n}.${node.wIndex}`;
+            }
+
+            // Merge all the node names together.
+            // If a node name is already in the route's node list, keep its index and add afterward.
+            // All node names are initially prepended untill we find an already known name, then we add afterward
+            // that known position.
+            let currentPos = 0;
+            for (const node of nodes) {
+                const nodeName: WazzPerfNodeName = {
+                    n: node.n,
+                    index: node.wIndex ?? 0,
+                    full: `${node.n}.${node.wIndex}`,
+                };
+                const idx = routeTable.nodeNames.findIndex(nname => nname.full == nodeName.full);
+                if (idx >= 0) {
+                    currentPos = idx + 1;
+                    continue;
+                }
+                routeTable.nodeNames.splice(currentPos, 0, nodeName);
+                currentPos += 1;
+            }
+        }
+
         function _addRoutes(key: string, entries: DazzEntryDict) {
             for (const [isoTS, entry] of Object.entries(entries)) {
                 if (entry.d == null) {
@@ -169,6 +208,7 @@ function PerfViewer(): ReactElement {
                         label: label,
                         anchor: anchor,
                         update: DateTime.fromISO(isoTS),
+                        nodeNames: [],
                         list: [],
                     } as WazzPerfRouteTable);
                 }
@@ -177,6 +217,8 @@ function PerfViewer(): ReactElement {
                     console.log(`@@ ERROR routeList in result.routes ${JSON.stringify(Object.fromEntries(result.routes))}`)
                     continue; // one of these "should never happen" safety checks
                 }
+
+                _collectNodeNames(routeTable, payload.nodes);
 
                 const r : WazzPerfRoute = {
                     sts: DateTime.fromISO(isoTS),
@@ -207,29 +249,6 @@ function PerfViewer(): ReactElement {
     function generateStatusLine() {
         return <div className="wazz-status-text"> {status} </div>;
     }
-
-    /*
-    function formatDate(dateTime: DateTime) {
-        const serverDt = dateTime.setZone(SERVER_TZ);
-        const dateString2 = serverDt.toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS);
-        const relativeToNow = serverDt.toRelative();
-
-        return (
-            <>
-            <span className="wazz-date" title={dateTime.toISO( {
-                format: "extended",
-                suppressMilliseconds: true
-            }) ?? ""}>
-                {dateString2}
-            </span>
-                { ' ' }
-            <span className="wazz-rel-date">
-                ({relativeToNow})
-            </span>
-            </>
-        )
-    }
-    */
 
     function formatDay(dateTime: DateTime) {
         const serverDt = dateTime.setZone(SERVER_TZ);
@@ -346,52 +365,49 @@ function PerfViewer(): ReactElement {
     }
 
     function generateRouteTable(key: string, table: WazzPerfRouteTable) {
-        const nodes: string[] = []
-
-        for (const entry of table.list) {
-            for (const node of entry.nodes) {
-                const n = node.n;
-                if (!nodes.includes(n)) {
-                    nodes.push(n);
-                }
-            }
-        }
-        const numNodes = nodes.length;
+        const nodeNames = table.nodeNames;
+        const numNodes = nodeNames.length;
 
         return (
             <Table key={`rt-${key}-table`} striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
-                <tr>
+                <tr className="wazz-table-head">
                     <th colSpan={5+numNodes}><a id={table.anchor}></a>Route {table.label}</th>
                 </tr>
-                <tr>
+                <tr className="wazz-table-head" key={`rt-${key}-th-`}>
                     <th colSpan={2}>Start</th>
                     <th>End</th>
                     <th>#</th>
                     <th>Status</th>
-                    { nodes.map((node) => (
-                        <th key={`th-n-${key}-${node}`}>{node}</th>
+                    { nodeNames.map((nname) => (
+                        <th key={`th-n-${key}-${nname.full}`}>{nname.n} <span className="wazz-node-index">{nname.index}</span></th>
                     ) ) }
                 </tr>
                 </thead>
-                <tbody>
-                { table.list.map((entry, index) => (
-                    <tr key={`rt-${key}-${entry.sts}-${entry.ets ?? ""}-${entry.err}`}>
-                        <td> { formatDay(entry.sts) } </td>
-                        <td> { formatTime(entry.sts) } </td>
-                        <td> { formatTime(entry.ets, entry.sts) } </td>
-                        <td> { entry.act } </td>
-                        <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
-                        { nodes.map((nodeName, indxN) =>
-                            generateNode(
-                                key,
-                                index,
-                                indxN,
-                                entry.nodes.find(nd => nd.n === nodeName))
-                        )}
-                    </tr>
-                    ) ) }
-                </tbody>
+                {/*<tbody>*/}
+                { table.list.map((entry, index) => {
+                    return (
+                        <>
+                            <tbody>
+                            <tr key={`rt-${key}-${entry.sts}-${entry.ets ?? ""}-${entry.err}`}>
+                                <td> { formatDay(entry.sts) } </td>
+                                <td> { formatTime(entry.sts) } </td>
+                                <td> { formatTime(entry.ets, entry.sts) } </td>
+                                <td> { entry.act } </td>
+                                <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
+                                { nodeNames.map((nname, indxN) =>
+                                    generateNode(
+                                        key,
+                                        index,
+                                        indxN,
+                                        entry.nodes.find(nd => nd.wFull === nname.full))
+                                )}
+                            </tr>
+                            </tbody>
+                        </>
+                    );
+                } ) }
+                {/*</tbody>*/}
             </Table>
         )
     }
