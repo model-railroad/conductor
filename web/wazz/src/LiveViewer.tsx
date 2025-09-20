@@ -210,8 +210,9 @@ function LiveViewer(): ReactElement {
                         color = "yellow";
                     }
                 }
+                const recoveryColor = isEnabled && days <= WARN_SKIP_DAYS && key.includes("Recovery");
 
-                // console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${deltaStart} min, ${color}`);
+                console.log(`Route ${key}: th ${th} / first: ${isFirst} / enabled: ${isEnabled} / color ${minutes} min, ${color}`);
 
                 const r : WazzLiveRoute = {
                     label: label,
@@ -222,7 +223,7 @@ function LiveViewer(): ReactElement {
                     ets: edt,
                     old: days >= ROUTE_OLD_DAYS,
                     color: color,
-                    recovery: key.includes("Recovery"),
+                    recovery: recoveryColor,
                 }
 
                 result.routes.push(r);
