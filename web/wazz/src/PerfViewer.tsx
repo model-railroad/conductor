@@ -361,14 +361,14 @@ function PerfViewer(): ReactElement {
                     <th>End</th>
                     <th>#</th>
                     <th>Status</th>
-                    { nodes.map((node, index) => (
-                        <th key={`th-n-${key}-${index}`}>{node}</th>
+                    { nodes.map((node) => (
+                        <th key={`th-n-${key}-${node}`}>{node}</th>
                     ) ) }
                 </tr>
                 </thead>
                 <tbody>
                 { table.list.map((entry, index) => (
-                    <tr key={`rt-${key}-${index}`}>
+                    <tr key={`rt-${key}-${entry.sts}-${entry.ets ?? ""}-${entry.err}`}>
                         <td> { formatDay(entry.sts) } </td>
                         <td> { formatTime(entry.sts) } </td>
                         <td> { formatTime(entry.ets, entry.sts) } </td>
@@ -419,8 +419,8 @@ function PerfViewer(): ReactElement {
             <Table striped bordered variant="light" className="wazz-table wazz-routes-links">
                 <thead>
                 <tr>
-                    { Array.from(data.routes.entries()).map(([, table], index) => (
-                        <th key={`link-${index}`}>
+                    { Array.from(data.routes.entries()).map(([, table]) => (
+                        <th key={`link-${table.anchor}`}>
                             <a href={`#/perf/#${table.anchor}`}
                                onClick={ (evt) =>
                                    scrollTo(evt, table.anchor) }>{table.label}</a>
