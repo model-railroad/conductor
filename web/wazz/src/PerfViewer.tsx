@@ -140,15 +140,23 @@ function PerfViewer(): ReactElement {
             routes: new Map(),
         }
 
+        function _routeLabel(routeKey: string, payload: DazzRoutePayload): string {
+            let label = routeKey.replace("route/", "").replaceAll("/", " ");
+            if (payload.name.endsWith(payload.th)) {
+                label = label.replace(`${payload.th} ${payload.th}`, payload.th);
+            }
+            return label;
+        }
+
         function _addRoutes(key: string, entries: DazzEntryDict) {
             for (const [isoTS, entry] of Object.entries(entries)) {
                 if (entry.d == null) {
                     console.log(`@@ ERROR missing entry.d: skip route ${JSON.stringify(entry)}`)
                     continue;
                 }
-                const label = key.replace("route/", "").replaceAll("/", " ");
-                const anchor = key.replaceAll("/", "-");
+                const anchor = key.replaceAll(/[^a-zA-Z0-9]/g, "-");
                 const payload = JSON.parse(entry.d) as DazzRoutePayload
+                const label = _routeLabel(key, payload);
                 const finish = payload.run.toLowerCase() === "ended"
                 // console.log(`@@ FOUND ${label}, ${finish}, ${JSON.stringify(payload)}`)
                 if (payload.nodes == null || payload.nodes.length === 0 || !finish) {

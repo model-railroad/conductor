@@ -176,15 +176,23 @@ function LiveViewer(): ReactElement {
             }
         }
 
+        function _routeLabel(routeKey: string, payload: DazzRoutePayload): string {
+            let label = routeKey.replace("route/", "").replaceAll("/", " ");
+            if (payload.name.endsWith(payload.th)) {
+                label = label.replace(`${payload.th} ${payload.th}`, payload.th);
+            }
+            return label;
+        }
+
         function _addRoutes(key: string, entries: DazzEntryDict, togglesOn: Map<string, boolean>) {
             for (const [isoTS, entry] of Object.entries(entries)) {
                 if (entry.d == null) {
                     continue;
                 }
-                const label = key.replace("route/", "").replaceAll("/", " ");
                 const sdt = DateTime.fromISO(isoTS);
                 const payload = JSON.parse(entry.d) as DazzRoutePayload
                 const th = payload.th.toLowerCase()
+                const label = _routeLabel(key, payload);
                 const finish = payload.run.toLowerCase() === "ended"
                 const edt: DateTime | undefined = finish && payload.ets != null
                     ? DateTime.fromISO(payload.ets) : undefined;
