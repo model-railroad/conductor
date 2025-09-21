@@ -250,15 +250,17 @@ function PerfViewer(): ReactElement {
         return <div className="wazz-status-text"> {status} </div>;
     }
 
-    function formatDay(dateTime: DateTime) {
+    function formatDay(dateTime: DateTime, routeSummary: string) {
         const serverDt = dateTime.setZone(SERVER_TZ);
         const dateString2 = serverDt.toLocaleString(DateTime.DATE_SHORT);
 
+        const alt1 = dateTime.toISO( {
+            format: "extended",
+            suppressMilliseconds: true
+        }) ?? "";
+
         return (
-            <span className="wazz-date" title={dateTime.toISO( {
-                format: "extended",
-                suppressMilliseconds: true
-            }) ?? ""}>
+            <span className="wazz-date" title={`${alt1}\n${routeSummary}`}>
                 {dateString2}
             </span>
         )
@@ -352,16 +354,24 @@ function PerfViewer(): ReactElement {
         return `Min: ${mis} seconds\nIdeal: ${mi2}-${ma2} seconds\nMax: ${mas} seconds`;
     }
 
-    function generateNode(key: string, index: number, indxN: number, node?: DazzRouteNode) {
+    function generateNode(key: string, nname: WazzPerfNodeName, node?: DazzRouteNode) {
         return node === undefined
-            ? <td key={`n-${key}-${index}-${indxN}`}>
+            ? <td key={`n-${key}-${nname.full}`}>
                 -
             </td>
-            : <td key={`n-${key}-${index}-${indxN}`} className={`wazz-node-${nodeColor(node)}`}>
+            : <td key={`n-${key}-${nname.full}`} className={`wazz-node-${nodeColor(node)}`}>
                                 <span title={nodeText(node)}>
                                 { node.ms > 10000 ? Math.round(node.ms/1000) : (node.ms/1000).toFixed(1) } s
                                 </span>
             </td>
+    }
+
+    function routeSummary(entry: WazzPerfRoute): string {
+        return entry.nodes.map(node => {
+            const ms = node.ms;
+            const s = ms > 10000 ? Math.round(ms/1000) : (ms/1000).toFixed(1);
+            return `${node.n} (${s} s)`;
+        }).join(" > ");
     }
 
     function generateRouteTable(key: string, table: WazzPerfRouteTable) {
@@ -385,21 +395,20 @@ function PerfViewer(): ReactElement {
                 </tr>
                 </thead>
                 {/*<tbody>*/}
-                { table.list.map((entry, index) => {
+                { table.list.map((entry) => {
                     return (
                         <>
                             <tbody>
                             <tr key={`rt-${key}-${entry.sts}-${entry.ets ?? ""}-${entry.err}`}>
-                                <td> { formatDay(entry.sts) } </td>
+                                <td> { formatDay(entry.sts, routeSummary(entry)) } </td>
                                 <td> { formatTime(entry.sts) } </td>
                                 <td> { formatTime(entry.ets, entry.sts) } </td>
                                 <td> { entry.act } </td>
                                 <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
-                                { nodeNames.map((nname, indxN) =>
+                                { nodeNames.map((nname) =>
                                     generateNode(
                                         key,
-                                        index,
-                                        indxN,
+                                        nname,
                                         entry.nodes.find(nd => nd.wFull === nname.full))
                                 )}
                             </tr>
