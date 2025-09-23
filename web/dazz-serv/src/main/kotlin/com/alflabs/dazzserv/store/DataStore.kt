@@ -262,7 +262,7 @@ class DataStore @Inject constructor(
     fun perfToJson(keyQuery: String): String {
         // Wazz Logic to serve perf data:
         // - For each key, return up to 10 success entries
-        // - Ignore the failed ones.
+        // - Display both correct and failed ones.
         // TBD optional: configure max num entries via CGI param.
 
         synchronized(data) {
@@ -272,11 +272,9 @@ class DataStore @Inject constructor(
             filteredData.forEach { (key, entries) ->
                 val newEntries = DataEntryMap()
                 for(entry in entries.entries.values) {
-                    if (entry.isState) {
-                        newEntries.add(entry)
-                        if (newEntries.entries.size >= PERF_NUM_ENTRIES) {
-                            break
-                        }
+                    newEntries.add(entry)
+                    if (newEntries.entries.size >= PERF_NUM_ENTRIES) {
+                        break
                     }
                 }
                 perfData[key] = newEntries
