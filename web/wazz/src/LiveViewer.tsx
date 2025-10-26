@@ -363,7 +363,7 @@ function LiveViewer(): ReactElement {
                         lastLabel = label;
                     }
                     return (
-                    <tr key={`st-${entry.ts}-${entry.st}`} className={`wazz-status-warning-${entry.warn ?? "undef"}`}>
+                    <tr key={`st-${entry.ts}-${label}`} className={`wazz-status-warning-${entry.warn ?? "undef"}`}>
                         <td className="wazz-route-name"> { label } </td>
                         <td> { formatStateButton(entry.st, "ON", "OFF") } </td>
                         <td> { formatDate(entry.ts) } </td>
@@ -401,7 +401,7 @@ function LiveViewer(): ReactElement {
                         lastLabel = label;
                     }
                     return (
-                    <tr key={`rt-${entry.sts}-${entry.ets ?? "" }-${entry.err}`} className={
+                    <tr key={`rt-${entry.sts}-${label}`} className={
                         `wazz-route-old-${entry.old} wazz-route-recovery-${entry.recovery} wazz-status-highlight-${entry.color ?? "undef"}`}>
                         <td className="wazz-route-name"> { label } </td>
                         <td> { formatDay(entry.sts) } </td>

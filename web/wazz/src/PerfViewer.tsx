@@ -374,23 +374,23 @@ function PerfViewer(): ReactElement {
         }).join(" > ");
     }
 
-    function generateRouteTable(key: string, table: WazzPerfRouteTable) {
+    function generateRouteTable(routeKey: string, table: WazzPerfRouteTable) {
         const nodeNames = table.nodeNames;
         const numNodes = nodeNames.length;
 
         return (
-            <Table key={`rt-${key}-table`} striped bordered variant="light" className="wazz-table wazz-routes-table">
+            <Table key={`rt-${routeKey}-table`} striped bordered variant="light" className="wazz-table wazz-routes-table">
                 <thead>
                 <tr className="wazz-table-head">
                     <th colSpan={5+numNodes}><a id={table.anchor}></a>Route {table.label}</th>
                 </tr>
-                <tr className="wazz-table-head" key={`rt-${key}-th-`}>
+                <tr className="wazz-table-head" key={`rt-th-${routeKey}`}>
                     <th colSpan={2}>Start</th>
                     <th>End</th>
                     <th>#</th>
                     <th>Status</th>
                     { nodeNames.map((nname) => (
-                        <th key={`th-n-${key}-${nname.full}`}>{nname.n} <span className="wazz-node-index">{nname.index}</span></th>
+                        <th key={`rt-th-n-${routeKey}-${nname.full}`}>{nname.n} <span className="wazz-node-index">{nname.index}</span></th>
                     ) ) }
                 </tr>
                 </thead>
@@ -399,7 +399,7 @@ function PerfViewer(): ReactElement {
                     return (
                         <>
                             <tbody>
-                            <tr key={`rt-${key}-${entry.sts}-${entry.ets ?? ""}-${entry.err}`}>
+                            <tr key={`rt-tr-${routeKey}-${entry.sts}`}>
                                 <td> { formatDay(entry.sts, routeSummary(entry)) } </td>
                                 <td> { formatTime(entry.sts) } </td>
                                 <td> { formatTime(entry.ets, entry.sts) } </td>
@@ -407,7 +407,7 @@ function PerfViewer(): ReactElement {
                                 <td> { formatStateButton(!entry.err, "OK", "ERR") } </td>
                                 { nodeNames.map((nname) =>
                                     generateNode(
-                                        key,
+                                        routeKey,
                                         nname,
                                         entry.nodes.find(nd => nd.wFull === nname.full))
                                 )}
@@ -428,8 +428,8 @@ function PerfViewer(): ReactElement {
 
         return (
             <>
-                { Array.from(data.routes.entries()).map(([key, value]) =>
-                    generateRouteTable(key, value)
+                { Array.from(data.routes.entries()).map(([routeKey, value]) =>
+                    generateRouteTable(routeKey, value)
                 ) }
             </>
         );
