@@ -219,20 +219,20 @@ on { BL_Toggle.active && exportedVars.conductorTime == End_Of_Day_HHMM } then {
 }
 
 on { ML_Toggle.active && ML_Saturday.isOff() } then {
-    exportedVars.rtacPsaText = "Automation Started"
+    exportedVars.rtacPsaText = "{bg:black}{c:#FFFF8800}Automation Started"
 }
 
 on { !ML_Toggle && exportedVars.conductorTime == End_Of_Day_HHMM } then {
-    exportedVars.rtacPsaText = "{c:orange}Automation Turned Off\\nat 4:50 PM"
+    exportedVars.rtacPsaText = "{bg:black}{c:#FFFF8800}Automation Turned Off\\nat 4:50 PM"
 }
 
 on { !ML_Toggle && exportedVars.conductorTime != End_Of_Day_HHMM
                 && ML_Saturday.isOff() } then {
-    exportedVars.rtacPsaText = "{c:orange}Automation Stopped"
+    exportedVars.rtacPsaText = "{bg:black}{c:#FFFF8800}Automation Stopped"
 }
 
 on { !ML_Saturday.isOff() && exportedVars.conductorTime != End_Of_Day_HHMM } then {
-    exportedVars.rtacPsaText = "{c:white}Saturday Trains Running"
+    exportedVars.rtacPsaText = "{bg:black}{c:white}Saturday Trains Running"
 }
 
 // ---------------------
@@ -289,16 +289,16 @@ on { !ML_Toggle } then {
 
 
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.rtacPsaText = "{c:yellow}Next:\\n${PA_Data.PSA_Name} Train"
+    exportedVars.rtacPsaText = "{bg:black}{c:yellow}Next:\\n${PA_Data.PSA_Name} Train"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Passenger } then {
-    exportedVars.rtacPsaText = "{c:yellow}Next:\\n${PA_Data.PSA_Name} Train\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{bg:black}{c:yellow}Next:\\n${PA_Data.PSA_Name} Train\\nLeaving in 1 minute"
 }
 on { ML_State == EML_State.Ready && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:green}Next:\\n${FR_Data.PSA_Name} Train"
+    exportedVars.rtacPsaText = "{bg:black}{c:green}Next:\\n${FR_Data.PSA_Name} Train"
 }
 on { ML_State == EML_State.Wait  && ML_Toggle.active && ML_Train == EML_Train.Freight  } then {
-    exportedVars.rtacPsaText = "{c:green}Next:\\n${FR_Data.PSA_Name} Train\\nLeaving in 1 minute"
+    exportedVars.rtacPsaText = "{bg:black}{c:green}Next:\\n${FR_Data.PSA_Name} Train\\nLeaving in 1 minute"
 }
 
 // --------------------
@@ -519,7 +519,7 @@ val ML_Route = routes {
             label = "Mainline"
             user = "Staff"
         }
-        exportedVars.rtacPsaText = "{b:red}{c:white}Automation ERROR"
+        exportedVars.rtacPsaText = "{bg:black}{b:red}{c:white}Automation ERROR"
 
         ML_Fn_Try_Recover_Route()
     }
@@ -749,7 +749,7 @@ val Passenger_Route = ML_Route.sequence {
 
         ML_Train = EML_Train.Passenger
         ML_State = EML_State.Run
-        exportedVars.rtacPsaText = "{c:yellow}Currently Running:\\n${PA_Data.PSA_Name} Train"
+        exportedVars.rtacPsaText = "{bg:black}{c:yellow}Currently Running:\\n${PA_Data.PSA_Name} Train"
         throttle.incActivationCount()
         PA.light(On)
         PA.bell(Off)
@@ -1042,7 +1042,7 @@ val Freight_Route = ML_Route.sequence {
     onActivate {
         ML_Train = EML_Train.Freight
         ML_State = EML_State.Run
-        exportedVars.rtacPsaText = "{c:green}Currently Running:\\n${FR_Data.PSA_Name} Train"
+        exportedVars.rtacPsaText = "{bg:black}{c:green}Currently Running:\\n${FR_Data.PSA_Name} Train"
         throttle.incActivationCount()
     }
 
@@ -1451,7 +1451,7 @@ fun ML_Fn_Try_Recover_Route() {
         log("[ML Recovery] Track occupied (Passenger: $PA_names, Freight: $FR_names)")
 
         val names = PA_names.plus(FR_names).map { it.name }.distinct()
-        exportedVars.rtacPsaText = "{b:red}{c:white}Automation Error\\nCheck Track $names"
+        exportedVars.rtacPsaText = "{bg:black}{b:red}{c:white}Automation Error\\nCheck Track $names"
         analytics.gaEvent {
             category = "Automation"
             action = "Warning"
