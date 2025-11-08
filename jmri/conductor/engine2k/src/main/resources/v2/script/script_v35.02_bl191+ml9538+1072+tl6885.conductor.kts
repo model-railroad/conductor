@@ -109,7 +109,7 @@ fun Ambiance_On() {
     log("[Ambiance] Light effect for ${_ambianceMonth}")
 
     when (_ambianceMonth) {
-        Month.NOVEMBER -> {
+        Month.OCTOBER, Month.NOVEMBER -> {
             // Halloween Ambience Light
             mqtt.publish(
                 "ambiance/script/init",
@@ -1815,7 +1815,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
 ) else if (BL.dccAddress == 191) _BL_Data(
     Has_Gyro = false,
     Speed                   = 8.speed,
-    Speed_Station           = 4.speed,
+    Speed_Station           = 6.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Horn_Fwd   = 22.seconds,
     Delay_Canyon_Horn_Rev   = 36.seconds,
