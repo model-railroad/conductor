@@ -84,7 +84,7 @@ class StatusWindow2k : IStatusWindow {
 
     companion object {
         // Version number should match jmri/conductor/gradle.properties
-        private const val VERSION = "2.8"
+        private const val VERSION = "2.9"
         private const val VERBOSE = true
         private const val midColumnW = 150
         private const val midThrottleH = 40
