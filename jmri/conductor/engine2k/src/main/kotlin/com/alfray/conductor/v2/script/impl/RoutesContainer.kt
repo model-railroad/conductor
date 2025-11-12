@@ -67,6 +67,8 @@ internal class RoutesContainer @AssistedInject constructor(
     override val name = builder.name
     override val toggle = builder.toggle
     override val status = builder.status
+    override var enabled = builder.enabled
+        private set
     private val actionOnError = builder.actionOnError
     private var callOnError: TAction? = null
     private var _active: RouteBase? = null
@@ -80,7 +82,7 @@ internal class RoutesContainer @AssistedInject constructor(
     override val routes: List<IRoute>
         get() = _routes
     override val error: Boolean
-        get() = _active?.state == RouteBase.State.ERROR
+        get() = _active == null || _active?.state == RouteBase.State.ERROR
 
     /** Helper returning the index of this route in the routes container table.
      * Used for pretty-printing the route toString. Returns -1 if route unknown. */
@@ -133,6 +135,11 @@ internal class RoutesContainer @AssistedInject constructor(
     override fun activate(route: IRoute) {
         logger.assertOrThrow(TAG, route in _routes) {
             "ERROR $this: cannot activate a route not part of a routes container: $route"
+        }
+
+        if (!route.enabled) {
+            logger.d(TAG, "ERROR $this: cannot activate disabled route: $route")
+            return
         }
 
         _active?.let {
@@ -191,15 +198,25 @@ internal class RoutesContainer @AssistedInject constructor(
     }
 
     override fun onExecStart() {
-        logger.assertOrThrow(TAG, _routes.isNotEmpty()) {
-            "ERROR $this: A routes container must contain at least one route definition, such as 'idle{}'."
+        // Select the first enabled route for this container.
+        // It's a fatal error for a container to not have at least one route associated to it.
+        val enabledRoutes = _routes.filter { it.enabled }
+
+        if (enabledRoutes.isEmpty()) {
+            // We can't do anything with an empty route container.
+            this.enabled = false
         }
+        logger.assertOrThrow(TAG, enabledRoutes.isNotEmpty()) {
+            "ERROR $this: A routes container must contain at least one enabled route definition, such as 'idle{}'."
+        }
+
         _routes.forEach {
             it as RouteBase
             it.changeState(RouteBase.State.IDLE)
         }
         if (_active == null) {
-            activate(_routes.first())
+            activate(enabledRoutes.first())
+
         }
         val route = _active
         if (route is IRouteManager) {

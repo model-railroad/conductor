@@ -121,18 +121,20 @@ class ExecEngine2k @Inject internal constructor(
     }
 
     private fun exportRoutes() {
-        conductor.routesContainers.forEach { ar ->
-            ar.routes.forEach {
+        val enabledContainers = conductor.routesContainers.filter { it.enabled }
+
+        enabledContainers.forEach { container ->
+            container.routes.forEach {
                 if (it is SequenceRoute) {
-                    logger.d(TAG, "RoutesContainer [${ar.name}]: $it = ${it.graph}")
+                    logger.d(TAG, "RoutesContainer [${container.name}]: $it = ${it.graph}")
                 } else {
-                    logger.d(TAG, "RoutesContainer [${ar.name}]: $it")
+                    logger.d(TAG, "RoutesContainer [${container.name}]: $it")
                 }
             }
         }
 
         val infos = RouteInfos(
-            conductor.routesContainers.map { (it as RoutesContainer).routeInfo }.toTypedArray())
+            enabledContainers.map { (it as RoutesContainer).routeInfo }.toTypedArray())
 
         try {
             keyValue.putValue(Constants.RoutesKey, infos.toJsonString(), true)
@@ -174,7 +176,11 @@ class ExecEngine2k @Inject internal constructor(
         conductor.sensors.forEach { (_, sensor) -> (sensor as IExecEngine).onExecHandle() }
         conductor.turnouts.forEach { (_, turnout) -> (turnout as IExecEngine).onExecHandle() }
         conductor.throttles.forEach { (_, throttle) -> (throttle as IExecEngine).onExecHandle() }
-        conductor.routesContainers.forEach { (it as IExecEngine).onExecHandle() }
+        conductor.routesContainers.forEach { container ->
+            if (container.enabled) {
+                (container as IExecEngine).onExecHandle()
+            }
+        }
     }
 
     private fun repeatSpeed() {
@@ -216,10 +222,12 @@ class ExecEngine2k @Inject internal constructor(
         currentContext.resetContext()
         currentContext.scriptLoaderContext.evalOnRules(this::collectOnRuleAction)
 
-        // Add rules from any currently routes container, in order.
+        // Add rules from any currently enabled routes container, in order.
         conductor.routesContainers.forEach { container ->
-            container as RoutesContainer
-            container.collectActions(activatedActions)
+            if (container.enabled) {
+                container as RoutesContainer
+                container.collectActions(activatedActions)
+            }
         }
 
         // Process all after timers

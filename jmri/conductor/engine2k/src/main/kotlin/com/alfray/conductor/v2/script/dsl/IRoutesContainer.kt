@@ -41,6 +41,10 @@ interface IRoutesContainer {
     /** True if the current route is in error. Useful as a script on..then condition test. */
     val error : Boolean
 
+    /** True if the routes container is enabled.
+     * When disabled, this is excluded from engine updates */
+    val enabled : Boolean
+
     /** Registers a new idle route and adds it to the container. */
     fun idle(idleRouteSpecification: IIdleRouteBuilder.() -> Unit): IRoute
 

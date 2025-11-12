@@ -18,7 +18,7 @@
 
 package com.alfray.conductor.v2.script.dsl
 
-/** Interal DSL script interface to create a new [IRoutesContainer]. */
+/** Internal DSL script interface to create a new [IRoutesContainer]. */
 interface IRoutesContainerBuilder {
     /**
      * The exported name of this route container. Mandatory.
@@ -41,6 +41,9 @@ interface IRoutesContainerBuilder {
      * The default implementation returns the string "Idle".
      */
     var status: () -> String
+
+    /** True if the route container is enabled. */
+    var enabled : Boolean
 
     /** Callback when a route becomes in error. */
     fun onError(action: TAction)

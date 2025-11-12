@@ -34,6 +34,7 @@ internal open class RouteBaseBuilder(
     override var name: String = ""
     override val routes: IRoutesContainer
         get() = owner
+    override var enabled: Boolean = true
 
     override fun onActivate(action: TAction) {
         logger.assertOrThrow(TAG, actionOnActivate == null) {

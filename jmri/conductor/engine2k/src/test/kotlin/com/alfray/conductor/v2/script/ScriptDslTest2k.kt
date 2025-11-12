@@ -716,7 +716,9 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             toggle = Toggle
             status = { "My Idle Route" }
         }
-        val Route_Idle = Routes.idle {}
+        val Route_Idle = Routes.idle {
+            name = "Idle Route"
+        }
         """.trimIndent()
         )
         assertResultNoError()
@@ -725,7 +727,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val routesContainer = conductorImpl.routesContainers[0]
         val route = routesContainer.active
         assertThat(route).isInstanceOf(IIdleRoute::class.java)
-        assertThat(route.toString()).isEqualTo("Idle PA #0")
+        assertThat(route.toString()).isEqualTo("Idle PA #0 Idle Route")
         assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
 
         execEngine.onExecHandle()
@@ -750,6 +752,142 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         ).inOrder()
     }
 
+    @Test
+    fun testIdleRoute_withDisabledRouteContainer() {
+        loadScriptFromText(scriptText =
+            """
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+            status = { "My Idle Route" }
+            enabled = false
+        }
+        val Route_Idle = Routes.idle {
+            name = "Idle Route"
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val routesContainer = conductorImpl.routesContainers[0]
+        val route = routesContainer.active
+        assertThat(route).isInstanceOf(IIdleRoute::class.java)
+        assertThat(route.toString()).isEqualTo("Idle PA #0 Idle Route")
+        assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            "M/maps={\"mapInfos\":[]}",
+            "R/routes={\"routeInfos\":[]}",
+            "S/S01=OFF",
+            "V/\$estop-state\$=NORMAL",
+            "V/conductor-time=1342",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
+    }
+
+    @Test
+    fun testIdleRoute_errorWithAllDisabledRoute() {
+        loadScriptFromText(scriptText =
+            """
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+            status = { "My Idle Route" }
+        }
+        val Route_Idle = Routes.idle {
+            name = "Disabled Idle"
+            enabled = false
+        }
+        """.trimIndent()
+        )
+        assertResultContainsError("ERROR RoutesContainer PA: A routes container must contain at least one enabled route definition, such as 'idle{}'.")
+
+        // The container is here, yet it contains no usable route.
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+        val routesContainer = conductorImpl.routesContainers[0]
+        // The container is automatically changed to disabled and in error.
+        assertThat(routesContainer.enabled).isFalse()
+        assertThat(routesContainer.error).isTrue()
+        assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
+        // As the container is now disabled, it is excluded from ExecHandle processing.
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            "S/S01=OFF",
+            "V/conductor-time=1342",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
+    }
+
+    @Test
+    fun testIdleRoute_selectsFirstEnabledRoute() {
+        loadScriptFromText(scriptText =
+            """
+        val Toggle = sensor("S01")
+        val Routes = routes {
+            name = "PA"
+            toggle = Toggle
+            status = { "My Idle Route" }
+        }
+        // the first route is disabled and does not get auto-selected as start route
+        val Route_Idle_Disabled = Routes.idle {
+            name = "Disabled Idle"
+            enabled = false
+        }
+        val Route_Idle_Enabled = Routes.idle {
+            name = "Enabled Idle"
+            enabled = true
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+        assertThat(conductorImpl.routesContainers).hasSize(1)
+
+        val routesContainer = conductorImpl.routesContainers[0]
+        val route = routesContainer.active
+        assertThat(route).isInstanceOf(IIdleRoute::class.java)
+        // The auto-selected route skips the first route because it is disabled.
+        assertThat(route.toString()).isEqualTo("Idle PA #1 Enabled Idle")
+        assertThat(routesContainer.toString()).isEqualTo("RoutesContainer PA")
+
+        execEngine.onExecHandle()
+        execEngine.onExecHandle()
+
+        val kv = keyValue.keys
+            .sorted()
+            .map { "$it=" + keyValue.getValue(it) }
+            .toList()
+        assertThat(kv).containsExactly(
+            "M/maps={\"mapInfos\":[]}",
+            "R/pa\$counter=0",
+            "R/pa\$status=My Idle Route",
+            "R/pa\$throttle=0",
+            "R/pa\$toggle=OFF",
+            "R/routes={\"routeInfos\":[{\"name\":\"PA\",\"toggleKey\":\"R/pa\$toggle\",\"statusKey\":\"R/pa\$status\",\"counterKey\":\"R/pa\$counter\",\"throttleKey\":\"R/pa\$throttle\"}]}",
+            "S/S01=OFF",
+            "V/\$estop-state\$=NORMAL",
+            "V/conductor-time=1342",
+            "V/rtac-motion=OFF",
+            "V/rtac-psa-text=",
+        ).inOrder()
+    }
 
     @Test
     fun testIdleRoute_onIdle() {

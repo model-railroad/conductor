@@ -40,6 +40,7 @@ internal abstract class RouteBase(
     private val actionOnError = builder.actionOnError
     private var callOnError: TAction? = null
     override val name = builder.name
+    override val enabled = builder.enabled
     val context = ExecContext(ExecContext.Reason.ROUTE)
     var activationCounter = 0
         private set

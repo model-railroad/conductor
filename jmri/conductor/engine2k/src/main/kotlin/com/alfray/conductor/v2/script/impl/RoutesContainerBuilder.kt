@@ -36,6 +36,7 @@ internal class RoutesContainerBuilder @Inject constructor(
     override lateinit var name: String
     override lateinit var toggle: ISensor
     override lateinit var status: () -> String
+    override var enabled: Boolean = true
 
     override fun onError(action: TAction) {
         logger.assertOrThrow(TAG, actionOnError == null) {

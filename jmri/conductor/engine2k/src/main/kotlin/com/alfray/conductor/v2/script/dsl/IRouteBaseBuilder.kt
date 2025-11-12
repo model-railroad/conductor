@@ -27,6 +27,9 @@ interface IRouteBaseBuilder {
     /** The routes container owning this route. Cannot be null. */
     val routes: IRoutesContainer
 
+    /** True if the route is enabled. */
+    var enabled : Boolean
+
     /** Callback when a route is being activated. Called once after activation. */
     fun onActivate(action: TAction)
 

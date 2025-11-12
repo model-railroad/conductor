@@ -29,6 +29,10 @@ interface IRoute {
     /** The [IRoutesContainer] containing this route. */
     val owner: IRoutesContainer
 
+    /** True if the route is enabled.
+     * When disabled, this is excluded from engine updates and cannot be activated. */
+    val enabled : Boolean
+
     /** Activates this route in its [IRoutesContainer], or resets & re-activates the current route. */
     fun activate()
 
