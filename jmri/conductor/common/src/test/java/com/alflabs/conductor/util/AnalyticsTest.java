@@ -76,14 +76,17 @@ public class AnalyticsTest {
                 mOkHttpClient,
                 mLocalDateTimeNowProvider) {
             // For testing purposes, we want to ensure the loop has been able to run at least
-            // once before we allow a shutdown. Otherwise, we may shutdown the thread under
-            // test before it even got a chance to execute the operation under test.
-            private final CountDownLatch mLatchRunLoop = new CountDownLatch(1);
+            // a couple of times before we allow a shutdown. Otherwise, we may shutdown the thread
+            // under test before it even got a chance to execute the operation under test.
+            private final CountDownLatch mLatchRunLoop = new CountDownLatch(2);
+            private boolean mShutdownRequested;
 
             @Override
             protected void _runInThreadLoop() throws EndLoopException {
                 super._runInThreadLoop();
-                mLatchRunLoop.countDown();
+                if (mShutdownRequested) {
+                    mLatchRunLoop.countDown();
+                }
             }
 
             @Override
@@ -91,6 +94,7 @@ public class AnalyticsTest {
                 // This pause is necessary to give the thread loop a deterministic chance to run.
                 // Without that pause, the test is flaky because we might shut down before ever
                 // running the loop with the operation under test.
+                mShutdownRequested = true;
                 //noinspection ResultOfMethodCallIgnored
                 mLatchRunLoop.await(250, TimeUnit.MILLISECONDS);
                 super.shutdown();

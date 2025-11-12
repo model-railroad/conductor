@@ -35,7 +35,6 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -43,7 +42,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
