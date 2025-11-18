@@ -1830,13 +1830,13 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     MaxSecondsEnterBlock    = 4,
 ) else if (BL.dccAddress == 376) _BL_Data(
     Has_Gyro = false,
-    Speed                   = 6.speed,
+    Speed                   = 8.speed,
     Speed_Station           = 6.speed,
     Delay_Start             = 10.seconds,
-    Delay_Canyon_Horn_Fwd   = 22.seconds,
-    Delay_Canyon_Horn_Rev   = 36.seconds,
-    Delay_YouBet_Stop       = 6.seconds,
-    Delay_AngelsCamp_Stop   = 8.seconds,
+    Delay_Canyon_Horn_Fwd   = 23.seconds,
+    Delay_Canyon_Horn_Rev   = 30.seconds,
+    Delay_YouBet_Stop       = 7.seconds,
+    Delay_AngelsCamp_Stop   = 5.seconds,
     MinSecondsOnBlock       = 10,
     MaxSecondsEnterBlock    = 4,
 ) else _BL_Data()
