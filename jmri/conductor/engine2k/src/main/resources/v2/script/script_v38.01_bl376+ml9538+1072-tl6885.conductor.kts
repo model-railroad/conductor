@@ -1840,7 +1840,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  =  8.seconds,
     Delay_Canyon_Speed_Rev  = 28.seconds,
-    Delay_Canyon_Speed_Dur  = 10.seconds,
+    Delay_Canyon_Speed_Dur  =  8.seconds,
     Delay_YouBet_Stop       = 7.seconds,
     Delay_AngelsCamp_Stop   = 5.seconds,
     MinSecondsOnBlock       = 10,
@@ -2123,9 +2123,9 @@ val BL_Shuttle_Route = BL_Route.sequence {
             // Horn over Bridge + Speed in 2nd tunnel
             after (BL_Data.Delay_Canyon_Speed_Rev) then {
                 BL.horn()
-                BL.forward(BL_Data.Speed_Canyon)
+                BL.reverse(BL_Data.Speed_Canyon)
             } and_after (BL_Data.Delay_Canyon_Speed_Dur) then {
-                BL.forward(BL_Data.Speed_Normal)
+                BL.reverse(BL_Data.Speed_Normal)
                 BL.horn()
             }
         }
