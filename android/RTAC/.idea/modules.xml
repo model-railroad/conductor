@@ -17,7 +17,6 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.main.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/androidsvg/androidsvg/RTAC.androidsvg.unitTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.androidTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RTAC.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RTAC.app.unitTest.iml" />
