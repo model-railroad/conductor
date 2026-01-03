@@ -1787,9 +1787,8 @@ data class _BL_Data(
     val Delay_Start: Delay              =  8.seconds,
     val Delay_Bell: Delay               =  5.seconds,
     val Delay_UpToSpeed: Delay          = 10.seconds,
-    val Delay_Canyon_Horn_Fwd: Delay    = 23.seconds,
-    val Delay_Canyon_Horn_Rev: Delay    = 41.seconds,
-    val Delay_Canyon_Speed_Fwd: Delay   = 10.seconds,
+    val Delay_Canyon_Speed_Fwd: Delay   =  8.seconds,
+    val Delay_Canyon_Speed_Rev: Delay   = 40.seconds,
     val Delay_Canyon_Speed_Dur: Delay   = 10.seconds,
     val Delay_YouBet_Stop: Delay        =  8.seconds,
     val Delay_YouBet_Pause: Delay       = 25.seconds,
@@ -1815,8 +1814,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Normal            = 8.speed,
     Speed_Canyon            = 8.speed,
     Delay_Start             = 10.seconds,
-    Delay_Canyon_Horn_Fwd   = 22.seconds,
-    Delay_Canyon_Horn_Rev   = 36.seconds,
+    Delay_Canyon_Speed_Fwd  = 12.seconds,
+    Delay_Canyon_Speed_Rev  = 35.seconds,
     Delay_YouBet_Stop       = 6.seconds,
     Delay_AngelsCamp_Stop   = 8.seconds,
     MinSecondsOnBlock       = 10,
@@ -1827,8 +1826,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Normal            = 8.speed,
     Speed_Canyon            = 8.speed,
     Delay_Start             = 10.seconds,
-    Delay_Canyon_Horn_Fwd   = 22.seconds,
-    Delay_Canyon_Horn_Rev   = 36.seconds,
+    Delay_Canyon_Speed_Fwd  = 12.seconds,
+    Delay_Canyon_Speed_Rev  = 35.seconds,
     Delay_YouBet_Stop       = 6.seconds,
     Delay_AngelsCamp_Stop   = 8.seconds,
     MinSecondsOnBlock       = 10,
@@ -1839,9 +1838,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Normal            = 8.speed,
     Speed_Canyon            = 12.speed,
     Delay_Start             = 10.seconds,
-    Delay_Canyon_Horn_Fwd   = 23.seconds,
-    Delay_Canyon_Horn_Rev   = 30.seconds,
-    Delay_Canyon_Speed_Fwd  = 10.seconds,
+    Delay_Canyon_Speed_Fwd  =  8.seconds,
+    Delay_Canyon_Speed_Rev  = 28.seconds,
     Delay_Canyon_Speed_Dur  = 10.seconds,
     Delay_YouBet_Stop       = 7.seconds,
     Delay_AngelsCamp_Stop   = 5.seconds,
@@ -2062,10 +2060,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             BL.horn()
             BL.forward(BL_Data.Speed_Normal)
 
-            // Horn over Canyon bridge
-            //after (BL_Data.Delay_Canyon_Horn_Fwd) then {
-            //    BL.horn()
-            //}
+            // Speed in first tunnel + Horn over Canyon bridge
             after (BL_Data.Delay_Canyon_Speed_Fwd) then {
                 BL.horn()
                 BL.forward(BL_Data.Speed_Canyon)
@@ -2125,7 +2120,12 @@ val BL_Shuttle_Route = BL_Route.sequence {
         // Typical run time: 75 seconds.
         onEnter {
             BL.horn()
-            after (BL_Data.Delay_Canyon_Horn_Rev) then {
+            // Horn over Bridge + Speed in 2nd tunnel
+            after (BL_Data.Delay_Canyon_Speed_Rev) then {
+                BL.horn()
+                BL.forward(BL_Data.Speed_Canyon)
+            } and_after (BL_Data.Delay_Canyon_Speed_Dur) then {
+                BL.forward(BL_Data.Speed_Normal)
                 BL.horn()
             }
         }
