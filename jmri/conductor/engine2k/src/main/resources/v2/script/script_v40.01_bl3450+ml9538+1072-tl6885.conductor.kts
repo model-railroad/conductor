@@ -1859,7 +1859,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Canyon            = 6.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
-    Delay_Canyon_Speed_Rev  = 36.seconds,
+    Delay_Canyon_Speed_Rev  = 12.seconds,
     Delay_Canyon_Speed_Dur  =  8.seconds,
     Delay_YouBet_Stop       = 8.seconds,
     Delay_AngelsCamp_Stop   = 9.seconds,
@@ -2097,7 +2097,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         maxSecondsOnBlock = 40
         maxSecondsEnterBlock = 10
         onEnter {
-            BL.forward(BL_Data.Speed_Tunnel)
+            BL.forward(BL_Data.Speed_Normal)
             BL.horn()
         }
     }
