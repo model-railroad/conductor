@@ -109,7 +109,7 @@ fun Ambiance_On() {
     log("[Ambiance] Light effect for ${_ambianceMonth}")
 
     when (_ambianceMonth) {
-        Month.OCTOBER, Month.NOVEMBER -> {
+        java.time.Month.OCTOBER, java.time.Month.NOVEMBER -> {
             // Halloween Ambience Light
             mqtt.publish(
                 "ambiance/script/init",
@@ -120,7 +120,7 @@ fun Ambiance_On() {
                 "Slide -0.05 100")
         }
 
-        Month.DECEMBER -> {
+        java.time.Month.DECEMBER -> {
             // Xmas Ambiance Light
             mqtt.publish(
                 "ambiance/script/init",
@@ -1783,6 +1783,7 @@ data class _BL_Data(
     val Speed_Station: DccSpeed         = 4.speed,
     val Speed_Normal: DccSpeed          = 6.speed,
     val Speed_Canyon: DccSpeed          = 6.speed,
+    val Speed_Tunnel: DccSpeed          = 6.speed,
 
     val Delay_Start: Delay              =  8.seconds,
     val Delay_Bell: Delay               =  5.seconds,
@@ -1812,6 +1813,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Has_Gyro = false,
     Speed_Station           = 4.speed,
     Speed_Normal            = 8.speed,
+    Speed_Tunnel            = 8.speed,
     Speed_Canyon            = 8.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
@@ -1824,6 +1826,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Has_Gyro = false,
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
+    Speed_Tunnel            = 8.speed,
     Speed_Canyon            = 8.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
@@ -1836,6 +1839,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Has_Gyro = false,
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
+    Speed_Tunnel            = 8.speed,
     Speed_Canyon            = 12.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  =  8.seconds,
@@ -1851,6 +1855,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Has_Gyro = false,
     Speed_Station           = 2.speed,
     Speed_Normal            = 4.speed,
+    Speed_Tunnel            = 6.speed,
     Speed_Canyon            = 6.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
@@ -2080,7 +2085,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
                 BL.horn()
                 BL.forward(BL_Data.Speed_Canyon)
             } and_after (BL_Data.Delay_Canyon_Speed_Dur) then {
-                BL.forward(BL_Data.Speed_Normal)
+                BL.forward(BL_Data.Speed_Tunnel)
                 BL.horn()
             }
         }
@@ -2092,6 +2097,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
         maxSecondsOnBlock = 40
         maxSecondsEnterBlock = 10
         onEnter {
+            BL.forward(BL_Data.Speed_Tunnel)
             BL.horn()
         }
     }
@@ -2099,6 +2105,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B860_YouBet_fwd = node(B860) {
         // Typical run time: 60 seconds.
         onEnter {
+            BL.forward(BL_Data.Speed_Normal)
             BL.horn()
             BL.bell(On)
             after (BL_Data.Delay_YouBet_Stop) then {
@@ -2127,6 +2134,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
     val B850_Tunnel_rev = node(B850) {
         // Typical run time: 25 seconds.
         onEnter {
+            BL.reverse(BL_Data.Speed_Tunnel)
             BL.horn()
         }
     }
