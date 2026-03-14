@@ -1782,7 +1782,8 @@ data class _BL_Data(
 
     val Speed_Station: DccSpeed         = 4.speed,
     val Speed_Normal: DccSpeed          = 6.speed,
-    val Speed_Canyon: DccSpeed          = 6.speed,
+    val Speed_Canyon_Fwd: DccSpeed      = 6.speed,
+    val Speed_Canyon_Rev: DccSpeed      = 6.speed,
     val Speed_Tunnel: DccSpeed          = 6.speed,
 
     val Delay_Start: Delay              =  8.seconds,
@@ -1814,7 +1815,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Station           = 4.speed,
     Speed_Normal            = 8.speed,
     Speed_Tunnel            = 8.speed,
-    Speed_Canyon            = 8.speed,
+    Speed_Canyon_Fwd        = 8.speed,
+    Speed_Canyon_Rev        = 8.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
     Delay_Canyon_Speed_Rev  = 35.seconds,
@@ -1827,7 +1829,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
     Speed_Tunnel            = 8.speed,
-    Speed_Canyon            = 8.speed,
+    Speed_Canyon_Fwd        = 8.speed,
+    Speed_Canyon_Rev        = 8.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
     Delay_Canyon_Speed_Rev  = 35.seconds,
@@ -1840,7 +1843,8 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
     Speed_Tunnel            = 8.speed,
-    Speed_Canyon            = 12.speed,
+    Speed_Canyon_Fwd        = 12.speed,
+    Speed_Canyon_Rev        = 12.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  =  8.seconds,
     Delay_Canyon_Speed_Rev  = 28.seconds,
@@ -1853,18 +1857,19 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     // This is an Econami: F8_is_Mute=True
     F8_is_Mute = true,
     Has_Gyro = false,
-    Speed_Station           = 2.speed,
-    Speed_Normal            = 4.speed,
-    Speed_Tunnel            = 6.speed,
-    Speed_Canyon            = 6.speed,
+    Speed_Station           =  4.speed,
+    Speed_Normal            =  4.speed,
+    Speed_Tunnel            =  6.speed,
+    Speed_Canyon_Fwd        =  6.speed,
+    Speed_Canyon_Rev        =  8.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
-    Delay_Canyon_Speed_Rev  = 12.seconds,
-    Delay_Canyon_Speed_Dur  =  8.seconds,
-    Delay_YouBet_Stop       = 8.seconds,
-    Delay_AngelsCamp_Stop   = 9.seconds,
+    Delay_Canyon_Speed_Rev  =  2.seconds,
+    Delay_Canyon_Speed_Dur  = 18.seconds,
+    Delay_YouBet_Stop       =  8.seconds,
+    Delay_AngelsCamp_Stop   =  9.seconds,
     MinSecondsOnBlock       = 10,
-    MaxSecondsEnterBlock    = 4,
+    MaxSecondsEnterBlock    =  4,
 ) else _BL_Data()
 
 
@@ -2083,7 +2088,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             // Speed in first tunnel + Horn over Canyon bridge
             after (BL_Data.Delay_Canyon_Speed_Fwd) then {
                 BL.horn()
-                BL.forward(BL_Data.Speed_Canyon)
+                BL.forward(BL_Data.Speed_Canyon_Fwd)
             } and_after (BL_Data.Delay_Canyon_Speed_Dur) then {
                 BL.forward(BL_Data.Speed_Tunnel)
                 BL.horn()
@@ -2146,7 +2151,7 @@ val BL_Shuttle_Route = BL_Route.sequence {
             // Horn over Bridge + Speed in 2nd tunnel
             after (BL_Data.Delay_Canyon_Speed_Rev) then {
                 BL.horn()
-                BL.reverse(BL_Data.Speed_Canyon)
+                BL.reverse(BL_Data.Speed_Canyon_Rev)
             } and_after (BL_Data.Delay_Canyon_Speed_Dur) then {
                 BL.reverse(BL_Data.Speed_Normal)
                 BL.horn()

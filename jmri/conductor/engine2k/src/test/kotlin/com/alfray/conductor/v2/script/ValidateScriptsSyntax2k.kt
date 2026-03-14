@@ -144,7 +144,7 @@ class ValidateScriptsSyntax2k : ScriptTest2kBase() {
 
     @Test
     fun testScript40() {
-        loadScriptFromFile("script_v40.01_bl3450+ml9538+1072-tl6885.conductor.kts")
+        loadScriptFromFile("script_v40.02_bl3450+ml9538+1072-tl6885.conductor.kts")
         assertResultNoError()
     }
 }
