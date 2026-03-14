@@ -1796,6 +1796,9 @@ data class _BL_Data(
     val Delay_YouBet_Pause: Delay       = 25.seconds,
     val Delay_AngelsCamp_Stop: Delay    =  6.seconds,
     val Delay_AngelsCamp_Rev: Delay     =  8.seconds,
+    val Delay_Parked_Stop: Delay        = 10.seconds,
+    val Delay_Parked_Bell_Off: Delay    =  3.seconds,
+    val Delay_Parked_Light_Off: Delay   =  5.seconds,
 
     val MinSecondsOnBlock: Int          = 10,
     val MaxSecondsEnterBlock: Int       = 20,
@@ -1868,6 +1871,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     Delay_Canyon_Speed_Dur  = 18.seconds,
     Delay_YouBet_Stop       =  8.seconds,
     Delay_AngelsCamp_Stop   =  9.seconds,
+    Delay_Parked_Stop       =  2.seconds,
     MinSecondsOnBlock       = 10,
     MaxSecondsEnterBlock    =  4,
 ) else _BL_Data()
@@ -2160,11 +2164,11 @@ val BL_Shuttle_Route = BL_Route.sequence {
     }
 
     fun sequenceTurnOff() {
-        after (10.seconds) then {
+        after (BL_Data.Delay_Parked_Stop) then {
             BL.stop()
-        } and_after (3.seconds) then {
+        } and_after (BL_Data.Delay_Parked_Bell_Off) then {
             BL.bell(Off)
-        } and_after (5.seconds) then {
+        } and_after (BL_Data.Delay_Parked_Light_Off) then {
             BL.light(Off)
             BL.sound(Off)
             BL_Send_Stop_GaEvent()
