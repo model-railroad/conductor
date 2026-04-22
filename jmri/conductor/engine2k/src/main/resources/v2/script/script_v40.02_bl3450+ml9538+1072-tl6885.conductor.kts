@@ -895,6 +895,7 @@ val Passenger_Route = ML_Route.sequence {
             //    PA_doppler(Off)
             //}
             after (PA_Data.Delay_B321_Down_Crossover) then {
+                PA.reverse(PA_Data.Crossover_Speed)
                 PA.horn()
                 PA.bell(On)
                 PA.reverse(PA_Data.Crossover_Speed)
@@ -903,9 +904,10 @@ val Passenger_Route = ML_Route.sequence {
     }
 
     val B504_rev = node(B504) {
-        minSecondsOnBlock = 8
+        minSecondsOnBlock = 7
         maxSecondsOnBlock = 60
         onEnter {
+            PA.reverse(PA_Data.Crossover_Speed)
             PA.horn()
         }
     }
@@ -916,6 +918,7 @@ val Passenger_Route = ML_Route.sequence {
         maxSecondsOnBlock = 30
         maxSecondsEnterBlock = 10
         onEnter {
+            PA.reverse(PA_Data.Crossover_Speed)
             PA.horn()
         }
     }
