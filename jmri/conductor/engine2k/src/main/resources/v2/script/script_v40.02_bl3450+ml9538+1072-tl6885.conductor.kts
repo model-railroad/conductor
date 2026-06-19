@@ -658,17 +658,17 @@ data class _PA_Data(
 )
 
 val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
-    F8_is_Mute                = true, // Tsunami
-    Leaving_Speed             = 4.speed,
-    Summit_Speed              = 4.speed,
-    Summit_Bridge_Speed       = 6.speed,
-    Sonora_Speed              = 6.speed,
-    Crossover_Speed           = 4.speed,
-    Full_Speed                = 8.speed,
-    Recover_Speed             = 8.speed,
-    Delay_B370_Entrance       = 10.seconds,
+    F8_is_Mute              = true, // Tsunami
+    Leaving_Speed           = 4.speed,
+    Summit_Speed            = 4.speed,
+    Summit_Bridge_Speed     = 6.speed,
+    Sonora_Speed            = 6.speed,
+    Crossover_Speed         = 4.speed,
+    Full_Speed              = 8.speed,
+    Recover_Speed           = 8.speed,
+    Delay_B370_Entrance     = 10.seconds,
 ) else if (PA.dccAddress == 3609) _PA_Data(
-    F8_is_Mute                = false, // LokSound
+    F8_is_Mute              = false, // LokSound
     Leaving_Speed           = 10.speed,
     Summit_Speed            = 10.speed,
     Summit_Bridge_Speed     = 8.speed,
@@ -680,7 +680,7 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
     Delay_B370_Entrance     = 8.seconds,
 ) else if (PA.dccAddress == 8330 || PA.dccAddress == 8312) _PA_Data(
     // Values for Walthers UP 8312 or 8330 with new LS5 using S0822 sound project.
-    F8_is_Mute                = false, // LokSound
+    F8_is_Mute              = false, // LokSound
     Leaving_Speed           = 8.speed,
     Summit_Speed            = 10.speed,
     Summit_Bridge_Speed     = 8.speed,
@@ -691,7 +691,7 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
     Delay_B370_Entrance     = 4.seconds,
 ) else if (PA.dccAddress == 8749 || PA.dccAddress == 8736) _PA_Data(
     // Values for Athearn UP 8749 or 8736.
-    F8_is_Mute                = true, // Tsunami
+    F8_is_Mute              = true, // Tsunami
     Leaving_Speed           = 6.speed,
     Summit_Speed            = 6.speed,
     Summit_Bridge_Speed     = 4.speed,
@@ -706,7 +706,7 @@ val PA_Data = if (PA.dccAddress == 8401) _PA_Data(
     Delay_B503b_Down_Stop   = 10.seconds,
 ) else if (PA.dccAddress == 9538) _PA_Data(
     // Values for Bachmann UP 9538.
-    F8_is_Mute                = true, // TCS WoW Diesel
+    F8_is_Mute              = true, // TCS WoW Diesel
     Leaving_Speed           = 10.speed,
     Summit_Speed            = 10.speed,
     Summit_Bridge_Speed     = 8.speed,
@@ -1831,7 +1831,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     MinSecondsOnBlock       = 10,
     MaxSecondsEnterBlock    = 4,
 ) else if (BL.dccAddress == 191) _BL_Data(
-    Has_Gyro = false,
+    Has_Gyro                = false,
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
     Speed_Tunnel            = 8.speed,
@@ -1845,7 +1845,7 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     MinSecondsOnBlock       = 10,
     MaxSecondsEnterBlock    = 4,
 ) else if (BL.dccAddress == 376) _BL_Data(
-    Has_Gyro = false,
+    Has_Gyro                = false,
     Speed_Station           = 6.speed,
     Speed_Normal            = 8.speed,
     Speed_Tunnel            = 8.speed,
@@ -1861,13 +1861,13 @@ val BL_Data = if (BL.dccAddress == 10) _BL_Data(
     MaxSecondsEnterBlock    = 4,
 ) else if (BL.dccAddress == 3450) _BL_Data(
     // This is an Econami: F8_is_Mute=True
-    F8_is_Mute = true,
-    Has_Gyro = false,
-    Speed_Station           =  4.speed,
+    F8_is_Mute              = true,
+    Has_Gyro                = false,
+    Speed_Station           =  3.speed,
     Speed_Normal            =  4.speed,
-    Speed_Tunnel            =  6.speed,
-    Speed_Canyon_Fwd        =  6.speed,
-    Speed_Canyon_Rev        =  8.speed,
+    Speed_Tunnel            =  4.speed,
+    Speed_Canyon_Fwd        =  4.speed,
+    Speed_Canyon_Rev        =  4.speed,
     Delay_Start             = 10.seconds,
     Delay_Canyon_Speed_Fwd  = 12.seconds,
     Delay_Canyon_Speed_Rev  =  2.seconds,
