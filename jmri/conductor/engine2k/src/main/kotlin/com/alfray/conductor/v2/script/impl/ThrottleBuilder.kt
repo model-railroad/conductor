@@ -21,6 +21,7 @@ package com.alfray.conductor.v2.script.impl
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.script.dsl.IThrottle
 import com.alfray.conductor.v2.script.dsl.IThrottleBuilder
+import com.alfray.conductor.v2.script.dsl.TAction
 import com.alfray.conductor.v2.script.dsl.TBooleanAction
 import com.alfray.conductor.v2.utils.assertOrThrow
 import javax.inject.Inject
@@ -33,12 +34,13 @@ internal class ThrottleBuilder @Inject constructor(
     var actionOnLight: TBooleanAction? = null
     var actionOnSound: TBooleanAction? = null
     var actionOnBell: TBooleanAction? = null
+    var actionOnHorn: TAction? = null
     override var name: String? = null
 
     /** Callback implementing [IThrottle.light]. The default implementation toggles F0. */
     override fun onLight(action: TBooleanAction) {
         logger.assertOrThrow(TAG, actionOnLight == null) {
-            "Throttle onLight defined more than once"
+            "Throttle onLight cannot be defined more than once"
         }
         actionOnLight = action
     }
@@ -46,7 +48,7 @@ internal class ThrottleBuilder @Inject constructor(
     /** Callback implementing [IThrottle.sound]. The default implementation toggles F8. */
     override fun onSound(action: TBooleanAction) {
         logger.assertOrThrow(TAG, actionOnSound == null) {
-            "Throttle onSound defined more than once"
+            "Throttle onSound cannot be defined more than once"
         }
         actionOnSound = action
     }
@@ -54,8 +56,16 @@ internal class ThrottleBuilder @Inject constructor(
     /** Callback implementing [IThrottle.bell]. The default implementation toggles F1. */
     override fun onBell(action: TBooleanAction) {
         logger.assertOrThrow(TAG, actionOnBell == null) {
-            "Throttle onBell defined more than once"
+            "Throttle onBell cannot be defined more than once"
         }
         actionOnBell = action
+    }
+
+    /** Callback implementing [IThrottle.horn]. The default implementation uses F2 for 500 ms. */
+    override fun onHorn(action: TAction) {
+        logger.assertOrThrow(TAG, actionOnHorn == null) {
+            "Throttle onHorn cannot be defined more than once"
+        }
+        actionOnHorn = action
     }
 }

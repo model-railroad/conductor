@@ -37,4 +37,7 @@ interface IThrottleBuilder {
 
     /** Callback implementing [IThrottle.bell]. The default implementation toggles F1. */
     fun onBell(action: TBooleanAction)
+
+    /** Callback implementing [IThrottle.horn]. The default implementation uses F2 for 500 ms. */
+    fun onHorn(action: TAction)
 }

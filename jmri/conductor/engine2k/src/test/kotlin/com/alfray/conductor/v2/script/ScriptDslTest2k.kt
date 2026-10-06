@@ -254,17 +254,21 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val T1 = throttle(1001) {
             onLight { b -> throttle.f10( b) }
             onSound { b -> throttle.f18(!b) }
-            onBell  { throttle.f11(it) }
+            onBell  { throttle.f11(it)      }
+            // dummy and poor onHorn implementation to facilitate testing via side-effects
+            onHorn  { throttle.f12(!throttle.f12) }
         }
         on {  S1 } then {
             T1.light(true)            
             T1.sound(true)            
             T1.bell(true)            
+            T1.horn()
         }
         on { !S1 } then {
             T1.light(false)
             T1.sound(false)
             T1.bell(false)
+            T1.horn()
         }
         """.trimIndent()
         )
@@ -274,6 +278,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         val s1 = conductorImpl.sensors["S01"]!!
 
         assertThat(t1.name).isEqualTo("Throttle-1001")
+        assertThat(t1.f12).isFalse()
 
         s1.active(false)
         execEngine.onExecHandle()
@@ -281,6 +286,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(t1.sound).isFalse()
         assertThat(t1.f10).isFalse()
         assertThat(t1.f11).isFalse()
+        assertThat(t1.f12).isTrue()
         assertThat(t1.f18).isTrue()
 
         s1.active(true)
@@ -289,6 +295,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(t1.sound).isTrue()
         assertThat(t1.f10).isTrue()
         assertThat(t1.f11).isTrue()
+        assertThat(t1.f12).isFalse()
         assertThat(t1.f18).isFalse()
 
         s1.active(false)
@@ -297,6 +304,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
         assertThat(t1.sound).isFalse()
         assertThat(t1.f10).isFalse()
         assertThat(t1.f11).isFalse()
+        assertThat(t1.f12).isTrue()
         assertThat(t1.f18).isTrue()
     }
 
@@ -309,6 +317,7 @@ class ScriptDslTest2k : ScriptTest2kBase() {
             onLight { b -> throttle.f10( b) }
             onSound { b -> throttle.f18(!b) }
             onBell  { throttle.f11(it) }
+            onHorn  { /* no-op */ }
         } named "Throttle1"
         """.trimIndent()
         )
