@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2026 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,21 +18,22 @@
 
 package com.alflabs.conductor.dagger;
 
-import dagger.Module;
+import com.alflabs.conductor.util.IProcessBuilderAsync;
 
-@Module(includes = {
-        ExecutorModule.class,
-        FakeClockModule.class,
-        FakeEventLoggerModule.class,
-        FakeFileOpsModule.class,
-        FakeKeyValueModule.class,
-        LoggerModule.class,
-        MockAnalyticsModule.class,
-        MockHttpClientModule.class,
-        FakeJsonSenderModule.class,
-        MockMqttClientModule.class,
-        MockRandomModule.class,
-        FakeProcessBuilderModule.class,
-})
-public abstract class CommonTestModule {
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * A fake version of IProcessBuilderAsync that does nothing except capture the
+ * last command for testing purposes.
+ */
+public class FakeProcessBuilderAsync implements IProcessBuilderAsync {
+    public List<String> lastInvocation = null;
+
+    public FakeProcessBuilderAsync() {
+    }
+
+    public void execAsync(List<String> command) {
+        lastInvocation = new ArrayList<>(command);
+    }
 }

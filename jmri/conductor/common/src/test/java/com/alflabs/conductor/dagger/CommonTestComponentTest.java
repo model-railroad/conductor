@@ -59,6 +59,7 @@ public class CommonTestComponentTest {
     @Inject FakeClock mFakeClock;
     @Inject FileOps mFileOps;
     @Inject FakeFileOps mFakeFileOps;
+    @Inject FakeProcessBuilderAsync mMockProcessBuilderFactory;
 
     @Before
     public void setUp() throws Exception {
@@ -76,6 +77,7 @@ public class CommonTestComponentTest {
         assertThat(mJsonSender).isNotNull();
         assertThat(mEventLogger).isNotNull();
         assertThat(mOkHttpClient).isNotNull();
+        assertThat(mMockProcessBuilderFactory).isNotNull();
 
         assertThat(mFileOps).isNotNull();
         assertThat(mFakeFileOps).isNotNull();

@@ -32,6 +32,7 @@ import dagger.Module;
         LoggerModule.class,
         MqttClientModule.class,
         RandomModule.class,
+        ProcessBuilderModule.class,
 })
 public abstract class CommonModule {
 }

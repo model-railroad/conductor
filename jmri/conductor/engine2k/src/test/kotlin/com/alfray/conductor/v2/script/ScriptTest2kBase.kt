@@ -18,6 +18,7 @@
 
 package com.alfray.conductor.v2.script
 
+import com.alflabs.conductor.dagger.FakeProcessBuilderAsync
 import com.alflabs.conductor.jmri.FakeJmriProvider
 import com.alflabs.utils.FakeFileOps
 import com.alflabs.utils.StringLogger
@@ -39,6 +40,7 @@ open class ScriptTest2kBase {
     protected lateinit var scriptComponent: IScript2kTestComponent
     @Inject internal lateinit var context: Script2kTestContext
     @Inject internal lateinit var fileOps: FakeFileOps
+    @Inject internal lateinit var processBuilderAsync: FakeProcessBuilderAsync
 
     internal lateinit var loader: Script2kLoader
     internal lateinit var conductorImpl: ConductorImpl

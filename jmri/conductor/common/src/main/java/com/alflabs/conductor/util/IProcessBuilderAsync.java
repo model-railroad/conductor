@@ -1,6 +1,7 @@
+
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2026 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,23 +17,10 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.alflabs.conductor.dagger;
+package com.alflabs.conductor.util;
 
-import dagger.Module;
+import java.util.List;
 
-@Module(includes = {
-        ExecutorModule.class,
-        FakeClockModule.class,
-        FakeEventLoggerModule.class,
-        FakeFileOpsModule.class,
-        FakeKeyValueModule.class,
-        LoggerModule.class,
-        MockAnalyticsModule.class,
-        MockHttpClientModule.class,
-        FakeJsonSenderModule.class,
-        MockMqttClientModule.class,
-        MockRandomModule.class,
-        FakeProcessBuilderModule.class,
-})
-public abstract class CommonTestModule {
+public interface IProcessBuilderAsync {
+    void execAsync(List<String> command);
 }

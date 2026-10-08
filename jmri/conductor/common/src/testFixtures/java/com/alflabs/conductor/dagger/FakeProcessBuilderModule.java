@@ -1,6 +1,6 @@
 /*
  * Project: Conductor
- * Copyright (C) 2022 alf.labs gmail com,
+ * Copyright (C) 2026 alf.labs gmail com,
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,21 +18,23 @@
 
 package com.alflabs.conductor.dagger;
 
+import com.alflabs.conductor.util.IProcessBuilderAsync;
 import dagger.Module;
+import dagger.Provides;
 
-@Module(includes = {
-        ExecutorModule.class,
-        FakeClockModule.class,
-        FakeEventLoggerModule.class,
-        FakeFileOpsModule.class,
-        FakeKeyValueModule.class,
-        LoggerModule.class,
-        MockAnalyticsModule.class,
-        MockHttpClientModule.class,
-        FakeJsonSenderModule.class,
-        MockMqttClientModule.class,
-        MockRandomModule.class,
-        FakeProcessBuilderModule.class,
-})
-public abstract class CommonTestModule {
+import javax.inject.Singleton;
+
+@Module
+public abstract class FakeProcessBuilderModule {
+    @Singleton
+    @Provides
+    public static FakeProcessBuilderAsync provideFakeProcessBuilderAsync() {
+        return new FakeProcessBuilderAsync();
+    }
+
+    @Singleton
+    @Provides
+    public static IProcessBuilderAsync provideProcessBuilderFactory(FakeProcessBuilderAsync fakeProcessBuilderFactory) {
+        return fakeProcessBuilderFactory;
+    }
 }

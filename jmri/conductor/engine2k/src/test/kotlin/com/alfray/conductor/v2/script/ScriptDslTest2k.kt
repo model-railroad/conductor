@@ -1490,4 +1490,38 @@ class ScriptDslTest2k : ScriptTest2kBase() {
                 "Script: Sec now is 43"
             )
     }
+
+    @Test
+    fun testExec() {
+        loadScriptFromText(scriptText =
+            """
+        val S1 = sensor("S01")
+        on {  S1 } then {
+            exec("/bin/bash", "/tmp/some/command", "value-on")
+        }
+        on { !S1 } then {
+            exec("/bin/bash", "/tmp/some/command", "value-off")
+        }
+        """.trimIndent()
+        )
+        assertResultNoError()
+
+        val s1 = conductorImpl.sensors["S01"]!!
+
+        assertThat(processBuilderAsync.lastInvocation).isNull()
+
+        s1.active(false)
+        execEngine.onExecHandle()
+        assertThat(processBuilderAsync.lastInvocation).isNotNull()
+        assertThat(processBuilderAsync.lastInvocation)
+            .containsExactly("/bin/bash", "/tmp/some/command", "value-off")
+            .inOrder()
+
+        s1.active(true)
+        execEngine.onExecHandle()
+        assertThat(processBuilderAsync.lastInvocation).isNotNull()
+        assertThat(processBuilderAsync.lastInvocation)
+            .containsExactly("/bin/bash", "/tmp/some/command", "value-on")
+            .inOrder()
+    }
 }

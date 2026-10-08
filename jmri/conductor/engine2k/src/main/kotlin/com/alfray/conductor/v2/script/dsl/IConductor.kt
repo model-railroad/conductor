@@ -97,4 +97,7 @@ interface IConductor {
     /** Sends a Dazz Event.
      * No-op till the Dazz URL is defined. */
     fun dazzEvent(dazzEventSpecification: IDazzEventBuilder.() -> Unit)
+
+    /** Executes an external script asynchronously. This does not wait for completion. */
+    fun exec(cmd: String, vararg args: String)
 }

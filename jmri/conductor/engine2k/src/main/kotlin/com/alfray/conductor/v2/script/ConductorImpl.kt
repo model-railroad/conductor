@@ -20,6 +20,7 @@ package com.alfray.conductor.v2.script
 
 import com.alflabs.conductor.util.DazzSender
 import com.alflabs.conductor.util.ILocalDateTimeNowProvider
+import com.alflabs.conductor.util.IProcessBuilderAsync
 import com.alflabs.conductor.util.JsonSender
 import com.alflabs.utils.ILogger
 import com.alfray.conductor.v2.dagger.Script2kScope
@@ -73,6 +74,7 @@ class ConductorImpl @Inject internal constructor(
     override val exportedVars: ExportedVars,
     private val currentContext: CurrentContext,
     private val localDateTimeNow: ILocalDateTimeNowProvider,
+    private val processBuilderAsync: IProcessBuilderAsync,
 ) : IConductor {
     private val TAG = javaClass.simpleName
     val sensors = mutableMapOf<String, ISensor>()
@@ -236,6 +238,12 @@ class ConductorImpl @Inject internal constructor(
     override fun eStop() {
         logger.d(TAG, "ESTOP activated by script. All routes execution stopped until reset.")
         eStopHandler.activateEStop()
+    }
+
+    override fun exec(cmd: String, vararg args: String) {
+        val fullCommand = mutableListOf(cmd).apply { addAll(args) }
+        logger.d(TAG, "EXEC: $fullCommand")
+        processBuilderAsync.execAsync(fullCommand)
     }
 
     /** Internal helper to check state of registered after timers, for tests & debugging. */
