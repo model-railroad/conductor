@@ -16,25 +16,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-group "com.alflabs.manifest"
-version "1.12-SNAPSHOT"
+group = "com.alflabs.manifest"
+version = "1.12-SNAPSHOT"
 
-apply plugin: "java-library"
+plugins {
+    java
+}
 
-//FIXME
-//sourceCompatibility = JavaVersion.VERSION_11
-//targetCompatibility = JavaVersion.VERSION_11
+java {
+    java.sourceCompatibility = JavaVersion.VERSION_11
+    java.targetCompatibility = JavaVersion.VERSION_11
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation project(":LibUtilsJava")
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.6.7.1"
+    implementation(project(":LibUtilsJava"))
+    implementation(libs.jackson.databind)
 
     // Testing: Mockito and Truth
-    testImplementation "org.mockito:mockito-core:5.4.0"
-    testImplementation "com.google.truth:truth:1.1.5"
-    testImplementation "junit:junit:4.13.2"
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.truth)
+    testImplementation(libs.junit)
 }

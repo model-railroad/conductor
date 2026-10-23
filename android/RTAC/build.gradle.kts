@@ -15,30 +15,10 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-pluginManagement {
-    repositories {
-        gradlePluginPortal()
-        google()
-        mavenCentral()
-    }
+
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
 }
-dependencyResolutionManagement {
-    // repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-rootProject.name = "RTAC"
-
-include ":LibManifest"
-include ":app"
-
-include ":LibUtilsJava"
-project(":LibUtilsJava").projectDir = new File(rootProject.projectDir, "LibUtils/LibUtilsJava")
-
-include ":LibUtilsAndroid"
-project(":LibUtilsAndroid").projectDir = new File(rootProject.projectDir, "LibUtils/LibUtilsAndroid")
-
-include ":androidsvg"
-project(":androidsvg").projectDir = new File(rootProject.projectDir, "androidsvg/androidsvg")

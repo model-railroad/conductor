@@ -33,7 +33,7 @@ if [[ ! -d $ROOT/LibUtils ]]; then
 fi
 
 $DRY git submodule update --init $ROOT/LibUtils
-LIB_BRANCH="android-lib-v4"
+LIB_BRANCH="android-lib-v5"
 (   $DRY cd $ROOT/LibUtils
     if ! git branch | grep -q $LIB_BRANCH ; then
         $DRY git branch --track $LIB_BRANCH origin/$LIB_BRANCH
