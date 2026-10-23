@@ -19,7 +19,6 @@
 package com.alflabs.rtac.activity;
 
 import android.view.View;
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.rtac.app.DigisparkHelper;
@@ -28,7 +27,6 @@ import com.alflabs.rtac.fragment.MockFragmentComponent;
 import com.alflabs.rtac.service.AnalyticsMixin;
 import com.alflabs.rtac.service.DataClientMixin;
 import com.alflabs.utils.FakeClock;
-import com.alflabs.utils.IClock;
 import com.alflabs.utils.ILogger;
 import com.alflabs.utils.InjectionValidator;
 import org.junit.Before;
@@ -40,10 +38,8 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
-import org.robolectric.util.ActivityController;
-
-import javax.inject.Inject;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.Mockito.mock;
@@ -54,7 +50,7 @@ import static org.mockito.Mockito.when;
  * into the activity. The IAppComponent is still the real one.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK)
 public class CustomActivityComponentTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
@@ -100,6 +96,16 @@ public class CustomActivityComponentTest {
         protected IMainActivityComponent createComponent() {
             return new IMainActivityComponent() {
                 @Override
+                public IFragmentComponent.Factory getFragmentComponentFactory() {
+                    return new IFragmentComponent.Factory() {
+                        @Override
+                        public IFragmentComponent create() {
+                            return new MockFragmentComponent();
+                        }
+                    };
+                }
+
+                @Override
                 public void inject(MainActivity mainActivity) {
                     // Inject is called in onCreate() but we want to setup the expectations
                     // (e.g. the when() calls) before the injection occurs, which is why this one is created earlier.
@@ -124,11 +130,6 @@ public class CustomActivityComponentTest {
                     motionSensorMixin.mClock = new FakeClock(42);
 
                     InjectionValidator.check(motionSensorMixin);
-                }
-
-                @Override
-                public IFragmentComponent create() {
-                    return new MockFragmentComponent();
                 }
             };
         }

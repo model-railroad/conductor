@@ -18,7 +18,6 @@
 
 package com.alflabs.rtac.app;
 
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,8 +28,8 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
 public class AppPrefsValuesTest {
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK)
 
     @Test
     public void testAppsPrefsValuesAvailable() throws Exception {
@@ -38,6 +37,6 @@ public class AppPrefsValuesTest {
         AppPrefsValues prefsValues1 = component.getAppPrefsValues();
         AppPrefsValues prefsValues2 = component.getAppPrefsValues();
         assertThat(prefsValues1).isNotNull();
-        assertThat(prefsValues2).isSameAs(prefsValues1);
+        assertThat(prefsValues2).isSameInstanceAs(prefsValues1);
     }
 }

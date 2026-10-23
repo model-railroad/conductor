@@ -82,17 +82,26 @@ dependencies {
     testImplementation(libs.truth)
     testImplementation(libs.junit)
     testImplementation(libs.guava.jre)
+}
 
-// TBD REMOVE IF NOT USEFUL
-//    // https://stackoverflow.com/questions/75263047/duplicate-class-in-kotlin-android
-//    // To find the version of kotlin, run $ ./gradlew :app:dependencies | grep kotlin
-//    // Some androidx libs use 1.8.10 and some use 1.6.21, which creates duplicate conflicts.
-//    constraints {
-//        implementation(libs.kotlin.stdlib.jdk7) {
-//            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
-//        }
-//        implementation(libs.kotlin.stdlib.jdk8) {
-//            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
-//        }
-//    }
+tasks.withType<Test> {
+    // Fix for Robolectric 4.17 issue with SDK 37.
+    // see https://github.com/robolectric/robolectric/issues/11434
+    jvmArgs(
+        "--add-exports",
+        "java.base/jdk.internal.access=ALL-UNNAMED",
+    )
+
+    // Fix: Attach Mockito as a Java Agent at test runtime. Needed for recent JVM (17+).
+    jvmArgumentProviders.add(CommandLineArgumentProvider {
+        val agentJar = classpath.files.find { file ->
+            file.name.contains("mockito-core") || file.name.contains("byte-buddy-agent")
+        }
+        println("Mockito Agent runtime class path: $agentJar")
+        if (agentJar != null) {
+            listOf("-javaagent:${agentJar.absolutePath}")
+        } else {
+            emptyList()
+        }
+    })
 }

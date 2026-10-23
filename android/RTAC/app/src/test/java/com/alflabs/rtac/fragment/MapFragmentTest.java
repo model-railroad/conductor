@@ -20,7 +20,6 @@ package com.alflabs.rtac.fragment;
 
 import android.app.Fragment;
 import android.view.View;
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.R;
 import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.activity.MainActivity;
@@ -40,7 +39,7 @@ import static com.google.common.truth.Truth.assertThat;
  * A version of the {@link MapFragment} test that uses the real IAppComponent and the real IMainActivityComponent.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK)
 public class MapFragmentTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 

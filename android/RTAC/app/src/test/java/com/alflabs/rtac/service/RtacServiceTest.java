@@ -26,7 +26,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.app.AppMockComponent;
 import org.junit.Before;
@@ -49,9 +48,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        sdk = RtacTestConfig.ROBOELECTRIC_SDK,
-        manifest = "src/main/AndroidManifest.xml",
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK,
         application = AppMockComponent.class)
 public class RtacServiceTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();

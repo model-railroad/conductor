@@ -18,7 +18,6 @@
 
 package com.alflabs.rtac.third_parties;
 
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -34,7 +33,7 @@ import org.robolectric.annotation.Config;
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK)
 public class JacksonTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
 
@@ -81,6 +80,6 @@ public class JacksonTest {
         Data d2 = mapper.readValue(json, Data.class);
         assertThat(d2).isNotNull();
         assertThat(d2).isEqualTo(d1);
-        assertThat(d2).isNotSameAs(d1);
+        assertThat(d2).isNotSameInstanceAs(d1);
     }
 }

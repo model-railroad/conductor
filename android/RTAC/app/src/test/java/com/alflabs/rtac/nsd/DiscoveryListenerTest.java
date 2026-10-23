@@ -22,7 +22,6 @@ package com.alflabs.rtac.nsd;
 import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import com.alflabs.rtac.app.AppMockComponent;
 import com.alflabs.rtac.app.AppPrefsValues;
@@ -57,9 +56,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class,
-        sdk = RtacTestConfig.ROBOELECTRIC_SDK,
-        manifest = "src/main/AndroidManifest.xml",
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK,
         application = AppMockComponent.class)
 public class DiscoveryListenerTest {
     public @Rule MockitoRule mRule = MockitoJUnit.rule();
@@ -124,11 +121,11 @@ public class DiscoveryListenerTest {
         CountDownLatch resultLatch = new CountDownLatch(1);
         AtomicReference<NsdServiceInfo> resolvedServiceInfo = new AtomicReference<>();
         mListener.getServiceResolvedStream().subscribe(
+                Schedulers.sync(),
                 (stream, nsdServiceInfo) -> {
                     resolvedServiceInfo.set(nsdServiceInfo);
                     resultLatch.countDown();
-                },
-                Schedulers.sync());
+                });
         assertThat(resolvedServiceInfo.get()).isNull();
 
         mListener.start();
@@ -147,6 +144,6 @@ public class DiscoveryListenerTest {
 
         resolveListener.onServiceResolved(expected);
         resultLatch.await(5, TimeUnit.SECONDS);
-        assertThat(resolvedServiceInfo.get()).isSameAs(expected);
+        assertThat(resolvedServiceInfo.get()).isSameInstanceAs(expected);
     }
 }

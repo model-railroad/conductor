@@ -18,7 +18,6 @@
 
 package com.alflabs.rtac.activity;
 
-import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.RtacTestConfig;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,7 +35,7 @@ import static com.google.common.truth.Truth.assertThat;
  * Test for {@link PrefsActivity}.
  */
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = RtacTestConfig.ROBOELECTRIC_SDK, manifest = "src/main/AndroidManifest.xml")
+@Config(sdk = RtacTestConfig.ROBOELECTRIC_SDK)
 public class PrefsActivityTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
