@@ -106,5 +106,3 @@ dependencies {
         }
     }
 }
-
-apply from: "test_resources.gradle"

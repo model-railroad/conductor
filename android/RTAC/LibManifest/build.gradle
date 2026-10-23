@@ -21,8 +21,9 @@ version "1.12-SNAPSHOT"
 
 apply plugin: "java-library"
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+//FIXME
+//sourceCompatibility = JavaVersion.VERSION_11
+//targetCompatibility = JavaVersion.VERSION_11
 
 repositories {
     mavenCentral()
