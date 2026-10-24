@@ -41,6 +41,7 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowService;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -67,13 +68,18 @@ public class RtacServiceTest {
 
     @Before
     public void setUp() throws Exception {
-        AppMockComponent appMockComponent = (AppMockComponent) RuntimeEnvironment.application;
+        AppMockComponent appMockComponent = (AppMockComponent) RuntimeEnvironment.getApplication();
         mNotifManager = appMockComponent.getAppContextModule().providesNotificationManager();
+
+        // Grant permissions from the AndroidManifest.xml which is not parsed during tests
+        String permissionName = "com.alflabs.rtac.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION";
+        ShadowApplication shadowApp = Shadows.shadowOf(appMockComponent);
+        shadowApp.grantPermissions(permissionName);
 
         mRtacService = new RtacService() {
             @Override
             public String getPackageName() {
-                return RuntimeEnvironment.application.getPackageName();
+                return appMockComponent.getPackageName();
             }
 
             @Override
@@ -83,7 +89,7 @@ public class RtacServiceTest {
 
             @Override
             public Context getApplicationContext() {
-                return RuntimeEnvironment.application;
+                return appMockComponent;
             }
 
             @NonNull

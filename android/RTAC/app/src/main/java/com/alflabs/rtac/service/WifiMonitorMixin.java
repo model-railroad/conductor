@@ -8,6 +8,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import androidx.core.content.ContextCompat;
 import com.alflabs.rtac.BuildConfig;
 import com.alflabs.rtac.app.AppPrefsValues;
 import com.alflabs.utils.ServiceMixin;
@@ -23,6 +24,9 @@ import javax.inject.Singleton;
  * Note that this only auto-connects to a *known* SSID. The user must have connected to the wifi and
  * saved the required auth settings in the Android Wifi Settings first. The code here does not deal
  * with authentication at all.
+ * <p/>
+ * This entire feature became a system-only feature starting with API 29.
+ * <b>Essentially nothing here works on API 29 and above.</b>
  */
 @Singleton
 public class WifiMonitorMixin extends ServiceMixin<RtacService> {
@@ -68,7 +72,11 @@ public class WifiMonitorMixin extends ServiceMixin<RtacService> {
         filter.addAction(Intent.ACTION_SCREEN_ON);
 
         Context context = getService().getApplicationContext();
-        context.registerReceiver(mScreenOnReceiver, filter);
+        ContextCompat.registerReceiver(
+                context,
+                mScreenOnReceiver,
+                filter,
+                ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     private void unregisterScreenOnReceiver() {
@@ -89,12 +97,14 @@ public class WifiMonitorMixin extends ServiceMixin<RtacService> {
         ssid = ssid.trim();
         String quoted_ssid = '"' + ssid + '"';
 
+        // This feature is deprecated since API 29.
         if (!mWifiManager.isWifiEnabled()) {
             if (DEBUG) Log.d(TAG, "Enable Wifi");
             mWifiManager.setWifiEnabled(true);
         }
 
         // Check current state.
+        // This feature is deprecated since API 31.
         WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
         if (wifiInfo != null &&
                 (ssid.equals(wifiInfo.getSSID()) || quoted_ssid.equals(wifiInfo.getSSID()))) {
@@ -103,12 +113,17 @@ public class WifiMonitorMixin extends ServiceMixin<RtacService> {
             return;
         }
 
-        for (WifiConfiguration configuration : mWifiManager.getConfiguredNetworks()) {
-            if (ssid.equals(configuration.SSID) || quoted_ssid.equals(configuration.SSID)) {
-                if (DEBUG) Log.d(TAG, "Enable Wifi: " + configuration.SSID);
-                mWifiManager.enableNetwork(configuration.networkId, true /*attempConnect*/ );
-                break;
+        try {
+            // This feature is deprecated since API 29.
+            for (WifiConfiguration configuration : mWifiManager.getConfiguredNetworks()) {
+                if (ssid.equals(configuration.SSID) || quoted_ssid.equals(configuration.SSID)) {
+                    if (DEBUG) Log.d(TAG, "Enable Wifi: " + configuration.SSID);
+                    mWifiManager.enableNetwork(configuration.networkId, true /*attempConnect*/);
+                    break;
+                }
             }
+        } catch (SecurityException e) {
+            Log.d(TAG, "Wifi Manager does not allow WifiConfiguration on this API level", e);
         }
     }
 }
