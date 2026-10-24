@@ -93,9 +93,9 @@ Files:
   DigisparkHelper.java:L167 – AsyncTask is deprecated; consider replacing with java.util.concurrent.Executors or Kotlin Coroutines.
 Recommended Action Checklist
 1.
-Add FOREGROUND_SERVICE, specific foreground service type permission, and POST_NOTIFICATIONS to AndroidManifest.xml.
+[DONE] Add FOREGROUND_SERVICE, specific foreground service type permission, and POST_NOTIFICATIONS to AndroidManifest.xml.
 2.
-Update <service android:name=".service.RtacService"> tag with android:foregroundServiceType="connectedDevice" (or relevant type).
+[DONE] Update <service android:name=".service.RtacService"> tag with android:foregroundServiceType="connectedDevice" (or relevant type).
 3.
 Create a NotificationChannel in   RtacService.java for API 26+.
 4.
