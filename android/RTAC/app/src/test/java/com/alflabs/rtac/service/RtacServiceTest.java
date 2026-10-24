@@ -86,6 +86,7 @@ public class RtacServiceTest {
                 return RuntimeEnvironment.application;
             }
 
+            @NonNull
             @Override
             protected Notification.Builder createNotificationBuilder() {
                 when(mNotificationBuilder.build()).thenReturn(mNotification);

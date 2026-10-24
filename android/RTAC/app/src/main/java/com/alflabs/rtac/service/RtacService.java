@@ -20,6 +20,7 @@ package com.alflabs.rtac.service;
 
 import android.app.Activity;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
@@ -60,9 +61,11 @@ import javax.inject.Inject;
  */
 public class RtacService extends android.app.Service {
 
+    public static final String NOTIFICATION_CHANNEL_ID = "rtac_service_channel";
+
     private static final String TAG = RtacService.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
-    private static final int NID = 'r' << 24 + 't' << 16 + 'a' << 8 + 'c';
+    private static final int NID = ('r' << 24) + ('t' << 16) + ('a' << 8) + 'c';
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -115,6 +118,8 @@ public class RtacService extends android.app.Service {
         super.onCreate();
         Context appContext = getApplicationContext();
         MainApp.getAppComponent(appContext).inject(this);
+
+        ensureNotificationChannel();
 
         mWakeWifiLockMixin.onCreate(this);
         mWifiMonitorMixin.onCreate(this);
@@ -212,7 +217,24 @@ public class RtacService extends android.app.Service {
     @VisibleForTesting
     @NonNull
     protected Notification.Builder createNotificationBuilder() {
-        return new Notification.Builder(this);
+        ensureNotificationChannel();
+        if (Build.VERSION.SDK_INT >= 26) {
+            return new Notification.Builder(this, NOTIFICATION_CHANNEL_ID);
+        } else {
+            return new Notification.Builder(this);
+        }
+    }
+
+    private void ensureNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(
+                    NOTIFICATION_CHANNEL_ID,
+                    "RTAC Service",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Background notification for RTAC service");
+            mNotificationManager.createNotificationChannel(channel);
+        }
     }
 
     private void hideNotification() {

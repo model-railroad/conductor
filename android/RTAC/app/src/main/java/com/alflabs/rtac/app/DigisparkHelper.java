@@ -9,6 +9,7 @@ import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +21,7 @@ import javax.inject.Inject;
 import java.util.HashMap;
 
 /**
- * Helper to find and communicate with a Digispark attached via an USB OTG cable.
+ * Helper to find and communicate with a Digispark attached via a USB OTG cable.
  * <p/>
  * The USB service requires the user to authorize access to the device. It will popup a dialog
  * asking for permission for the device to be used. The {@link #checkPermission(UsbDevice)} method
@@ -42,6 +43,7 @@ import java.util.HashMap;
  *     &lt;usb-device vendor-id="5824" product-id="1503" />
  *   &lt;/resources>
  * </pre>
+ *
  */
 public class DigisparkHelper {
     private static final String TAG = DigisparkHelper.class.getSimpleName();
@@ -100,11 +102,15 @@ public class DigisparkHelper {
         Uri u = new Uri.Builder().scheme("usb").path(device.getDeviceName()).build();
         Intent in = new Intent(BootReceiver.ACTION_OPEN_RTAC, u);
         in.putExtra("device", device);  // Parcel
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= 31) {
+            flags |= PendingIntent.FLAG_MUTABLE;
+        }
         PendingIntent pi = PendingIntent.getBroadcast(
                 mContext,
                 0,
                 in,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+                flags);
         if (DEBUG) Log.d(TAG, "@@ requestPermission: " + pi + " ==> " + in);
         manager.requestPermission(device, pi);
         return null;

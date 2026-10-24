@@ -97,9 +97,9 @@ Recommended Action Checklist
 2.
 [DONE] Update <service android:name=".service.RtacService"> tag with android:foregroundServiceType="connectedDevice" (or relevant type).
 3.
-Create a NotificationChannel in   RtacService.java for API 26+.
+[DONE] Create a NotificationChannel in   RtacService.java for API 26+.
 4.
-Add PendingIntent.FLAG_MUTABLE to DigisparkHelper.java:103.
+[DONE] Add PendingIntent.FLAG_MUTABLE to DigisparkHelper.java:103.
 5.
 Pass Context.RECEIVER_NOT_EXPORTED in WifiMonitorMixin.java:71.
 6.
