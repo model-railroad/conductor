@@ -13,15 +13,15 @@
 
     <header
         android:fragment="com.alflabs.rtac.activity.PrefsActivity$ConductorPreferenceFragment"
-        android:title="Conductor"/>
+        android:title="RTAC"/>
 
     <header
         android:fragment="com.alflabs.rtac.activity.PrefsActivity$JmriPreferenceFragment"
-        android:title="JMRI"/>
+        android:title="JMRI Server"/>
 
     <header
         android:fragment="com.alflabs.rtac.activity.PrefsActivity$DataServerPreferenceFragment"
-        android:title="Data Server"/>
+        android:title="Conductor Server"/>
 
     <header
         android:fragment="com.alflabs.rtac.activity.PrefsActivity$DevPreferenceFragment"
