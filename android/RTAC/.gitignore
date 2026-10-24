@@ -18,3 +18,4 @@ captures
 .idea/other.xml
 .idea
 
+*.old

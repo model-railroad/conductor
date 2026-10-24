@@ -33,7 +33,6 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":LibUtilsJava"))
     implementation(libs.jackson.databind)
 
     // Testing: Mockito and Truth
