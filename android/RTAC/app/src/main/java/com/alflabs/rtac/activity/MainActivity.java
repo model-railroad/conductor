@@ -18,6 +18,7 @@
 
 package com.alflabs.rtac.activity;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -25,6 +26,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -32,6 +35,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -56,6 +63,7 @@ public class MainActivity extends FragmentActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final int LOCAL_NETWORK_REQUEST_CODE = 101;
 
     @Inject ILogger mLogger;
     @Inject AppPrefsValues mAppPrefsValues;
@@ -159,10 +167,26 @@ public class MainActivity extends FragmentActivity {
     protected void onResume() {
         if (DEBUG) Log.d(TAG, "onResume");
         super.onResume();
-        bindServerService();
         hideNavigationBar();
         setupEstopFragment();
         mMotionSensorMixin.onResume();
+
+        boolean startService = true;
+        if (Build.VERSION.SDK_INT >= 37) {
+            int perm = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK);
+            Log.d(TAG, "Local Network Permission: " + perm);
+            if (perm != PackageManager.PERMISSION_GRANTED) {
+                startService = false;
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{ Manifest.permission.ACCESS_LOCAL_NETWORK },
+                        LOCAL_NETWORK_REQUEST_CODE
+                );
+            }
+        }
+        if (startService) {
+            bindServerService();
+        }
     }
 
     @Override
@@ -188,6 +212,17 @@ public class MainActivity extends FragmentActivity {
         if (DEBUG) Log.d(TAG, "onDestroy");
         mMotionSensorMixin.onDestroy();
         super.onDestroy();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCAL_NETWORK_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Local Network Permission Granted", Toast.LENGTH_SHORT).show();
+                bindServerService();
+            }
+        }
     }
 
     private void setupEstopFragment() {
