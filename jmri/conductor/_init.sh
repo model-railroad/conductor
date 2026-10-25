@@ -48,9 +48,5 @@ if [[ ! -d $ROOT/RTAC ]]; then
     $DRY git submodule add "https://github.com/model-railroad/rtac.git" "$ROOT/RTAC"
   fi
 fi
-(   $DRY cd $ROOT/RTAC
-    $DRY git sparse-checkout set M1
-    
-)
 $DRY git submodule update --init --checkout $ROOT/RTAC
 
