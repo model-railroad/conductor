@@ -1,3 +1,6 @@
-[submodule "android/RTAC/LibUtils"]
+[submodule "jmri/conductor/LibUtils"]
 	path = jmri/conductor/LibUtils
 	url = git@github.com:ralfoide/libutils.git
+[submodule "jmri/conductor/RTAC"]
+	path = jmri/conductor/RTAC
+	url = git@github.com:model-railroad/rtac.git

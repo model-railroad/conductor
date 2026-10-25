@@ -40,3 +40,17 @@ LIB_BRANCH="android-lib-v3"
         $DRY git checkout $LIB_BRANCH
     fi
 )
+
+if [[ ! -d $ROOT/RTAC ]]; then
+  if [[ "$GIT_USER" == "$REPO_ORG" ]]; then
+    $DRY git submodule add "git@github.com:model-railroad/rtac.git" "$ROOT/RTAC"
+  else
+    $DRY git submodule add "https://github.com/model-railroad/rtac.git" "$ROOT/RTAC"
+  fi
+fi
+(   $DRY cd $ROOT/RTAC
+    $DRY git sparse-checkout set M1
+    
+)
+$DRY git submodule update --init --checkout $ROOT/RTAC
+
