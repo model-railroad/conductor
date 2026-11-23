@@ -644,7 +644,8 @@ data class _PA_Data(
     val Delay_Leaving_To_Full_Speed: Delay  = 15.seconds,
     val Delay_B321_Up_Doppler: Delay        = 27.seconds,
     val Delay_B330_Up_Resume: Delay         = 12.seconds,
-    val Delay_B330_Pause_Delay: Delay       = 10.seconds,
+    val Delay_B330_Forward_Stop: Delay      = 17.seconds,
+    val Delay_B330_Pause_Delay: Delay       = 25.seconds,
     val Delay_B340_Up_Horn: Delay           = 10.seconds,
     /// time running at AM_Summit_Speed before stopping
     val Delay_B370_Entrance: Delay          = 4.seconds,
@@ -839,7 +840,7 @@ val Passenger_Route = ML_Route.sequence {
             // Sonora speed reduction
             PA.forward(PA_Data.Sonora_Speed)
             PA.bell(On)
-            after (PA_Data.Delay_B330_Up_Resume) then {
+            after (PA_Data.Delay_B330_Forward_Stop) then {
                 PA.stop()
                 PA.horn()
             } and_after (PA_Data.Delay_B330_Pause_Delay) then {
